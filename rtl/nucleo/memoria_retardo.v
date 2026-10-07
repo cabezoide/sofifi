@@ -14,10 +14,15 @@
 // registro de salida interno y multiplexor registrado; fails.md, F-11). Una
 // lectura presentada en el ciclo t da `dato_r` en t+4. Una escritura presentada
 // en t se hace en t+1; una lectura presentada en t+1 ya la ve.
+//
+// Con más de GRUPO bloques, bsram_pipe va segmentada por grupos (fails.md,
+// F-15) y la lectura tarda 4 ciclos más: `dato_r` en t+8. La escritura también
+// se retrasa, así que una lectura presentada en t+1 sigue viéndola.
 `default_nettype none
 
 module memoria_retardo #(
-    parameter integer PALABRAS_MAX = 43_008
+    parameter integer PALABRAS_MAX = 43_008,
+    parameter integer GRUPO        = 8        // bloques por grupo (bsram_pipe)
 ) (
     input  wire               clk,
     input  wire               rst,
@@ -31,22 +36,46 @@ module memoria_retardo #(
 );
     localparam integer AD = $clog2(PALABRAS_MAX);
 
-    reg [15:0] puntero;
+    // puntero ± P bajan con el puntero: así ninguna suma de P va detrás de él
+    // (fails.md, F-15). `palabras` solo cambia durante el reset.
+    reg [15:0]        puntero;
+    reg signed [17:0] mas_p, menos_p;
     always @(posedge clk) begin
-        if (rst)          puntero <= 16'd0;
-        else if (avanzar) puntero <= (puntero == 16'd0) ? palabras - 1'b1 : puntero - 1'b1;
+        if (rst) begin
+            puntero <= 16'd0;
+            mas_p   <= $signed({2'b00, palabras});
+            menos_p <= -$signed({2'b00, palabras});
+        end else if (avanzar) begin
+            if (puntero == 16'd0) begin
+                puntero <= palabras - 1'b1;
+                mas_p   <= $signed({1'b0, palabras, 1'b0}) - 18'sd1;   // 2P − 1
+                menos_p <= -18'sd1;
+            end else begin
+                puntero <= puntero - 1'b1;
+                mas_p   <= mas_p - 18'sd1;
+                menos_p <= menos_p - 18'sd1;
+            end
+        end
     end
 
-    // (puntero + a) con a en [-1, P-1]: el resultado está en [-1, 2P-2].
-    function automatic [AD-1:0] fisica(input [15:0] ptr, input signed [16:0] a, input [15:0] p);
-        reg signed [18:0] s;
+    // (puntero + a) con a en [-1, P-1]: el resultado está en [-1, 2P-2]. Las tres
+    // sumas posibles van en paralelo y el signo elige (fails.md, F-15): sumar,
+    // comparar y corregir en serie era el camino crítico.
+
+    /* verilator lint_off UNUSEDSIGNAL */   // de cada suma solo se usan AD bit y el signo
+    function automatic [AD-1:0] fisica(input [15:0] ptr, input signed [17:0] ptr_mas_p,
+                                       input signed [17:0] ptr_menos_p, input signed [16:0] a);
+        reg signed [18:0] s0, s_menos, s_mas;
         begin
-            s = $signed({3'b000, ptr}) + {{2{a[16]}}, a};
-            if (s < 19'sd0)                         s = s + $signed({3'b000, p});
-            else if (s >= $signed({3'b000, p}))     s = s - $signed({3'b000, p});
-            fisica = s[AD-1:0];
+            s0      = $signed({3'b000, ptr}) + {{2{a[16]}}, a};
+            s_menos = {ptr_menos_p[17], ptr_menos_p} + {{2{a[16]}}, a};
+            s_mas   = {ptr_mas_p[17], ptr_mas_p} + {{2{a[16]}}, a};
+            if (s0[18])            fisica = s_mas[AD-1:0];     // s0 < 0
+            else if (!s_menos[18]) fisica = s_menos[AD-1:0];   // s0 ≥ P
+            else                   fisica = s0[AD-1:0];
         end
     endfunction
+    /* verilator lint_on UNUSEDSIGNAL */
 
     reg [AD-1:0] fis_r, fis_w;
     reg          we_r;
@@ -55,14 +84,14 @@ module memoria_retardo #(
     dato_a_memoria u_dm (.dato(dato_w), .palabra(palabra_nueva));
 
     always @(posedge clk) begin
-        fis_r     <= fisica(puntero, dir_r, palabras);
-        fis_w     <= fisica(puntero, dir_w, palabras);
+        fis_r     <= fisica(puntero, mas_p, menos_p, dir_r);
+        fis_w     <= fisica(puntero, mas_p, menos_p, dir_w);
         we_r      <= we & ~rst;
         palabra_w <= palabra_nueva;
     end
 
     wire [17:0] palabra_r;
-    bsram_pipe #(.PALABRAS(PALABRAS_MAX), .ANCHO(18)) u_mem (
+    bsram_pipe #(.PALABRAS(PALABRAS_MAX), .ANCHO(18), .GRUPO(GRUPO)) u_mem (
         .clk(clk), .we(we_r), .dir_w(fis_w), .dato_w(palabra_w),
         .dir_r(fis_r), .dato_r(palabra_r)
     );

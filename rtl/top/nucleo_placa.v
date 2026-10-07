@@ -67,6 +67,8 @@ module nucleo_placa #(
     /* verilator lint_off UNUSEDSIGNAL */
     wire               ocupado;
     wire [15:0]        ciclos;
+    wire [11:0]        traza_pc;
+    wire signed [47:0] traza_acc;
     /* verilator lint_on UNUSEDSIGNAL */
     nucleo u_nucleo (
         .clk(clk_100), .rst(rst | ~cargado),
@@ -75,7 +77,8 @@ module nucleo_placa #(
         .cfg_lfo_tipos(lfo_tipos), .cfg_lfo_excursiones(lfo_excursiones),
         .tick(tick), .adc_l(entrada), .adc_r(-entrada),
         .pots({6{24'sh400000}}), .sw(24'sd0),
-        .dac_l(dac_l), .dac_r(dac_r), .fin(fin), .ocupado(ocupado), .ciclos(ciclos)
+        .dac_l(dac_l), .dac_r(dac_r), .fin(fin), .ocupado(ocupado), .ciclos(ciclos),
+        .traza_pc(traza_pc), .traza_acc(traza_acc)
     );
 
     // ── Informe por la UART cada 4 096 muestras ──────────────────────────

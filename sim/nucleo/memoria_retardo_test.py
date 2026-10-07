@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import os
 import random
 from pathlib import Path
 
@@ -45,7 +46,7 @@ async def igual_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
                 a = azar.randrange(-1, palabras)
                 dut.dir_r.value = a
                 await ciclo(dut)
-                await ClockCycles(dut.clk, 3)
+                await ClockCycles(dut.clk, int(os.environ.get("ESPERA_LECTURA", "3")))
                 await ReadOnly()
                 assert dut.dato_r.value.to_signed() == modelo.leer(a), f"P={palabras} a={a}"
                 await FallingEdge(dut.clk)
@@ -54,16 +55,28 @@ async def igual_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
             await ciclo(dut)
 
 
+FUENTES = [
+    RTL / "nucleo" / "memoria_retardo.v",
+    RTL / "nucleo" / "dato_a_memoria.v",
+    RTL / "primitivas" / "bsram_pipe.v",
+    RTL / "primitivas" / "bsram_bloque.v",
+    RTL / "primitivas" / "registro_copia.v",
+]
+
+
 def test_memoria_retardo(tmp_path: Path) -> None:
     construir(
+        tmp_path, FUENTES, "memoria_retardo", "memoria_retardo_test", {"PALABRAS_MAX": PALABRAS_MAX}
+    )
+
+
+def test_memoria_retardo_segmentada(tmp_path: Path) -> None:
+    # 2 bloques en grupos de 1: bsram_pipe segmentada, lectura 4 ciclos más lenta (F-15).
+    construir(
         tmp_path,
-        [
-            RTL / "nucleo" / "memoria_retardo.v",
-            RTL / "nucleo" / "dato_a_memoria.v",
-            RTL / "primitivas" / "bsram_pipe.v",
-            RTL / "primitivas" / "bsram_bloque.v",
-        ],
+        FUENTES,
         "memoria_retardo",
         "memoria_retardo_test",
-        {"PALABRAS_MAX": PALABRAS_MAX},
+        {"PALABRAS_MAX": PALABRAS_MAX, "GRUPO": 1},
+        {"ESPERA_LECTURA": "7"},
     )

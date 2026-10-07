@@ -45,7 +45,10 @@ FUENTES = [
         "lfo_banco.v",
         "tabla_hermite.v",
     )
-] + [RTL / "primitivas" / f for f in ("mult_27x36.v", "bsram_pipe.v", "bsram_bloque.v")]
+] + [
+    RTL / "primitivas" / f
+    for f in ("mult_27x36.v", "bsram_pipe.v", "bsram_bloque.v", "registro_copia.v")
+]
 
 
 def estimulo(n: int) -> list[tuple[int, int]]:
@@ -152,6 +155,48 @@ async def reset_borra_la_memoria(dut: cocotb.handle.HierarchyObject) -> None:
     for k in range(20):
         esperado = modelo.procesar(0, 0)[0]
         assert await muestra(dut, 0) == esperado, f"muestra {k} tras el reset"
+
+
+SALTOS = """
+mem  d  4
+        rdax adcl, 1.0
+        skp  neg, negativo
+        sof  0.5, 0.25
+        wrax dacl, 0
+        skp  zro, fin
+negativo:
+        sof  -0.5, 0
+        wrax dacl, 0
+fin:
+        rdax adcr, 1.0
+        skp  gez, positivo
+        clr
+positivo:
+        sof  1.0, -0.125
+        wrax dacr, 0
+"""
+
+
+@cocotb.test()
+async def saltos_iguales_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
+    """SKP condicionales que saltan o no según el signo: la lectura adelantada se rehace."""
+    cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
+    dut.pots.value = 0
+    programa = ensamblar(SALTOS, "saltos")
+    await cargar(dut, programa)
+    modelo = Nucleo(programa)
+    azar = random.Random(11)
+    for k in range(200):
+        izq, der = azar.randrange(-(1 << 22), 1 << 22), azar.randrange(-(1 << 22), 1 << 22)
+        dut.adc_l.value, dut.adc_r.value, dut.sw.value = izq, der, 0
+        dut.tick.value = 1
+        await RisingEdge(dut.clk)
+        dut.tick.value = 0
+        while not int(dut.fin.value):
+            await RisingEdge(dut.clk)
+        esperado = modelo.procesar(izq, der)
+        obtenido = (dut.dac_l.value.to_signed(), dut.dac_r.value.to_signed())
+        assert obtenido == esperado, f"muestra {k}: RTL {obtenido}, modelo {esperado}"
 
 
 def test_nucleo(tmp_path: Path) -> None:

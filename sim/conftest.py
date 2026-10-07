@@ -28,6 +28,12 @@ def _verilator_en_path() -> None:
     # `.venv/bin` aporta el `python` que verilated.mk invoca sin ruta.
     rutas = [raiz_verilator / "bin", RAIZ / ".venv" / "bin"]
     os.environ["PATH"] = os.pathsep.join([*map(str, rutas), os.environ.get("PATH", "")])
+    # El verilated.mk del paquete deja vacío CFG_CXXFLAGS_PCH_I (falta `-include`).
+    # Cuando verilator parte un diseño grande en varios ficheros, g++ recibe la
+    # cabecera precompilada como fichero de entrada y falla (fails.md, F-16).
+    pch = "CFG_CXXFLAGS_PCH_I=-include"
+    if pch not in os.environ.get("MAKEFLAGS", ""):
+        os.environ["MAKEFLAGS"] = f"{os.environ.get('MAKEFLAGS', '')} {pch}".strip()
     encontrado = shutil.which("verilator")
     if encontrado is None or Path(encontrado).resolve().name == "verilator-cli":
         pytest.fail("falta el `verilator` real (make install instala el paquete)")

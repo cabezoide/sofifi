@@ -12,12 +12,15 @@
 // ciclos) para empezar como el modelo, con todo a cero; mientras tanto,
 // `ocupado` vale 1 y no atiende ticks. El reset no borra la BSRAM por sí solo.
 //
-// Primera versión: multiciclo sin solapamiento (spec de la Fase 04). Cada
-// instrucción espera a su resultado antes de la siguiente. El multiplicador y la
-// memoria tienen la misma latencia: se presentan operandos en un ciclo y el
-// resultado está 5 ciclos después (LAT). Las dos salidas van registradas: la
+// Multiciclo (spec de la Fase 04): cada instrucción espera a su resultado antes
+// de la siguiente. Desde la Fase 06, mientras ejecuta una instrucción ya lee la
+// siguiente del microcódigo (lectura adelantada). Se presentan operandos al
+// multiplicador en un ciclo y el resultado está 5 ciclos después (LAT). Las dos salidas van registradas: la
 // BSRAM en modo bypass y la lógica detrás de ella fallaban en el silicio por
 // encima de 100 MHz aunque nextpnr diera más (fails.md, F-11).
+// Con más de GRUPO_MEM bloques, la memoria va segmentada y sus lecturas tardan 4
+// ciclos más (LAT_MEM): su dirección llegaba a bloques de todo el chip en un
+// solo ciclo y el silicio fallaba según la colocación (fails.md, F-15).
 // `ciclos` da los de la última muestra.
 //
 // El programa se carga por `prog_*` (palabras de 54 bit) y `cfg_*` (lo que el
@@ -47,7 +50,11 @@ module nucleo #(
     output reg  signed [23:0] dac_r,
     output reg                fin,
     output wire               ocupado,
-    output reg  [15:0]        ciclos
+    output reg  [15:0]        ciclos,
+    // Depuración: el top HIL graba la traza (pc, ACC) para localizar en el
+    // silicio la primera instrucción que falla (fails.md, F-15).
+    output wire [11:0]        traza_pc,
+    output wire signed [47:0] traza_acc
 );
     // ── Mapa de registros y códigos (isa.py) ──────────────────────────────
     localparam [5:0] ADCL = 6'd32, ADCR = 6'd33, DACL = 6'd34, DACR = 6'd35,
@@ -59,7 +66,11 @@ module nucleo #(
                      MULX = 6'd8, SOF = 6'd9,  CLIP = 6'd10, SKP = 6'd11,
                      CHO = 6'd12;
     localparam [1:0] T_SIN = 2'd0, T_RAMP = 2'd2;   // RND (1): rama por defecto de CHO
-    localparam [2:0] LAT = 3'd5;
+    localparam [3:0] LAT = 4'd5;
+    localparam integer GRUPO_MEM = 8;   // bloques de memoria de retardo por grupo
+    localparam integer SEG_MEM   = ((PALABRAS_MAX + 1023) / 1024 > GRUPO_MEM) ? 1 : 0;
+    localparam [3:0] EXTRA_MEM = 4'(4 * SEG_MEM);
+    localparam [3:0] LAT_MEM   = LAT + EXTRA_MEM;
 
     // ── Estado ────────────────────────────────────────────────────────────
     localparam [2:0] E_PARADO = 3'd0, E_LFO = 3'd1, E_LEER = 3'd2, E_DECO = 3'd3,
@@ -67,7 +78,7 @@ module nucleo #(
     reg [2:0]  estado;
     reg [11:0] pc;
     reg [4:0]  paso;
-    reg [2:0]  espera;
+    reg [3:0]  espera;
     reg        primera;
     reg signed [47:0] acc;
     reg signed [23:0] lr;
@@ -75,10 +86,17 @@ module nucleo #(
     reg [53:0] ins;
     reg [15:0] cuenta;
     reg [15:0] borrar;
-    reg [1:0]  lee;
+    // Lectura adelantada del microcódigo: pc_mc es la dirección que se lee y
+    // `edad`, los ciclos que lleva presentada (la palabra sale de la BSRAM a los
+    // 3 y de ins_leida a los 4). Al decodificar pc se pide pc + 1: si no hay
+    // salto, la siguiente ya está.
+    reg [11:0] pc_mc;
+    reg [2:0]  edad;
     reg        escr;
 
-    assign ocupado = (estado != E_PARADO);
+    assign ocupado   = (estado != E_PARADO);
+    assign traza_pc  = pc;
+    assign traza_acc = acc;
 
     wire [5:0]         op = ins[53:48];
     wire [5:0]         rg = ins[47:42];
@@ -97,11 +115,26 @@ module nucleo #(
     // ── Microcódigo: 2 048 × 54 en BSRAM, lectura en 3 ciclos ─────────────
     // bsram_pipe: bloques con registro de salida (F-11). E_LEER espera a la
     // palabra. Escrito como array, una parte salía en SPX9 (hold, Fase 04).
-    wire [53:0] ins_leida;
+    // La palabra se registra otra vez junto a la decodificación: el
+    // multiplexor del banco de registros (64:1) no arranca de un cable que
+    // cruza el chip. Con la lectura adelantada no cuesta ciclos: E_LEER pasa a
+    // E_DECO un ciclo después de que la palabra salga (fails.md, F-15).
+    wire [53:0] ins_bsram;
+    reg  [53:0] ins_leida;
     bsram_pipe #(.PALABRAS(2048), .ANCHO(54)) u_microcodigo (
         .clk(clk), .we(prog_we), .dir_w(prog_dir), .dato_w(prog_dato),
-        .dir_r(pc[10:0]), .dato_r(ins_leida)
+        .dir_r(pc_mc[10:0]), .dato_r(ins_bsram)
     );
+    always @(posedge clk) ins_leida <= ins_bsram;
+
+    // Banco de registros en dos niveles (fails.md, F-15): en cada ciclo se
+    // registran los 8 candidatos con los 3 bit bajos del índice; E_DECO elige
+    // uno con los 3 altos. E_LEER dura al menos un ciclo con ins_leida ya
+    // válida y no escribe en el banco, así que los candidatos están al día.
+    reg signed [23:0] candidato [0:7];
+    integer g;
+    always @(posedge clk)
+        for (g = 0; g < 8; g = g + 1) candidato[g] <= regs[{3'(g), ins_leida[44:42]}];
 
     // ── a24 = ACC redondeado y saturado a dato, registrado ────────────────
     // El ACC solo cambia al final de una instrucción; E_LEER y E_DECO dan tiempo
@@ -115,12 +148,9 @@ module nucleo #(
     reg  signed [26:0] ma;
     reg  signed [35:0] mb;
     wire signed [62:0] p_mult;
-    reg  signed [62:0] p_1, p;     // salida registrada dos veces: LAT igual a la memoria
+    reg  signed [62:0] p;          // 3 ciclos del DSP y este registro: LAT = 5
     mult_27x36 u_mult (.clk(clk), .a(ma), .b(mb), .p(p_mult));
-    always @(posedge clk) begin
-        p_1 <= p_mult;
-        p   <= p_1;
-    end
+    always @(posedge clk) p <= p_mult;
     function automatic signed [26:0] a27(input signed [24:0] v);
         a27 = {{2{v[24]}}, v};
     endfunction
@@ -134,7 +164,7 @@ module nucleo #(
     reg  signed [23:0] mdato_w;
     reg                mavanzar;
     wire signed [23:0] mdato_r;
-    memoria_retardo #(.PALABRAS_MAX(PALABRAS_MAX)) u_mem (
+    memoria_retardo #(.PALABRAS_MAX(PALABRAS_MAX), .GRUPO(GRUPO_MEM)) u_mem (
         .clk(clk), .rst(rst), .palabras(cfg_palabras), .avanzar(mavanzar),
         .dir_r(mdir_r), .dato_r(mdato_r), .we(mwe), .dir_w(mdir_w), .dato_w(mdato_w)
     );
@@ -204,13 +234,15 @@ module nucleo #(
         mavanzar    <= 1'b0;
         lfo_avanzar <= 1'b0;
         if (rst) begin
-            estado <= E_BORRAR; borrar <= 16'd0; lee <= 2'd0; escr <= 1'b0;
-            pc <= 12'd0; paso <= 5'd0; espera <= 3'd0;
+            estado <= E_BORRAR; borrar <= 16'd0; escr <= 1'b0; pc_mc <= 12'd0; edad <= 3'd0;
+            pc <= 12'd0; paso <= 5'd0; espera <= 4'd0;
             primera <= 1'b1; acc <= 48'sd0; lr <= 24'sd0; ins <= 54'd0;
             dac_l <= 24'sd0; dac_r <= 24'sd0; ciclos <= 16'd0; cuenta <= 16'd0;
             for (i = 0; i < 64; i = i + 1) regs[i] <= 24'sd0;
         end else begin
             if (estado != E_PARADO && estado != E_BORRAR) cuenta <= cuenta + 1'b1;
+            // edad vuelve a 0 en el mismo flanco en que cambia pc_mc (más abajo).
+            if (edad != 3'd4) edad <= edad + 1'b1;
             case (estado)
             E_BORRAR: begin
                 mwe <= 1'b1; mdir_w <= {1'b0, borrar}; mdato_w <= 24'sd0;
@@ -227,17 +259,15 @@ module nucleo #(
                 estado <= E_LFO;
             end
             E_LFO: if (lfo_listo) estado <= E_LEER;
-            E_LEER: begin   // la palabra de pc tarda 3 ciclos en salir del microcódigo
-                if (lee == 2'd2) begin
-                    lee <= 2'd0;
-                    estado <= (pc == cfg_instrucciones) ? E_FIN : E_DECO;
-                end else begin
-                    lee <= lee + 1'b1;
-                end
+            E_LEER: begin
+                if (pc == cfg_instrucciones) estado <= E_FIN;
+                else if (pc_mc != pc) begin pc_mc <= pc; edad <= 3'd0; end   // salto
+                else if (edad == 3'd4) estado <= E_DECO;     // ins_leida ya es la de pc
             end
             E_DECO: begin
                 ins <= ins_leida;
-                r_d      <= regs[ins_leida[47:42]];
+                pc_mc <= pc + 1'b1; edad <= 3'd0;            // adelantar la siguiente
+                r_d      <= candidato[ins_leida[47:45]];
                 dep_d    <= regs[6'd43 + {3'd0, sel_leida, 1'b0}];   // lfoN_depth = 42 + 2N + 1
                 fase_d   <= lfo_fase;
                 tri_d    <= lfo_tri;
@@ -245,10 +275,10 @@ module nucleo #(
                 actual_d <= lfo_actual;
                 tipo_d   <= cfg_lfo_tipos[2*sel_leida +: 2];
                 exc_d    <= cfg_lfo_excursiones[15*sel_leida +: 15];
-                paso <= 5'd0; espera <= 3'd0;
+                paso <= 5'd0; espera <= 4'd0;
                 estado <= E_EJEC;
             end
-            E_EJEC: if (espera != 3'd0) begin
+            E_EJEC: if (espera != 4'd0) begin
                 espera <= espera - 1'b1;
             end else begin
                 // Por defecto, la instrucción termina en este ciclo.
@@ -273,7 +303,7 @@ module nucleo #(
                     end
                 RDA:
                     case (paso)
-                    5'd0: begin mdir_r <= {1'b0, ad[15:0]}; paso <= 5'd1; espera <= LAT - 1'b1; end
+                    5'd0: begin mdir_r <= {1'b0, ad[15:0]}; paso <= 5'd1; espera <= LAT_MEM - 1'b1; end
                     5'd1: begin
                         lr <= mdato_r;
                         ma <= a27({mdato_r[23], mdato_r}); mb <= b36({{7{cf[17]}}, cf});
@@ -348,8 +378,9 @@ module nucleo #(
                     5'd6: begin mdir_r <= base;          paso <= 5'd7; end
                     5'd7: begin mdir_r <= base + 17'sd1; paso <= 5'd8; end
                     5'd8: begin mdir_r <= base + 17'sd2; paso <= 5'd24; end
-                    5'd24: paso <= 5'd9;   // la primera lectura llega LAT ciclos después
-                    // Llegan M[base−1], M[base], M[base+1] y M[base+2] (LAT ciclos
+                    // La primera lectura llega LAT_MEM ciclos después.
+                    5'd24: begin paso <= 5'd9; espera <= EXTRA_MEM; end
+                    // Llegan M[base−1], M[base], M[base+1] y M[base+2] (LAT_MEM ciclos
                     // después de pedirlas) y entran al multiplicador con c0..c3.
                     5'd9:  begin ma <= a27({mdato_r[23], mdato_r}); mb <= b36({{7{c0[17]}}, c0}); paso <= 5'd10; end
                     5'd10: begin ma <= a27({mdato_r[23], mdato_r}); mb <= b36({{7{c1[17]}}, c1}); paso <= 5'd11; end

@@ -22,6 +22,7 @@ def construir(
     top: str,
     modulo: str,
     parametros: dict[str, Any] | None = None,
+    entorno: dict[str, str] | None = None,
 ) -> None:
     runner = get_runner("verilator")
     runner.build(
@@ -33,7 +34,13 @@ def construir(
         build_args=["-Wall"],
         always=True,
     )
-    runner.test(hdl_toplevel=top, test_module=modulo, test_dir=AQUI, build_dir=tmp_path)
+    runner.test(
+        hdl_toplevel=top,
+        test_module=modulo,
+        test_dir=AQUI,
+        build_dir=tmp_path,
+        extra_env=entorno or {},
+    )
 
 
 def con_signo(azar: random.Random, bits: int) -> int:

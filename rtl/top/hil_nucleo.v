@@ -6,8 +6,14 @@
 //   1. reinicia el núcleo, que borra su memoria de retardo (empieza como el modelo);
 //   2. procesa N_CAPTURA muestras a velocidad real (48 828 Hz) con el plate y un
 //      estímulo fijo, y guarda dac_l y dac_r en BSRAM;
-//   3. vuelca cada muestra como "M <dac_l><dac_r>\r\n" (12 dígitos), después
+//   3. vuelca cada muestra como "M 00<dac_l><dac_r>\r\n" (14 dígitos), después
 //      "K <ciclos>\r\n" (máximo de ciclos por muestra) y "Z <crc>\r\n".
+//
+// Con 'T' y dos bytes más (K0, big-endian) graba la traza del núcleo en vez de
+// las muestras: {pc[6:0], ACC[47:1]} cada vez que cambia el ACC, desde la
+// muestra K0 y hasta llenar la captura. Localiza en el silicio la primera
+// instrucción que falla (fails.md, F-15). "K" lleva entonces, además, las
+// entradas grabadas: {entradas, ciclos}.
 //
 // El CRC es el CRC-32 de zlib sobre los bytes de las muestras (dac_l y dac_r en
 // big-endian, 3 bytes cada uno). scripts/hil_nucleo.py lo comprueba y compara
@@ -68,9 +74,12 @@ module hil_nucleo #(
     );
 
     // ── Estado ────────────────────────────────────────────────────────────
-    localparam [2:0] H_ESPERA = 3'd0, H_RESET = 3'd1, H_BORRA = 3'd2, H_CAPTURA = 3'd3,
-                     H_LEER = 3'd4, H_ENVIAR = 3'd5, H_CICLOS = 3'd6, H_CRC = 3'd7;
-    reg [2:0]    estado;
+    localparam [3:0] H_ESPERA = 4'd0, H_RESET = 4'd1, H_BORRA = 4'd2, H_CAPTURA = 4'd3,
+                     H_LEER = 4'd4, H_ENVIAR = 4'd5, H_CICLOS = 4'd6, H_CRC = 4'd7,
+                     H_K0_ALTO = 4'd8, H_K0_BAJO = 4'd9;
+    reg [3:0]    estado;
+    reg          traza;      // 1: graba la traza del núcleo en vez de las muestras
+    reg [15:0]   k0;
     reg [AK-1:0] k;
     reg [2:0]    espera;
 
@@ -98,15 +107,46 @@ module hil_nucleo #(
         .cfg_lfo_tipos(lfo_tipos), .cfg_lfo_excursiones(lfo_excursiones),
         .tick(tick), .adc_l(adc_l), .adc_r(adc_r),
         .pots({6{24'sh400000}}), .sw(24'sd0),
-        .dac_l(dac_l), .dac_r(dac_r), .fin(fin), .ocupado(ocupado), .ciclos(ciclos)
+        .dac_l(dac_l), .dac_r(dac_r), .fin(fin), .ocupado(ocupado), .ciclos(ciclos),
+        .traza_pc(traza_pc), .traza_acc(traza_acc)
     );
+    /* verilator lint_off UNUSEDSIGNAL */   // la traza guarda 7 bit de pc (≤ 128 instrucciones)
+    wire [11:0]        traza_pc;
+    /* verilator lint_on UNUSEDSIGNAL */
+    wire signed [47:0] traza_acc;
 
     // ── Captura ───────────────────────────────────────────────────────────
-    wire [47:0] capturada;
+    // La traza pasa por registros antes de escribir: la comparación de 48 bit
+    // no alarga ningún camino (fails.md, F-15). acc_b y pc_b van dos ciclos
+    // detrás del núcleo; `cambio` dice si acc_b es distinto del anterior.
+    reg  signed [47:0] acc_a, acc_b;
+    reg  [6:0]         pc_a, pc_b;
+    reg                cambio;
+    reg  [AK:0]        entradas;     // de la traza; entradas[AK] = captura llena
+    reg                desde_k0;
+    reg                cap_we;
+    reg  [AK-1:0]      cap_dir;
+    reg  [53:0]        cap_dato;
+    wire               grabar_traza = traza && desde_k0 && cambio && !entradas[AK];
+    always @(posedge clk_100) begin
+        acc_a    <= traza_acc;
+        pc_a     <= traza_pc[6:0];
+        acc_b    <= acc_a;
+        pc_b     <= pc_a;
+        cambio   <= (acc_a != acc_b);
+        desde_k0 <= (k32 >= {16'd0, k0});
+        cap_we   <= (estado == H_CAPTURA) && (traza ? grabar_traza : fin);
+        cap_dir  <= traza ? entradas[AK-1:0] : k;
+        cap_dato <= traza ? {pc_b, acc_b[47:1]} : {6'd0, dac_l, dac_r};
+        if (estado == H_BORRA) entradas <= {(AK+1){1'b0}};
+        else if (estado == H_CAPTURA && grabar_traza) entradas <= entradas + 1'b1;
+    end
+
+    wire [53:0] capturada;
     // bsram_pipe: con bsram_dp (bypass), la lectura de la captura fallaba por
     // encima de 100 MHz y corrompía el volcado (fails.md, F-11). Lee en 3 ciclos.
-    bsram_pipe #(.PALABRAS(N_CAPTURA), .ANCHO(48)) u_captura (
-        .clk(clk_100), .we(estado == H_CAPTURA && fin), .dir_w(k), .dato_w({dac_l, dac_r}),
+    bsram_pipe #(.PALABRAS(N_CAPTURA), .ANCHO(54)) u_captura (
+        .clk(clk_100), .we(cap_we), .dir_w(cap_dir), .dato_w(cap_dato),
         .dir_r(k), .dato_r(capturada)
     );
 
@@ -118,9 +158,9 @@ module hil_nucleo #(
     );
     reg        inicio;
     reg [7:0]  etiqueta;
-    reg [47:0] valor;
+    reg [55:0] valor;
     wire       ocupado_tx;
-    linea_hex #(.DIGITOS(12), .DIVISOR(DIVISOR)) u_linea (
+    linea_hex #(.DIGITOS(14), .DIVISOR(DIVISOR)) u_linea (
         .clk(clk_100), .rst(rst), .inicio(inicio), .etiqueta(etiqueta),
         .valor(valor), .ocupado(ocupado_tx), .tx(uart_tx)
     );
@@ -128,7 +168,7 @@ module hil_nucleo #(
     // ── CRC-32 de zlib, bit a bit (LSB primero en cada byte) ─────────────
     reg [31:0] crc;
     reg [5:0]  bit_crc;      // 0..47; 48 = muestra terminada
-    reg [47:0] muestra;
+    reg [53:0] muestra;
     wire [2:0] byte_crc = 3'(bit_crc >> 3);
     wire       dato_bit = muestra[6'd40 - {byte_crc, 3'b000} + {3'b000, bit_crc[2:0]}];
     wire       realim   = crc[0] ^ dato_bit;
@@ -138,11 +178,17 @@ module hil_nucleo #(
     always @(posedge clk_100) begin
         inicio <= 1'b0;
         if (rst || !cargado) begin
-            estado <= H_ESPERA; k <= {AK{1'b0}}; espera <= 3'd0;
+            estado <= H_ESPERA; k <= {AK{1'b0}}; espera <= 3'd0; traza <= 1'b0;
         end else begin
             case (estado)
             H_ESPERA: if (recibido_ok && recibido == "C") begin
-                estado <= H_RESET; espera <= 3'd3;
+                traza <= 1'b0; estado <= H_RESET; espera <= 3'd3;
+            end else if (recibido_ok && recibido == "T") begin
+                traza <= 1'b1; estado <= H_K0_ALTO;
+            end
+            H_K0_ALTO: if (recibido_ok) begin k0[15:8] <= recibido; estado <= H_K0_BAJO; end
+            H_K0_BAJO: if (recibido_ok) begin
+                k0[7:0] <= recibido; estado <= H_RESET; espera <= 3'd3;
             end
             H_RESET: if (espera != 3'd0) espera <= espera - 1'b1; else estado <= H_BORRA;
             H_BORRA: if (!ocupado) begin
@@ -164,17 +210,17 @@ module hil_nucleo #(
                     crc <= (crc >> 1) ^ (realim ? 32'hEDB88320 : 32'd0);
                     bit_crc <= bit_crc + 1'b1;
                 end else if (!ocupado_tx && !inicio) begin
-                    etiqueta <= "M"; valor <= muestra; inicio <= 1'b1;
+                    etiqueta <= "M"; valor <= {2'b00, muestra}; inicio <= 1'b1;
                     if (k == {AK{1'b1}}) estado <= H_CICLOS;
                     else begin k <= k + 1'b1; estado <= H_LEER; espera <= 3'd3; end
                 end
             end
             H_CICLOS: if (!ocupado_tx && !inicio) begin
-                etiqueta <= "K"; valor <= {32'd0, ciclos_max}; inicio <= 1'b1;
+                etiqueta <= "K"; valor <= {24'd0, 16'(entradas), ciclos_max}; inicio <= 1'b1;
                 estado <= H_CRC;
             end
             H_CRC: if (!ocupado_tx && !inicio) begin
-                etiqueta <= "Z"; valor <= {16'd0, ~crc}; inicio <= 1'b1;
+                etiqueta <= "Z"; valor <= {24'd0, ~crc}; inicio <= 1'b1;
                 k <= {AK{1'b0}}; estado <= H_ESPERA;
             end
             default: estado <= H_ESPERA;

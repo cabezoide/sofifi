@@ -55,7 +55,11 @@ Vacío en la versión 0.0. Las reglas se escriben antes que el código.
   queda para pruebas.
 - **apicula 0.32 no empaqueta si ninguna BSRAM declara `INIT_RAM_xx`** (F-14):
   `rtl/primitivas/bsram_bloque.v` las declara a cero.
-- **El timing se mide en la placa** (ADR 0011): `scripts/margen_reloj.py`.
+- **El timing se mide en la placa** (ADR 0011): `scripts/margen_reloj.py`. nextpnr
+  es optimista en un factor de 1,45 a 1,5. Si falla, `--traza` dice qué instrucción.
+- **Memorias de medio chip, segmentadas** (F-15): `bsram_pipe` con `GRUPO`. Para
+  repartir una señal en copias, `rtl/primitivas/registro_copia.v`: Yosys fusiona
+  registros iguales aunque lleven `keep` en el `reg`.
 - **Reset de arranque en cada dominio de reloj.** Verilator arranca los registros a
   0, y con el PLL simulado `bloqueado` vale 1 desde el principio: sin un contador de
   arranque, el reset no llega nunca en simulación.

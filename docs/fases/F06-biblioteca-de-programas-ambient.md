@@ -14,6 +14,12 @@ Investigación §1.1 (catálogo de algoritmos) y §4.3 (lista de efectos).
 
 El núcleo segmentado gasta unos 13 ciclos por instrucción: el shimmer usa 1 601 de 2 048 (MED-11). Los programas de esta fase no caben así. Primer PR de la fase: **leer la instrucción siguiente mientras se ejecuta la actual** y solapar la escritura del ACC con esa lectura, con el margen de reloj medido en la placa por encima del 20 % (ADR 0011, MED-14).
 
+**Estado (2026-10-07):** hecho en el primer PR de la fase, con una diferencia.
+
+- Lectura adelantada: sí. Margen en la placa: **al menos un 20 %** (120 MHz, 4 de 4; MED-14).
+- Para llegar al margen hubo que segmentar la memoria de retardo y el banco de registros (fails.md, F-15). Eso gasta parte de lo que ahorra la lectura adelantada: el shimmer baja de 1 601 a 1 514 ciclos (MED-11), unos 14 ciclos por instrucción.
+- La escritura del ACC **no** se solapa todavía: cada instrucción espera a su resultado. Caben unas 145 instrucciones por muestra, más que las 128 del FV-1. Si un programa de esta fase no cabe, el siguiente paso es no esperar cuando la instrucción siguiente no depende del resultado (`docs/arquitectura_fpga.md`).
+
 ## Diagnóstico
 
 - **Se reutiliza:** núcleo, ensamblador y el patrón de pruebas de `model/tests/programas_test.py`.

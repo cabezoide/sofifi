@@ -12,8 +12,11 @@ Uso::
     make synth TOP=hil_nucleo
     .venv/bin/python scripts/margen_reloj.py                 # 100 y 114,3 MHz, 3 veces
     .venv/bin/python scripts/margen_reloj.py --divisores 8 7 6 --repeticiones 1
+    .venv/bin/python scripts/margen_reloj.py --traza   # si falla, qué instrucción
 
-Divisor del PLL → frecuencia: 8 → 100 MHz, 7 → 114,3 MHz, 6 → 133,3 MHz.
+Divisor del PLL → frecuencia, con el VCO de 800 MHz (``--mdiv 16``): 8 → 100 MHz,
+7 → 114,3 MHz, 6 → 133,3 MHz. Para puntos intermedios se cambia también el
+multiplicador del VCO: con ``--mdiv 20`` (1 000 MHz), 9 → 111,1 MHz, 8 → 125 MHz.
 Al terminar carga prueba_pll, que envía poco: el puente del BL616 se cuelga si
 se reprograma con la FPGA enviando a caudal alto (F-02).
 """
@@ -24,24 +27,23 @@ import argparse
 import json
 import subprocess
 import sys
-import time
 from pathlib import Path
 
-import serial
-from hil_nucleo import N_CAPTURA, comprobar
+from hil_nucleo import N_CAPTURA, capturar, comprobar, comprobar_traza
 
 RAIZ = Path(__file__).resolve().parent.parent
 BIN = RAIZ / ".venv" / "bin"
-VCO_MHZ = 800
+FCLKIN_MHZ = 50
 
 
-def bitstream_con_divisor(base: str, divisor: int) -> Path:
+def bitstream_con_divisor(base: str, divisor: int, mdiv: int = 16) -> Path:
     datos = json.loads((RAIZ / "build" / f"{base}.pnr.json").read_text(encoding="utf-8"))
     for modulo in datos["modules"].values():
         for celda in modulo["cells"].values():
             if celda["type"] == "PLLA":
                 celda["parameters"]["ODIV0_SEL"] = format(divisor, "032b")
-    salida = RAIZ / "build" / "exp" / f"{base}_odiv{divisor}"
+                celda["parameters"]["MDIV_SEL"] = format(mdiv, "032b")
+    salida = RAIZ / "build" / "exp" / f"{base}_mdiv{mdiv}_odiv{divisor}"
     salida.parent.mkdir(parents=True, exist_ok=True)
     salida.with_suffix(".pnr.json").write_text(json.dumps(datos), encoding="utf-8")
     subprocess.run(
@@ -69,43 +71,36 @@ def cargar(fs: Path) -> None:
     )
 
 
-def capturar(puerto: str, baudios: int) -> list[str]:
-    lineas: list[str] = []
-    with serial.Serial(puerto, baudios, timeout=0.5) as s:
-        s.reset_input_buffer()
-        fin = time.monotonic() + 0.3
-        while time.monotonic() < fin:
-            s.read(4096)
-        s.write(b"C")
-        fin = time.monotonic() + 40
-        while time.monotonic() < fin:
-            crudo = s.readline()
-            if crudo:
-                lineas.append(crudo.decode("ascii", "replace").strip())
-                if lineas[-1].startswith("Z "):
-                    break
-    return lineas
-
-
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--base", default="hil_nucleo", help="top ya rutado en build/")
     ap.add_argument("--divisores", type=int, nargs="+", default=[8, 7])
+    ap.add_argument("--mdiv", type=int, default=16, help="VCO = 50 MHz × MDIV")
     ap.add_argument("--repeticiones", type=int, default=3)
     ap.add_argument("--puerto", default="/dev/ttyUSB1")
+    ap.add_argument(
+        "--traza", action="store_true", help="si falla, localiza la primera instrucción mal"
+    )
     args = ap.parse_args(argv)
     todo_bien_a_100 = True
     try:
         for divisor in args.divisores:
-            mhz = VCO_MHZ / divisor
-            fs = bitstream_con_divisor(args.base, divisor)
+            mhz = FCLKIN_MHZ * args.mdiv / divisor
+            fs = bitstream_con_divisor(args.base, divisor, args.mdiv)
             correctas = 0
             for _ in range(args.repeticiones):
                 cargar(fs)
-                r = comprobar(capturar(args.puerto, round(115_200 * mhz / 100)), N_CAPTURA)
+                baudios = round(115_200 * mhz / 100)
+                r = comprobar(capturar(args.puerto, 40, baudios=baudios), N_CAPTURA)
                 correctas += r.correcto and r.muestras == N_CAPTURA
+                if args.traza and r.primera_muestra is not None:
+                    k0 = max(0, r.primera_muestra - 1)
+                    orden = b"T" + k0.to_bytes(2, "big")
+                    lineas = capturar(args.puerto, 40, orden, baudios)
+                    print(f"  {r.primera_diferencia}")
+                    print(f"  traza desde la muestra {k0}: {comprobar_traza(lineas, k0)}")
             print(f"{mhz:6.1f} MHz: {correctas} de {args.repeticiones} capturas iguales al modelo")
-            if divisor == 8 and correctas != args.repeticiones:
+            if mhz == 100 and correctas != args.repeticiones:
                 todo_bien_a_100 = False
     finally:
         cargar(RAIZ / "build" / "prueba_pll.fs")

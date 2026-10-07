@@ -61,8 +61,18 @@ class Nucleo:
         self._codigo = programa.instrucciones
 
     def procesar(
-        self, entrada_l: int, entrada_r: int, pots: Sequence[int] = (), sw: int = 0
+        self,
+        entrada_l: int,
+        entrada_r: int,
+        pots: Sequence[int] = (),
+        sw: int = 0,
+        traza: list[tuple[int, int]] | None = None,
     ) -> tuple[int, int]:
+        """Procesa una muestra. Con `traza`, añade (pc siguiente, ACC) tras cada instrucción.
+
+        La traza sirve para localizar en el silicio la primera instrucción que
+        falla (scripts/hil_nucleo.py --traza; fails.md, F-15).
+        """
         regs = self.regs
         regs[ADCL] = entrada_l
         regs[ADCR] = entrada_r
@@ -80,6 +90,8 @@ class Nucleo:
             ins = codigo[pc]
             salto = MANEJADORES[ins.op](self, ins)
             pc += 1 + salto
+            if traza is not None:
+                traza.append((pc, self.acc))
         self.memoria.avanzar()
         self.primera = False
         return regs[DACL], regs[DACR]

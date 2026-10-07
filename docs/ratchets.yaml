@@ -93,7 +93,7 @@ ratchets:
   - id: RAT-11
     nombre: LUT4 del top nucleo_placa (el núcleo completo)
     medida: recursos:nucleo_placa:LUT4
-    liston: 7810
+    liston: 10992
     direccion: menor_mejor
     aviso_holgura: 0
     motivo: >-
@@ -101,15 +101,27 @@ ratchets:
       partidas mayores son el siguiente valor del ACC y la lectura del banco
       de registros (ADR 0010).
       2026-10-07, Fase 05: baja a 7 810 con la segmentación del núcleo (F-11).
+      2026-10-07, Fase 06 (requisito previo): sube por la segmentación para el
+      silicio (F-15): unos 3 100 flip-flops nuevos (copias de dirección por grupo
+      y por bloque de la memoria de retardo, salidas de bloque registradas,
+      banco de registros en dos niveles). nextpnr pone una LUT de paso delante
+      de muchos de ellos. La lógica real solo sube un 4 % (Yosys: 7 595 → 7 902).
+      A cambio, el margen medido en la placa pasa del 6 % a más del 20 %.
   - id: RAT-12
     nombre: ALU del top nucleo_placa
     medida: recursos:nucleo_placa:ALU
-    liston: 1080
+    liston: 1086
     direccion: menor_mejor
     aviso_holgura: 0
     motivo: >-
       2026-10-07, cierre de la Fase 04.
       2026-10-07, Fase 05: baja a 1 080 con la ALU en dos etapas.
+      2026-10-07, Fase 06 (requisito previo): sube por la segmentación para el
+      silicio (F-15): unos 3 100 flip-flops nuevos (copias de dirección por grupo
+      y por bloque de la memoria de retardo, salidas de bloque registradas,
+      banco de registros en dos niveles). nextpnr pone una LUT de paso delante
+      de muchos de ellos. La lógica real solo sube un 4 % (Yosys: 7 595 → 7 902).
+      A cambio, el margen medido en la placa pasa del 6 % a más del 20 %.
   - id: RAT-13
     nombre: BSRAM del top nucleo_placa
     medida: recursos:nucleo_placa:BSRAM
@@ -139,16 +151,28 @@ ratchets:
   - id: RAT-16
     nombre: LUT4 del top hil_nucleo
     medida: recursos:hil_nucleo:LUT4
-    liston: 8204
+    liston: 11490
     direccion: menor_mejor
     aviso_holgura: 0
     motivo: >-
       2026-10-07, cierre de la Fase 05: listón donde se está (ADR 0010).
+      2026-10-07, Fase 06 (requisito previo): sube por la segmentación para el
+      silicio (F-15): unos 3 100 flip-flops nuevos (copias de dirección por grupo
+      y por bloque de la memoria de retardo, salidas de bloque registradas,
+      banco de registros en dos niveles). nextpnr pone una LUT de paso delante
+      de muchos de ellos. La lógica real solo sube un 4 % (Yosys: 7 595 → 7 902).
+      A cambio, el margen medido en la placa pasa del 6 % a más del 20 %.
   - id: RAT-17
     nombre: ALU del top hil_nucleo
     medida: recursos:hil_nucleo:ALU
-    liston: 1118
+    liston: 1192
     direccion: menor_mejor
     aviso_holgura: 0
     motivo: >-
       2026-10-07, cierre de la Fase 05: listón donde se está (ADR 0010).
+      2026-10-07, Fase 06 (requisito previo): sube por la segmentación para el
+      silicio (F-15): unos 3 100 flip-flops nuevos (copias de dirección por grupo
+      y por bloque de la memoria de retardo, salidas de bloque registradas,
+      banco de registros en dos niveles). nextpnr pone una LUT de paso delante
+      de muchos de ellos. La lógica real solo sube un 4 % (Yosys: 7 595 → 7 902).
+      A cambio, el margen medido en la placa pasa del 6 % a más del 20 %.

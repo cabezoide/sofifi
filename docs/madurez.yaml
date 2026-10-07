@@ -55,5 +55,5 @@ capacidades:
     nivel: 5
     evidencia: sim/nucleo/nucleo_test.py
     scope: "plate, shimmer y freeze contra el modelo en la compuerta dura; cada bloque contra su función del modelo; el plate, igual al modelo en la placa a 100 MHz (MED-09 a MED-14)"
-    no_cubre: "shimmer y freeze en la placa; el margen de reloj real es de al menos un 6 % (MED-14), por debajo del 20 % del ADR 0011"
-    brecha: "antes de la Fase 06: secuenciador con lectura y ejecución solapadas, y margen de reloj de más del 20 %"
+    no_cubre: "shimmer y freeze en la placa; el margen de reloj (al menos un 20 %, MED-14) se midió solo con el plate y a temperatura ambiente"
+    brecha: "no esperar al resultado cuando la instrucción siguiente no depende de él (unos 14 ciclos por instrucción, MED-11); capturar shimmer y freeze en la placa"
