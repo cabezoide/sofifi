@@ -1,0 +1,20 @@
+; SPDX-License-Identifier: MIT
+;
+; comun/tiempo.sasm — tiempo de eco variable con un LFO senoidal parado (como
+; cinta.sasm). La ISA no tiene un puntero de lectura variable: un LFO SIN que
+; está en un cuarto de vuelta tiene forma 1, y el retardo de su CHO es
+; base + E·(1 + depth). Este bloque mueve depth hacia 2·pot − 1 con un
+; deslizamiento de ~40 ms.
+;
+; Quien lo incluye:
+;   1. define los alias `trate` y `tdepth` (registros lfoN_rate y lfoN_depth),
+;      `tpot` (el potenciómetro) y el registro `tiempo`;
+;   2. pone `wrax trate, 0` como PRIMERA instrucción del programa (ACC = 0);
+;   3. en la inicialización, pone `sof 0, 0.5` y `wrax trate, 0`: un cuarto de vuelta;
+;   4. incluye este bloque en los controles. Deja ACC = 0.
+
+        sof   0, -1.0                   ; objetivo = 2·tpot − 1, en [−1, 1)
+        rdax  tpot, 1.999
+        rdfx  tiempo, 0.0005
+        wrax  tiempo, 1.0
+        wrax  tdepth, 0

@@ -34,5 +34,10 @@
 | `demo_infinite.ogg` | `infinite.sasm` | 0,10 (vaciado/release) | 0,30 | 0,45 | | |
 | `demo_reverb_inversa.ogg` | `reverb_inversa.sasm` | 0,80 | 0,30 | 0,55 | 0,60 (duración/length) | |
 | `demo_spring.ogg` | `spring.sasm` | 0,60 | 0,40 | 0,40 | | |
+| `demo_delay.ogg` | `delay.sasm` | 0,55 (tiempo/time) | 0,45 (realimentación/feedback) | 0,40 | 0,70 (tono/tone) | |
+| `demo_pingpong.ogg` | `pingpong.sasm` | 0,70 (tiempo/time) | 0,50 (realimentación/feedback) | 0,45 | | |
+| `demo_lluvia.ogg` | `lluvia.sasm` | 0,70 (difusión/diffusion) | 0,40 (realimentación/feedback) | 0,50 | | |
+| `demo_bbd.ogg` | `bbd.sasm` | 0,60 (tiempo/time) | 0,60 (realimentación/feedback) | 0,45 | 0,50 (modulación) | |
+| `demo_ducking.ogg` | `ducking.sasm` | 0,45 (tiempo/time) | 0,50 (realimentación/feedback) | 0,50 | 0,80 (ducking) | |
 
 Ogg Vorbis a 48 828 Hz (ADR 0005); el render es bit-exact en 24 bit. Ogg Vorbis at 48,828 Hz; the render is bit-exact at 24 bits. Ogg Vorbis，48,828 Hz；渲染在 24 位下逐位精确。

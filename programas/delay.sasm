@@ -1,0 +1,65 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: delay
+; resumen: Eco digital limpio de 20 a 690 ms, con tono en la realimentación.
+;
+; delay.sasm — Un retardo con realimentación y un paso bajo suave en el bucle.
+; El tiempo sale de un LFO parado (comun/tiempo.sasm). Diseño propio.
+;
+; pot0 = tiempo           (0 → 20 ms · 1 → 690 ms)
+; pot1 = realimentación   (0 → un eco · 1 → 0,95)
+; pot2 = mezcla           (0 → seco · 1 → solo ecos)
+; pot3 = tono             (0 → oscuro · 1 → limpio)
+
+equ  et    16384
+equ  base  977
+
+equ  trate    lfo0_rate
+equ  tdepth   lfo0_depth
+equ  tpot     pot0
+equ  kwet     reg0
+equ  kdry     reg1
+equ  tiempo   reg2
+equ  ktono    reg3
+equ  lp       reg4
+equ  eco      reg5
+equ  ecow     reg6
+
+mem  dl    base + 2*et + 3
+
+lfo  0  sin  et
+
+        wrax  trate, 0                  ; ACC vale 0 al empezar la muestra
+        skp   run, inicio
+        sof   0, 0.5                    ; un cuarto de vuelta: forma 1
+        wrax  trate, 0
+inicio:
+include  comun/mezcla.sasm
+include  comun/tiempo.sasm
+        rdax  pot3, 0.8
+        sof   1.0, 0.19999
+        wrax  ktono, 0
+; ── eco ──────────────────────────────────────────────────────────────
+        cho   dl + base, 1.0, lfo0
+        rdax  lp, -1.0                  ; lp = lp + ktono·(x − lp)
+        mulx  ktono
+        rdax  lp, 1.0
+        wrax  lp, 1.0
+        wrax  eco, 1.0
+        mulx  pot1
+        sof   0.95, 0
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wra   dl, 0
+; ── salida ───────────────────────────────────────────────────────────
+        rdax  eco, 1.0
+        mulx  kwet
+        wrax  ecow, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  ecow, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  ecow, 1.0
+        wrax  dacr, 0

@@ -222,15 +222,34 @@ HUELLAS = {
     "infinite": "cab794fe727bc8ec",
     "reverb_inversa": "f6a907eefc2b7311",
     "spring": "c20eeffbf37f0c0f",
+    "bbd": "1aa104b5c924569c",
+    "delay": "690cbdebb0af818d",
+    "ducking": "5d88112b3b9612ee",
+    "lluvia": "789293f5934ee1b4",
+    "pingpong": "628f30ffda3cd500",
 }
 
 
-SEGUNDOS_HUELLA = {"cinta": 0.6, "reverse": 0.4, "escalera": 0.6, "blackhole": 0.3}
+SEGUNDOS_HUELLA = {
+    "cinta": 0.6,
+    "reverse": 0.4,
+    "escalera": 0.6,
+    "blackhole": 0.3,
+    "delay": 0.5,
+    "pingpong": 0.5,
+    "bbd": 0.3,
+    "ducking": 0.5,
+}
 CON_TONO = {"lofi", "swell", "tremolo", "gated", "reverb_inversa"}
 
 
 def test_todo_programa_tiene_huella() -> None:
     assert sorted(HUELLAS) == PROGRAMAS_TODOS
+
+
+def test_las_huellas_son_distintas() -> None:
+    """Dos huellas iguales suelen ser solo señal seca: el estímulo no llegó al efecto."""
+    assert len(set(HUELLAS.values())) == len(HUELLAS)
 
 
 @pytest.mark.parametrize("nombre", sorted(HUELLAS))
