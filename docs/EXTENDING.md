@@ -44,6 +44,7 @@ Es una decisión estructural: `model/sofifi/domain/isa.py` es sentinela, así qu
    donde se está (ADR 0010).
 5. Si fija pines, relojes o el mapa de memoria, va con su ADR: esos ficheros son
    sentinelas (`docs/adr/sentinelas.txt`).
+6. Se regenera su esquemático con `make esquematicos` (ADR 0012).
 
 ## Una compuerta
 

@@ -18,6 +18,7 @@ por capa y el detalle que un agente necesita para trabajar sin releer todo.
 | Primitivas | `make prog TOP=prueba_dsp` y `.venv/bin/python scripts/verificar_primitivas.py dsp` (también `bsram` y `pll`) |
 | Optimización | `make optimizacion` (síntesis de todos los tops, ~3 min; release, ADR 0010) |
 | Release | `make release-check` (síntesis de los tops con informe de recursos) |
+| Esquemáticos | `make esquematicos` (PDF por módulo RTL; `scripts/esquematicos.py --comprobar`) |
 
 ## Reglas para el agente
 
@@ -99,3 +100,4 @@ Ver `docs/EXTENDING.md`.
 | ADR 0009 | Una instrucción cabe en tres columnas de BSRAM (ISA de 54 bit) |
 | ADR 0010 | Cada PR pasa una segunda vuelta de optimización |
 | ADR 0011 | El timing se mide en la placa, no se cree a nextpnr |
+| ADR 0012 | Los esquemáticos se generan del RTL, no se dibujan |

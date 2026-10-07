@@ -34,6 +34,7 @@ JOBS=(
   "sim:dura"
   "ratchets:dura"
   "shell-lint:blanda"
+  "esquematicos:blanda"
   "optimizacion:release"
 )
 
@@ -102,6 +103,9 @@ run_job() {
       ;;
     optimizacion)
       (ulimit -u "$TOPE_PROCESOS"; "$PY" scripts/check_optimizacion.py)
+      ;;
+    esquematicos)   # ADR 0012: blanda, porque regenerar pide Node y chrome-headless-shell
+      "$PY" scripts/esquematicos.py --comprobar
       ;;
     shell-lint)
       if ! command -v shellcheck >/dev/null; then

@@ -15,3 +15,4 @@ Se lee antes de proponer un cambio estructural. Un ADR no se reescribe: se le a�
 | [0009](0009-una-instruccion-cabe-en-tres-columnas-de-bsram.md) | Una instrucción cabe en tres columnas de BSRAM (ISA de 54 bit, 16 instrucciones) | Aceptado |
 | [0010](0010-cada-pr-pasa-una-segunda-vuelta-de-optimizacion.md) | Cada PR pasa una segunda vuelta de optimización (timing, listones de recursos y pistas) | Aceptado |
 | [0011](0011-el-timing-se-mide-en-la-placa.md) | El timing se mide en la placa, no se cree a nextpnr (margen con el mismo rutado) | Aceptado |
+| [0012](0012-los-esquematicos-se-generan-del-rtl.md) | Los esquemáticos se generan del RTL, no se dibujan (Yosys + netlistsvg, PDF) | Aceptado |

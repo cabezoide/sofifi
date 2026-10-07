@@ -26,6 +26,9 @@ out/
 !model/tests/data/*.wav
 !demo_examples/*.wav
 
+# Herramientas de Node (herramientas/*/package-lock.json sí se versiona)
+node_modules/
+
 # Entorno local
 .env
 .env.*
