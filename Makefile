@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Puntos de entrada del proyecto. La compuerta es scripts/ci_local.sh (ADR 0001).
-.PHONY: help install hooks ci ci-dura test sim docs synth optimizacion prog uart release-check
+.PHONY: help install hooks ci ci-dura test sim docs synth optimizacion prog uart release-check esquematicos
 
 VENV := .venv
 PY := $(VENV)/bin/python
@@ -18,6 +18,7 @@ help:
 	@echo "make prog           carga build/TOP.fs en la SRAM de la placa"
 	@echo "make uart           lee la UART de la placa y exige \"SOFIFI\""
 	@echo "make release-check  compuerta de release: síntesis de los tops"
+	@echo "make esquematicos   regenera schematics/ (PDF de cada módulo RTL, ADR 0012)"
 
 install:
 	python3 -m venv $(VENV)
@@ -61,3 +62,7 @@ uart:
 # cada commit del modelo (Fase 02).
 release-check:
 	scripts/ci_local.sh optimizacion ratchets
+
+esquematicos:
+	cd herramientas/esquematicos && npm install --no-audit --no-fund
+	$(PY) scripts/esquematicos.py

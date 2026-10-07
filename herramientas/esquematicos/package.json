@@ -1,0 +1,9 @@
+{
+  "name": "sofifi-esquematicos",
+  "private": true,
+  "description": "Dibuja los esquemáticos del RTL (netlistsvg, MIT). Lo usa scripts/esquematicos.py.",
+  "license": "MIT",
+  "dependencies": {
+    "netlistsvg": "1.0.2"
+  }
+}
