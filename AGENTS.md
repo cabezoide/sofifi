@@ -33,6 +33,7 @@ el oráculo del RTL (ADR 0003). Todo el audio vive en BSRAM, porque no hay SDRAM
 | `model/sofifi/` | modelo de referencia, por capas (ver `model/AGENTS.md`) |
 | `demo_examples/` | demos en Ogg Vorbis (guitarra sintética + una por programa); se regeneran con `scripts/generar_demos.py` |
 | `programas/` | programas del núcleo en ensamblador (`.sasm`), uno por efecto. Los bloques comunes van en `programas/comun/` y entran con `include` |
+| `presets/banco.toml` | banco de presets: el mismo programa con otros mandos y un nombre (`sofifi presets`) |
 | `docs/programas.md` | catálogo de programas, generado con `sofifi catalogo` |
 | `schematics/` | un esquemático PDF por módulo RTL, generado con `make esquematicos` (ADR 0012) |
 | `rtl/` | Verilog sintetizable (ver `rtl/AGENTS.md`) |

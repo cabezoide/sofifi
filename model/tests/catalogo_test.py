@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 from sofifi.adapters.archivos import ensamblar_archivo
+from sofifi.adapters.presets import leer_banco
 from sofifi.domain.ensamblador import ensamblar
 from sofifi.services.catalogo import RUTA_CATALOGO, ficha, markdown
 
@@ -18,8 +19,9 @@ def test_docs_programas_es_el_del_generador() -> None:
         ficha(r.stem, r.read_text(encoding="utf-8"), ensamblar_archivo(r))
         for r in sorted((RAIZ / "programas").glob("*.sasm"))
     ]
+    presets = {p: len(v) for p, v in leer_banco(RAIZ / "presets" / "banco.toml").items()}
     en_repo = (RAIZ / RUTA_CATALOGO).read_text(encoding="utf-8")
-    assert en_repo == markdown(fichas), "regenerar con: .venv/bin/sofifi catalogo"
+    assert en_repo == markdown(fichas, presets), "regenerar con: .venv/bin/sofifi catalogo"
 
 
 def test_la_cabecera_es_obligatoria() -> None:

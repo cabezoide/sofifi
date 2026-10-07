@@ -65,14 +65,17 @@ def _miles(n: int) -> str:
     return f"{n:,}".replace(",", " ")
 
 
-def markdown(fichas: list[Ficha]) -> str:
+def markdown(fichas: list[Ficha], presets: dict[str, int] | None = None) -> str:
+    """Catálogo en Markdown; ``presets`` da cuántos presets tiene cada programa."""
+    presets = presets or {}
     lineas = [
         "<!-- GENERADO por `sofifi catalogo` desde programas/*.sasm. No se edita a mano:",
         "     model/tests/catalogo_test.py lo compara con su generador. -->",
         "",
         "# Programas del núcleo",
         "",
-        f"{len(fichas)} programas. Cada uno es un fichero de texto en `programas/`.",
+        f"{len(fichas)} programas y {sum(presets.values())} presets. Cada programa es un",
+        "fichero de texto en `programas/`; los presets están en `presets/banco.toml`.",
         f"Los ciclos son la cota del RTL, de {_miles(CICLOS_POR_MUESTRA)} por muestra",
         f"(`model/sofifi/domain/coste.py`). La memoria es de {_miles(PALABRAS_MAX)} palabras.",
         "",
@@ -84,13 +87,14 @@ def markdown(fichas: list[Ficha]) -> str:
         lineas += [
             f"## {familia.capitalize()}",
             "",
-            "| Programa | Qué hace | Mandos | Instrucciones | Ciclos | Memoria |",
-            "|---|---|---|---|---|---|",
+            "| Programa | Qué hace | Mandos | Presets | Instrucciones | Ciclos | Memoria |",
+            "|---|---|---|---|---|---|---|",
         ]
         for f in grupo:
             mandos = "<br>".join(f.mandos)
             lineas.append(
-                f"| `{f.nombre}` | {f.resumen} | {mandos} | {f.instrucciones} "
+                f"| `{f.nombre}` | {f.resumen} | {mandos} | {presets.get(f.nombre, 0)} "
+                f"| {f.instrucciones} "
                 f"| {_miles(f.ciclos)} | {_miles(f.palabras)} |"
             )
         lineas.append("")
