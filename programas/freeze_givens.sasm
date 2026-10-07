@@ -2,6 +2,9 @@
 ;
 ; familia: reverb
 ; resumen: Freeze que se mueve sin perder energía: la cola congelada gira entre las ramas.
+; resumen.en: A freeze that moves without losing energy: the frozen tail turns between the branches.
+; resumen.zh-CN: 不损失能量而流动的冻结：被冻结的尾音在两条支路间旋转。
+; resumen.ja: エネルギーを失わずに動くフリーズ：凍った残響が枝の間で回転します。
 ;
 ; freeze_givens.sasm — El freeze (freeze.sasm) con una rotación de Givens entre
 ; las dos señales que cruzan de una rama del tanque a la otra. Una rotación

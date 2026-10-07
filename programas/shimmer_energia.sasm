@@ -2,6 +2,9 @@
 ;
 ; familia: reverb
 ; resumen: Shimmer que se regula solo: cuanta más octava acumula, menos añade.
+; resumen.en: A shimmer that controls itself: the more octave it collects, the less it adds.
+; resumen.zh-CN: 自我调节的 shimmer：积累的八度越多，加入的越少。
+; resumen.ja: 自ら調整する shimmer：オクターブが溜まるほど追加を減らします。
 ;
 ; shimmer_energia.sasm — El shimmer de +12 (shimmer.sasm) con criterio energético
 ; (hoja de ruta de la Fase 03, punto 7). Un seguidor de picos (MAXX) mide la

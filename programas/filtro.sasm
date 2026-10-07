@@ -2,6 +2,9 @@
 ;
 ; familia: filtro
 ; resumen: Filtro paso bajo resonante que sube y baja solo, con un LFO.
+; resumen.en: A resonant low-pass filter that goes up and down by itself, with an LFO.
+; resumen.zh-CN: 由 LFO 驱动、自动升降的谐振低通滤波器。
+; resumen.ja: LFO で自動的に上下する、レゾナンス付きローパスフィルター。
 ;
 ; filtro.sasm — El filtro de comun/svf.sasm, en paso bajo, con la frecuencia
 ; movida por el LFO triangular por software (comun/lfo_triangulo.sasm) entre

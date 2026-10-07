@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+# ruff: noqa: E501 — la tabla de textos de las guías (_GUIA) tiene frases largas
 """Genera ``schematics/``: un esquemático en PDF por cada módulo de ``rtl/``.
 
 Los esquemáticos se generan desde el RTL; no se dibujan a mano. Por módulo:
@@ -157,43 +158,137 @@ h1 {{ margin: 0; font-size: 22px }}
         )
 
 
-def _indice(lista: list[Modulo]) -> str:
+_GUIA = {
+    "es": {
+        "titulo": "# Esquemáticos del RTL",
+        "intro": "Un PDF por cada módulo de `rtl/`, en notación electrónica. Se generan desde el\n"
+        "Verilog con Yosys y netlistsvg; no se dibujan a mano (ADR 0012).",
+        "leer": "## Cómo se leen",
+        "simbolos": [
+            "**Trapecio con `+`, `-`, `*`, `<`, `==`:** sumador, restador, multiplicador o comparador.",
+            "**Trapecio con varias entradas y una selección:** multiplexor (`$mux`, `$pmux`).",
+            "**Rectángulo con un triángulo en el reloj:** flip-flop o registro (`$dff`, `$adff`, `$sdff`).",
+            "**Puertas AND, OR, XOR y NOT:** lógica de un bit, con sus símbolos estándar.",
+            "**Rectángulo con un nombre de módulo:** un submódulo; tiene su propio PDF.",
+            "**Flechas a izquierda y derecha:** puertos de entrada y de salida del módulo.",
+        ],
+        "grandes": "Los módulos grandes (`nucleo`, `tabla_hermite`) tienen cientos de celdas: el\n"
+        "PDF es vectorial y se puede ampliar sin perder detalle.",
+        "regenerar": "## Regenerar",
+        "pasos": [
+            "Instalar netlistsvg una vez: `cd herramientas/esquematicos && npm install`.",
+            "Correr `.venv/bin/python scripts/esquematicos.py`. Solo regenera los que cambiaron.",
+            "`--comprobar` dice qué esquemáticos están desactualizados.",
+        ],
+        "indice": "## Índice",
+        "cabecera": "| PDF | Fuente | sha256 de la fuente | Qué es |",
+        "nota": "",
+    },
+    "en": {
+        "titulo": "# RTL schematics",
+        "intro": "One PDF for each module in `rtl/`, in electronic notation. Yosys and netlistsvg\n"
+        "generate them from the Verilog; nobody draws them by hand (ADR 0012, Spanish).",
+        "leer": "## How to read them",
+        "simbolos": [
+            "**Trapezoid with `+`, `-`, `*`, `<`, `==`:** adder, subtractor, multiplier or comparator.",
+            "**Trapezoid with several inputs and one select:** multiplexer (`$mux`, `$pmux`).",
+            "**Rectangle with a triangle on the clock:** flip-flop or register (`$dff`, `$adff`, `$sdff`).",
+            "**AND, OR, XOR and NOT gates:** one-bit logic, with their standard symbols.",
+            "**Rectangle with a module name:** a submodule; it has its own PDF.",
+            "**Arrows on the left and on the right:** input and output ports of the module.",
+        ],
+        "grandes": "The large modules (`nucleo`, `tabla_hermite`) have hundreds of cells. The PDF is\n"
+        "vector graphics: you can zoom in and keep all the detail.",
+        "regenerar": "## Generate them again",
+        "pasos": [
+            "Install netlistsvg one time: `cd herramientas/esquematicos && npm install`.",
+            "Run `.venv/bin/python scripts/esquematicos.py`. It generates only the changed ones.",
+            "`--comprobar` tells which schematics are out of date.",
+        ],
+        "indice": "## Index",
+        "cabecera": "| PDF | Source | sha256 of the source | What it is |",
+        "nota": "The PDF title blocks and the descriptions in this table come from the Verilog comments, in Spanish.",
+    },
+    "zh-CN": {
+        "titulo": "# RTL 原理图",
+        "intro": "`rtl/` 中每个模块一个 PDF，采用电子电路符号。由 Yosys 和 netlistsvg 从 Verilog\n"
+        "生成，不手工绘制（ADR 0012，西班牙语）。",
+        "leer": "## 阅读方法",
+        "simbolos": [
+            "**带 `+`、`-`、`*`、`<`、`==` 的梯形：** 加法器、减法器、乘法器或比较器。",
+            "**有多个输入和一个选择端的梯形：** 多路选择器（`$mux`、`$pmux`）。",
+            "**时钟端带三角形的矩形：** 触发器或寄存器（`$dff`、`$adff`、`$sdff`）。",
+            "**与门、或门、异或门和非门：** 单比特逻辑，使用标准符号。",
+            "**带模块名的矩形：** 子模块，有自己的 PDF。",
+            "**左右两侧的箭头：** 模块的输入与输出端口。",
+        ],
+        "grandes": "大型模块（`nucleo`、`tabla_hermite`）有数百个单元。PDF 为矢量图，\n"
+        "放大后细节不会丢失。",
+        "regenerar": "## 重新生成",
+        "pasos": [
+            "安装一次 netlistsvg：`cd herramientas/esquematicos && npm install`。",
+            "运行 `.venv/bin/python scripts/esquematicos.py`，只会重新生成有变化的原理图。",
+            "`--comprobar` 列出已过时的原理图。",
+        ],
+        "indice": "## 索引",
+        "cabecera": "| PDF | 源文件 | 源文件 sha256 | 说明 |",
+        "nota": "PDF 的标题栏和本表中的说明来自 Verilog 注释，为西班牙语。",
+    },
+    "ja": {
+        "titulo": "# RTL の回路図",
+        "intro": "`rtl/` の各モジュールに 1 つの PDF を、電子回路の記号で用意しています。Yosys と\n"
+        "netlistsvg が Verilog から生成し、手では描きません（ADR 0012、スペイン語）。",
+        "leer": "## 読み方",
+        "simbolos": [
+            "**`+`、`-`、`*`、`<`、`==` の付いた台形：** 加算器、減算器、乗算器、比較器。",
+            "**複数の入力と 1 つの選択を持つ台形：** マルチプレクサー（`$mux`、`$pmux`）。",
+            "**クロックに三角形の付いた長方形：** フリップフロップまたはレジスター（`$dff`、`$adff`、`$sdff`）。",
+            "**AND、OR、XOR、NOT ゲート：** 1 ビットの論理。標準の記号です。",
+            "**モジュール名の付いた長方形：** サブモジュール。専用の PDF があります。",
+            "**左右の矢印：** モジュールの入力ポートと出力ポート。",
+        ],
+        "grandes": "大きなモジュール（`nucleo`、`tabla_hermite`）には数百のセルがあります。PDF は\n"
+        "ベクター形式なので、拡大しても細部は失われません。",
+        "regenerar": "## 再生成",
+        "pasos": [
+            "netlistsvg を 1 回だけインストールします：`cd herramientas/esquematicos && npm install`。",
+            "`.venv/bin/python scripts/esquematicos.py` を実行します。変更のあったものだけを再生成します。",
+            "`--comprobar` は古くなった回路図を表示します。",
+        ],
+        "indice": "## 索引",
+        "cabecera": "| PDF | ソース | ソースの sha256 | 内容 |",
+        "nota": "PDF の表題欄とこの表の説明は Verilog のコメントから取ったもので、スペイン語です。",
+    },
+}
+
+
+def _indice(lista: list[Modulo], idioma: str = "es") -> str:
+    t = _GUIA[idioma]
     filas = "\n".join(
         f"| `{m.pdf.relative_to(DESTINO)}` | `{m.fuente.relative_to(RAIZ)}` | `{m.sha}` "
         f"| {m.descripcion} |"
         for m in lista
     )
-    return f"""<!-- GENERADO por scripts/esquematicos.py. No se edita a mano. -->
+    simbolos = "\n".join(f"- {x}" for x in t["simbolos"])
+    pasos = "\n".join(f"{k}. {x}" for k, x in enumerate(t["pasos"], start=1))
+    nota = f"\n{t['nota']}\n" if t["nota"] else ""
+    return (
+        "<!-- GENERADO por scripts/esquematicos.py. No se edita a mano. -->\n\n"
+        f"{t['titulo']}\n\n{t['intro']}\n\n{t['leer']}\n\n{simbolos}\n\n{t['grandes']}\n\n"
+        f"{t['regenerar']}\n\n{pasos}\n\n{t['indice']}\n{nota}\n{t['cabecera']}\n|---|---|---|---|\n"
+        f"{filas}\n"
+    )
 
-# Esquemáticos del RTL
 
-Un PDF por cada módulo de `rtl/`, en notación electrónica. Se generan desde el
-Verilog con Yosys y netlistsvg; no se dibujan a mano.
-
-## Cómo se leen
-
-- **Trapecio con `+`, `-`, `*`, `<`, `==`:** sumador, restador, multiplicador o comparador.
-- **Trapecio con varias entradas y una selección:** multiplexor (`$mux`, `$pmux`).
-- **Rectángulo con un triángulo en el reloj:** flip-flop o registro (`$dff`, `$adff`, `$sdff`).
-- **Puertas AND, OR, XOR y NOT:** lógica de un bit, con sus símbolos estándar.
-- **Rectángulo con un nombre de módulo:** un submódulo; tiene su propio PDF.
-- **Flechas a izquierda y derecha:** puertos de entrada y de salida del módulo.
-
-Los módulos grandes (`nucleo`, `tabla_hermite`) tienen cientos de celdas: el
-PDF es vectorial y se puede ampliar sin perder detalle.
-
-## Regenerar
-
-1. Instalar netlistsvg una vez: `cd herramientas/esquematicos && npm install`.
-2. Correr `.venv/bin/python scripts/esquematicos.py`. Solo regenera los que cambiaron.
-3. `--comprobar` dice qué esquemáticos están desactualizados.
-
-## Índice
-
-| PDF | Fuente | sha256 de la fuente | Qué es |
-|---|---|---|---|
-{filas}
-"""
+def _indices(lista: list[Modulo]) -> dict[Path, str]:
+    """Las cuatro guías (ADR 0007); las traducciones llevan el sello del índice español."""
+    es = _indice(lista, "es")
+    sha = hashlib.sha256(es.encode("utf-8")).hexdigest()[:12]
+    res = {INDICE: es}
+    for idioma in ("en", "zh-CN", "ja"):
+        sello = f"<!-- i18n: fuente=schematics/README.md sha={sha} estado=al_dia -->\n"
+        res[DESTINO / f"README.{idioma}.md"] = sello + _indice(lista, idioma)
+    return res
 
 
 def main() -> int:
@@ -223,7 +318,8 @@ def main() -> int:
     for m in viejos:
         _pdf(m, _svg(m))
         print(f"{m.nombre} → {m.pdf.relative_to(RAIZ)}")
-    INDICE.write_text(_indice(lista), encoding="utf-8")
+    for ruta, texto in _indices(lista).items():
+        ruta.write_text(texto, encoding="utf-8")
     return 0
 
 

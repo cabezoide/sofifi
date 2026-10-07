@@ -1,4 +1,4 @@
-# Fase 10 — Interfaz trilingüe en OLED
+# Fase 10 — Interfaz cuatrilingüe en OLED
 
 > Planificada: no está en el control hasta cerrarse.
 >
@@ -6,7 +6,7 @@
 
 ## Objetivo
 
-Mostrar el preset, los parámetros y el estado en una OLED SSD1306 de 128×64, en español, inglés y chino simplificado. Así se cumple la parte de producto del ADR 0007.
+Mostrar el preset, los parámetros y el estado en una OLED SSD1306 de 128×64, en español, inglés, chino simplificado y japonés. Así se cumple la parte de producto del ADR 0007 (actualización de 2026-10-07: se añade el japonés).
 
 ## Origen
 
@@ -23,11 +23,11 @@ ADR 0007 (catálogos espejados y fuente CJK reducida).
 
 ## El hallazgo que decide el diseño
 
-Una fuente CJK completa no cabe en BSRAM: unos 7 000 glifos de 16×16 dan 1,8 Mbit. Pero la interfaz usa solo los caracteres de su catálogo, unos 100. El generador extrae **exactamente esos glifos** a una ROM pequeña. Si alguien añade texto chino nuevo, la compuerta exige regenerar la fuente; si no se regenera, sale rojo. Las fuentes de los glifos deben tener licencia libre: GNU Unifont tiene excepción de fuente y Zpix es OFL; se declaran en `docs/terceros.yaml`.
+Una fuente CJK completa no cabe en BSRAM: unos 7 000 glifos de 16×16 dan 1,8 Mbit. Pero la interfaz usa solo los caracteres de su catálogo: unos 100 en chino, y en japonés unos 100 kanji más los kana (unos 90). El generador extrae **exactamente esos glifos** a una ROM pequeña. Si alguien añade texto chino o japonés nuevo, la compuerta exige regenerar la fuente; si no se regenera, sale rojo. Las fuentes de los glifos deben tener licencia libre: GNU Unifont tiene excepción de fuente y Zpix es OFL; se declaran en `docs/terceros.yaml`.
 
 ## Diseño
 
-- **Catálogos:** `ui/catalogo.yaml`, con claves y textos `es` / `en` / `zh-CN`.
+- **Catálogos:** `ui/catalogo.yaml`, con claves y textos `es` / `en` / `zh-CN` / `ja`.
 - **Generador:** `sofifi fuente`, que genera la ROM de glifos usados (8×16 latín, 16×16 CJK) más el índice.
 - **RTL:**
   - `rtl/ui/ssd1306.v`, con el framebuffer en BSRAM (1 KB);
@@ -44,7 +44,7 @@ Una fuente CJK completa no cabe en BSRAM: unos 7 000 glifos de 16×16 dan 1,8 Mb
 
 ## Criterios de aceptación
 
-- Las tres pantallas de ejemplo se renderizan a PNG en los tres idiomas.
+- Las tres pantallas de ejemplo se renderizan a PNG en los cuatro idiomas.
 - Los contratos están en verde.
 - El RTL coincide con el framebuffer del modelo.
 

@@ -2,6 +2,9 @@
 ;
 ; familia: delay
 ; resumen: Eco de cinta de 0,18 a 0,85 s con wow, flutter y saturación.
+; resumen.en: Tape echo from 0.18 to 0.85 s with wow, flutter and saturation.
+; resumen.zh-CN: 0.18 至 0.85 秒的磁带回声，带 wow、flutter 和饱和。
+; resumen.ja: 0.18〜0.85 秒のテープエコー。ワウ、フラッター、飽和付き。
 ;
 ; cinta.sasm — Eco de cinta de 0,18 a 0,85 s, con wow, flutter y saturación en
 ; el bucle. Diseño propio (docs/investigacion/INVESTIGACION.md §1.1).

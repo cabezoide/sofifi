@@ -2,6 +2,9 @@
 ;
 ; familia: reverb
 ; resumen: Sala gigante con un decay de decenas de segundos.
+; resumen.en: A giant hall with a decay of tens of seconds.
+; resumen.zh-CN: 巨大的空间，衰减长达数十秒。
+; resumen.ja: 数十秒の減衰を持つ巨大なホール。
 ;
 ; blackhole.sasm — La red de 8 retardos del hall (comun/fdn8_*.sasm) con líneas
 ; un 20 % más largas (de 66 a 124 ms), más difusión y más modulación, y un decay

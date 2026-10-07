@@ -42,3 +42,16 @@ Opción 3.
 
 - **Sin control:** la traducción envejece en silencio.
 - **Todo al día obligatorio:** es inarreglable para quien no escribe chino, y acabaría desactivándose.
+
+## Actualización 2026-10-07 (cuatro idiomas, Fase 06)
+
+La persona propietaria pide el proyecto en cuatro idiomas: se añade el **japonés** (`ja`), y el alcance pasa de la portada a la documentación pública y técnica.
+
+**Alcance nuevo** (`TRADUCIDOS` en `scripts/check_i18n.py`):
+- Pública: `README.md`, las infografías de `docs/infografias/` (sus capturas: las españolas en `docs/img/` y las demás en `docs/img/<idioma>/`), `demo_examples/README.md`, `schematics/README.md` y `docs/programas.md`.
+- Técnica: `docs/arquitectura_fpga.md`, `docs/EXTENDING.md`, `BOM.md`, `SBOM.md` y `fails.md`.
+- Siguen solo en español: los ADR, las specs de fase, la investigación y los mapas para agentes (`AGENTS.md`, `CLAUDE.md`).
+
+**Documentos generados** (`docs/programas.md`, `schematics/README.md`): su generador escribe las cuatro versiones a la vez y las sella con la huella de la versión española que acaba de escribir. Los textos de cada programa en otros idiomas salen de su cabecera (`; resumen.en:`, `; resumen.zh-CN:`, `; resumen.ja:`).
+
+**Producto:** la interfaz de la OLED (Fase 10) tendrá cuatro catálogos (`es`, `en`, `zh-CN`, `ja`). El japonés necesita kana y kanji: la fuente de mapa de bits se reduce a los glifos que usa el catálogo, como la del chino.

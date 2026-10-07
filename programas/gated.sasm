@@ -2,6 +2,9 @@
 ;
 ; familia: reverb
 ; resumen: Reverb que se corta de golpe tras cada ataque, como en los años 80.
+; resumen.en: A reverb that stops suddenly after each attack, as in the 1980s.
+; resumen.zh-CN: 每次起音之后突然截止的混响，如 80 年代。
+; resumen.ja: アタックの後に突然止まるリバーブ。80 年代のサウンド。
 ;
 ; gated.sasm — Plate denso con una compuerta en la salida. Cada ataque abre la
 ; compuerta (comun/compuerta.sasm); se cierra cuando pasa el tiempo de pot3,

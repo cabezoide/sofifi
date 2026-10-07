@@ -2,6 +2,9 @@
 ;
 ; familia: reverb
 ; resumen: Cuatro cuerdas afinadas en mi mayor que vibran por simpatía con lo que se toca.
+; resumen.en: Four strings tuned to E major that vibrate in sympathy with the playing.
+; resumen.zh-CN: 四根调成 E 大调的弦，随演奏共鸣振动。
+; resumen.ja: E メジャーに調律した 4 本の弦が、演奏に共鳴して鳴ります。
 ;
 ; resonador.sasm — Banco de cuatro resonadores modales: filtros pasa banda de
 ; Q alto (comun/svf.sasm, escrito cuatro veces) en mi2, si2, mi3 y sol#3. Lo

@@ -2,6 +2,9 @@
 ;
 ; familia: reverb
 ; resumen: Plate de Dattorro con el tanque modulado.
+; resumen.en: Dattorro plate with a modulated tank.
+; resumen.zh-CN: 带调制混响罐的 Dattorro plate。
+; resumen.ja: モジュレーション付きタンクの Dattorro プレート。
 ;
 ; plate.sasm — Plate de Dattorro (J. Dattorro, "Effect Design Part 1", JAES 1997),
 ; reescrito para el núcleo SOFIFI a partir del paper (ver docs/terceros.yaml T-003).

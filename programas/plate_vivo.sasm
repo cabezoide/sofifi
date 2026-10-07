@@ -2,6 +2,9 @@
 ;
 ; familia: reverb
 ; resumen: Plate cuya modulación deriva al azar: la cola nunca se repite igual.
+; resumen.en: A plate whose modulation drifts at random: the tail never repeats.
+; resumen.zh-CN: 调制随机漂移的 plate：尾音从不重复。
+; resumen.ja: モジュレーションがランダムに漂う plate：残響は二度と同じになりません。
 ;
 ; plate_vivo.sasm — El plate (plate.sasm) con la velocidad de sus dos LFO movida
 ; por una señal aleatoria lenta y suave (comun/azar_lento.sasm). Con pot3 = 0

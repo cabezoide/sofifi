@@ -2,6 +2,9 @@
 ;
 ; familia: pitch
 ; resumen: Dos voces desafinadas unos cents, una a cada lado: ensancha el sonido.
+; resumen.en: Two voices detuned by a few cents, one on each side: it widens the sound.
+; resumen.zh-CN: 两个略微失谐（几个音分）的声部，左右各一：使声音更宽。
+; resumen.ja: 数セントずらした 2 声を左右に置き、音を広げます。
 ;
 ; doblador.sasm — Micro-pitch al estilo de los armonizadores de estudio. Dos
 ; pitch shifters de doble tap con ventana corta (1 024 muestras): la voz

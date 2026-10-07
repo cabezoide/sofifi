@@ -2,6 +2,9 @@
 ;
 ; familia: dinámica
 ; resumen: Puerta de ruido: calla el zumbido entre notas y deja pasar lo que se toca.
+; resumen.en: Noise gate: it silences the hum between notes and lets the playing through.
+; resumen.zh-CN: 噪声门：消除音符之间的嗡声，放行演奏的声音。
+; resumen.ja: ノイズゲート：ノートの間のハムを消し、演奏は通します。
 ;
 ; puerta.sasm — Un seguidor de picos (MAXX) abre la puerta cuando la entrada
 ; pasa del umbral. Abre en ~1 ms y cierra en el tiempo de pot1, sin clics.

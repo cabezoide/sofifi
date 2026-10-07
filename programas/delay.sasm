@@ -2,6 +2,9 @@
 ;
 ; familia: delay
 ; resumen: Eco digital limpio de 20 a 690 ms, con tono en la realimentación.
+; resumen.en: Clean digital echo from 20 to 690 ms, with tone in the feedback.
+; resumen.zh-CN: 20 至 690 毫秒的干净数字回声，反馈中可调音色。
+; resumen.ja: 20〜690 ms のクリーンなデジタルエコー。フィードバックにトーン付き。
 ;
 ; delay.sasm — Un retardo con realimentación y un paso bajo suave en el bucle.
 ; El tiempo sale de un LFO parado (comun/tiempo.sasm). Diseño propio.

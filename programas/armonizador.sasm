@@ -2,6 +2,9 @@
 ;
 ; familia: pitch
 ; resumen: Una voz a −12, −7, −5, +5, +7 o +12 semitonos, con realimentación.
+; resumen.en: One voice at −12, −7, −5, +5, +7 or +12 semitones, with feedback.
+; resumen.zh-CN: 一个声部，音程为 −12、−7、−5、+5、+7 或 +12 个半音，带反馈。
+; resumen.ja: −12、−7、−5、+5、+7、+12 半音の 1 声。フィードバック付き。
 ;
 ; armonizador.sasm — Pitch shifter de doble tap con el intervalo elegido por
 ; pot0 (comun/intervalo.sasm). La realimentación vuelve a subir o bajar la voz

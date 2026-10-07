@@ -2,6 +2,9 @@
 ;
 ; familia: filtro
 ; resumen: Ensancha el estéreo de una guitarra mono y ajusta el tono graves-agudos.
+; resumen.en: Makes a mono guitar wide in stereo and tilts the tone between bass and treble.
+; resumen.zh-CN: 将单声道吉他拓宽为立体声，并在低音与高音之间调节音色。
+; resumen.ja: モノラルのギターをステレオに広げ、低音と高音の音色を傾けます。
 ;
 ; ancho.sasm — Herramienta de mezcla con dos partes:
 ;   1. Ancho (efecto Haas): la señal lateral S es la entrada retrasada 13 ms;

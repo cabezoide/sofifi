@@ -2,6 +2,9 @@
 ;
 ; familia: modulación
 ; resumen: Corta el sonido en pulsos rítmicos, como una puerta que abre y cierra.
+; resumen.en: It cuts the sound into rhythmic pulses, like a gate that opens and closes.
+; resumen.zh-CN: 将声音切成有节奏的脉冲，如同开合的门。
+; resumen.ja: 音をリズミカルなパルスに刻みます。開閉するゲートのように。
 ;
 ; slicer.sasm — Una rampa por software sube de −1 a 1 y vuelve a −1. Mientras
 ; está por debajo de 2·ciclo − 1, la puerta está abierta. Un paso bajo corto

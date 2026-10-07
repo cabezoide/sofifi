@@ -2,6 +2,9 @@
 ;
 ; familia: reverb
 ; resumen: Plate que congela la cola con el pulsador.
+; resumen.en: A plate that freezes the tail with the footswitch.
+; resumen.zh-CN: 用脚踏开关冻结尾音的 plate。
+; resumen.ja: フットスイッチで残響を凍らせる plate。
 ;
 ; freeze.sasm — Plate de Dattorro (ver plate.sasm) con congelación por footswitch.
 ; Con `sw` pulsado: decay ≈ 1, sin damping y la entrada deja de alimentar el

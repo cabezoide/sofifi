@@ -126,7 +126,7 @@ Se añaden los envoltorios del PLL (`pll_100`), del DSP (`mult_27x18`) y de la B
 ### Fase 06 · Biblioteca de programas (el RTL no cambia)
 
 - Seis programas nuevos, iguales al modelo en la simulación: hall, cloud, reverse, lofi y swell en 4 883 muestras; cinta en 12 000, para llegar a su primer eco.
-- **Cuantizar sin AND:** el lo-fi escala la muestra hacia abajo, la redondea al escribirla en un registro (`WRAX`) y la vuelve a escalar con `SOF`.
+- **Cuantizar sin AND:** el lo-fi escala la muestra hacia abajo y la redondea al escribirla en un registro (`WRAX`). Después la vuelve a escalar con `SOF`.
 - **Retardo variable sin instrucción nueva:** la cinta para un LFO senoidal en un cuarto de vuelta. Su forma vale 1 y el retardo del `CHO` sigue a `lfo0_depth`, que escribe el programa.
 - **Coste de cada instrucción en el RTL**, medido en simulación y copiado al modelo (`coste.py`):
 

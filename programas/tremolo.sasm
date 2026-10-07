@@ -2,6 +2,9 @@
 ;
 ; familia: modulación
 ; resumen: El volumen sube y baja; con pot2, de un lado a otro.
+; resumen.en: The volume goes up and down; with pot2, from one side to the other.
+; resumen.zh-CN: 音量起伏变化；配合 pot2，可在左右之间移动。
+; resumen.ja: 音量が上下します。pot2 で左右に動きます。
 ;
 ; tremolo.sasm — Trémolo y autopan. Diseño propio.
 ;

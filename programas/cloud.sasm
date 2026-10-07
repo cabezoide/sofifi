@@ -2,6 +2,9 @@
 ;
 ; familia: reverb
 ; resumen: Difusores largos con modulación aleatoria: el ataque se disuelve.
+; resumen.en: Long diffusers with random modulation: the attack dissolves.
+; resumen.zh-CN: 带随机调制的长扩散器：起音逐渐消散。
+; resumen.ja: ランダム変調付きの長いディフューザー：アタックが溶けていきます。
 ;
 ; cloud.sasm — Reverb «nube»: difusores largos en cascada con modulación
 ; aleatoria y un tanque en forma de ocho. Diseño propio con la idea de

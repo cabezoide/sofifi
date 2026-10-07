@@ -1,38 +1,46 @@
-<!-- i18n: fuente=README.md sha=b581423fa49d estado=al_dia -->
+<!-- i18n: fuente=README.md sha=f757a6b610fc estado=al_dia -->
 # SOFIFI — Soundscapes On FPGA: Integrated Filters & Impulses
 
 *In Spanish: Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada.*
 
-**Languages:** [Español](README.md) (source) · English · [简体中文](README.zh-CN.md)
+**Languages:** [Español](README.md) (source) · English · [简体中文](README.zh-CN.md) · [日本語](README.ja.md)
 
-![SOFIFI: the logo and the pedal face, with the OLED, six knobs and two footswitches](docs/img/portada.png)
+![SOFIFI: the logo and the pedal face, with the OLED, six knobs and two footswitches](docs/img/en/portada.png)
 
-*The images are in Spanish, the source language of the project.*
-
-SOFIFI is an ambient guitar pedal (reverbs, shimmer, tape delays, freeze, granular)
-implemented on a **Sipeed Tang Primer 25K** FPGA (Gowin GW5A-LV25).
+SOFIFI is an open-source ambient guitar pedal. It runs on a **Sipeed Tang
+Primer 25K** FPGA (Gowin GW5A-LV25). Each effect is a text program that a
+custom DSP core executes.
 
 **Version:** `0.6` (the version is the last closed phase; see `docs/fases/estado_fases.csv`).
 
-> Status: **a library of 43 programs and 344 presets** (Phase 06): reverbs,
-> delays, modulation, pitch, dynamics, filters and texture. All 43 give in the
-> RTL the same output as the bit-exact model (simulation). On the board, at
-> 100 MHz, the plate is verified (Phase 05). Next: the micro-looper and the
-> granular engine (Phase 07). It does not play with a guitar yet: the audio
-> codec is missing (Phase 11).
+## Status
 
-## Listening to the effects (no hardware needed)
+| Item | Status |
+|---|---|
+| Library | **43 programs and 344 presets** in 7 families (Phase 06) |
+| Match with the model | all 43 programs give in the RTL the same bits as the model (simulation) |
+| Board | the plate gives on the silicon, at 100 MHz, the same bits as the model (Phase 05) |
+| Next | micro-looper and granular engine (Phase 07) |
+| Audio with a guitar | **not yet**: the I2S codec is missing (Phase 11) |
 
-1. Listen to the demos in `demo_examples/`: a synthetic guitar (an Em9
-   arpeggio) through each program, in Ogg Vorbis.
+## Listen to the effects without hardware
+
+1. Listen to the demos in `demo_examples/`. They are a synthetic guitar (an
+   Em9 arpeggio) through each program, in Ogg Vorbis.
 2. Process your own WAV with a preset:
 
 ```bash
-.venv/bin/sofifi presets hall                      # the presets of one program
+.venv/bin/sofifi presets hall                      # lists the presets of one program
 .venv/bin/sofifi render programas/hall.sasm guitar.wav out/hall.wav --preset "Catedral" --cola 6
 .venv/bin/sofifi render programas/shimmer.sasm guitar.wav out/sh.wav --pot pot0=0.7 --pot pot3=0.6 --cola 6
 .venv/bin/sofifi render programas/freeze.sasm guitar.wav out/fz.wav --preset "Congelar suave" --freeze 1.5:8 --cola 8
 ```
+
+- `--preset` takes the knob values from `presets/banco.toml`. A later `--pot` changes one of them.
+- `--freeze START:END` holds the footswitch between two times, in seconds.
+- `--cola` adds seconds of silence at the end, so that you hear the tail.
+- The input WAV can be 16, 24 or 32-bit, at any sample rate. The model
+  resamples it to 48,828 Hz.
 
 | Family | Programs |
 |---|---|
@@ -44,97 +52,107 @@ implemented on a **Sipeed Tang Primer 25K** FPGA (Gowin GW5A-LV25).
 | Filter | autowah, filtro, ancho |
 | Texture | saturacion, lofi, ringmod |
 
-What each program does, its knobs and its cost: `docs/programas.md` (Spanish;
-`sofifi catalogo` generates it). The presets are in `presets/banco.toml`; their
-names are in Spanish.
+`docs/programas.en.md` tells what each program does, which knobs it has and
+what it costs. `sofifi catalogo` generates it. The program and preset names
+are in Spanish.
 
-The input WAV may be 16, 24 or 32-bit at any sample rate; it is resampled to
-48,828 Hz. `sofifi asm` generates the microcode (`.hex` + `.json`) and gives the
-cycles it uses in the RTL. (`--cola` is the tail length in seconds.)
+## How it works
 
-## What will be built
+- **Microcoded DSP core**, in the style of the Spin FV-1 and extended: up to
+  2,048 instructions per sample, a 48-bit accumulator and cubic interpolation
+  (ADR 0006). A new effect is a `.sasm` file; the RTL does not change.
+- **All the audio in the FPGA BSRAM:** 43,008 words, approximately 0.88 s. The
+  microSD card keeps presets and recordings. It cannot be the delay memory,
+  because its write peaks are up to 250 ms (ADR 0004).
+- **fs = 48,828 Hz:** a 100 MHz clock gives exactly 2,048 cycles per sample (ADR 0005).
+- **Bit-exact reference model in Python.** The RTL must give the same bits as
+  the model, sample by sample (ADR 0003).
+- **Real cost:** each instruction uses 6 to 57 cycles in the RTL. `sofifi asm`
+  gives the cycles of a program.
 
-- **A microcoded DSP core** in the style of the Spin FV-1, extended: 2,048
-  instructions per sample, 48-bit accumulator and cubic interpolation (ADR 0006).
-  Effects are *programs*, not RTL modules.
-- **All audio in BSRAM** (about 0.9–1.4 s of delay lines). The microSD stores
-  presets and recordings, but it cannot be used as delay memory (ADR 0004).
-- **fs = 48,828 Hz**, with a 100 MHz system clock: exactly 2,048 cycles per sample
-  (ADR 0005).
-- **A bit-exact reference model in Python**, which is the oracle the RTL is
-  validated against (ADR 0003).
+![Why choose SOFIFI? You can read it, change it and check it bit by bit; against the FV-1 it wins on instructions and sample rate, and it does not play with a guitar yet](docs/img/en/porque.png)
 
-![Why choose SOFIFI? You can read it, change it and check it bit by bit; against the FV-1 it wins on instructions and sample rate, and it does not play with a guitar yet](docs/img/porque.png)
-
-The 2026 state of the art and the roadmap are in
-`docs/investigacion/ESTADO_DEL_ARTE_2026.md` (Spanish). The full infographics are
-in `docs/infografias/`.
+The full infographics are in `docs/infografias/`. The 2026 state of the art and
+the roadmap are in `docs/investigacion/ESTADO_DEL_ARTE_2026.md` (Spanish).
 
 ## Getting started
 
-```bash
-make install    # creates .venv with the model and gate tooling
-make hooks      # installs the versioned pre-push hook
-make ci         # full local gate
-```
+1. Create the environment with the tools for the model, the gate and the FPGA:
+   `make install`.
+2. Install the pre-push hook of the repository: `make hooks`.
+3. Run the full local gate: `make ci`.
 
-The working discipline is in `docs/SPEC_RAIZ.md`; the cold-start map is in
-`AGENTS.md` (both in Spanish).
+`docs/SPEC_RAIZ.md` defines the work discipline. `AGENTS.md` is the map to
+resume the project from zero. Both are in Spanish.
 
-### EDA toolchain (Phase 02)
+### EDA toolchain
 
-`make install` installs the whole open toolchain through pip: Yosys and
+`make install` installs with pip the full open toolchain: Yosys and
 nextpnr-himbaechel-gowin (YoWASP), apicula, openFPGALoader, verilator and cocotb.
 
 ```bash
-make sim        # cocotb testbenches for the RTL
-make prog       # synthesizes hola_uart and loads it into the Tang Primer 25K SRAM
-make uart       # reads the debugger UART (/dev/ttyUSB1) and requires "SOFIFI"
+make sim           # cocotb testbenches of the RTL
+make prog          # synthesizes hola_uart and loads it into the SRAM of the Tang Primer 25K
+make uart          # reads the debugger UART (/dev/ttyUSB1) and requires "SOFIFI"
+make esquematicos  # generates again the PDF schematics of the RTL
 ```
 
-Programming without sudo needs the udev rule for the BL616 debugger
-(`0403:6010`, group `plugdev`); install it once following
-`scripts/udev/99-tang-primer-25k.rules`.
+To program the board without sudo, you need the udev rule of the BL616
+debugger (`0403:6010`, group `plugdev`). Install it one time, with the
+instructions in `scripts/udev/99-tang-primer-25k.rules`.
 
-### Optional tools (soft gates)
+### Optional tools
 
-- `shellcheck`: script lint.
+| Tool | Use |
+|---|---|
+| `shellcheck` | lint of the scripts (soft gate) |
+| Node.js and chrome-headless-shell | schematics (`make esquematicos`) and infographic captures |
 
-If a tool is missing, the gate says so (`WARN … NO CORRIÓ`); it does not fake a green.
+If a tool is missing, the gate says it (`NO CORRIÓ`, "did not run"). It does not give a false green.
 
 ## Hardware
 
 | Part | Status |
 |---|---|
 | Tang Primer 25K + Dock | available |
-| 64 GB microSD (PMOD TF) | available |
+| 64 GB microSD card (PMOD TF) | available |
 | I2S codec (PCM1808 + PCM5102A or Digilent Pmod I2S2) | **missing** (Phase 11) |
-| MCP3208 + potentiometers | missing (Phase 09; the Dock buttons act as footswitches) |
+| MCP3208 + potentiometers | missing (Phase 09; the Dock buttons are the footswitches) |
 | 128×64 SSD1306 OLED | missing (Phase 10) |
-| Guitar input buffer | missing (temporary: any buffered pedal) |
-| Sipeed SDRAM module | future (enables long looper and granular) |
+| Guitar input buffer | missing (temporary: any pedal with a buffer) |
+| Sipeed SDRAM module | future (for a long looper and a long granular engine) |
 
-Phases that need missing hardware are at the end of the plan (09 to 12), so up
-to Phase 08 the board and the microSD are enough.
+The phases that need missing hardware come last (09 to 12). Up to Phase 08,
+the board and the microSD card are sufficient.
 
-![The 13 phases: 7 closed, the next one and the ones that wait for hardware](docs/img/ruta.png)
+![The 13 phases: 7 closed, the next one and the ones that wait for hardware](docs/img/en/ruta.png)
 
-## Hardware documentation (Spanish)
+## Documentation
 
-- `BOM.md`: hardware shopping list, with links.
-- `SBOM.md`: what each FPGA component does and the tools used to build it.
-- `docs/arquitectura_fpga.md`: the FPGA architecture and how it changes phase by phase.
-- `fails.md`: the failures found and how they were solved.
-- `schematics/`: a PDF schematic of each RTL module, generated from the Verilog.
+| Document | Contents |
+|---|---|
+| `docs/programas.en.md` | the 43 programs: what they do, knobs, presets and cost |
+| `presets/banco.toml` | the 344 presets |
+| `docs/arquitectura_fpga.en.md` | the FPGA architecture and how it changes in each phase |
+| `schematics/` | a PDF schematic of each RTL module, generated from the Verilog |
+| `docs/EXTENDING.en.md` | how to add an effect, an instruction, an RTL module or a gate |
+| `BOM.en.md` | hardware shopping list, with links |
+| `SBOM.en.md` | what each FPGA component does and which tools build it |
+| `fails.en.md` | the failures found: symptom, cause, resolution and lesson |
 
 ## Languages
 
-Spanish is the canonical source. Translations carry a seal with the fingerprint
-of the version they translate, and `scripts/check_i18n.py` prevents a translation
-from claiming to be up to date when it is not (ADR 0007). ADRs, phase specs and
-agent maps are only in Spanish.
+- Spanish is the source.
+- The public and technical documentation has translations into English,
+  Simplified Chinese and Japanese: this README, the infographics, the catalog,
+  the demo and schematic guides, the architecture, `EXTENDING`, `BOM`, `SBOM`
+  and `fails`.
+- Each translation has a stamp with the fingerprint of the version that it
+  translates. `scripts/check_i18n.py` stops a translation that says it is up to
+  date when it is not (ADR 0007).
+- The ADRs, the phase specs, the research and the maps for agents are in Spanish only.
 
 ## License
 
-MIT (see `LICENSE`). Only third-party code with a permissive license is ported,
-and every origin is declared in `docs/terceros.yaml` (ADR 0002).
+MIT (see `LICENSE`). Third-party code is ported only if it has a permissive
+license, and each source is declared in `docs/terceros.yaml` (ADR 0002).

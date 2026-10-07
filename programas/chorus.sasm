@@ -2,6 +2,9 @@
 ;
 ; familia: modulación
 ; resumen: Tres voces con retardos que se mueven.
+; resumen.en: Three voices with moving delays.
+; resumen.zh-CN: 三个声部，延迟时间不断变化。
+; resumen.ja: 動くディレイを持つ 3 声。
 ;
 ; chorus.sasm — Ensemble de 3 voces (hoja de ruta de la Fase 03, punto 9).
 ; Diseño propio.

@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: MIT
 """Compuerta ``i18n`` (ADR 0007): las traducciones no mienten sobre su frescura.
 
-Cada documento de portada en español tiene una traducción por idioma, y cada
+Cada documento traducido (``TRADUCIDOS``) tiene una traducción por idioma, y cada
 traducción empieza con un sello::
 
     <!-- i18n: fuente=README.md sha=<12 hex> estado=al_dia -->
 
 Qué bloquea:
 
-- que falte una traducción de un documento de portada;
+- que falte una traducción de un documento traducido;
 - un sello mal formado o con una fuente inexistente;
 - ``estado=al_dia`` con un ``sha`` que ya no coincide con la fuente. Eso es la mentira.
 
@@ -30,8 +30,21 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
-IDIOMAS = ("en", "zh-CN")
-PORTADA = ("README.md",)
+IDIOMAS = ("en", "zh-CN", "ja")
+# Documentos con traducción (ADR 0007): la documentación pública y técnica.
+TRADUCIDOS = (
+    "README.md",
+    "demo_examples/README.md",
+    "schematics/README.md",
+    "docs/programas.md",
+    "docs/arquitectura_fpga.md",
+    "docs/EXTENDING.md",
+    "BOM.md",
+    "SBOM.md",
+    "fails.md",
+    "docs/infografias/sofifi.html",
+    "docs/infografias/estado-del-arte.html",
+)
 ESTADOS = ("al_dia", "desactualizada")
 RE_SELLO = re.compile(
     r"^<!-- i18n: fuente=(?P<fuente>\S+) sha=(?P<sha>[0-9a-f]{12}) "
@@ -65,7 +78,7 @@ def sellar(rel: str) -> int:
 def comprobar() -> int:
     errores: list[str] = []
     desactualizadas: list[str] = []
-    for fuente in PORTADA:
+    for fuente in TRADUCIDOS:
         ruta_fuente = ROOT / fuente
         for idioma in IDIOMAS:
             trad = traduccion_de(fuente, idioma)
@@ -97,7 +110,7 @@ def comprobar() -> int:
     if errores:
         print("\n".join(errores))
         return 1
-    n = len(PORTADA) * len(IDIOMAS)
+    n = len(TRADUCIDOS) * len(IDIOMAS)
     print(f"i18n: {n} traducciones con sello honesto ({', '.join(IDIOMAS)}).")
     return 0
 

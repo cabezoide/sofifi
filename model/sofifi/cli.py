@@ -23,7 +23,7 @@ from sofifi.domain.coste import ciclos_rtl
 from sofifi.domain.ensamblador import ErrorEnsamblado
 from sofifi.domain.isa import NUM_POTS
 from sofifi.domain.senal import Controles
-from sofifi.services.catalogo import RUTA_CATALOGO, ficha, markdown
+from sofifi.services.catalogo import catalogos, ficha
 from sofifi.services.render import exportar_microcodigo, renderizar
 from sofifi.services.tablas import (
     PROGRAMAS_EN_ROM,
@@ -91,8 +91,9 @@ def main(argv: list[str] | None = None) -> int:
                 for r in sorted(Path("programas").glob("*.sasm"))
             ]
             presets = {p: len(v) for p, v in leer_banco(RUTA_BANCO).items()}
-            Path(RUTA_CATALOGO).write_text(markdown(fichas, presets), encoding="utf-8")
-            print(f"{len(fichas)} programas → {RUTA_CATALOGO}")
+            for ruta, texto in catalogos(fichas, presets).items():
+                Path(ruta).write_text(texto, encoding="utf-8")
+                print(f"{len(fichas)} programas → {ruta}")
         elif args.orden == "tablas":
             Path(RUTA_TABLA_HERMITE).write_text(verilog_tabla_hermite(), encoding="utf-8")
             print(f"tabla Hermite → {RUTA_TABLA_HERMITE}")

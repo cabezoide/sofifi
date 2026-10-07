@@ -2,6 +2,9 @@
 ;
 ; familia: reverb
 ; resumen: La reverb crece despacio después de cada nota, como una flor que se abre.
+; resumen.en: The reverb grows slowly after each note, like a flower that opens.
+; resumen.zh-CN: 每个音符之后混响缓缓增长，如同花朵绽放。
+; resumen.ja: 各ノートの後、花が開くようにリバーブがゆっくり育ちます。
 ;
 ; bloom.sasm — Seis allpass largos (de 41 a 113 ms) en cascada, con la salida de
 ; la cadena de vuelta a su entrada (decay y damping). En cada ataque

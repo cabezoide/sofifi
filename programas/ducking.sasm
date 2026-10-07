@@ -2,6 +2,9 @@
 ;
 ; familia: delay
 ; resumen: Eco que se aparta mientras se toca y aparece en los silencios.
+; resumen.en: An echo that moves back while you play and comes back in the silences.
+; resumen.zh-CN: 演奏时回声退后，停顿时回声出现。
+; resumen.ja: 弾いている間は控えめになり、休みで現れるエコー。
 ;
 ; ducking.sasm — El delay de delay.sasm con la salida de ecos controlada por la
 ; entrada: un seguidor de picos (MAXX) baja los ecos mientras suena la guitarra.

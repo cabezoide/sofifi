@@ -2,6 +2,9 @@
 ;
 ; familia: delay
 ; resumen: Eco estéreo que salta de un lado a otro.
+; resumen.en: A stereo echo that jumps from one side to the other.
+; resumen.zh-CN: 在左右两侧来回跳动的立体声回声。
+; resumen.ja: 左右に跳ねるステレオのエコー。
 ;
 ; pingpong.sasm — Dos retardos cruzados: la entrada va al izquierdo, el
 ; izquierdo alimenta al derecho y el derecho vuelve al izquierdo. Cada eco sale

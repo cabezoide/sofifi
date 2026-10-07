@@ -2,6 +2,9 @@
 ;
 ; familia: reverb
 ; resumen: Red de 8 retardos con matriz de Householder: sala grande.
+; resumen.en: A network of 8 delays with a Householder matrix: a large hall.
+; resumen.zh-CN: 带 Householder 矩阵的 8 路延迟网络：大厅。
+; resumen.ja: Householder 行列を持つ 8 本のディレイ網：大きなホール。
 ;
 ; hall.sasm — Hall de red de retardo con realimentación (FDN) de 8 líneas.
 ; Diseño propio a partir de la literatura: J.-M. Jot y A. Chaigne, «Digital
