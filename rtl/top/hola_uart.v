@@ -27,9 +27,28 @@ module hola_uart (
     wire       listo;
     reg  [7:0] caracter;
 
-    function automatic [7:0] hex(input [3:0] n);
-        hex = (n < 4'd10) ? 8'h30 + {4'h0, n} : 8'h41 + {4'h0, n} - 8'd10;
-    endfunction
+    // Se elige primero el nibble y se convierte una sola vez: con una conversión
+    // por nibble, yosys sintetizaba 16 sumadores en paralelo (Fase 02).
+    reg  [3:0] nibble;
+    reg  [7:0] digito;
+    always @(*) begin
+        case (idx[2:0] - 3'd7)  // idx 7..14 → nibble 0 (el más alto) .. 7
+            3'd0:    nibble = contador[31:28];
+            3'd1:    nibble = contador[27:24];
+            3'd2:    nibble = contador[23:20];
+            3'd3:    nibble = contador[19:16];
+            3'd4:    nibble = contador[15:12];
+            3'd5:    nibble = contador[11:8];
+            3'd6:    nibble = contador[7:4];
+            default: nibble = contador[3:0];
+        endcase
+        case (nibble)
+            4'h0: digito = "0";  4'h1: digito = "1";  4'h2: digito = "2";  4'h3: digito = "3";
+            4'h4: digito = "4";  4'h5: digito = "5";  4'h6: digito = "6";  4'h7: digito = "7";
+            4'h8: digito = "8";  4'h9: digito = "9";  4'hA: digito = "A";  4'hB: digito = "B";
+            4'hC: digito = "C";  4'hD: digito = "D";  4'hE: digito = "E";  default: digito = "F";
+        endcase
+    end
 
     always @(*) begin
         case (idx)
@@ -40,14 +59,7 @@ module hola_uart (
             5'd4:  caracter = "F";
             5'd5:  caracter = "I";
             5'd6:  caracter = " ";
-            5'd7:  caracter = hex(contador[31:28]);
-            5'd8:  caracter = hex(contador[27:24]);
-            5'd9:  caracter = hex(contador[23:20]);
-            5'd10: caracter = hex(contador[19:16]);
-            5'd11: caracter = hex(contador[15:12]);
-            5'd12: caracter = hex(contador[11:8]);
-            5'd13: caracter = hex(contador[7:4]);
-            5'd14: caracter = hex(contador[3:0]);
+            5'd7, 5'd8, 5'd9, 5'd10, 5'd11, 5'd12, 5'd13, 5'd14: caracter = digito;
             5'd15: caracter = 8'h0D;
             default: caracter = 8'h0A;
         endcase

@@ -41,19 +41,19 @@ mediciones:
   - id: MED-04
     caracteristica: M-06
     nombre: LUT4 que ocupa el top hola_uart
-    valor: 353
+    valor: 207
     unidad: LUT4 de 23 040
     umbral: 1000
     direccion: menor_mejor
     fecha: 2026-10-07
     caduca_en_dias: 180
-    como: "make synth; build/hola_uart_recursos.json (además, 146 ALU, 91 DFF y 3 IOB)"
+    como: "make synth; build/hola_uart_recursos.json (además, 82 ALU, 91 DFF y 3 IOB)"
     entorno: "yowasp-yosys 0.69, nextpnr-himbaechel-gowin 0.11.1, apycula 0.32, GW5A-LV25MG121NES"
-    no_dice: "Nada del núcleo DSP. Sirve de línea base del banco de pruebas UART que heredan las fases siguientes."
+    no_dice: "Nada del núcleo DSP. El log de nextpnr (Device utilisation) da 263 LUT4, más que el informe JSON: no se ha aclarado qué cuenta cada uno. La primera versión ocupaba 353 (466 según el log) porque convertía los 8 nibbles a ASCII con sumadores en paralelo."
   - id: MED-05
     caracteristica: M-06
     nombre: Frecuencia máxima del top hola_uart según nextpnr
-    valor: 275.79
+    valor: 366.84
     unidad: MHz
     umbral: 100
     direccion: mayor_mejor
