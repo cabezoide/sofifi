@@ -13,11 +13,15 @@ PASO = "rdax adcl, 1.0\nwrax dacl, 0\nrdax sw, 1.0\nwrax dacr, 0\n"
 
 
 class ProgramaEnMemoria:
-    def __init__(self, texto: str) -> None:
+    def __init__(self, texto: str, incluidos: dict[str, str] | None = None) -> None:
         self.texto = texto
+        self.incluidos = incluidos or {}
 
     def leer(self) -> tuple[str, str]:
         return "mem", self.texto
+
+    def incluir(self, nombre: str) -> str:
+        return self.incluidos[nombre]
 
 
 class AudioEnMemoria:

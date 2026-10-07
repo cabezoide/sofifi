@@ -89,6 +89,48 @@ def test_error_indica_la_linea() -> None:
         ensamblar("clr\n\nrdax nope, 1\n")
 
 
+INCLUIDOS = {
+    "comun/decl.sasm": "equ k 0.5\nmem d 10\ninclude comun/hoja.sasm\n",
+    "comun/hoja.sasm": "equ g reg4\n",
+    "comun/malo.sasm": "clr\nrdax nope, 1\n",
+    "a.sasm": "include b.sasm\n",
+    "b.sasm": "include a.sasm\n",
+}
+
+
+def test_include_inserta_el_texto_en_su_sitio() -> None:
+    con = ensamblar(
+        "include comun/decl.sasm ; anidado\nrdax adcl, k\nwra d, 0\nwrax g, 0\n",
+        incluir=INCLUIDOS.__getitem__,
+    )
+    sin = ensamblar("equ k 0.5\nmem d 10\nequ g reg4\nrdax adcl, k\nwra d, 0\nwrax g, 0\n")
+    assert con == sin
+
+
+@pytest.mark.parametrize(
+    ("texto", "mensaje"),
+    [
+        ("clr\ninclude comun/malo.sasm", "comun/malo.sasm, línea 2: registro desconocido"),
+        ("include a.sasm", "b.sasm, línea 1: include en ciclo: 'a.sasm'"),
+        ("include", "uso: include"),
+        ("include nada.sasm", "no se puede leer 'nada.sasm'"),
+    ],
+)
+def test_errores_de_include(texto: str, mensaje: str) -> None:
+    def incluir(nombre: str) -> str:
+        if nombre not in INCLUIDOS:
+            raise FileNotFoundError(nombre)
+        return INCLUIDOS[nombre]
+
+    with pytest.raises(ErrorEnsamblado, match=mensaje):
+        ensamblar(texto, incluir=incluir)
+
+
+def test_include_sin_funcion_de_lectura() -> None:
+    with pytest.raises(ErrorEnsamblado, match="sin función para leer ficheros"):
+        ensamblar("include comun/decl.sasm")
+
+
 FV1 = """
 ; programa en sintaxis SpinASM: allpass + delay con realimentación
 equ   fb    reg0

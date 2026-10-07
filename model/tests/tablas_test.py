@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from sofifi.domain.ensamblador import ensamblar
+from sofifi.adapters.archivos import ensamblar_archivo
 from sofifi.services.tablas import (
     PROGRAMAS_EN_ROM,
     RUTA_TABLA_HERMITE,
@@ -24,6 +24,6 @@ def test_tabla_hermite_del_rtl_es_la_del_modelo() -> None:
 
 def test_programas_en_rom_son_los_del_ensamblador() -> None:
     for nombre in PROGRAMAS_EN_ROM:
-        fuente = (RAIZ / "programas" / f"{nombre}.sasm").read_text(encoding="utf-8")
+        programa = ensamblar_archivo(RAIZ / "programas" / f"{nombre}.sasm")
         en_repo = (RAIZ / ruta_programa(nombre)).read_text(encoding="utf-8")
-        assert en_repo == verilog_programa(ensamblar(fuente, nombre)), "regenerar: sofifi tablas"
+        assert en_repo == verilog_programa(programa), "regenerar: sofifi tablas"

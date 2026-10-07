@@ -1,0 +1,10 @@
+; SPDX-License-Identifier: MIT
+;
+; comun/entrada.sasm — entrada mono, escalada por la mezcla, y predelay.
+; Necesita el registro kwet y la memoria `pre`. Deja en ACC la salida del predelay.
+
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        mulx  kwet
+        wra   pre, 0
+        rda   pre#, 1.0

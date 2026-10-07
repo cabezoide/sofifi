@@ -29,7 +29,7 @@ class InformeRender:
 
 def exportar_microcodigo(fuente: FuentePrograma, sumidero: SumideroMicrocodigo) -> Programa:
     nombre, texto = fuente.leer()
-    programa = ensamblar(texto, nombre)
+    programa = ensamblar(texto, nombre, fuente.incluir)
     sumidero.escribir(programa, [codificar(i) for i in programa.instrucciones])
     return programa
 
@@ -60,7 +60,7 @@ def renderizar(
     cola: int = 0,
 ) -> InformeRender:
     nombre, texto = fuente_programa.leer()
-    programa = ensamblar(texto, nombre)
+    programa = ensamblar(texto, nombre, fuente_programa.incluir)
     salida = procesar(programa, fuente_audio.leer(), controles, cola)
     sumidero.escribir(salida)
     return InformeRender(

@@ -9,7 +9,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from sofifi.adapters.archivos import FuenteProgramaArchivo, SumideroHex
+from sofifi.adapters.archivos import FuenteProgramaArchivo, SumideroHex, ensamblar_archivo
 from sofifi.adapters.wav import FuenteWav, SumideroWav
 from sofifi.cli import main
 from sofifi.domain.aritmetica import DATO_MAX, DATO_MIN, FS_WAV, dato
@@ -71,6 +71,14 @@ def test_hex_y_json(tmp_path: Path) -> None:
 def test_fuente_programa_archivo(tmp_path: Path) -> None:
     (tmp_path / "plate.sasm").write_text("clr\n", encoding="utf-8")
     assert FuenteProgramaArchivo(tmp_path / "plate.sasm").leer() == ("plate", "clr\n")
+
+
+def test_include_desde_la_carpeta_del_programa(tmp_path: Path) -> None:
+    (tmp_path / "comun").mkdir()
+    (tmp_path / "comun" / "fin.sasm").write_text("wrax dacl, 0\n", encoding="utf-8")
+    (tmp_path / "p.sasm").write_text("rdax adcl, 1.0\ninclude comun/fin.sasm\n", encoding="utf-8")
+    p = ensamblar_archivo(tmp_path / "p.sasm")
+    assert p.nombre == "p" and len(p.instrucciones) == 2
 
 
 def test_cli_asm_y_render(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
