@@ -2,6 +2,9 @@
 ;
 ; familia: reverb
 ; resumen: Plate con un +12 en la realimentación: cada vuelta sube una octava.
+; resumen.en: A plate with +12 in the feedback: each turn goes up one octave.
+; resumen.zh-CN: 反馈中带 +12 的 plate：每一轮升高一个八度。
+; resumen.ja: フィードバックに +12 を持つ plate：一巡ごとに 1 オクターブ上がります。
 ;
 ; shimmer.sasm — Plate de Dattorro (ver plate.sasm) con un pitch shifter de +12
 ; semitonos de doble tap (CHO con rampa y ventanas complementarias) en la

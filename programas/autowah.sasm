@@ -2,6 +2,9 @@
 ;
 ; familia: filtro
 ; resumen: Wah automático: cuanto más fuerte se toca, más sube el filtro.
+; resumen.en: Automatic wah: the harder you play, the higher the filter goes.
+; resumen.zh-CN: 自动哇音：弹得越用力，滤波器升得越高。
+; resumen.ja: オートワウ：強く弾くほどフィルターが上がります。
 ;
 ; autowah.sasm — Un seguidor de picos (MAXX) mueve la frecuencia de un filtro
 ; pasa banda resonante (comun/svf.sasm) de unos 300 Hz a unos 3 kHz. Hoja de

@@ -3,10 +3,8 @@
 
 # Programas del núcleo
 
-43 programas y 344 presets. Cada programa es un
-fichero de texto en `programas/`; los presets están en `presets/banco.toml`.
-Los ciclos son la cota del RTL, de 2 048 por muestra
-(`model/sofifi/domain/coste.py`). La memoria es de 43 008 palabras.
+43 programas y 344 presets. Cada programa es un fichero de texto en `programas/`; los presets están en `presets/banco.toml`.
+Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste.py`). La memoria es de 43 008 palabras.
 
 ## Reverb
 

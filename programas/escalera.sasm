@@ -2,6 +2,9 @@
 ;
 ; familia: pitch
 ; resumen: Eco en el que cada repetición sube o baja un intervalo: una escalera.
+; resumen.en: An echo in which each repeat goes up or down an interval: a staircase.
+; resumen.zh-CN: 每次重复都升高或降低一个音程的回声：一段阶梯。
+; resumen.ja: 繰り返すたびに音程が上下するエコー：階段のように。
 ;
 ; escalera.sasm — Un eco con el pitch shifter dentro de la realimentación: cada
 ; vuelta pasa otra vez por el shifter. Con +12, los ecos suben de octava en

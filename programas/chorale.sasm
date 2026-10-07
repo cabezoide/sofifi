@@ -2,6 +2,9 @@
 ;
 ; familia: reverb
 ; resumen: La cola del plate canta una vocal, de «a» a «i».
+; resumen.en: The plate tail sings a vowel, from "a" to "i".
+; resumen.zh-CN: plate 的尾音唱出一个元音，从「a」到「i」。
+; resumen.ja: plate の残響が「a」から「i」までの母音を歌います。
 ;
 ; chorale.sasm — Plate cuya cola pasa por tres filtros de formante (pasa
 ; banda, Q ≈ 5), los tres primeros formantes de una vocal. pot3 desliza los

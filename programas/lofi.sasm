@@ -2,6 +2,9 @@
 ;
 ; familia: textura
 ; resumen: Menos muestras por segundo y menos bits, con aliasing.
+; resumen.en: Fewer samples per second and fewer bits, with aliasing.
+; resumen.zh-CN: 更少的每秒样本数和更少的位数，带混叠。
+; resumen.ja: サンプル数とビット数を減らし、エイリアシングを加えます。
 ;
 ; lofi.sasm — Lo-fi: menos muestras por segundo y menos bits, con aliasing.
 ; Diseño propio (docs/investigacion/INVESTIGACION.md §1.1).

@@ -2,6 +2,9 @@
 ;
 ; familia: modulación
 ; resumen: Cuatro allpass con coeficiente móvil: muescas que barren.
+; resumen.en: Four allpass filters with a moving coefficient: sweeping notches.
+; resumen.zh-CN: 四个系数可变的全通滤波器：扫动的陷波。
+; resumen.ja: 係数が動く 4 つのオールパス：ノッチが動きます。
 ;
 ; phaser.sasm — Phaser de 4 etapas con realimentación. Diseño propio.
 ;

@@ -2,6 +2,9 @@
 ;
 ; familia: dinámica
 ; resumen: Compresor: baja lo fuerte y deja lo suave; sostiene las notas.
+; resumen.en: Compressor: it lowers the loud parts, keeps the soft ones and sustains the notes.
+; resumen.zh-CN: 压缩器：压低响亮部分，保留轻柔部分，并延长音符。
+; resumen.ja: コンプレッサー：大きな音を下げ、小さな音は残し、ノートを伸ばします。
 ;
 ; compresor.sasm — Compresor de realimentación. Mide los picos de la salida
 ; (MAXX). Si pasan del umbral, baja la ganancia en proporción al exceso y a la

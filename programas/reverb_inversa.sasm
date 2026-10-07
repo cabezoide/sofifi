@@ -2,6 +2,9 @@
 ;
 ; familia: reverb
 ; resumen: Reverb al revés: tras cada ataque, la cola crece y se corta de golpe.
+; resumen.en: Reverse reverb: after each attack, the tail grows and stops suddenly.
+; resumen.zh-CN: 反向混响：每次起音之后，尾音渐强并突然截止。
+; resumen.ja: リバースリバーブ：アタックの後、残響が膨らみ突然止まります。
 ;
 ; reverb_inversa.sasm — Plate con una ganancia que crece en la salida. Cada ataque
 ; reinicia la cuenta (comun/compuerta.sasm): la ganancia sube de 0 a 1 en el

@@ -2,6 +2,9 @@
 ;
 ; familia: reverb
 ; resumen: Reverb de muelle: el sonido gotea, con los agudos antes que los graves.
+; resumen.en: Spring reverb: the sound drips, with the treble before the bass.
+; resumen.zh-CN: 弹簧混响：声音如水滴，高音先于低音到达。
+; resumen.ja: スプリングリバーブ：高音が低音より先に来る、滴るような音。
 ;
 ; spring.sasm — Modelo de un muelle: una cadena de 30 allpass muy cortos (2
 ; muestras, coeficiente 0,6) dispersa la señal. En cada sección, los graves se

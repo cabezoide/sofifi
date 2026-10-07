@@ -32,7 +32,17 @@ ROOT = Path(__file__).resolve().parent.parent
 
 IDIOMAS = ("en", "zh-CN", "ja")
 # Documentos con traducción (ADR 0007): la documentación pública y técnica.
-TRADUCIDOS = ("README.md",)
+TRADUCIDOS = (
+    "README.md",
+    "demo_examples/README.md",
+    "schematics/README.md",
+    "docs/programas.md",
+    "docs/arquitectura_fpga.md",
+    "docs/EXTENDING.md",
+    "BOM.md",
+    "SBOM.md",
+    "fails.md",
+)
 ESTADOS = ("al_dia", "desactualizada")
 RE_SELLO = re.compile(
     r"^<!-- i18n: fuente=(?P<fuente>\S+) sha=(?P<sha>[0-9a-f]{12}) "

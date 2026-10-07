@@ -3,7 +3,7 @@
 # Esquemáticos del RTL
 
 Un PDF por cada módulo de `rtl/`, en notación electrónica. Se generan desde el
-Verilog con Yosys y netlistsvg; no se dibujan a mano.
+Verilog con Yosys y netlistsvg; no se dibujan a mano (ADR 0012).
 
 ## Cómo se leen
 

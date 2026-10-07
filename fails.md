@@ -22,6 +22,8 @@ Se añade una entrada nueva cuando un fallo está diagnosticado y resuelto. Las 
 | F-14 | 05 | apicula 0.32 no empaqueta BSRAM sin contenido inicial | resuelto |
 | F-15 | 06 | La lectura adelantada funcionaba en simulación y fallaba en el silicio a 100 MHz | resuelto; margen medido ≥ 20 % |
 | F-16 | 06 | Las simulaciones grandes no compilaban con el verilator de pip | resuelto |
+| F-17 | 06 | El difusor de velvet noise no superó a los allpass | descartado: no se publica |
+| F-18 | 06 | Cuatro fallos de programación del catálogo | resueltos antes de publicar |
 
 ---
 
@@ -96,7 +98,11 @@ Se añade una entrada nueva cuando un fallo está diagnosticado y resuelto. Las 
 ## F-10 · El núcleo no cerraba timing (70 MHz)
 
 - **Síntoma:** la primera síntesis del núcleo daba 70 MHz frente a 100.
-- **Causa raíz:** en un solo ciclo se encadenaban la decodificación, el banco de registros (multiplexor 64:1), el redondeo de `a24` y `CLIP` (tres operaciones de 50 bit).
+- **Causa raíz:** cuatro pasos se encadenaban en un solo ciclo:
+  - la decodificación;
+  - el banco de registros (multiplexor 64:1);
+  - el redondeo de `a24`;
+  - `CLIP` (tres operaciones de 50 bit).
 - **Resolución:** operandos registrados en la decodificación y `CLIP` en dos pasos: 140 MHz según nextpnr. No bastó en el silicio: ver F-11.
 
 ## F-11 · El silicio fallaba a 100 MHz aunque nextpnr daba 132
@@ -109,7 +115,7 @@ Se añade una entrada nueva cuando un fallo está diagnosticado y resuelto. Las 
   4. Un programa mínimo con el mismo cálculo funcionaba en la placa. Dependía de la colocación.
   5. **Prueba decisiva:** se cambió solo el divisor del PLL en el JSON ya rutado, sin volver a colocar. A 50, 72,7, 80 y 88,9 MHz funcionaba; a 100 no. Era timing.
   6. Con el mismo método, el DSP funcionaba hasta 160 MHz y la BSRAM inferida fallaba por encima de 100, con 117 MHz de análisis estático.
-- **Causa raíz:** el modelo de tiempos de nextpnr para el GW5A es optimista en torno a un 30 %. Sobre todo para la BSRAM en modo *bypass* (sin registro de salida), que es la única que infiere Yosys, y para la lógica que va detrás de ella.
+- **Causa raíz:** el modelo de tiempos de nextpnr para el GW5A es optimista en torno a un 30 %. Lo es sobre todo con la BSRAM en modo *bypass* (sin registro de salida), la única que infiere Yosys. También con la lógica que va detrás de ella.
 - **Resolución:**
   - `rtl/primitivas/bsram_bloque.v`: BSRAM instanciada a mano con su registro de salida interno (`READ_MODE1 = 1`);
   - `rtl/primitivas/bsram_pipe.v`: memorias grandes hechas de esos bloques, con el multiplexor registrado;
@@ -143,14 +149,18 @@ Se añade una entrada nueva cuando un fallo está diagnosticado y resuelto. Las 
 - **Síntoma:** con la lectura adelantada del microcódigo, el plate coincidía con el modelo en simulación. En la placa fallaba a 100 MHz, siempre desde la muestra 924. Con el mismo rutado funcionaba a 88,9 MHz y por debajo. nextpnr daba 157 MHz.
 - **Diagnóstico**, paso a paso:
   1. El diseño de `main` seguía pasando a 100 MHz el mismo día: la placa no había cambiado.
-  2. Se descartaron con medidas en la placa la cadena de acarreo de 50 bit, la suma con saturación, la BSRAM sola, el DSP y el rutado del reloj. La opción `-nodffe` de Yosys no tiene efecto en el GW5A.
+  2. Las medidas en la placa descartaron la cadena de acarreo de 50 bit, la suma con saturación, la BSRAM sola, el DSP y el rutado del reloj. La opción `-nodffe` de Yosys no tiene efecto en el GW5A.
   3. La muestra 924 es aquella en la que la cola del plate llega a las tomas largas de la memoria: ahí la memoria empieza a devolver valores distintos de cero. Por eso el fallo «dependía de los datos».
   4. **Herramienta nueva:** el top `hil_nucleo` graba la traza del núcleo (orden `T`): el pc y el ACC en cada cambio del ACC. `scripts/margen_reloj.py --traza` la compara con el modelo y dice qué instrucción falla primero.
-  5. Con la traza, cada rutado fallaba en un sitio distinto: la lectura de la memoria de retardo (`RDA`, que devolvía 0, es decir, una dirección mal), la suma de la ALU (bit 25) y el multiplicador (`MULX`).
+  5. Con la traza, cada rutado fallaba en un sitio distinto. Fallaban la lectura de la memoria de retardo (`RDA` devolvía 0: una dirección mal), la suma de la ALU (bit 25) y el multiplicador (`MULX`).
   6. Las cadenas de acarreo estaban colocadas sin cortes. No había un camino roto.
 - **Causa raíz:** nextpnr sobrestima la velocidad de **todo** el diseño en el GW5A, en un factor de 1,45 a 1,5. Cada rutado falla en el camino que queda más justo. Los caminos de la BSRAM son los peores: una dirección que llega en un ciclo a 38 bloques repartidos por el chip, y un multiplexor de 38 salidas.
 - **Resolución:**
-  - `bsram_pipe` segmentada (`GRUPO = 8` en la memoria de retardo): copia de la dirección por grupo y por bloque (`registro_copia`, que Yosys no fusiona), salida de cada bloque registrada a su lado y multiplexores registrados por grupo. La lectura pasa de 3 a 7 ciclos; el núcleo espera `LAT_MEM = 9` solo en `RDA` y `CHO`.
+  - `bsram_pipe` segmentada (`GRUPO = 8` en la memoria de retardo):
+    - una copia de la dirección por grupo y por bloque (`registro_copia`, que Yosys no fusiona);
+    - la salida de cada bloque, registrada a su lado;
+    - multiplexores registrados por grupo.
+  - La lectura pasa de 3 a 7 ciclos. El núcleo espera `LAT_MEM = 9` solo en `RDA` y `CHO`.
   - Banco de registros en dos niveles: 8 candidatos registrados en cada ciclo y la elección en `E_DECO`. La palabra del microcódigo se registra otra vez antes de decodificar.
   - Dirección física de la memoria con tres sumas en paralelo, y `puntero ± P` que bajan con el puntero.
   - El multiplicador usa el registro interno `PREG` del DSP.
@@ -167,7 +177,10 @@ Se añade una entrada nueva cuando un fallo está diagnosticado y resuelto. Las 
 
 ## F-17 · El difusor de velvet noise no superó a los allpass
 
-- **Síntoma:** un hall con un difusor de velvet noise (24 taps en 50 ms) en lugar de sus 4 allpass de entrada dio una cola **menos** densa (10 % de muestras significativas frente a 28 %) y con más cresta (12,9 frente a 8,8). Con 4 líneas en lugar de 8, la cola era además la más coloreada del catálogo (6,4 entre bandas de octava, frente a 1,9 del plate).
+- **Síntoma:** se probó un hall con un difusor de velvet noise (24 taps en 50 ms) en lugar de sus 4 allpass de entrada.
+  - La cola salió **menos** densa: 10 % de muestras significativas, frente a 28 %.
+  - Tenía más cresta: 12,9 frente a 8,8.
+  - Con 4 líneas en lugar de 8, era además la cola más coloreada del catálogo: 6,4 entre bandas de octava, frente a 1,9 del plate.
 - **Causa raíz:** un allpass en cadena da una respuesta infinita y cada vez más densa. El velvet noise da tantos impulsos como taps. En SOFIFI cada tap es un `RDA` de 19 ciclos: los 100 taps que harían falta para igualar la densidad cuestan unos 1 900 ciclos, y no caben junto a la red.
 - **Resolución:** no se publica el programa. La hoja de ruta de la Fase 03 (punto 5) queda cubierta por el hall (red de 8 líneas con Householder).
 - **Lección:** medir la propiedad que se promete (densidad, color) antes de nombrar el programa. Un algoritmo que funciona en un PC puede no ser el mejor cuando cada lectura de memoria cuesta 19 ciclos.

@@ -1,0 +1,68 @@
+<!-- i18n: fuente=SBOM.md sha=624d35b0074e estado=al_dia -->
+# SBOM · SOFIFI components
+
+This document tells which parts make the pedal inside and which tools build it. Each part has a simple explanation: what it does and what it gives to the system. The technical details (resources, latencies, history by phase) are in `docs/arquitectura_fpga.en.md`.
+
+## The idea in one sentence
+
+The FPGA contains a **small custom audio processor** (the core). Each effect (plate, shimmer, freeze…) is a **program**. The processor runs that program 48,828 times each second, one time for each audio sample.
+
+## FPGA components
+
+### Clocks
+
+| Component | What it does, in simple words | What it gives |
+|---|---|---|
+| **PLL** (`pll_100`) | Changes the 50 MHz clock from the board crystal into a 100 MHz clock. | Gives the core two times the speed: 2,048 work steps for each audio sample. |
+| **Sample generator** | Gives a signal every 2,048 clock cycles. | Sets the audio rate: exactly 48,828 samples each second. |
+
+### The DSP core
+
+| Component | What it does, in simple words | What it gives |
+|---|---|---|
+| **Microcode** | Memory with the program instructions (up to 2,048). | You can change the effect without a change to the hardware: load a different program. |
+| **Sequencer** | Reads the instructions one at a time and tells each part what to do. While it runs one instruction, it reads the next one. | It is the "conductor" of the core. |
+| **Register bank** | 64 cells that keep numbers: inputs, outputs, potentiometers and program variables. | It is the "workbench" of each effect. |
+| **Multiplier** (DSP block) | Multiplies two numbers in one step. | Almost all audio operations are multiplications: volume, filters, mixes. |
+| **ALU** | Adds, compares and saturates (prevents overflow of the sound). | Combines the results and keeps them in the accumulator. |
+| **Accumulator (ACC)** | A 48-bit register that adds the products. | High precision: it prevents rounding noise in long tails. |
+| **Delay memory** (BSRAM) | Keeps the audio of the last ~0.9 s, like a tape loop. It has groups of blocks, and each group has its own copy of the address. | It is the base of all reverbs and delays: you hear the past of the sound. The groups give timing margin on the real chip. |
+| **LFO ×4** | Slow oscillators (sine, random, ramp). | They move the read positions in the memory: chorus, reverb modulation and the pitch shift of the shimmer. |
+| **Hermite ROM** | Fixed table of 256 × 4 coefficients. | Lets the core read the memory "between samples" without noise: smooth modulation. |
+| **Soft curve** | A cubic saturation, without hard edges. | Limits the sound in a musical way (`CLIP`) and gives shape to the sine LFO. |
+
+### Input, output and tests
+
+| Component | What it does, in simple words | What it gives |
+|---|---|---|
+| **UART TX / RX** | Serial port to the PC, through the USB of the board. | Lets you talk to the FPGA: request tests and receive results. |
+| **Program loader** | Copies a program from a fixed memory into the microcode at startup. | Now it loads the plate. In Phase 08 it will load from the microSD. |
+| **Capture and CRC-32** (tests only) | Records 4,096 samples at real speed and sends them with a check code. | Shows that the hardware sounds **exactly** the same as the PC model. |
+| **Trace** (tests only) | Records which instruction runs and which value it puts in the accumulator. | If the chip fails, it tells you the instruction. Then you know which part to repair. |
+| **Frequency meter** (tests only) | Counts the cycles of one clock during one second of a different clock. | It confirmed that the PLL and the sample rate are exact. |
+
+### Chip primitives (physical parts of the GW5A)
+
+| Primitive | Quantity used | Function |
+|---|---|---|
+| BSRAM (18 Kbit blocks) | 48 of 56 in the core | delay memory and microcode |
+| DSP (MULTALU27X18) | 2 of 28 | the multiplier |
+| PLLA | 1 of 6 | the 100 MHz clock |
+| LUT4 and flip-flops | ~50 % and ~28 % (test top) | all the logic, and the copies that give clock margin |
+
+## Software tools
+
+`make install` (pip) installs all the tools. All of them are free software.
+
+| Tool | Version | License | What it does |
+|---|---|---|---|
+| Yosys (YoWASP) | 0.69 | ISC | Translates the Verilog into logic gates (synthesis). |
+| nextpnr-himbaechel-gowin (YoWASP) | 0.11.1 | ISC | Places and connects those gates in the chip. |
+| apicula | 0.32 | MIT | Makes the GW5A bitstream. |
+| openFPGALoader | 1.1.1 | Apache-2.0 | Loads the bitstream into the board through USB. |
+| verilator | 5.48 | LGPL-3.0 or Artistic-2.0 | Simulates the Verilog. We use it only as a tool; we do not copy its code (ADR 0002). |
+| cocotb | 2.1 | BSD-3-Clause | Writes the simulation tests in Python. |
+| pyserial | 3.5 | BSD-3-Clause | Talks to the UART of the board. |
+| Python + numpy | 3.12+ / 2.x | PSF / BSD | The bit-exact model, which is the reference for all the system (ADR 0003). |
+
+The minimum versions are in `pyproject.toml`. The traps of each tool are in `fails.en.md` and `rtl/AGENTS.md` (Spanish).

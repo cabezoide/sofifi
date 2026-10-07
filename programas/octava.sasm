@@ -2,6 +2,9 @@
 ;
 ; familia: pitch
 ; resumen: Octavador: una octava abajo y una arriba, cada una con su nivel.
+; resumen.en: Octaver: one octave down and one up, each with its own level.
+; resumen.zh-CN: 八度效果器：低八度与高八度，各有独立音量。
+; resumen.ja: オクターバー：1 オクターブ下と上。それぞれにレベル。
 ;
 ; octava.sasm — Dos pitch shifters de doble tap sobre la misma memoria. La rampa
 ; del LFO0 sube 1/2 muestra por muestra (razón 0,5: −12) y la del LFO1 baja

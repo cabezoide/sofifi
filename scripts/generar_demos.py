@@ -10,12 +10,14 @@ menos que un WAV. El códec da el mismo audio cada vez, pero el fichero cambia
 en su número de serie. Por eso un ``.ogg`` solo se reescribe si su audio cambia:
 regenerar sin cambios no toca git.
 
-Uso: ``.venv/bin/python scripts/generar_demos.py``  (unos 2 min en 8 núcleos; necesita
-``pip install -e '.[demos]'``)
+Uso: ``.venv/bin/python scripts/generar_demos.py`` (unos 2 min en 8 núcleos;
+necesita ``pip install -e '.[demos]'``). Con ``--readme`` solo escribe las guías
+``demo_examples/README*.md``, en cuatro idiomas.
 """
 
 from __future__ import annotations
 
+import hashlib
 import sys
 import tempfile
 from concurrent.futures import ProcessPoolExecutor
@@ -27,6 +29,7 @@ from sofifi.adapters.archivos import ensamblar_archivo
 from sofifi.adapters.wav import a_pcm16
 from sofifi.domain.aritmetica import DATO_MAX, DATO_MIN, FS_WAV, dato
 from sofifi.domain.senal import Controles, Senal
+from sofifi.services.catalogo import ficha, mando_traducido
 from sofifi.services.render import procesar
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -141,7 +144,88 @@ def _demo(demo: tuple[str, dict[int, str], tuple[tuple[float, float], ...], floa
     return f"{nombre} → {destino.relative_to(ROOT)}" + ("" if escrita else " (igual)")
 
 
+GUIA = {
+    "es": (
+        "Una guitarra sintética (arpegio de Em9, cuerdas Karplus-Strong) procesada por cada "
+        "programa del núcleo con el modelo bit-exact. Se regeneran con "
+        "`.venv/bin/python scripts/generar_demos.py`: el audio sale igual cada vez.",
+        "| Fichero | Programa | Mandos | Footswitch |",
+        "Ogg Vorbis a 48 828 Hz (ADR 0005); el render es bit-exact en 24 bit. "
+        "Los mandos y los programas están en `docs/programas.md`.",
+    ),
+    "en": (
+        "A synthetic guitar (an Em9 arpeggio, Karplus-Strong strings) through each core program, "
+        "with the bit-exact model. Generate them again with "
+        "`.venv/bin/python scripts/generar_demos.py`: the audio is the same each time.",
+        "| File | Program | Knobs | Footswitch |",
+        "Ogg Vorbis at 48,828 Hz (ADR 0005, Spanish); the render is bit-exact at 24 bits. "
+        "The knobs and the programs are in `docs/programas.en.md`.",
+    ),
+    "zh-CN": (
+        "一段合成吉他（Em9 琶音，Karplus-Strong 弦模型）经内核的每个程序处理，使用逐位精确模型。"
+        "可用 `.venv/bin/python scripts/generar_demos.py` 重新生成，每次得到的音频都相同。",
+        "| 文件 | 程序 | 旋钮 | 脚踏开关 |",
+        "Ogg Vorbis，48,828 Hz（ADR 0005，西班牙语）；渲染在 24 位下逐位精确。"
+        "旋钮与程序见 `docs/programas.zh-CN.md`。",
+    ),
+    "ja": (
+        "合成ギター（Em9 のアルペジオ、Karplus-Strong の弦）を、"
+        "ビット精度のモデルでコアの各プログラムに通したものです。"
+        "`.venv/bin/python scripts/generar_demos.py` で再生成でき、"
+        "毎回同じ音声になります。",
+        "| ファイル | プログラム | ノブ | フットスイッチ |",
+        "Ogg Vorbis、48,828 Hz（ADR 0005、スペイン語）。レンダリングは 24 ビットでビット精度です。"
+        "ノブとプログラムは `docs/programas.ja.md` にあります。",
+    ),
+}
+
+
+def _decimal(v: str, idioma: str) -> str:
+    texto = f"{float(v):.2f}"
+    return texto.replace(".", ",") if idioma == "es" else texto
+
+
+def guias() -> dict[Path, str]:
+    """``demo_examples/README*.md`` en cuatro idiomas, desde ``DEMOS`` y el catálogo (ADR 0007)."""
+    fichas = {
+        n: ficha(
+            n,
+            (ROOT / "programas" / f"{n}.sasm").read_text(encoding="utf-8"),
+            ensamblar_archivo(ROOT / "programas" / f"{n}.sasm"),
+        )
+        for n, *_ in DEMOS
+    }
+    textos: dict[str, str] = {}
+    for idioma, (intro, cabecera, pie) in GUIA.items():
+        filas = ["| `demo_guitarra.ogg` | — | — | — |"]
+        for nombre, pots, tramos, _ in DEMOS:
+            etiquetas = dict(m.split(": ", 1) for m in fichas[nombre].mandos)
+            mandos = " · ".join(
+                f"{mando_traducido(f'{k}: {etiquetas[str(k)]}', idioma).split(': ', 1)[1]} "
+                f"{_decimal(v, idioma)}"
+                for k, v in sorted(pots.items())
+                if str(k) in etiquetas
+            )
+            pulsador = ", ".join(
+                f"{_decimal(str(a), idioma)} → {_decimal(str(b), idioma)} s" for a, b in tramos
+            )
+            filas.append(f"| `demo_{nombre}.ogg` | `{nombre}` | {mandos} | {pulsador or '—'} |")
+        textos[idioma] = "\n".join(
+            ["# demo_examples", "", intro, "", cabecera, "|---|---|---|---|", *filas, "", pie, ""]
+        )
+    sha = hashlib.sha256(textos["es"].encode("utf-8")).hexdigest()[:12]
+    res = {DESTINO / "README.md": textos["es"]}
+    for idioma in ("en", "zh-CN", "ja"):
+        sello = f"<!-- i18n: fuente=demo_examples/README.md sha={sha} estado=al_dia -->\n"
+        res[DESTINO / f"README.{idioma}.md"] = sello + textos[idioma]
+    return res
+
+
 def main() -> int:
+    for ruta, texto in guias().items():
+        ruta.write_text(texto, encoding="utf-8")
+    if sys.argv[1:] == ["--readme"]:
+        return 0
     seca = guitarra()
     destino = DESTINO / "demo_guitarra.ogg"
     print(

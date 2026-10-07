@@ -2,6 +2,9 @@
 ;
 ; familia: delay
 ; resumen: Eco invertido en granos de 0,17 s.
+; resumen.en: Reversed echo in grains of 0.17 s.
+; resumen.zh-CN: 以 0.17 秒为颗粒的反向回声。
+; resumen.ja: 0.17 秒のグレインで反転したエコー。
 ;
 ; reverse.sasm — Eco invertido: la señal sale al revés, en granos de 0,17 s
 ; fundidos con ventanas complementarias. Diseño propio

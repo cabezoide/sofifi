@@ -2,6 +2,9 @@
 ;
 ; familia: modulación
 ; resumen: Retardo muy corto y móvil con realimentación: peines que barren.
+; resumen.en: A very short moving delay with feedback: sweeping combs.
+; resumen.zh-CN: 带反馈的极短可变延迟：扫动的梳状滤波。
+; resumen.ja: フィードバック付きのとても短い可動ディレイ：くし形が動きます。
 ;
 ; flanger.sasm — Flanger con realimentación. Diseño propio.
 ;

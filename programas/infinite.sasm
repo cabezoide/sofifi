@@ -2,6 +2,9 @@
 ;
 ; familia: reverb
 ; resumen: Plate que no decae: cada nota se suma a una capa que no se apaga.
+; resumen.en: A plate that does not decay: each note adds to a layer that does not stop.
+; resumen.zh-CN: 不衰减的 plate：每个音符都叠加到一层永不消失的声音上。
+; resumen.ja: 減衰しない plate：各ノートが消えないレイヤーに重なります。
 ;
 ; infinite.sasm — El plate con el tanque de CLIP (comun/dattorro_tanque_clip.sasm)
 ; y decay ≈ 1, con la entrada abierta. Freeze corta la entrada; infinite la

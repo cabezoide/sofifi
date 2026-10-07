@@ -2,6 +2,9 @@
 ;
 ; familia: modulación
 ; resumen: El tono sube y baja.
+; resumen.en: The pitch goes up and down.
+; resumen.zh-CN: 音高上下起伏。
+; resumen.ja: ピッチが上下します。
 ;
 ; vibrato.sasm — Vibrato: solo la señal retardada, con el retardo movido por un
 ; LFO senoidal. El tono sube y baja. Diseño propio.

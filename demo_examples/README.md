@@ -1,56 +1,52 @@
 # demo_examples
 
-**Español** · Una guitarra sintética (arpegio de Em9, cuerdas Karplus-Strong) procesada por los programas del núcleo SOFIFI, con el modelo bit-exact. Se regeneran con `.venv/bin/python scripts/generar_demos.py`: el audio sale igual cada vez.
+Una guitarra sintética (arpegio de Em9, cuerdas Karplus-Strong) procesada por cada programa del núcleo con el modelo bit-exact. Se regeneran con `.venv/bin/python scripts/generar_demos.py`: el audio sale igual cada vez.
 
-**English** · A synthetic guitar (Em9 arpeggio, Karplus-Strong strings) processed by the SOFIFI core programs using the bit-exact model. Regenerate them with `.venv/bin/python scripts/generar_demos.py`: the audio is the same every time.
+| Fichero | Programa | Mandos | Footswitch |
+|---|---|---|---|
+| `demo_guitarra.ogg` | — | — | — |
+| `demo_plate.ogg` | `plate` | decay 0,70 · damping 0,30 · mezcla 0,45 | — |
+| `demo_shimmer.ogg` | `shimmer` | decay 0,75 · damping 0,25 · mezcla 0,55 · cantidad de shimmer 0,60 | — |
+| `demo_freeze.ogg` | `freeze` | decay 0,60 · damping 0,30 · mezcla 0,50 | 2,50 → 8,00 s |
+| `demo_hall.ogg` | `hall` | decay 0,75 · damping 0,35 · mezcla 0,45 | — |
+| `demo_cloud.ogg` | `cloud` | decay 0,70 · damping 0,30 · mezcla 0,55 · modulación 0,60 | — |
+| `demo_cinta.ogg` | `cinta` | tiempo 0,45 · realimentación 0,55 · mezcla 0,40 · wow y flutter 0,50 | — |
+| `demo_reverse.ogg` | `reverse` | tono 0,60 · realimentación 0,40 · mezcla 0,50 | — |
+| `demo_lofi.ogg` | `lofi` | muestreo 0,60 · bits 0,70 · mezcla 0,70 · tono 0,40 | — |
+| `demo_swell.ogg` | `swell` | decay 0,70 · damping 0,30 · mezcla 0,50 · subida 0,40 | — |
+| `demo_chorus.ogg` | `chorus` | velocidad 0,30 · profundidad 0,60 · mezcla 0,50 | — |
+| `demo_flanger.ogg` | `flanger` | velocidad 0,15 · profundidad 0,80 · mezcla 0,50 · realimentación 0,60 | — |
+| `demo_phaser.ogg` | `phaser` | velocidad 0,20 · profundidad 0,90 · mezcla 0,50 · realimentación 0,50 | — |
+| `demo_tremolo.ogg` | `tremolo` | velocidad 0,30 · profundidad 0,70 · panorama 0,60 | — |
+| `demo_vibrato.ogg` | `vibrato` | velocidad 0,40 · profundidad 0,50 · mezcla 1,00 | — |
+| `demo_octava.ogg` | `octava` | octava baja 0,60 · octava alta 0,40 · seco 0,80 | — |
+| `demo_armonizador.ogg` | `armonizador` | intervalo 0,75 · realimentación 0,30 · mezcla 0,45 | — |
+| `demo_doblador.ogg` | `doblador` | desafinación 0,50 · mezcla 0,50 | — |
+| `demo_escalera.ogg` | `escalera` | intervalo 0,95 · realimentación 0,60 · mezcla 0,45 · tiempo 0,40 | — |
+| `demo_shimmer_quinta.ogg` | `shimmer_quinta` | decay 0,75 · damping 0,25 · mezcla 0,55 · cantidad de shimmer 0,60 | — |
+| `demo_blackhole.ogg` | `blackhole` | decay 0,85 · damping 0,35 · mezcla 0,50 | — |
+| `demo_bloom.ogg` | `bloom` | decay 0,80 · damping 0,30 · mezcla 0,55 · apertura 0,40 | — |
+| `demo_gated.ogg` | `gated` | decay 0,80 · damping 0,20 · mezcla 0,50 · duración 0,50 | — |
+| `demo_infinite.ogg` | `infinite` | vaciado 0,10 · damping 0,30 · mezcla 0,45 | — |
+| `demo_reverb_inversa.ogg` | `reverb_inversa` | decay 0,80 · damping 0,30 · mezcla 0,55 · duración 0,60 | — |
+| `demo_spring.ogg` | `spring` | decay 0,60 · damping 0,40 · mezcla 0,40 | — |
+| `demo_delay.ogg` | `delay` | tiempo 0,55 · realimentación 0,45 · mezcla 0,40 · tono 0,70 | — |
+| `demo_pingpong.ogg` | `pingpong` | tiempo 0,70 · realimentación 0,50 · mezcla 0,45 | — |
+| `demo_lluvia.ogg` | `lluvia` | difusión 0,70 · realimentación 0,40 · mezcla 0,50 | — |
+| `demo_bbd.ogg` | `bbd` | tiempo 0,60 · realimentación 0,60 · mezcla 0,45 · modulación 0,50 | — |
+| `demo_ducking.ogg` | `ducking` | tiempo 0,45 · realimentación 0,50 · mezcla 0,50 · ducking 0,80 | — |
+| `demo_autowah.ogg` | `autowah` | sensibilidad 0,80 · resonancia 0,60 · mezcla 0,80 | — |
+| `demo_compresor.ogg` | `compresor` | umbral 0,30 · compresión 0,80 · mezcla 1,00 · ganancia 0,40 | — |
+| `demo_filtro.ogg` | `filtro` | velocidad 0,25 · resonancia 0,60 · mezcla 0,90 · profundidad 0,80 | — |
+| `demo_puerta.ogg` | `puerta` | umbral 0,20 · cierre 0,40 | — |
+| `demo_saturacion.ogg` | `saturacion` | ganancia 0,60 · tono 0,50 · mezcla 1,00 · nivel 0,70 | — |
+| `demo_ringmod.ogg` | `ringmod` | frecuencia 0,15 · mezcla 0,60 | — |
+| `demo_slicer.ogg` | `slicer` | velocidad 0,30 · profundidad 0,90 · ciclo 0,40 · suavizado 0,40 | — |
+| `demo_ancho.ogg` | `ancho` | ancho 0,80 · tilt 0,60 | — |
+| `demo_chorale.ogg` | `chorale` | decay 0,75 · damping 0,30 · mezcla 0,55 · vocal 0,30 | — |
+| `demo_resonador.ogg` | `resonador` | sustain 0,80 · excitación 0,70 · mezcla 0,50 | — |
+| `demo_plate_vivo.ogg` | `plate_vivo` | decay 0,75 · damping 0,30 · mezcla 0,45 · vida 1,00 | — |
+| `demo_shimmer_energia.ogg` | `shimmer_energia` | decay 0,80 · damping 0,25 · mezcla 0,55 · cantidad de shimmer 0,90 | — |
+| `demo_freeze_givens.ogg` | `freeze_givens` | decay 0,60 · damping 0,30 · mezcla 0,50 · giro 0,60 | 2,50 → 8,00 s |
 
-**简体中文** · 一段合成吉他（Em9 琶音，Karplus-Strong 弦模型）经 SOFIFI 内核程序（逐位精确模型）处理的结果。可用 `.venv/bin/python scripts/generar_demos.py` 重新生成，每次得到的音频都相同。
-
-| Fichero / File / 文件 | Programa | pot0 decay | pot1 damping | pot2 mezcla/mix | pot3 shimmer/modulación | freeze |
-|---|---|---|---|---|---|---|
-| `demo_guitarra.ogg` | — (seca / dry / 干声) | | | | | |
-| `demo_plate.ogg` | `plate.sasm` | 0,70 | 0,30 | 0,45 | | |
-| `demo_shimmer.ogg` | `shimmer.sasm` | 0,75 | 0,25 | 0,55 | 0,60 | |
-| `demo_freeze.ogg` | `freeze.sasm` | 0,60 | 0,30 | 0,50 | | 2,5 s → 8 s |
-| `demo_hall.ogg` | `hall.sasm` | 0,75 | 0,35 | 0,45 | | |
-| `demo_cloud.ogg` | `cloud.sasm` | 0,70 | 0,30 | 0,55 | 0,60 | |
-| `demo_cinta.ogg` | `cinta.sasm` | 0,45 (tiempo/time) | 0,55 (realimentación/feedback) | 0,40 | 0,50 (wow) | |
-| `demo_reverse.ogg` | `reverse.sasm` | 0,60 (tono/tone) | 0,40 (realimentación/feedback) | 0,50 | | |
-| `demo_lofi.ogg` | `lofi.sasm` | 0,60 (muestreo/sample rate) | 0,70 (8 bit) | 0,70 | 0,40 (tono/tone) | |
-| `demo_swell.ogg` | `swell.sasm` | 0,70 | 0,30 | 0,50 | 0,40 (subida/rise) | |
-| `demo_chorus.ogg` | `chorus.sasm` | 0,30 (velocidad/rate) | 0,60 (profundidad/depth) | 0,50 | | |
-| `demo_flanger.ogg` | `flanger.sasm` | 0,15 (velocidad/rate) | 0,80 (profundidad/depth) | 0,50 | 0,60 (realimentación/feedback) | |
-| `demo_phaser.ogg` | `phaser.sasm` | 0,20 (velocidad/rate) | 0,90 (profundidad/depth) | 0,50 | 0,50 (realimentación/feedback) | |
-| `demo_tremolo.ogg` | `tremolo.sasm` | 0,30 (velocidad/rate) | 0,70 (profundidad/depth) | 0,60 (panorama/pan) | | |
-| `demo_vibrato.ogg` | `vibrato.sasm` | 0,40 (velocidad/rate) | 0,50 (profundidad/depth) | 1 | | |
-| `demo_octava.ogg` | `octava.sasm` | 0,60 (−12) | 0,40 (+12) | 0,80 (seco/dry) | | |
-| `demo_armonizador.ogg` | `armonizador.sasm` | 0,75 (+7) | 0,30 (realimentación/feedback) | 0,45 | | |
-| `demo_doblador.ogg` | `doblador.sasm` | 0,50 (±12 cents) | | 0,50 | | |
-| `demo_escalera.ogg` | `escalera.sasm` | 0,95 (+12) | 0,60 (realimentación/feedback) | 0,45 | 0,40 (tiempo/time) | |
-| `demo_shimmer_quinta.ogg` | `shimmer_quinta.sasm` | 0,75 | 0,25 | 0,55 | 0,60 | |
-| `demo_blackhole.ogg` | `blackhole.sasm` | 0,85 | 0,35 | 0,50 | | |
-| `demo_bloom.ogg` | `bloom.sasm` | 0,80 | 0,30 | 0,55 | 0,40 (apertura/bloom) | |
-| `demo_gated.ogg` | `gated.sasm` | 0,80 | 0,20 | 0,50 | 0,50 (duración/length) | |
-| `demo_infinite.ogg` | `infinite.sasm` | 0,10 (vaciado/release) | 0,30 | 0,45 | | |
-| `demo_reverb_inversa.ogg` | `reverb_inversa.sasm` | 0,80 | 0,30 | 0,55 | 0,60 (duración/length) | |
-| `demo_spring.ogg` | `spring.sasm` | 0,60 | 0,40 | 0,40 | | |
-| `demo_delay.ogg` | `delay.sasm` | 0,55 (tiempo/time) | 0,45 (realimentación/feedback) | 0,40 | 0,70 (tono/tone) | |
-| `demo_pingpong.ogg` | `pingpong.sasm` | 0,70 (tiempo/time) | 0,50 (realimentación/feedback) | 0,45 | | |
-| `demo_lluvia.ogg` | `lluvia.sasm` | 0,70 (difusión/diffusion) | 0,40 (realimentación/feedback) | 0,50 | | |
-| `demo_bbd.ogg` | `bbd.sasm` | 0,60 (tiempo/time) | 0,60 (realimentación/feedback) | 0,45 | 0,50 (modulación) | |
-| `demo_ducking.ogg` | `ducking.sasm` | 0,45 (tiempo/time) | 0,50 (realimentación/feedback) | 0,50 | 0,80 (ducking) | |
-| `demo_autowah.ogg` | `autowah.sasm` | 0,80 (sensibilidad/sensitivity) | 0,60 (resonancia/resonance) | 0,80 | | |
-| `demo_compresor.ogg` | `compresor.sasm` | 0,30 (umbral/threshold) | 0,80 (compresión/compression) | 1 | 0,40 (ganancia/gain) | |
-| `demo_filtro.ogg` | `filtro.sasm` | 0,25 (velocidad/rate) | 0,60 (resonancia/resonance) | 0,90 | 0,80 (profundidad/depth) | |
-| `demo_puerta.ogg` | `puerta.sasm` | 0,20 (umbral/threshold) | 0,40 (cierre/release) | | | |
-| `demo_saturacion.ogg` | `saturacion.sasm` | 0,60 (ganancia/gain) | 0,50 (tono/tone) | 1 | 0,70 (nivel/level) | |
-| `demo_ringmod.ogg` | `ringmod.sasm` | 0,15 (frecuencia/frequency) | | 0,60 | | |
-| `demo_slicer.ogg` | `slicer.sasm` | 0,30 (velocidad/rate) | 0,90 (profundidad/depth) | 0,40 (ciclo/duty) | 0,40 (suavizado/smoothing) | |
-| `demo_ancho.ogg` | `ancho.sasm` | 0,80 (ancho/width) | 0,60 (tilt) | | | |
-| `demo_chorale.ogg` | `chorale.sasm` | 0,75 | 0,30 | 0,55 | 0,30 (vocal/vowel) | |
-| `demo_resonador.ogg` | `resonador.sasm` | 0,80 (sustain) | 0,70 (excitación/excitation) | 0,50 | | |
-| `demo_plate_vivo.ogg` | `plate_vivo.sasm` | 0,75 | 0,30 | 0,45 | 1 (vida/life) | |
-| `demo_shimmer_energia.ogg` | `shimmer_energia.sasm` | 0,80 | 0,25 | 0,55 | 0,90 | |
-| `demo_freeze_givens.ogg` | `freeze_givens.sasm` | 0,60 | 0,30 | 0,50 | 0,60 (giro/rotation) | 2,5 s → 8 s |
-
-Ogg Vorbis a 48 828 Hz (ADR 0005); el render es bit-exact en 24 bit. Ogg Vorbis at 48,828 Hz; the render is bit-exact at 24 bits. Ogg Vorbis，48,828 Hz；渲染在 24 位下逐位精确。
+Ogg Vorbis a 48 828 Hz (ADR 0005); el render es bit-exact en 24 bit. Los mandos y los programas están en `docs/programas.md`.

@@ -2,6 +2,9 @@
 ;
 ; familia: delay
 ; resumen: Eco analógico oscuro: cada repetición pierde agudos y se satura.
+; resumen.en: Dark analog echo: each repeat loses treble and saturates.
+; resumen.zh-CN: 暗色的模拟回声：每次重复都会损失高音并产生饱和。
+; resumen.ja: 暗いアナログのエコー：繰り返すたびに高域が減り、飽和します。
 ;
 ; bbd.sasm — Imita un delay de «bucket brigade» (BBD): un retardo corto con
 ; dos pasos bajo en el bucle (~2,5 kHz), saturación suave (CLIP) y un leve

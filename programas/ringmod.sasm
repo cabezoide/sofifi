@@ -2,6 +2,9 @@
 ;
 ; familia: textura
 ; resumen: Modulador en anillo: multiplica la guitarra por un seno; suena metálico.
+; resumen.en: Ring modulator: it multiplies the guitar by a sine; it sounds metallic.
+; resumen.zh-CN: 环形调制器：将吉他与正弦波相乘，声音带金属感。
+; resumen.ja: リングモジュレーター：ギターにサイン波を掛け、金属的に鳴らします。
 ;
 ; ringmod.sasm — Un oscilador senoidal por software (forma acoplada, «magic
 ; circle»: s = s + k·c; c = c − k·s) multiplica la entrada. Una nota de f Hz

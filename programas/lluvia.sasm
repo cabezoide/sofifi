@@ -2,6 +2,9 @@
 ;
 ; familia: delay
 ; resumen: Seis ecos irregulares que se deshacen en allpass: una lluvia de notas.
+; resumen.en: Six irregular echoes that dissolve in allpass filters: a rain of notes.
+; resumen.zh-CN: 六个不规则的回声在全通滤波器中消散：一场音符之雨。
+; resumen.ja: オールパスで崩れる 6 つの不規則なエコー：ノートの雨。
 ;
 ; lluvia.sasm — Multitap: una línea de 0,6 s con seis taps a tiempos sin
 ; patrón (0,09 · 0,16 · 0,25 · 0,36 · 0,47 · 0,60 s). Los impares van a la

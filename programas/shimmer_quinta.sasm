@@ -2,6 +2,9 @@
 ;
 ; familia: reverb
 ; resumen: Shimmer de quinta: cada vuelta sube 7 semitonos, como un acorde que se abre.
+; resumen.en: Fifth shimmer: each turn goes up 7 semitones, like a chord that opens.
+; resumen.zh-CN: 五度 shimmer：每一轮升高 7 个半音，如同展开的和弦。
+; resumen.ja: 5 度の shimmer：一巡ごとに 7 半音上がり、和音が開くように響きます。
 ;
 ; shimmer_quinta.sasm — El shimmer (shimmer.sasm) con +7 en lugar de +12. La
 ; razón 1,5 es la quinta justa (+7,02 semitonos). Dos vueltas dan +14: una

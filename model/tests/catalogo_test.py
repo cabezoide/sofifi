@@ -9,7 +9,8 @@ import pytest
 from sofifi.adapters.archivos import ensamblar_archivo
 from sofifi.adapters.presets import leer_banco
 from sofifi.domain.ensamblador import ensamblar
-from sofifi.services.catalogo import RUTA_CATALOGO, ficha, markdown
+from sofifi.services.catalogo import catalogos, ficha
+from sofifi.services.catalogo_textos import MANDOS
 
 RAIZ = Path(__file__).resolve().parents[2]
 
@@ -20,8 +21,22 @@ def test_docs_programas_es_el_del_generador() -> None:
         for r in sorted((RAIZ / "programas").glob("*.sasm"))
     ]
     presets = {p: len(v) for p, v in leer_banco(RAIZ / "presets" / "banco.toml").items()}
-    en_repo = (RAIZ / RUTA_CATALOGO).read_text(encoding="utf-8")
-    assert en_repo == markdown(fichas, presets), "regenerar con: .venv/bin/sofifi catalogo"
+    for ruta, texto in catalogos(fichas, presets).items():
+        en_repo = (RAIZ / ruta).read_text(encoding="utf-8")
+        assert en_repo == texto, f"{ruta}: regenerar con: .venv/bin/sofifi catalogo"
+
+
+def test_todo_programa_tiene_resumen_en_cuatro_idiomas() -> None:
+    for r in sorted((RAIZ / "programas").glob("*.sasm")):
+        f = ficha(r.stem, r.read_text(encoding="utf-8"), ensamblar_archivo(r))
+        assert {i for i, _ in f.resumenes} == {"en", "zh-CN", "ja"}, r.name
+
+
+def test_los_mandos_tienen_traduccion() -> None:
+    for r in sorted((RAIZ / "programas").glob("*.sasm")):
+        f = ficha(r.stem, r.read_text(encoding="utf-8"), ensamblar_archivo(r))
+        for m in f.mandos:
+            assert m.split(": ", 1)[1] in MANDOS, f"{r.name}: falta «{m}» en catalogo_textos.MANDOS"
 
 
 def test_la_cabecera_es_obligatoria() -> None:

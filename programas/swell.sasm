@@ -2,6 +2,9 @@
 ;
 ; familia: dinámica
 ; resumen: Cada nota empieza en silencio y sube, antes de un plate.
+; resumen.en: Each note starts in silence and rises, before a plate.
+; resumen.zh-CN: 每个音符从静音开始渐强，然后进入 plate。
+; resumen.ja: 各ノートは無音から立ち上がり、その後 plate に入ります。
 ;
 ; swell.sasm — Swell automático antes del plate: cada nota nueva empieza en
 ; silencio y sube poco a poco, como con el pedal de volumen. Diseño propio

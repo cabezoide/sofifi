@@ -2,6 +2,9 @@
 ;
 ; familia: textura
 ; resumen: Saturación tipo overdrive: de un brillo cálido a una distorsión espesa.
+; resumen.en: Overdrive-type saturation: from a warm glow to a thick distortion.
+; resumen.zh-CN: 过载式饱和：从温暖的光泽到厚重的失真。
+; resumen.ja: オーバードライブ系の飽和：温かい艶から厚い歪みまで。
 ;
 ; saturacion.sasm — Ganancia de 1 a 16 y dos etapas de CLIP (curva cúbica
 ; suave), con un paso bajo de tono entre ellas y otro a la salida. Dos etapas
