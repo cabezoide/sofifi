@@ -6,8 +6,8 @@ capacidades:
     nivel: 4
     evidencia: scripts/ci_local.sh
     scope: trabajos duros del día 0
-    no_cubre: "síntesis y simulación RTL (aún no existen)"
-    brecha: "añadir la compuerta de release cuando haya síntesis"
+    no_cubre: "integración remota: todo corre en local"
+    brecha: "CI remota cuando haya minutos suficientes para la síntesis (revisión de ADR 0001)"
   - id: M-02
     capacidad: Arquitectura por capas del modelo
     nivel: 4
@@ -21,7 +21,7 @@ capacidades:
     evidencia: model/tests/nucleo_test.py
     scope: "aritmética, ISA de 16 instrucciones, intérprete, ensamblador y CLI; pruebas en la compuerta dura"
     no_cubre: "la equivalencia con el RTL, que aún no existe"
-    brecha: "Fase 02: RTL del núcleo y testbench que lo compare muestra a muestra con el modelo"
+    brecha: "Fase 03: RTL del núcleo y testbench que lo compare muestra a muestra con el modelo"
   - id: M-04
     capacidad: Documentación trilingüe (es, en, zh-CN)
     nivel: 4
@@ -36,3 +36,10 @@ capacidades:
     scope: "decaen, se sostienen o suben una octava según lo esperado; huella bit-exact de regresión"
     no_cubre: "que suenen bien: no hay escucha registrada con guitarra real"
     brecha: "escucharlos con WAV de guitarra y anotar ajustes de coeficientes"
+  - id: M-06
+    capacidad: Cadena EDA abierta y primer bitstream en la placa
+    nivel: 4
+    evidencia: sim/comun/uart_tx_test.py
+    scope: "UART TX con testbench cocotb y lint verilator en la compuerta dura; síntesis de hola_uart en la de release; mensaje recibido de la placa (MED-03)"
+    no_cubre: "la prueba en placa es manual: ninguna compuerta programa la FPGA; tampoco hay UART RX ni programación de la flash"
+    brecha: "Fase 04: banco de pruebas en placa por UART, con RX"

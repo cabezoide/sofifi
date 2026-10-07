@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=60b9652e1d30 estado=al_dia -->
+<!-- i18n: fuente=README.md sha=a21c266fcab1 estado=al_dia -->
 # SOFIFI — Soundscapes On FPGA: Integrated Filters & Impulses
 
 *In Spanish: Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada.*
@@ -8,10 +8,12 @@
 SOFIFI is an ambient guitar pedal (reverbs, shimmer, tape delays, freeze, granular)
 implemented on a **Sipeed Tang Primer 25K** FPGA (Gowin GW5A-LV25).
 
-**Version:** `0.1` (the version is the last closed phase; see `docs/fases/estado_fases.csv`).
+**Version:** `0.2` (the version is the last closed phase; see `docs/fases/estado_fases.csv`).
 
-> Status: **bit-exact reference model ready** (Phase 01). The plate, shimmer
-> and freeze programs can already be heard on a PC. There is no RTL yet.
+> Status: **open EDA toolchain working** (Phase 02). The bit-exact model lets
+> you hear the plate, shimmer and freeze programs on a PC, and the board already
+> takes a bitstream built with free tools and answers over the UART.
+> There is no DSP core in RTL yet.
 > The initial research is in `docs/investigacion/INVESTIGACION.md` (Spanish).
 
 ## Listening to the effects (no hardware needed)
@@ -59,12 +61,24 @@ make ci         # full local gate
 The working discipline is in `docs/SPEC_RAIZ.md`; the cold-start map is in
 `AGENTS.md` (both in Spanish).
 
+### EDA toolchain (Phase 02)
+
+`make install` installs the whole open toolchain through pip: Yosys and
+nextpnr-himbaechel-gowin (YoWASP), apicula, openFPGALoader, verilator and cocotb.
+
+```bash
+make sim        # cocotb testbenches for the RTL
+make prog       # synthesizes hola_uart and loads it into the Tang Primer 25K SRAM
+make uart       # reads the debugger UART (/dev/ttyUSB1) and requires "SOFIFI"
+```
+
+Programming without sudo needs the udev rule for the BL616 debugger
+(`0403:6010`, group `plugdev`); install it once following
+`scripts/udev/99-tang-primer-25k.rules`.
+
 ### Optional tools (soft gates)
 
-- `verilator`: RTL lint.
 - `shellcheck`: script lint.
-- Gowin EDA Education (≥ 1.9.9Beta-4) or Yosys + nextpnr-himbaechel + apicula:
-  synthesis. It will become a release gate.
 
 If a tool is missing, the gate says so (`WARN … NO CORRIÓ`); it does not fake a green.
 

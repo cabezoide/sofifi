@@ -50,3 +50,16 @@ Desde ahora se cumplen tres reglas:
 - se fusiona con `--delete-branch`;
 - antes de fusionar se comprueba que la base sea `main`;
 - `gh pr edit --base` falla por la deprecación de Projects classic, así que la base se cambia con `gh api -X PATCH repos/<dueño>/<repo>/pulls/N -f base=main`.
+
+## Actualización 2026-10-07 (cadena EDA por pip, Fase 02)
+
+Toda la cadena EDA abierta se instala con `make install` (extra `eda` de `pyproject.toml`): yowasp-yosys, yowasp-nextpnr-himbaechel-gowin, apycula, openfpgaloader, verilator y cocotb. Como ya no depende de lo que tenga instalado cada persona, cambian las clases:
+
+| Clase | Cambio |
+|---|---|
+| Duros | `rtl-lint` pasa de blando a duro; entra `sim` (testbenches cocotb sobre verilator) |
+| De release | entra `synth`, clase `release`: solo corre si se nombra (`make release-check`) y escribe `build/<top>_recursos.json` |
+
+`shell-lint` sigue blando: shellcheck no se instala con pip.
+
+Los trabajos que lanzan herramientas EDA corren con `ulimit -u` acotado. El mismo día, un enlace `.venv/bin/verilator -> verilator-cli` hizo que el envoltorio de pip se relanzara a sí mismo en bucle y la máquina cayó dos veces por OOM. La compuerta llama al binario del paquete con `VERILATOR_ROOT`, nunca al envoltorio.

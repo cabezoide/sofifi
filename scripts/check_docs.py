@@ -196,7 +196,7 @@ def comprobar_hook(errores: list[str]) -> None:
     if "ci_local.sh" not in hook or "--no-soft" not in hook:
         errores.append("hook: pre-push no delega en 'ci_local.sh --no-soft'")
     ci = (ROOT / "scripts" / "ci_local.sh").read_text(encoding="utf-8")
-    trabajos = re.findall(r'^\s*"([a-z-]+):(?:dura|blanda)"', ci, flags=re.M)
+    trabajos = re.findall(r'^\s*"([a-z-]+):(?:dura|blanda|release)"', ci, flags=re.M)
     codigo_hook = "\n".join(
         linea for linea in hook.splitlines() if not linea.lstrip().startswith("#")
     )

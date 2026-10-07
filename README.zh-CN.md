@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=60b9652e1d30 estado=al_dia -->
+<!-- i18n: fuente=README.md sha=a21c266fcab1 estado=al_dia -->
 # SOFIFI — 集成 FPGA 上的沉浸式波形与滤波合成器
 
 *英文名：Soundscapes On FPGA: Integrated Filters & Impulses；西班牙文名：Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada。*
@@ -8,10 +8,11 @@
 SOFIFI 是一款氛围（ambient）吉他效果器（混响、shimmer、磁带延迟、冻结、颗粒合成），
 基于 **Sipeed Tang Primer 25K** FPGA（高云 GW5A-LV25）实现。
 
-**版本：** `0.1`（版本号即最后一个已关闭的阶段；见 `docs/fases/estado_fases.csv`）。
+**版本：** `0.2`（版本号即最后一个已关闭的阶段；见 `docs/fases/estado_fases.csv`）。
 
-> 状态：**逐位精确参考模型已完成**（阶段 01）。现在已可在电脑上试听 plate、
-> shimmer 和 freeze 程序。尚无 RTL。初始调研见
+> 状态：**开源 EDA 工具链已打通**（阶段 02）。借助逐位精确模型可在电脑上试听
+> plate、shimmer 和 freeze 程序；开发板已能加载由开源工具综合的比特流，并通过
+> UART 应答。DSP 核心尚无 RTL。初始调研见
 > `docs/investigacion/INVESTIGACION.md`（西班牙语）。
 
 ## 试听效果（无需硬件）
@@ -53,12 +54,23 @@ make ci         # 完整的本地检查门
 
 工作规范见 `docs/SPEC_RAIZ.md`；冷启动导览见 `AGENTS.md`（均为西班牙语）。
 
+### EDA 工具链（第 02 阶段）
+
+`make install` 通过 pip 安装整条开源工具链：Yosys 与
+nextpnr-himbaechel-gowin（YoWASP）、apicula、openFPGALoader、verilator 和 cocotb。
+
+```bash
+make sim        # RTL 的 cocotb 测试平台
+make prog       # 综合 hola_uart 并加载到 Tang Primer 25K 的 SRAM
+make uart       # 读取调试器 UART（/dev/ttyUSB1），要求收到 "SOFIFI"
+```
+
+无需 sudo 编程需要为 BL616 调试器（`0403:6010`，`plugdev` 组）安装 udev 规则；
+按 `scripts/udev/99-tang-primer-25k.rules` 中的说明安装一次即可。
+
 ### 可选工具（软检查门）
 
-- `verilator`：RTL 静态检查。
 - `shellcheck`：脚本静态检查。
-- Gowin EDA 教育版（≥ 1.9.9Beta-4）或 Yosys + nextpnr-himbaechel + apicula：
-  综合。将成为发布检查门。
 
 如果缺少某个工具，检查门会明确提示（`WARN … NO CORRIÓ`），而不会假装通过。
 

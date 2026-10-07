@@ -18,6 +18,7 @@ impl/
 *.fst
 sim_build/
 results.xml
+*.result.xml
 
 # Audio de prueba generado (los WAV de referencia pequeños van en model/tests/data)
 out/

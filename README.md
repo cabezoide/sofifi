@@ -7,10 +7,12 @@
 SOFIFI es un pedal de guitarra ambient (reverbs, shimmer, delays de cinta, freeze, granular)
 implementado en una FPGA **Sipeed Tang Primer 25K** (Gowin GW5A-LV25).
 
-**Versión:** `0.1` (la versión es la última fase cerrada; ver `docs/fases/estado_fases.csv`).
+**Versión:** `0.2` (la versión es la última fase cerrada; ver `docs/fases/estado_fases.csv`).
 
-> Estado: **modelo de referencia bit-exact listo** (Fase 01). Ya se pueden
-> escuchar en el PC los programas plate, shimmer y freeze. Todavía no hay RTL.
+> Estado: **cadena EDA abierta funcionando** (Fase 02). El modelo bit-exact
+> deja escuchar en el PC los programas plate, shimmer y freeze, y la placa ya
+> recibe un bitstream sintetizado con herramientas libres y responde por la UART.
+> Todavía no hay núcleo DSP en RTL.
 > La investigación de partida está en `docs/investigacion/INVESTIGACION.md`.
 
 ## Escuchar los efectos (sin hardware)
@@ -56,12 +58,24 @@ make ci         # compuerta local completa
 La disciplina de trabajo está en `docs/SPEC_RAIZ.md`; el mapa para retomar en frío,
 en `AGENTS.md`.
 
+### Cadena EDA (Fase 02)
+
+`make install` instala por pip toda la cadena abierta: Yosys y
+nextpnr-himbaechel-gowin (YoWASP), apicula, openFPGALoader, verilator y cocotb.
+
+```bash
+make sim        # testbenches cocotb del RTL
+make prog       # sintetiza hola_uart y lo carga en la SRAM de la Tang Primer 25K
+make uart       # lee la UART del depurador (/dev/ttyUSB1) y exige "SOFIFI"
+```
+
+Para programar sin sudo hace falta la regla udev del depurador BL616
+(`0403:6010`, grupo `plugdev`); se instala una vez con las instrucciones de
+`scripts/udev/99-tang-primer-25k.rules`.
+
 ### Herramientas opcionales (compuertas blandas)
 
-- `verilator`: lint del RTL.
 - `shellcheck`: lint de los scripts.
-- Gowin EDA Education (≥ 1.9.9Beta-4) o Yosys + nextpnr-himbaechel + apicula:
-  síntesis. Será compuerta de release.
 
 Si una herramienta falta, la compuerta lo dice (`WARN … NO CORRIÓ`); no finge un verde.
 
