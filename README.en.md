@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=98ddad6e42bf estado=al_dia -->
+<!-- i18n: fuente=README.md sha=da42d6e401a3 estado=al_dia -->
 # SOFIFI — Soundscapes On FPGA: Integrated Filters & Impulses
 
 *In Spanish: Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada.*
@@ -54,7 +54,7 @@ the tail length in seconds.)
 - **A bit-exact reference model in Python**, which is the oracle the RTL is
   validated against (ADR 0003).
 
-![Memory rules, not compute: the shimmer uses 5.9 % of the cycles and 96.6 % of the memory](docs/img/memoria.png)
+![Why choose SOFIFI? You can read it, change it and check it bit by bit; against the FV-1 it wins on instructions and sample rate, and it does not play with a guitar yet](docs/img/porque.png)
 
 The 2026 state of the art and the roadmap are in
 `docs/investigacion/ESTADO_DEL_ARTE_2026.md` (Spanish). The full infographics are

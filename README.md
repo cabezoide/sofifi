@@ -50,7 +50,7 @@ remuestrea a 48 828 Hz. `sofifi asm` genera el microcódigo (`.hex` + `.json`).
 - **Modelo de referencia bit-exact en Python**, que es el oráculo contra el que se
   valida el RTL (ADR 0003).
 
-![La memoria manda, no el cómputo: el shimmer usa el 5,9 % de los ciclos y el 96,6 % de la memoria](docs/img/memoria.png)
+![¿Por qué escoger SOFIFI? Se puede leer, cambiar y comprobar bit a bit; frente al FV-1 gana en instrucciones y muestreo, y aún no suena con guitarra](docs/img/porque.png)
 
 El estado del arte de 2026 y la hoja de ruta están en
 `docs/investigacion/ESTADO_DEL_ARTE_2026.md`. Las infografías completas están en

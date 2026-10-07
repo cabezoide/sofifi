@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=98ddad6e42bf estado=al_dia -->
+<!-- i18n: fuente=README.md sha=da42d6e401a3 estado=al_dia -->
 # SOFIFI — 集成 FPGA 上的沉浸式波形与滤波合成器
 
 *英文名：Soundscapes On FPGA: Integrated Filters & Impulses；西班牙文名：Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada。*
@@ -48,7 +48,7 @@ SOFIFI 是一款氛围（ambient）吉他效果器（混响、shimmer、磁带�
 - **fs = 48,828 Hz**，系统时钟 100 MHz：每个采样恰好 2,048 个时钟周期（ADR 0005）。
 - **Python 编写的逐位精确（bit-exact）参考模型**，作为验证 RTL 的基准（ADR 0003）。
 
-![内存才是瓶颈，而不是算力：shimmer 只用 5.9% 的周期，却占用 96.6% 的内存](docs/img/memoria.png)
+![为什么选择 SOFIFI？可以阅读、修改并逐位验证；与 FV-1 相比，指令数和采样率更高，但目前还不能接吉他演奏](docs/img/porque.png)
 
 2026 年技术现状与路线图见 `docs/investigacion/ESTADO_DEL_ARTE_2026.md`（西班牙语）。
 完整信息图见 `docs/infografias/`。
