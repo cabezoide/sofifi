@@ -45,3 +45,7 @@ Opción 3.
 ## Actualización 2026-10-07 (renumeración de fases)
 
 Entra una fase de investigación como nueva Fase 03, «Estado del arte y hoja de ruta». El núcleo DSP en RTL, citado arriba como Fase 03, pasa a ser la Fase 04. La decisión no cambia.
+
+## Actualización 2026-10-07 (optimización pasa a release, Fase 04)
+
+Se cumple la revisión prevista: la síntesis del núcleo (`nucleo_placa`) tarda unos 150 s. `optimizacion` pasa a la clase `release`. Lo ejecutan `make optimizacion`, que es la segunda vuelta de cada PR, y `make release-check`. Sin síntesis, los listones `recursos:*` dicen «NO CORRIÓ» en `ratchets` y no fingen un verde. El trabajo `synth` desaparece, porque `optimizacion` ya sintetiza todos los tops.

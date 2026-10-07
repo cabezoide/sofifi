@@ -90,3 +90,31 @@ ratchets:
     aviso_holgura: 0
     motivo: >-
       2026-10-07, cierre de la Fase 03: listón donde se está (ADR 0010).
+  - id: RAT-11
+    nombre: LUT4 del top nucleo_placa (el núcleo completo)
+    medida: recursos:nucleo_placa:LUT4
+    liston: 8185
+    direccion: menor_mejor
+    aviso_holgura: 0
+    motivo: >-
+      2026-10-07, cierre de la Fase 04: el núcleo con el plate cargado. Las
+      partidas mayores son el siguiente valor del ACC y la lectura del banco
+      de registros (ADR 0010).
+  - id: RAT-12
+    nombre: ALU del top nucleo_placa
+    medida: recursos:nucleo_placa:ALU
+    liston: 1114
+    direccion: menor_mejor
+    aviso_holgura: 0
+    motivo: >-
+      2026-10-07, cierre de la Fase 04.
+  - id: RAT-13
+    nombre: BSRAM del top nucleo_placa
+    medida: recursos:nucleo_placa:BSRAM
+    liston: 48
+    direccion: menor_mejor
+    aviso_holgura: 0
+    motivo: >-
+      2026-10-07, cierre de la Fase 04: 42 de memoria de retardo y 6 de
+      microcódigo. La ROM Hermite va en LUT (las SPX9 daban violaciones de
+      hold). Quedan 8 de 56; cada bloque de más es memoria de retardo de menos.

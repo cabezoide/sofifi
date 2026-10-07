@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=f3af8ed0bcd0 estado=al_dia -->
+<!-- i18n: fuente=README.md sha=4acfec37619a estado=al_dia -->
 # SOFIFI — 集成 FPGA 上的沉浸式波形与滤波合成器
 
 *英文名：Soundscapes On FPGA: Integrated Filters & Impulses；西班牙文名：Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada。*
@@ -12,11 +12,11 @@
 SOFIFI 是一款氛围（ambient）吉他效果器（混响、shimmer、磁带延迟、冻结、颗粒合成），
 基于 **Sipeed Tang Primer 25K** FPGA（高云 GW5A-LV25）实现。
 
-**版本：** `0.3`（版本号即最后一个已关闭的阶段；见 `docs/fases/estado_fases.csv`）。
+**版本：** `0.4`（版本号即最后一个已关闭的阶段；见 `docs/fases/estado_fases.csv`）。
 
-> 状态：**核心原语已在开发板上验证**（阶段 03）。27×18 DSP 块、42 个 BSRAM 块和
-> 100 MHz PLL 均可用开源工具链工作。借助逐位精确模型可在电脑上试听 plate、shimmer
-> 和 freeze 程序。DSP 核心尚无 RTL。初始调研见
+> 状态：**DSP 核心已有 RTL，且与模型完全一致**（阶段 04）。仿真中 plate、shimmer
+> 和 freeze 与模型逐位一致；综合后时序收敛于 140 MHz，并已在开发板上运行。借助逐位
+> 精确模型可在电脑上试听这三个程序。芯片上的逐位一致性验证在阶段 05。初始调研见
 > `docs/investigacion/INVESTIGACION.md`（西班牙语）。
 
 ## 试听效果（无需硬件）

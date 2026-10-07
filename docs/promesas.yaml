@@ -50,3 +50,13 @@ promesas:
     not_checked: "ninguna compuerta programa la placa; la prueba en hardware es manual"
     motivo: Cierre de la Fase 03.
     flag: null
+  - id: P-006
+    claim: "El núcleo RTL produce, muestra a muestra, la misma salida que el modelo bit-exact"
+    source: docs/fases/F04-nucleo-dsp-en-rtl-equivalente-al-modelo.md
+    verifier: sim/nucleo/nucleo_test.py
+    kind: funcionalidad
+    status: verificada
+    scope: "plate, shimmer y freeze; 1 000 muestras por programa en la compuerta dura y 63 477 en total en la aceptación (MED-09)"
+    not_checked: "el silicio (Fase 05)"
+    motivo: Cierre de la Fase 04.
+    flag: null

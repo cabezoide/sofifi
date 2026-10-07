@@ -42,6 +42,13 @@ Vacío en la versión 0.0. Las reglas se escriben antes que el código.
   apicula 0.33, PR #501). En la Fase 03 no causó fallos, pero nextpnr 0.11.1 exige
   apicula 0.32. Si un diseño funciona en simulación y no en la placa, probar
   `synth_gowin -strict-gw5a-dffs`.
+- **Las BSRAM `SPX9` (un solo puerto) dan violaciones de hold en el GW5A**; las
+  `DPX9B` no. Las memorias van con `rtl/primitivas/bsram_dp.v`, y las ROM con
+  `(* rom_style = "logic" *)` **en el `case`** (en el puerto no tiene efecto).
+- **En Verilog, una selección de bits (`p[49:0]`) y una concatenación (`{...}`)
+  son sin signo**, y `>>>` sobre ellas es lógico. Pasar por un cable `signed` antes
+  de desplazar. Dos fallos de este tipo los encontraron las pruebas unitarias,
+  no las de los programas.
 - **Reset de arranque en cada dominio de reloj.** Verilator arranca los registros a
   0, y con el PLL simulado `bloqueado` vale 1 desde el principio: sin un contador de
   arranque, el reset no llega nunca en simulación.

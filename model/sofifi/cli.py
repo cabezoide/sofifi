@@ -15,11 +15,17 @@ from pathlib import Path
 from sofifi.adapters.archivos import FuenteProgramaArchivo, SumideroHex
 from sofifi.adapters.wav import FuenteWav, SumideroWav
 from sofifi.domain.aritmetica import FS_WAV, dato
-from sofifi.domain.ensamblador import ErrorEnsamblado
+from sofifi.domain.ensamblador import ErrorEnsamblado, ensamblar
 from sofifi.domain.isa import NUM_POTS
 from sofifi.domain.senal import Controles
 from sofifi.services.render import exportar_microcodigo, renderizar
-from sofifi.services.tablas import RUTA_TABLA_HERMITE, verilog_tabla_hermite
+from sofifi.services.tablas import (
+    PROGRAMAS_EN_ROM,
+    RUTA_TABLA_HERMITE,
+    ruta_programa,
+    verilog_programa,
+    verilog_tabla_hermite,
+)
 
 
 def _pots(valores: list[str]) -> tuple[int, ...]:
@@ -50,7 +56,7 @@ def main(argv: list[str] | None = None) -> int:
     a = sub.add_parser("asm", help="ensambla a microcódigo (.hex + .json)")
     a.add_argument("programa", type=Path)
     a.add_argument("salida", type=Path)
-    sub.add_parser("tablas", help=f"regenera {RUTA_TABLA_HERMITE} desde el modelo")
+    sub.add_parser("tablas", help="regenera las tablas y programas en ROM del RTL")
     r = sub.add_parser("render", help="procesa un WAV con un programa")
     r.add_argument("programa", type=Path)
     r.add_argument("entrada", type=Path)
@@ -63,6 +69,11 @@ def main(argv: list[str] | None = None) -> int:
         if args.orden == "tablas":
             Path(RUTA_TABLA_HERMITE).write_text(verilog_tabla_hermite(), encoding="utf-8")
             print(f"tabla Hermite → {RUTA_TABLA_HERMITE}")
+            for nombre in PROGRAMAS_EN_ROM:
+                fuente = Path("programas") / f"{nombre}.sasm"
+                programa = ensamblar(fuente.read_text(encoding="utf-8"), nombre)
+                Path(ruta_programa(nombre)).write_text(verilog_programa(programa), encoding="utf-8")
+                print(f"{nombre} → {ruta_programa(nombre)}")
         elif args.orden == "asm":
             prog = exportar_microcodigo(
                 FuenteProgramaArchivo(args.programa), SumideroHex(args.salida)

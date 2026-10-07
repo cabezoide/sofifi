@@ -14,11 +14,11 @@ from pathlib import Path
 import cocotb
 from cocotb.triggers import Timer
 from comun import RTL, con_signo, construir
-from sofifi.domain.aritmetica import DATO_FRAC, acc_a_dato
+from sofifi.domain.aritmetica import acc_a_dato
 from sofifi.domain.isa import Instruccion, Op, addr_con_signo
 from sofifi.domain.nucleo import MANEJADORES, Nucleo
 
-OPS = [op for op in Op if op not in (Op.SKP, Op.CHO)]
+OPS = [op for op in Op if op not in (Op.SKP, Op.CHO, Op.CLIP)]  # CLIP: curva_fin_test.py
 
 
 class MemoriaFija:
@@ -45,9 +45,6 @@ def producto(op: Op, a24: int, r: int, v: int, c: int) -> int:
         return (a24 - r) * c
     if op is Op.MULX:
         return a24 * r
-    if op is Op.CLIP:
-        x2 = (a24 * a24) >> DATO_FRAC
-        return x2 * a24
     return 0
 
 
@@ -67,7 +64,7 @@ async def acc_igual_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
         MANEJADORES[op](n, Instruccion(op, reg=0, coef=c, addr=addr))
 
         dut.op.value, dut.acc.value, dut.p.value = int(op), acc, p
-        dut.lr.value, dut.r.value, dut.x.value, dut.addr.value = lr, r, a24, addr
+        dut.lr.value, dut.r.value, dut.addr.value = lr, r, addr
         await Timer(1, unit="ns")
         assert dut.acc_sig.value.to_signed() == n.acc, (
             f"{op.name}: acc={acc} lr={lr} r={r} c={c} addr={addr_con_signo(addr)} p={p}"
@@ -76,5 +73,8 @@ async def acc_igual_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
 
 def test_alu(tmp_path: Path) -> None:
     construir(
-        tmp_path, [RTL / "nucleo" / "alu.v", RTL / "nucleo" / "saturar_acc.v"], "alu", "alu_test"
+        tmp_path,
+        [RTL / "nucleo" / m for m in ("alu.v", "saturar_acc.v")],
+        "alu",
+        "alu_test",
     )

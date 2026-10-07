@@ -73,3 +73,7 @@ Los trabajos que lanzan herramientas EDA corren con `ulimit -u` acotado. El mism
 ## Actualización 2026-10-07 (lint por módulo, Fase 04)
 
 `rtl-lint` también hace un lint de cada módulo de `rtl/comun`, `rtl/primitivas` y `rtl/nucleo` por separado. Los módulos del núcleo se escriben antes de que exista un top que los use, y sin esto quedarían fuera del lint.
+
+## Actualización 2026-10-07 (síntesis fuera del pre-push, Fase 04)
+
+`optimizacion` pasa de dura a `release` (ADR 0010, revisión prevista) y desaparece `synth`. El pre-push queda en lint, simulación y modelo; la síntesis corre en `make optimizacion` y en `make release-check`.
