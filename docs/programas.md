@@ -3,7 +3,7 @@
 
 # Programas del núcleo
 
-25 programas. Cada uno es un fichero de texto en `programas/`.
+30 programas. Cada uno es un fichero de texto en `programas/`.
 Los ciclos son la cota del RTL, de 2 048 por muestra
 (`model/sofifi/domain/coste.py`). La memoria es de 43 008 palabras.
 
@@ -28,7 +28,12 @@ Los ciclos son la cota del RTL, de 2 048 por muestra
 
 | Programa | Qué hace | Mandos | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|
+| `bbd` | Eco analógico oscuro: cada repetición pierde agudos y se satura. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: modulación | 44 | 563 | 14 674 |
 | `cinta` | Eco de cinta de 0,18 a 0,85 s con wow, flutter y saturación. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: wow y flutter | 50 | 665 | 41 600 |
+| `delay` | Eco digital limpio de 20 a 690 ms, con tono en la realimentación. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: tono | 38 | 455 | 33 749 |
+| `ducking` | Eco que se aparta mientras se toca y aparece en los silencios. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: ducking | 51 | 586 | 33 749 |
+| `lluvia` | Seis ecos irregulares que se deshacen en allpass: una lluvia de notas. | 0: difusión<br>1: realimentación<br>2: mezcla | 46 | 593 | 35 385 |
+| `pingpong` | Eco estéreo que salta de un lado a otro. | 0: tiempo<br>1: realimentación<br>2: mezcla | 38 | 497 | 40 874 |
 | `reverse` | Eco invertido en granos de 0,17 s. | 0: tono<br>1: realimentación<br>2: mezcla | 34 | 470 | 16 388 |
 
 ## Modulación

@@ -78,6 +78,7 @@ Además, la directiva `include` en el ensamblador.
 - **Lote 1, modulación:** chorus (3 voces), flanger, phaser (4 etapas), trémolo con autopan y vibrato. Trémolo y phaser usan un LFO triangular por software (`comun/lfo_triangulo.sasm`): los LFO del núcleo no se pueden leer.
 - **Lote 2, pitch:** octava (−12 y +12), armonizador (−12, −7, −5, +5, +7 o +12, con realimentación), doblador (±25 cents), escalera (eco que cambia de intervalo en cada vuelta) y shimmer de quinta. El cuerpo del shimmer pasa a `comun/shimmer_cuerpo.sasm`: el intervalo es un `equ`. El tanque con CLIP de shimmer y freeze pasa a `comun/dattorro_tanque_clip.sasm`.
 - **Lote 3, reverbs:** blackhole (T60 de 49 s), infinite (capa que no decae), bloom (la cola crece tras el ataque), spring (30 allpass de dispersión), gated y reverb inversa. La red del hall pasa a `comun/fdn8_decl.sasm` y `comun/fdn8_cuerpo.sasm`, con las longitudes como `equ`. Gated, reverb inversa y bloom comparten el detector de ataque (`comun/compuerta.sasm`) y la curva de duración (`comun/duracion.sasm`).
+- **Lote 4, delays:** delay limpio, ping-pong, lluvia (6 taps difusos), BBD (oscuro y saturado) y ducking (los ecos se apartan mientras se toca; hoja de ruta, punto 4). El retardo variable de la cinta pasa a `comun/tiempo.sasm`. Una prueba exige huellas distintas: dos iguales suelen ser solo señal seca.
 - `docs/programas.md` se genera con `sofifi catalogo` desde la cabecera de cada programa (`; familia:`, `; resumen:`, `; potN =`).
 
 ## Criterios de aceptación

@@ -1,0 +1,66 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: delay
+; resumen: Eco estéreo que salta de un lado a otro.
+;
+; pingpong.sasm — Dos retardos cruzados: la entrada va al izquierdo, el
+; izquierdo alimenta al derecho y el derecho vuelve al izquierdo. Cada eco sale
+; por el lado contrario al anterior. Los dos usan el mismo LFO parado
+; (comun/tiempo.sasm), así que tienen el mismo tiempo. Diseño propio.
+;
+; pot0 = tiempo           (0 → 20 ms · 1 → 420 ms por lado)
+; pot1 = realimentación   (0 → dos ecos · 1 → 0,9)
+; pot2 = mezcla           (0 → seco · 1 → solo ecos)
+
+equ  et    9728
+equ  base  977
+
+equ  trate    lfo0_rate
+equ  tdepth   lfo0_depth
+equ  tpot     pot0
+equ  kwet     reg0
+equ  kdry     reg1
+equ  tiempo   reg2
+equ  ei       reg3
+equ  ed       reg4
+equ  w        reg5
+
+mem  dli   base + 2*et + 3
+mem  dld   base + 2*et + 3
+
+lfo  0  sin  et
+
+        wrax  trate, 0
+        skp   run, inicio
+        sof   0, 0.5
+        wrax  trate, 0
+inicio:
+include  comun/mezcla.sasm
+include  comun/tiempo.sasm
+; ── retardos cruzados ────────────────────────────────────────────────
+        cho   dli + base, 1.0, lfo0
+        wrax  ei, 0
+        cho   dld + base, 1.0, lfo0
+        wrax  ed, 1.0
+        mulx  pot1
+        sof   0.9, 0
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wra   dli, 0
+        rdax  ei, 1.0
+        wra   dld, 0
+; ── salida ───────────────────────────────────────────────────────────
+        rdax  ei, 1.0
+        mulx  kwet
+        wrax  w, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  w, 1.0
+        wrax  dacl, 0
+        rdax  ed, 1.0
+        mulx  kwet
+        wrax  w, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  w, 1.0
+        wrax  dacr, 0

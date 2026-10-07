@@ -10,7 +10,7 @@ menos que un WAV. El códec da el mismo audio cada vez, pero el fichero cambia
 en su número de serie. Por eso un ``.ogg`` solo se reescribe si su audio cambia:
 regenerar sin cambios no toca git.
 
-Uso: ``.venv/bin/python scripts/generar_demos.py``  (unos 4 min; necesita
+Uso: ``.venv/bin/python scripts/generar_demos.py``  (unos 2 min en 8 núcleos; necesita
 ``pip install -e '.[demos]'``)
 """
 
@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import sys
 import tempfile
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -62,6 +63,11 @@ DEMOS: tuple[tuple[str, dict[int, str], tuple[tuple[float, float], ...], float],
     ("infinite", {0: "0.1", 1: "0.3", 2: "0.45"}, (), 6.0),
     ("reverb_inversa", {0: "0.8", 1: "0.3", 2: "0.55", 3: "0.6"}, (), 1.0),
     ("spring", {0: "0.6", 1: "0.4", 2: "0.4"}, (), 3.0),
+    ("delay", {0: "0.55", 1: "0.45", 2: "0.4", 3: "0.7"}, (), 4.0),
+    ("pingpong", {0: "0.7", 1: "0.5", 2: "0.45"}, (), 4.0),
+    ("lluvia", {0: "0.7", 1: "0.4", 2: "0.5"}, (), 4.0),
+    ("bbd", {0: "0.6", 1: "0.6", 2: "0.45", 3: "0.5"}, (), 4.0),
+    ("ducking", {0: "0.45", 1: "0.5", 2: "0.5", 3: "0.8"}, (), 4.0),
 )
 # Calidad de Vorbis: 0 es la mejor. Con 0,3, una demo de 8 s ocupa unos 190 kB.
 COMPRESION = 0.3
@@ -108,22 +114,30 @@ def escribir_ogg(ruta: Path, senal: Senal) -> bool:
     return True
 
 
+def _demo(demo: tuple[str, dict[int, str], tuple[tuple[float, float], ...], float]) -> str:
+    """Renderiza una demo y la escribe si su audio cambió. Corre en un proceso aparte."""
+    nombre, pots, tramos, cola = demo
+    controles = Controles(
+        tuple(dato(pots.get(i, "0")) for i in range(6)),
+        tuple((round(a * FS_WAV), round(b * FS_WAV)) for a, b in tramos),
+    )
+    programa = ensamblar_archivo(ROOT / "programas" / f"{nombre}.sasm")
+    salida = procesar(programa, guitarra(), controles, round(cola * FS_WAV))
+    destino = DESTINO / f"demo_{nombre}.ogg"
+    escrita = escribir_ogg(destino, salida)
+    return f"{nombre} → {destino.relative_to(ROOT)}" + ("" if escrita else " (igual)")
+
+
 def main() -> int:
     seca = guitarra()
     destino = DESTINO / "demo_guitarra.ogg"
     print(
         f"seca → {destino.relative_to(ROOT)}" + ("" if escribir_ogg(destino, seca) else " (igual)")
     )
-    for nombre, pots, tramos, cola in DEMOS:
-        controles = Controles(
-            tuple(dato(pots.get(i, "0")) for i in range(6)),
-            tuple((round(a * FS_WAV), round(b * FS_WAV)) for a, b in tramos),
-        )
-        programa = ensamblar_archivo(ROOT / "programas" / f"{nombre}.sasm")
-        salida = procesar(programa, seca, controles, round(cola * FS_WAV))
-        destino = DESTINO / f"demo_{nombre}.ogg"
-        escrita = escribir_ogg(destino, salida)
-        print(f"{nombre} → {destino.relative_to(ROOT)}" + ("" if escrita else " (igual)"))
+    # Un proceso por núcleo: cada demo es independiente y el modelo usa un solo núcleo.
+    with ProcessPoolExecutor() as procesos:
+        for linea in procesos.map(_demo, DEMOS):
+            print(linea)
     return 0
 
 

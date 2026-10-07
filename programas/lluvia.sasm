@@ -1,0 +1,77 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: delay
+; resumen: Seis ecos irregulares que se deshacen en allpass: una lluvia de notas.
+;
+; lluvia.sasm — Multitap: una línea de 0,6 s con seis taps a tiempos sin
+; patrón (0,09 · 0,16 · 0,25 · 0,36 · 0,47 · 0,60 s). Los impares van a la
+; izquierda y los pares a la derecha. Cada lado pasa por dos allpass que
+; difuminan los ecos; pot0 elige cuánto. El último tap realimenta la línea.
+; Idea del multitap «rain» (docs/investigacion/INVESTIGACION.md §4.3). Diseño propio.
+;
+; pot0 = difusión         (0 → ecos nítidos · 1 → lluvia difusa)
+; pot1 = realimentación   (0 → seis ecos · 1 → 0,8)
+; pot2 = mezcla           (0 → seco · 1 → solo ecos)
+
+equ  ka    0.6
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  ti       reg2
+equ  td       reg3
+equ  wi       reg4
+equ  wd       reg5
+
+mem  ll    29300
+mem  ai1   1109
+mem  ai2   1931
+mem  ad1   1229
+mem  ad2   1811
+
+include  comun/mezcla.sasm
+; ── taps ─────────────────────────────────────────────────────────────
+        rda   ll + 4395, 0.6            ; 0,09 s
+        rda   ll + 12207, -0.45         ; 0,25 s
+        rda   ll + 22949, 0.35          ; 0,47 s
+        wrax  ti, 0
+        rda   ll + 7812, 0.5            ; 0,16 s
+        rda   ll + 17578, -0.4          ; 0,36 s
+        rda   ll + 29297, 0.3           ; 0,60 s
+        wrax  td, 0
+; ── entrada y realimentación del último tap ──────────────────────────
+        rda   ll + 29297, 1.0
+        mulx  pot1
+        sof   0.8, 0
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wra   ll, 0
+; ── difusión: wet = taps + pot0·(allpass(taps) − taps) ───────────────
+        rdax  ti, 1.0
+        rda   ai1#, ka
+        wrap  ai1, -ka
+        rda   ai2#, ka
+        wrap  ai2, -ka
+        rdax  ti, -1.0
+        mulx  pot0
+        rdax  ti, 1.0
+        mulx  kwet
+        wrax  wi, 0
+        rdax  td, 1.0
+        rda   ad1#, ka
+        wrap  ad1, -ka
+        rda   ad2#, ka
+        wrap  ad2, -ka
+        rdax  td, -1.0
+        mulx  pot0
+        rdax  td, 1.0
+        mulx  kwet
+        wrax  wd, 0
+; ── salida ───────────────────────────────────────────────────────────
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  wi, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  wd, 1.0
+        wrax  dacr, 0
