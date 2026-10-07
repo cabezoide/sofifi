@@ -23,5 +23,10 @@
 | `demo_phaser.ogg` | `phaser.sasm` | 0,20 (velocidad/rate) | 0,90 (profundidad/depth) | 0,50 | 0,50 (realimentación/feedback) | |
 | `demo_tremolo.ogg` | `tremolo.sasm` | 0,30 (velocidad/rate) | 0,70 (profundidad/depth) | 0,60 (panorama/pan) | | |
 | `demo_vibrato.ogg` | `vibrato.sasm` | 0,40 (velocidad/rate) | 0,50 (profundidad/depth) | 1 | | |
+| `demo_octava.ogg` | `octava.sasm` | 0,60 (−12) | 0,40 (+12) | 0,80 (seco/dry) | | |
+| `demo_armonizador.ogg` | `armonizador.sasm` | 0,75 (+7) | 0,30 (realimentación/feedback) | 0,45 | | |
+| `demo_doblador.ogg` | `doblador.sasm` | 0,50 (±12 cents) | | 0,50 | | |
+| `demo_escalera.ogg` | `escalera.sasm` | 0,95 (+12) | 0,60 (realimentación/feedback) | 0,45 | 0,40 (tiempo/time) | |
+| `demo_shimmer_quinta.ogg` | `shimmer_quinta.sasm` | 0,75 | 0,25 | 0,55 | 0,60 | |
 
 Ogg Vorbis a 48 828 Hz (ADR 0005); el render es bit-exact en 24 bit. Ogg Vorbis at 48,828 Hz; the render is bit-exact at 24 bits. Ogg Vorbis，48,828 Hz；渲染在 24 位下逐位精确。

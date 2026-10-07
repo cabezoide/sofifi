@@ -211,10 +211,15 @@ HUELLAS = {
     "phaser": "f56d3cf9add10ab7",
     "tremolo": "1b6fc45fd6e309e6",
     "vibrato": "82980fc514ddf04c",
+    "armonizador": "b09fcc26a86dbd5b",
+    "doblador": "cd0ae0b848845c18",
+    "escalera": "63c082164fefbd79",
+    "octava": "9db69730833af9a6",
+    "shimmer_quinta": "2ffc6c5bd7ddb4bf",
 }
 
 
-SEGUNDOS_HUELLA = {"cinta": 0.6, "reverse": 0.4}
+SEGUNDOS_HUELLA = {"cinta": 0.6, "reverse": 0.4, "escalera": 0.6}
 CON_TONO = {"lofi", "swell", "tremolo"}
 
 

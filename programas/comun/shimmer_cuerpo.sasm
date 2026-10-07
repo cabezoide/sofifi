@@ -1,0 +1,52 @@
+; SPDX-License-Identifier: MIT
+;
+; comun/shimmer_cuerpo.sasm — todo el shimmer salvo el intervalo: plate con
+; tanque CLIP y un pitch shifter de doble tap en la realimentación. Quien lo
+; incluye define antes `equ rate_pit`: la velocidad de la rampa del shifter,
+; 2·(1 − razón)/4096 con razón = 2^(semitonos/12). +12 → −1/2048; +7 → −1/4096.
+
+include  comun/dattorro_decl.sasm
+
+equ  kshim    reg9
+equ  shlp     reg10
+equ  shhp     reg11
+equ  shout    reg12
+
+mem  pit   4096 + 3               ; buffer del pitch shifter
+
+lfo  2  ramp 4096                 ; ventana del pitch shifter
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+include  comun/dattorro_lfo.sasm
+        sof   0, 0.99
+        wrax  lfo0_depth, 1.0
+        wrax  lfo1_depth, 0
+        sof   0, rate_pit               ; rate = 2·(1 − razón)/4096 (ver shimmer.sasm)
+        wrax  lfo2_rate, 0
+inicio:
+include  comun/controles.sasm
+        rdax  pot3, 0.6
+        wrax  kshim, 0
+; ── entrada: mono, escalada por la mezcla, predelay y ancho de banda ─
+include  comun/entrada.sasm
+        rdfx  bw, kbw
+        wrax  bw, 1.0
+        rdax  shout, 1.0                ; realimentación del shimmer
+include  comun/dattorro_difusion.sasm
+include  comun/dattorro_tanque_clip.sasm
+include  comun/dattorro_salida.sasm
+; ── shimmer: +12 de doble tap sobre la cola izquierda, filtrado, de vuelta a la entrada ──
+        rda   dr1 + 266*s, ksal
+        rda   dr1 + 2974*s, ksal
+        rda   dl1 + 1990*s, -ksal
+        wra   pit, 0
+        cho   pit + 1, 1.0, lfo2, na
+        cho   pit + 1, 1.0, lfo2, na|media
+        rdfx  shlp, 0.35                ; paso bajo: quita el brillo áspero de cada vuelta
+        wrax  shlp, 1.0
+        rdfx  shhp, 0.02                ; paso alto = x − paso bajo lento
+        wrax  shhp, -1.0
+        rdax  shlp, 1.0
+        mulx  kshim
+        wrax  shout, 0

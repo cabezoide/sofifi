@@ -1,0 +1,43 @@
+; SPDX-License-Identifier: MIT
+;
+; comun/intervalo.sasm — pot0 elige el intervalo del pitch shifter del LFO0
+; (RAMP de 4 096 muestras) en seis tramos iguales:
+;   −12 · −7 · −5 · +5 · +7 · +12 semitonos.
+; La rampa sube 2·(1 − razón)/4096 por muestra. Con tmp = 2^-9, el coeficiente
+; de cada tramo es (1 − razón)/4. Necesita el registro tmp = 2^-9. Deja ACC = 0.
+
+        rdax  pot0, 1.0
+        sof   1.0, -1/6
+        skp   neg, int_m12
+        sof   1.0, -1/6
+        skp   neg, int_m7
+        sof   1.0, -1/6
+        skp   neg, int_m5
+        sof   1.0, -1/6
+        skp   neg, int_p5
+        sof   1.0, -1/6
+        skp   neg, int_p7
+        clr                             ; +12: razón 2
+        rdax  tmp, -0.25
+        skp   gez|neg, int_fin
+int_m12:
+        clr                             ; −12: razón 0,5
+        rdax  tmp, 0.125
+        skp   gez|neg, int_fin
+int_m7:
+        clr                             ; −7: razón 0,66742
+        rdax  tmp, (1 - 0.66742)/4
+        skp   gez|neg, int_fin
+int_m5:
+        clr                             ; −5: razón 0,74915
+        rdax  tmp, (1 - 0.74915)/4
+        skp   gez|neg, int_fin
+int_p5:
+        clr                             ; +5: razón 1,33484
+        rdax  tmp, (1 - 1.33484)/4
+        skp   gez|neg, int_fin
+int_p7:
+        clr                             ; +7: razón 1,49831
+        rdax  tmp, (1 - 1.49831)/4
+int_fin:
+        wrax  lfo0_rate, 0

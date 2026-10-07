@@ -1,0 +1,14 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: reverb
+; resumen: Shimmer de quinta: cada vuelta sube 7 semitonos, como un acorde que se abre.
+;
+; shimmer_quinta.sasm — El shimmer (shimmer.sasm) con +7 en lugar de +12. La
+; razón 1,5 es la quinta justa (+7,02 semitonos). Dos vueltas dan +14: una
+; novena. Idea del modo «quinta» de los shimmer comerciales (docs/investigacion).
+;
+; pot0 = decay · pot1 = damping · pot2 = mezcla · pot3 = cantidad de shimmer
+
+equ  rate_pit  -1/4096            ; +7: razón 1,5
+
+include  comun/shimmer_cuerpo.sasm
