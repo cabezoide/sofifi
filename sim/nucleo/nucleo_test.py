@@ -9,7 +9,7 @@ SOFIFI_MUESTRAS fija la longitud. Por defecto son 1 000 muestras, para que la
 compuerta siga siendo rápida; los criterios de aceptación de la Fase 04 se
 ejecutan aparte (MED-09):
 
-    SOFIFI_MUESTRAS=4883 pytest sim/nucleo/nucleo_test.py                 # 0,1 s, los tres
+    SOFIFI_MUESTRAS=4883 pytest sim/nucleo/nucleo_test.py                 # 0,1 s, todos
     SOFIFI_MUESTRAS=48828 SOFIFI_PROGRAMAS=plate pytest sim/nucleo/nucleo_test.py   # 1 s
     SOFIFI_MUESTRAS=12000 SOFIFI_PROGRAMAS=cinta pytest sim/nucleo/nucleo_test.py   # eco
 
@@ -24,9 +24,10 @@ import random
 from pathlib import Path
 
 import cocotb
+import pytest
 from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles, RisingEdge
-from cocotb_tools.runner import get_runner
+from cocotb_tools.runner import Runner, get_runner
 from comun import AQUI, RAIZ, RTL
 from sofifi.adapters.archivos import ensamblar_archivo
 from sofifi.domain.aritmetica import CICLOS_POR_MUESTRA, dato
@@ -268,22 +269,46 @@ async def coste_de_cada_instruccion(dut: cocotb.handle.HierarchyObject) -> None:
         assert diez <= ciclos_rtl(ensamblar(CABECERA_COSTE + "\n".join([linea] * 10), "coste"))
 
 
-def test_nucleo(tmp_path: Path) -> None:
+SELECCION = os.environ.get("SOFIFI_PROGRAMAS", ",".join(PROGRAMAS)).split(",")
+
+
+@pytest.fixture(scope="module")
+def construido(tmp_path_factory: pytest.TempPathFactory) -> tuple[Runner, Path]:
+    """Una compilación de verilator por proceso de pytest; la comparten las pruebas."""
+    destino = tmp_path_factory.mktemp("nucleo")
     runner = get_runner("verilator")
     runner.build(
         sources=FUENTES,
         hdl_toplevel="nucleo",
         defines={"SIMULACION": 1},
-        build_dir=tmp_path,
+        build_dir=destino,
         build_args=["-Wall"],
         always=True,
     )
-    for nombre in os.environ.get("SOFIFI_PROGRAMAS", ",".join(PROGRAMAS)).split(","):
-        runner.test(
-            hdl_toplevel="nucleo",
-            test_module="nucleo_test",
-            test_dir=AQUI,
-            build_dir=tmp_path,
-            extra_env={"PROGRAMA": nombre},
-            results_xml=str(tmp_path / f"resultados_{nombre}.xml"),
-        )
+    return runner, destino
+
+
+def _correr(
+    construido: tuple[Runner, Path], casos: list[str], nombre: str, entorno: dict[str, str]
+) -> None:
+    runner, destino = construido
+    runner.test(
+        hdl_toplevel="nucleo",
+        test_module="nucleo_test",
+        test_dir=AQUI,
+        build_dir=destino,
+        testcase=casos,
+        extra_env=entorno,
+        results_xml=str(destino / f"resultados_{nombre}.xml"),
+    )
+
+
+def test_nucleo_auxiliares(construido: tuple[Runner, Path]) -> None:
+    """Reset, saltos y coste de cada instrucción: no dependen del programa."""
+    casos = ["reset_borra_la_memoria", "saltos_iguales_al_modelo", "coste_de_cada_instruccion"]
+    _correr(construido, casos, "auxiliares", {})
+
+
+@pytest.mark.parametrize("nombre", SELECCION)
+def test_nucleo_programa(construido: tuple[Runner, Path], nombre: str) -> None:
+    _correr(construido, ["igual_al_modelo"], nombre, {"PROGRAMA": nombre})
