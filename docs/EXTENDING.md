@@ -20,8 +20,10 @@ Un efecto es un programa, no un módulo RTL (ADR 0006).
 5. Se añade su huella en `HUELLAS` (`model/tests/programas_test.py`). Las
    pruebas de «cabe», de huella y de igualdad con el RTL (`sim/nucleo/nucleo_test.py`)
    recorren todos los `.sasm`: fallan si falta algo.
-6. Se regenera el catálogo con `sofifi catalogo`.
-7. Se añade la demo en `DEMOS` (`scripts/generar_demos.py`) y en
+6. Se añaden al menos 5 presets en `presets/banco.toml`, en una tabla con el
+   nombre del programa. `model/tests/presets_test.py` comprueba los mandos.
+7. Se regenera el catálogo con `sofifi catalogo`.
+8. Se añade la demo en `DEMOS` (`scripts/generar_demos.py`) y en
    `demo_examples/README.md`.
 
 ## Una instrucción del núcleo

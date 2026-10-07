@@ -139,3 +139,25 @@ def test_cli_freeze_y_pot_invalido(tmp_path: Path) -> None:
     assert main(["render", str(prog), str(entrada), str(salida), "--freeze", "0:0.001"]) == 0
     assert FuenteWav(salida).leer().canales[0][0] == DATO_MAX
     assert main(["render", str(prog), str(entrada), str(salida), "--pot", "pot9=2"]) == 1
+
+
+def test_cli_presets(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(Path(__file__).resolve().parents[2])
+    assert main(["presets", "hall"]) == 0
+    assert "hall/Catedral: 0.90 0.35 0.45" in capsys.readouterr().out
+    entrada = tmp_path / "in.wav"
+    _wav16(entrada, [16384, 16384])
+    salida = tmp_path / "out.wav"
+    assert (
+        main(
+            ["render", "programas/plate.sasm", str(entrada), str(salida), "--preset", "Cola larga"]
+        )
+        == 0
+    )
+    assert salida.is_file()
+    assert (
+        main(["render", "programas/plate.sasm", str(entrada), str(salida), "--preset", "Nada"]) == 1
+    )
+    assert "no está en [plate]" in capsys.readouterr().err

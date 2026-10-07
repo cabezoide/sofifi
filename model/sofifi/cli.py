@@ -3,7 +3,9 @@
 
 sofifi asm       PROGRAMA.sasm  SALIDA_BASE
 sofifi catalogo  (regenera docs/programas.md)
-sofifi render  PROGRAMA.sasm  ENTRADA.wav  SALIDA.wav  [--pot N=V] [--freeze A:B] [--cola S]
+sofifi render  PROGRAMA.sasm  ENTRADA.wav  SALIDA.wav
+               [--preset NOMBRE] [--pot N=V] [--freeze A:B] [--cola S]
+sofifi presets [PROGRAMA]
 """
 
 from __future__ import annotations
@@ -14,6 +16,7 @@ from fractions import Fraction
 from pathlib import Path
 
 from sofifi.adapters.archivos import FuenteProgramaArchivo, SumideroHex, ensamblar_archivo
+from sofifi.adapters.presets import leer_banco
 from sofifi.adapters.wav import FuenteWav, SumideroWav
 from sofifi.domain.aritmetica import CICLOS_POR_MUESTRA, FS_WAV, dato
 from sofifi.domain.coste import ciclos_rtl
@@ -29,6 +32,8 @@ from sofifi.services.tablas import (
     verilog_programa,
     verilog_tabla_hermite,
 )
+
+RUTA_BANCO = Path("presets/banco.toml")
 
 
 def _pots(valores: list[str]) -> tuple[int, ...]:
@@ -68,14 +73,25 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--pot", action="append", default=[], metavar="potN=V")
     r.add_argument("--freeze", action="append", default=[], metavar="INICIO:FIN", help="segundos")
     r.add_argument("--cola", type=float, default=0.0, help="segundos de silencio al final")
+    r.add_argument(
+        "--preset", metavar="NOMBRE", help="mandos de presets/banco.toml (antes de --pot)"
+    )
+    pr = sub.add_parser("presets", help="lista los presets de presets/banco.toml")
+    pr.add_argument("programa", nargs="?", help="solo los de este programa")
     args = p.parse_args(argv)
     try:
-        if args.orden == "catalogo":
+        if args.orden == "presets":
+            banco = leer_banco(RUTA_BANCO)
+            for programa in [args.programa] if args.programa else sorted(banco):
+                for nombre, valores in banco.get(programa, {}).items():
+                    print(f"{programa}/{nombre}: " + " ".join(f"{float(v):.2f}" for v in valores))
+        elif args.orden == "catalogo":
             fichas = [
                 ficha(r.stem, r.read_text(encoding="utf-8"), ensamblar_archivo(r))
                 for r in sorted(Path("programas").glob("*.sasm"))
             ]
-            Path(RUTA_CATALOGO).write_text(markdown(fichas), encoding="utf-8")
+            presets = {p: len(v) for p, v in leer_banco(RUTA_BANCO).items()}
+            Path(RUTA_CATALOGO).write_text(markdown(fichas, presets), encoding="utf-8")
             print(f"{len(fichas)} programas → {RUTA_CATALOGO}")
         elif args.orden == "tablas":
             Path(RUTA_TABLA_HERMITE).write_text(verilog_tabla_hermite(), encoding="utf-8")
@@ -94,7 +110,15 @@ def main(argv: list[str] | None = None) -> int:
                 f"{prog.palabras_memoria} palabras de memoria"
             )
         else:
-            controles = Controles(_pots(args.pot), _tramos(args.freeze))
+            pots_preset: list[str] = []
+            if args.preset:
+                del_programa = leer_banco(RUTA_BANCO).get(args.programa.stem, {})
+                if args.preset not in del_programa:
+                    raise argparse.ArgumentTypeError(
+                        f"--preset {args.preset}: no está en [{args.programa.stem}] de {RUTA_BANCO}"
+                    )
+                pots_preset = [f"pot{k}={v}" for k, v in enumerate(del_programa[args.preset])]
+            controles = Controles(_pots(pots_preset + args.pot), _tramos(args.freeze))
             informe = renderizar(
                 FuenteProgramaArchivo(args.programa),
                 FuenteWav(args.entrada),
