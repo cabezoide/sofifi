@@ -94,3 +94,9 @@ La persona propietaria elige comprimir las demos. Pasan de WAV a **Ogg Vorbis**:
 - El codificador es `soundfile` (BSD) sobre libsndfile (LGPL-2.1), libvorbis y libogg (BSD). Se usan como bibliotecas desde un script y no se copian (ADR 0002). Van en el grupo opcional `demos` de `pyproject.toml`.
 - Dos codificaciones dan el mismo audio, pero el fichero cambia en el número de serie de Ogg. `scripts/generar_demos.py` solo reescribe un `.ogg` si su audio cambia.
 - `secrets` admite `.ogg` de hasta 4 MiB en `demo_examples/`.
+
+## Actualización 2026-10-07 (pruebas del modelo en paralelo, Fase 06)
+
+El trabajo `model` corre `pytest -n auto` (`pytest-xdist`, MIT). La biblioteca de programas va a crecer a unos 40, y cada programa añade unos segundos de pruebas acústicas. En serie, la suite del modelo tardaba unos 50 s con 9 programas; en paralelo, 18 s en 8 núcleos. La cobertura se sigue midiendo.
+
+El trabajo `sim` corre `pytest sim -n 4`. La prueba del núcleo se parte en una prueba por programa, más otra con las pruebas que no dependen del programa (reset, saltos y coste de cada instrucción). Cada proceso compila el núcleo una vez. Con 9 programas, `sim` baja de 176 s a 111 s. Con 8 procesos tarda 122 s: pesan más las compilaciones.

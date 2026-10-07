@@ -70,7 +70,7 @@ run_job() {
       "$PY" -m ruff check model scripts \
         && "$PY" -m ruff format --check model scripts \
         && "$PY" -m mypy \
-        && "$PY" -m pytest
+        && "$PY" -m pytest -n auto   # en paralelo: cada programa añade segundos (ADR 0001)
       ;;
     ratchets)   "$PY" scripts/check_ratchets.py ;;
     rtl-lint)
@@ -97,7 +97,8 @@ run_job() {
       return "$fallos"
       ;;
     sim)
-      (ulimit -u "$TOPE_PROCESOS"; "$PY" -m pytest sim --no-cov -p no:cacheprovider)
+      # 4 procesos: cada uno compila su núcleo; con 8 tarda más (ADR 0001).
+      (ulimit -u "$TOPE_PROCESOS"; "$PY" -m pytest sim -n 4 --no-cov -p no:cacheprovider)
       ;;
     optimizacion)
       (ulimit -u "$TOPE_PROCESOS"; "$PY" scripts/check_optimizacion.py)

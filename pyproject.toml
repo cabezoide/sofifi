@@ -11,7 +11,7 @@ dependencies = ["numpy>=2.0"]
 sofifi = "sofifi.cli:main"
 
 [project.optional-dependencies]
-dev = ["pytest", "pytest-cov", "hypothesis", "ruff", "mypy", "pyyaml", "types-PyYAML"]
+dev = ["pytest", "pytest-cov", "pytest-xdist", "hypothesis", "ruff", "mypy", "pyyaml", "types-PyYAML"]
 # Demos en Ogg Vorbis (scripts/generar_demos.py). soundfile es BSD; libsndfile,
 # LGPL-2.1, se usa como biblioteca y no se copia (ADR 0002).
 demos = ["soundfile>=0.12"]
