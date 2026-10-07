@@ -20,6 +20,8 @@ Se añade una entrada nueva cuando un fallo está diagnosticado y resuelto. Las 
 | F-12 | 05 | Una prueba del borrado de memoria no detectaba nada | resuelto |
 | F-13 | 05 | La primera línea del volcado se perdía | resuelto |
 | F-14 | 05 | apicula 0.32 no empaqueta BSRAM sin contenido inicial | resuelto |
+| F-15 | 06 | La lectura adelantada funcionaba en simulación y fallaba en el silicio a 100 MHz | resuelto; margen medido ≥ 20 % |
+| F-16 | 06 | Las simulaciones grandes no compilaban con el verilator de pip | resuelto |
 
 ---
 
@@ -135,3 +137,30 @@ Se añade una entrada nueva cuando un fallo está diagnosticado y resuelto. Las 
 - **Causa raíz:** si ninguna BSRAM del diseño declara `INIT_RAM_xx`, apicula falla. Pasó al instanciar todos los bloques a mano.
 - **Resolución:** `bsram_bloque.v` declara las 64 palabras de inicialización a cero.
 - **Lección:** comprobar el código de salida de `fpga.sh`; un `.fs` puede existir aunque el empaquetado haya fallado.
+
+## F-15 · La lectura adelantada fallaba en el silicio a 100 MHz
+
+- **Síntoma:** con la lectura adelantada del microcódigo, el plate coincidía con el modelo en simulación. En la placa fallaba a 100 MHz, siempre desde la muestra 924. Con el mismo rutado funcionaba a 88,9 MHz y por debajo. nextpnr daba 157 MHz.
+- **Diagnóstico**, paso a paso:
+  1. El diseño de `main` seguía pasando a 100 MHz el mismo día: la placa no había cambiado.
+  2. Se descartaron con medidas en la placa la cadena de acarreo de 50 bit, la suma con saturación, la BSRAM sola, el DSP y el rutado del reloj. La opción `-nodffe` de Yosys no tiene efecto en el GW5A.
+  3. La muestra 924 es aquella en la que la cola del plate llega a las tomas largas de la memoria: ahí la memoria empieza a devolver valores distintos de cero. Por eso el fallo «dependía de los datos».
+  4. **Herramienta nueva:** el top `hil_nucleo` graba la traza del núcleo (orden `T`): el pc y el ACC en cada cambio del ACC. `scripts/margen_reloj.py --traza` la compara con el modelo y dice qué instrucción falla primero.
+  5. Con la traza, cada rutado fallaba en un sitio distinto: la lectura de la memoria de retardo (`RDA`, que devolvía 0, es decir, una dirección mal), la suma de la ALU (bit 25) y el multiplicador (`MULX`).
+  6. Las cadenas de acarreo estaban colocadas sin cortes. No había un camino roto.
+- **Causa raíz:** nextpnr sobrestima la velocidad de **todo** el diseño en el GW5A, en un factor de 1,45 a 1,5. Cada rutado falla en el camino que queda más justo. Los caminos de la BSRAM son los peores: una dirección que llega en un ciclo a 38 bloques repartidos por el chip, y un multiplexor de 38 salidas.
+- **Resolución:**
+  - `bsram_pipe` segmentada (`GRUPO = 8` en la memoria de retardo): copia de la dirección por grupo y por bloque (`registro_copia`, que Yosys no fusiona), salida de cada bloque registrada a su lado y multiplexores registrados por grupo. La lectura pasa de 3 a 7 ciclos; el núcleo espera `LAT_MEM = 9` solo en `RDA` y `CHO`.
+  - Banco de registros en dos niveles: 8 candidatos registrados en cada ciclo y la elección en `E_DECO`. La palabra del microcódigo se registra otra vez antes de decodificar.
+  - Dirección física de la memoria con tres sumas en paralelo, y `puntero ± P` que bajan con el puntero.
+  - El multiplicador usa el registro interno `PREG` del DSP.
+- **Resultado medido** (nextpnr da 154 MHz para este rutado): 100 MHz, 4 de 4; 114,3 MHz, 2 de 2; **120 MHz, 4 de 4**; 125 MHz, 3 de 4; 133,3 MHz, 0 de 1. **Margen de al menos un 20 %**, frente al 6 % de la Fase 05.
+- **Coste:** unos 3 100 flip-flops más (LUT4 en el informe de nextpnr: de 8 204 a 11 490, por las LUT de paso). Los ciclos por muestra bajan menos de lo previsto: shimmer 1 514 (antes 1 601), plate 1 195 (antes 1 258), freeze 1 313 (antes 1 393). Unos 14 ciclos por instrucción: la espera al resultado de cada instrucción sigue mandando.
+- **Lección:** cuando el silicio falla y nextpnr no, hay que localizar la instrucción en la placa (la traza) antes de tocar el diseño. Las memorias que ocupan medio chip necesitan copias locales de la dirección y salidas registradas junto a cada bloque. Para medir entre 114,3 y 133,3 MHz, `margen_reloj.py --mdiv` cambia también el VCO.
+
+## F-16 · Las simulaciones grandes no compilaban con el verilator de pip
+
+- **Síntoma:** `c++: error: Vtop__pch.h.fast: linker input file not found`, solo en diseños grandes (el `hil_nucleo` con la traza).
+- **Causa raíz:** el `verilated.mk` del paquete deja vacía la variable `CFG_CXXFLAGS_PCH_I`, que debería valer `-include`. Cuando verilator parte un diseño grande en varios ficheros, usa una cabecera precompilada, y g++ la recibe como si fuera un fichero de entrada.
+- **Resolución:** `sim/conftest.py` añade `CFG_CXXFLAGS_PCH_I=-include` a `MAKEFLAGS`.
+- **Lección:** un fallo de compilación que solo sale al crecer el diseño suele estar en la configuración de la herramienta, no en el código.

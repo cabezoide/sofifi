@@ -21,7 +21,7 @@ RTL = RAIZ / "rtl"
 sys.path.insert(0, str(RAIZ / "scripts"))
 sys.path.insert(0, str(RAIZ / "sim" / "primitivas"))
 
-from hil_nucleo import comprobar  # noqa: E402
+from hil_nucleo import comprobar, comprobar_traza  # noqa: E402
 from uart_rx import recibir_linea  # noqa: E402
 
 DIVISOR = 16
@@ -48,6 +48,24 @@ async def captura_igual_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
         "%d muestras, %d iguales, CRC %s, %s ciclos", r.muestras, r.iguales, r.crc_ok, r.ciclos
     )
     assert r.correcto and r.muestras == N_CAPTURA, r.primera_diferencia or "CRC incorrecto"
+
+
+@cocotb.test()
+async def traza_igual_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
+    """'T' + K0: la traza (pc, ACC) coincide con la del modelo."""
+    cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
+    dut.rst_n.value, dut.uart_rx.value = 1, 1
+    await ClockCycles(dut.clk, 200)
+    k0 = 3
+    for byte in (ord("T"), k0 >> 8, k0 & 0xFF):
+        await enviar_byte(dut, byte)
+    lineas: list[str] = []
+    while not lineas or not lineas[-1].startswith("Z "):
+        lineas.append(await recibir_linea(dut.clk, dut.uart_tx, DIVISOR))
+    entradas = int(next(t for t in lineas if t.startswith("K "))[2:], 16) >> 16
+    assert entradas == N_CAPTURA, f"solo {entradas} entradas"
+    diferencia = comprobar_traza(lineas, k0)
+    assert diferencia is None, diferencia
 
 
 def test_hil_nucleo(tmp_path: Path) -> None:

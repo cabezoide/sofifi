@@ -4,25 +4,39 @@ Qué hay dentro de la FPGA, cómo se conecta y cómo ha cambiado fase a fase. Se
 
 Chip: **Gowin GW5A-LV25** (Tang Primer 25K): 23 040 LUT4, 56 bloques de BSRAM de 18 Kbit, 28 bloques DSP, 6 PLL.
 
-## Vista general (Fase 05)
+## Vista general (Fase 06, requisito previo)
 
-```
- cristal 50 MHz ─► PLL ─► 100 MHz ──────────────────────────────────────────┐
-                                                                            │
- ROM del programa ─► cargador ─► microcódigo (2 048 × 54, BSRAM) ─┐          │
-                                                                  ▼          │
- tick 48 828 Hz ─► ┌──────────────── NÚCLEO DSP ─────────────────────────┐   │
- (cada 2 048 ciclos)│ secuenciador ─► decodificación ─► operandos        │   │
-                    │      │                              │               │   │
- entradas ─────────►│ banco de registros (64 × 24)   multiplicador 27×36 │   │
- (adc, pots, sw)    │      │                         (2 bloques DSP)      │   │
-                    │ LFO ×4 · ROM Hermite · curva suave    │             │   │
-                    │      │                               ▼             │   │
-                    │ memoria de retardo (38–42 BSRAM) ─► ALU (2 etapas) ─► ACC
-                    └──────────────────────────────────────────────────────┘
-                                         │
-                                         ▼  dac_l, dac_r
- UART RX ─► órdenes ─► captura (BSRAM) ─► volcado + CRC-32 ─► UART TX ─► PC
+```mermaid
+flowchart LR
+    cristal["Cristal 50 MHz"] --> pll["PLL → 100 MHz<br/>(reloj de todo)"]
+    rom["ROM del programa"] --> cargador["Cargador"] --> mc["Microcódigo<br/>2 048 × 54 · BSRAM"]
+    gen["Generador de muestra<br/>tick cada 2 048 ciclos"] --> sec
+
+    subgraph nucleo["Núcleo DSP"]
+        direction LR
+        mc --> sec["Secuenciador<br/>lectura adelantada"] --> deco["Decodificación"]
+        deco --> regs["Banco de registros<br/>64 × 24"]
+        deco --> lfo["LFO ×4 · ROM Hermite<br/>curva suave"]
+        regs --> mult["Multiplicador 27×36<br/>2 DSP"]
+        lfo --> mult
+        mem["Memoria de retardo<br/>38–42 BSRAM, por grupos"] --> mult
+        mult --> alu["ALU<br/>2 etapas"] --> acc["ACC 48 bit"]
+        acc --> regs
+        acc --> mem
+    end
+
+    entradas["Entradas<br/>adc, pots, sw"] --> regs
+    regs --> dac["dac_l, dac_r"]
+
+    subgraph pruebas["Solo en el top de pruebas (HIL)"]
+        direction LR
+        rx["UART RX<br/>órdenes C y T"] --> cap["Captura · BSRAM<br/>muestras o traza"]
+        cap --> crc["Volcado + CRC-32"] --> tx["UART TX"]
+    end
+
+    dac --> cap
+    acc -. traza .-> cap
+    tx --> pc["PC"]
 ```
 
 Todo corre en **un solo dominio de reloj de 100 MHz** (ADR 0005). La única excepción es el medidor de frecuencia de las pruebas, que cruza al dominio del cristal en código Gray.
@@ -33,34 +47,40 @@ Todo corre en **un solo dominio de reloj de 100 MHz** (ADR 0005). La única exce
 |---|---|---|---|
 | PLL 50 → 100 MHz | `rtl/primitivas/pll_100.v` | 1 PLLA | — |
 | Generador de muestra | `rtl/comun/generador_muestra.v` | ~20 LUT | 1 tick / 2 048 ciclos |
-| Secuenciador del núcleo | `rtl/nucleo/nucleo.v` | la mayor parte de la lógica | ~13 ciclos por instrucción |
-| Microcódigo | `bsram_pipe` 2 048 × 54 | 6 BSRAM | 3 ciclos |
-| Banco de registros | dentro de `nucleo.v` | 64 × 24 en flip-flops | 1 ciclo (en la decodificación) |
-| Multiplicador | `rtl/primitivas/mult_27x36.v` + 2 registros | 2 DSP | 5 ciclos (`LAT`) |
+| Secuenciador del núcleo | `rtl/nucleo/nucleo.v` | la mayor parte de la lógica | ~14 ciclos por instrucción; lee la siguiente mientras ejecuta la actual |
+| Microcódigo | `bsram_pipe` 2 048 × 54 + un registro | 6 BSRAM | 4 ciclos; sin salto, ya está leída |
+| Banco de registros | dentro de `nucleo.v` | 64 × 24 en flip-flops + 8 candidatos | 2 niveles: candidatos en `E_LEER`, elección en `E_DECO` |
+| Multiplicador | `rtl/primitivas/mult_27x36.v` (con `PREG`) + 1 registro | 2 DSP | 5 ciclos (`LAT`) |
 | ALU | `rtl/nucleo/alu.v` | ~1 000 LUT y 300 ALU | 2 etapas + escritura |
-| Memoria de retardo | `rtl/nucleo/memoria_retardo.v` + `bsram_pipe` | 1 BSRAM por cada 1 024 palabras | 5 ciclos (`LAT`) |
+| Memoria de retardo | `rtl/nucleo/memoria_retardo.v` + `bsram_pipe` segmentada | 1 BSRAM por cada 1 024 palabras; ~1 700 flip-flops de copias | 9 ciclos (`LAT_MEM`), solo en `RDA` y `CHO` |
+| Copias de un registro | `rtl/primitivas/registro_copia.v` | flip-flops `DFF` con `keep` | 1 ciclo |
 | LFO ×4 | `rtl/nucleo/lfo_banco.v` | ~380 LUT y 377 ALU | 26 ciclos por muestra |
 | ROM Hermite | `rtl/nucleo/tabla_hermite.v` (generada) | ~820 LUT | combinacional + registro |
 | Curva suave | `rtl/nucleo/curva_fin.v` | una resta y una saturación | registrada |
 | UART TX / RX | `rtl/comun/uart_tx.v`, `uart_rx.v` | ~50 LUT cada una | 115 200 baudios |
 | Cargador de programa | `rtl/comun/carga_programa.v` | ~30 LUT | instrucciones + 1 ciclos |
+| Traza del núcleo (solo HIL) | `rtl/top/hil_nucleo.v`, orden `T` | ~150 flip-flops | graba (pc, ACC) en la captura |
 
-## Presupuesto (top `hil_nucleo`, Fase 05)
+## Presupuesto (top `hil_nucleo`, Fase 06, requisito previo)
 
 | Recurso | Uso | Notas |
 |---|---|---|
-| LUT4 | ~8 600 de 23 040 (37 %) | |
+| LUT4 | 11 490 de 23 040 (50 %) | Según nextpnr, con las LUT de paso de los flip-flops. Lógica real según Yosys: unas 7 900. |
+| Flip-flops | 6 523 de 23 040 (28 %) | Unos 3 100 son copias y registros de segmentación (F-15). |
 | BSRAM | 56 de 56 | 38 de retardo + 6 de microcódigo + 12 de captura. En el pedal final, la captura no existe: 42 + 6 = 48. |
 | DSP | 2 de 28 | |
-| Frecuencia | 155 MHz según nextpnr; **entre 106 y 114 MHz medidos en la placa** | margen real de al menos un 6 % sobre 100 MHz (F-11); objetivo: más del 20 % |
-| Ciclos por muestra | plate 1 258, freeze 1 393, shimmer 1 601 de 2 048 | |
+| Frecuencia | 154 MHz según nextpnr; **120 MHz en la placa sin errores (4 de 4)**; 125 MHz, 3 de 4 | margen real de al menos un 20 % sobre 100 MHz (F-15, ADR 0011) |
+| Ciclos por muestra | plate 1 195, freeze 1 313, shimmer 1 514 de 2 048 | unos 14 ciclos por instrucción: caben unas 145 |
 
 ## Reglas de diseño que salen de los fallos
 
 - **Ninguna salida de BSRAM va a lógica en el mismo ciclo.** Las memorias se hacen con `bsram_pipe`, que usa el registro de salida interno del bloque (F-11).
 - **Ninguna aritmética de 50 bit encadenada en un ciclo.** La ALU va en dos etapas; las entradas del multiplicador salen de registros (F-10, F-11).
+- **Ningún registro alimenta bloques de todo el chip.** Las memorias grandes van segmentadas: copias de la dirección por grupo y por bloque, y salida registrada junto a cada bloque (F-15).
+- **Ningún multiplexor ancho en un ciclo.** El banco de registros (64:1) va en dos niveles (F-15).
+- **Sumas en paralelo antes que en serie.** Si una corrección depende de un signo, se calculan todas las opciones y el signo elige (F-15).
 - **Las ROM van en lógica**, con `rom_style` en el `case`, para no caer en BSRAM `SPX9` (F-09).
-- **El timing se mide en la placa** (ADR 0011): nextpnr es optimista en torno a un 30 % en el GW5A.
+- **El timing se mide en la placa** (ADR 0011): nextpnr es optimista en un factor de 1,45 a 1,5 en el GW5A. Para el 20 % de margen hace falta que nextpnr dé unos 150 MHz o más, y medirlo. Si falla, `margen_reloj.py --traza` dice qué instrucción.
 
 ## Historia por fase
 
@@ -91,6 +111,18 @@ Se añaden los envoltorios del PLL (`pll_100`), del DSP (`mult_27x18`) y de la B
 - El plate coincide bit a bit con el modelo **en el silicio** a 100 MHz.
 - Coste: unos 13 ciclos por instrucción, frente a unos 6 en la Fase 04.
 
-### Próximo cambio previsto (antes de la Fase 06)
+### Fase 06 · Requisito previo: lectura adelantada y margen del 20 %
 
-Leer la instrucción siguiente mientras se ejecuta la actual, y solapar la escritura del ACC con la lectura siguiente. El shimmer ya usa el 78 % del presupuesto de ciclos.
+- **Lectura adelantada:** al decodificar una instrucción se pide la siguiente al microcódigo. Si no hay salto, ya está leída cuando hace falta.
+- **Segmentación para el silicio** (F-15):
+  - memoria de retardo segmentada en grupos de 8 bloques, con copias locales de la dirección (`registro_copia`) y salidas registradas; la lectura tarda 9 ciclos (`LAT_MEM`);
+  - banco de registros en dos niveles;
+  - dirección física con tres sumas en paralelo;
+  - `PREG` dentro del DSP.
+- **Traza del núcleo en la placa:** el top HIL graba (pc, ACC) y el PC dice qué instrucción falla primero.
+- Margen medido: **120 MHz sin errores**, frente a 106 MHz en la Fase 05.
+- Ciclos por muestra: shimmer 1 514 (antes 1 601). La lectura adelantada ahorra unos 150 ciclos y la memoria segmentada gasta unos 65.
+
+### Próximo cambio previsto
+
+Hoy cada instrucción espera a su resultado (unos 14 ciclos). La siguiente palanca es no esperar cuando la instrucción siguiente no usa el ACC ni el registro que se escribe. Hay que detectar las dependencias entre instrucciones. El resultado sigue igual al modelo; el cambio es grande y se decidirá en un ADR.

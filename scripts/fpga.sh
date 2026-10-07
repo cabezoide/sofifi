@@ -21,7 +21,7 @@ case "$orden" in
     mkdir -p "$ROOT/build"
     cd "$ROOT/build"
     "$BIN/yowasp-yosys" -q -l "$nombre.yosys.log" \
-      -p "read_verilog -sv ${fuentes[*]}; synth_gowin -top $nombre -family gw5a -nolutram -json $nombre.synth.json"
+      -p "read_verilog -sv ${fuentes[*]}; synth_gowin -top $nombre -family gw5a -nolutram ${SYNTH_OPCIONES:-} -json $nombre.synth.json"
     "$BIN/yowasp-nextpnr-himbaechel-gowin" -q -l "$nombre.pnr.log" \
       --json "$nombre.synth.json" --write "$nombre.pnr.json" --top "$nombre" \
       --device GW5A-LV25MG121NES --vopt cst="$CST" --vopt sspi_as_gpio \

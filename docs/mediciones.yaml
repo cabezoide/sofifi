@@ -125,15 +125,15 @@ mediciones:
   - id: MED-11
     caracteristica: M-08
     nombre: Ciclos por muestra del núcleo RTL con el programa más largo (shimmer)
-    valor: 1601
-    unidad: ciclos de 2 048 (plate 1 258, freeze 1 393)
+    valor: 1514
+    unidad: ciclos de 2 048 (plate 1 195, freeze 1 313)
     umbral: 2048
     direccion: menor_mejor
     fecha: 2026-10-07
     caduca_en_dias: 180
     como: "sim/nucleo/nucleo_test.py (registra el máximo de la salida `ciclos`)"
-    entorno: "núcleo multiciclo sin solapamiento: unas 6 por instrucción y unas 30 por CHO"
-    no_dice: "Con la segmentación de la Fase 05 (F-11), unos 13 ciclos por instrucción; en la Fase 04 eran 840. El ADR 0009 cuenta 1 ciclo por instrucción. Antes de la Fase 06 hay que solapar lectura y ejecución."
+    entorno: "núcleo multiciclo con lectura adelantada y memoria segmentada (F-15): unos 14 ciclos por instrucción"
+    no_dice: "Fase 05: 1 601 (unos 13 ciclos por instrucción); Fase 04: 840. El ADR 0009 cuenta 1 ciclo por instrucción. La espera al resultado de cada instrucción es lo que más cuesta."
   - id: MED-12
     caracteristica: M-06
     nombre: Muestras por segundo medidas en la placa
@@ -161,12 +161,12 @@ mediciones:
   - id: MED-14
     caracteristica: M-08
     nombre: Frecuencia máxima real del núcleo en la placa, con el mismo rutado
-    valor: 106.25
-    unidad: MHz con todas las capturas correctas (3 de 3); a 114,3 MHz, 2 de 5
+    valor: 120
+    unidad: MHz con todas las capturas correctas (4 de 4); a 125 MHz, 3 de 4; a 133,3 MHz, 0 de 1
     umbral: 120
     direccion: mayor_mejor
     fecha: 2026-10-07
     caduca_en_dias: 90
-    como: ".venv/bin/python scripts/margen_reloj.py --divisores 8 7 (y MDIV 17 para 106,25 MHz)"
-    entorno: "mismo JSON rutado que da 154,9 MHz en nextpnr; temperatura ambiente sin medir"
-    no_dice: "No cumple el umbral (ADR 0011): el margen es de al menos un 6 % y el objetivo es un 20 %. No se midió con la placa caliente."
+    como: ".venv/bin/python scripts/margen_reloj.py --mdiv 24 --divisores 12 10 --repeticiones 4 (y --mdiv 20 --divisores 8 para 125 MHz)"
+    entorno: "mismo JSON rutado que da 154 MHz en nextpnr; lectura adelantada y memoria segmentada (F-15); temperatura ambiente sin medir"
+    no_dice: "Solo el plate. No se midió con la placa caliente. Fase 05: 106,25 MHz (margen del 6 %)."

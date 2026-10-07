@@ -34,3 +34,13 @@ Opción 3, con la 1 como aviso previo.
 
 - **Solo un margen fijo sobre nextpnr:** el error no es uniforme. La BSRAM fallaba con un 17 % de margen aparente y el DSP llegaba a 160 MHz.
 - **IDE de Gowin:** rompe la cadena libre instalable por pip (ADR 0001, Fase 02).
+
+## Actualización 2026-10-07
+
+La decisión no cambia. Se cumple el objetivo y el método se amplía (fails.md, F-15):
+
+- **Objetivo cumplido:** el núcleo con lectura adelantada y memoria segmentada funciona a 120 MHz en la placa (4 de 4 capturas) y a 125 MHz en 3 de 4. nextpnr da 154 MHz para ese rutado. Margen real: al menos un 20 %.
+- **El error de nextpnr es un factor, no un porcentaje fijo:** entre 1,45 y 1,5 en el diseño completo. Con un rutado, el silicio fallaba a 100 MHz con 157 MHz de nextpnr.
+- **`--mdiv`:** cambia también el multiplicador del VCO del PLL en el JSON rutado. Así se mide entre los puntos que da solo el divisor (por ejemplo, 120 y 125 MHz).
+- **`--traza`:** si una captura falla, pide la traza del núcleo (orden `T` del top HIL) y dice qué instrucción da el primer ACC distinto del modelo. Así se localiza el camino lento en el silicio.
+- **Reglas de diseño nuevas** (`docs/arquitectura_fpga.md`): ningún registro alimenta bloques de todo el chip, ningún multiplexor ancho en un ciclo, y sumas en paralelo antes que en serie.

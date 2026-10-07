@@ -20,12 +20,12 @@ La FPGA contiene un **pequeño procesador de audio hecho a medida** (el núcleo)
 | Componente | Qué hace, en sencillo | Qué aporta |
 |---|---|---|
 | **Microcódigo** | Memoria con las instrucciones del programa (hasta 2 048). | Permite cambiar de efecto sin cambiar el hardware: basta con cargar otro programa. |
-| **Secuenciador** | Lee las instrucciones una a una y dice a cada pieza qué hacer. | Es el «director de orquesta» del núcleo. |
+| **Secuenciador** | Lee las instrucciones una a una y dice a cada pieza qué hacer. Mientras ejecuta una, ya lee la siguiente. | Es el «director de orquesta» del núcleo. |
 | **Banco de registros** | 64 casillas que guardan números: entradas, salidas, potenciómetros y variables del programa. | Es la «mesa de trabajo» de cada efecto. |
 | **Multiplicador** (bloque DSP) | Multiplica dos números en un paso. | Casi todo en audio son multiplicaciones: volumen, filtros, mezclas. |
 | **ALU** | Suma, compara y satura (evita que el sonido se desborde). | Combina los resultados y los guarda en el acumulador. |
 | **Acumulador (ACC)** | Un registro de 48 bit donde se suman los productos. | Mucha precisión: evita el ruido de redondeo en las colas largas. |
-| **Memoria de retardo** (BSRAM) | Guarda el audio de los últimos ~0,9 s, como una cinta en bucle. | Es la base de toda reverb y todo delay: oír el pasado del sonido. |
+| **Memoria de retardo** (BSRAM) | Guarda el audio de los últimos ~0,9 s, como una cinta en bucle. Va por grupos de bloques, cada uno con su copia de la dirección. | Es la base de toda reverb y todo delay: oír el pasado del sonido. Los grupos dejan que funcione con margen en el chip real. |
 | **LFO ×4** | Osciladores lentos (senoidal, aleatorio, rampa). | Mueven las lecturas de la memoria: el chorus, la modulación de la reverb y el cambio de tono del shimmer. |
 | **ROM Hermite** | Tabla fija de 256 × 4 coeficientes. | Permite leer la memoria «entre muestras» sin ruido: modulación suave. |
 | **Curva suave** | Una saturación cúbica, sin cortes bruscos. | Limita el sonido de forma musical (`CLIP`) y da forma al LFO senoidal. |
@@ -37,6 +37,7 @@ La FPGA contiene un **pequeño procesador de audio hecho a medida** (el núcleo)
 | **UART TX / RX** | Puerto serie con el PC, a través del USB de la placa. | Permite hablar con la FPGA: pedir pruebas y recibir resultados. |
 | **Cargador de programa** | Copia un programa desde una memoria fija al microcódigo al arrancar. | Hoy carga el plate; en la Fase 08 lo hará desde la microSD. |
 | **Captura y CRC-32** (solo en pruebas) | Graba 4 096 muestras a velocidad real y las envía con un código de control. | Demuestra que el hardware suena **exactamente** igual que el modelo del PC. |
+| **Traza** (solo en pruebas) | Graba qué instrucción se ejecuta y qué valor deja en el acumulador. | Si el chip falla, dice en qué instrucción, para saber qué parte arreglar. |
 | **Medidor de frecuencia** (solo en pruebas) | Cuenta ciclos de un reloj durante un segundo de otro. | Comprobó que el PLL y la frecuencia de muestreo son exactos. |
 
 ### Primitivas del chip (piezas físicas del GW5A)
@@ -46,7 +47,7 @@ La FPGA contiene un **pequeño procesador de audio hecho a medida** (el núcleo)
 | BSRAM (bloques de 18 Kbit) | 48 de 56 en el núcleo | memoria de retardo y microcódigo |
 | DSP (MULTALU27X18) | 2 de 28 | el multiplicador |
 | PLLA | 1 de 6 | el reloj de 100 MHz |
-| LUT4 y flip-flops | ~37 % y ~11 % | toda la lógica |
+| LUT4 y flip-flops | ~50 % y ~28 % (top de pruebas) | toda la lógica, y las copias que dan margen de reloj |
 
 ## Herramientas de software
 
