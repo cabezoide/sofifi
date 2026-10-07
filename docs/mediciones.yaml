@@ -17,7 +17,7 @@ mediciones:
   - id: MED-02
     caracteristica: M-05
     nombre: Duración de la suite de programas en la compuerta
-    valor: 39
+    valor: 47
     unidad: segundos
     umbral: 60
     direccion: menor_mejor
@@ -25,7 +25,7 @@ mediciones:
     caduca_en_dias: 61
     como: ".venv/bin/python -m pytest model/tests/programas_test.py --durations=5"
     entorno: "Intel i7-11390H, Linux 7.0, Python 3.14.4"
-    no_dice: "No incluye el resto de la compuerta (unos 3 s). Si supera el umbral, las pruebas largas pasan a compuerta blanda o se acortan. Fase 01: 22 s con 3 programas; Fase 06: 39 s con 7 (47 s antes de acortar las pruebas de cloud y cinta)."
+    no_dice: "No incluye el resto de la compuerta (unos 3 s). Si supera el umbral, las pruebas largas pasan a compuerta blanda o se acortan. Fase 01: 22 s con 3 programas; Fase 06: 39 s con 7 (47 s antes de acortar las pruebas de cloud y cinta) y 47 s con 9."
   - id: MED-03
     caracteristica: M-06
     nombre: Recepción de "SOFIFI" desde la placa por la UART del depurador
@@ -126,7 +126,7 @@ mediciones:
     caracteristica: M-08
     nombre: Ciclos por muestra del núcleo RTL con el programa más largo (hall)
     valor: 1578
-    unidad: ciclos de 2 048 (reverse 431, cinta 658, plate 1 195, freeze 1 313, cloud 1 356, shimmer 1 514)
+    unidad: ciclos de 2 048 (reverse 431, lofi 620, cinta 658, plate 1 195, freeze 1 313, cloud 1 356, swell 1 467, shimmer 1 514)
     umbral: 2048
     direccion: menor_mejor
     fecha: 2026-10-07

@@ -16,5 +16,7 @@
 | `demo_cloud.wav` | `cloud.sasm` | 0,70 | 0,30 | 0,55 | 0,60 | |
 | `demo_cinta.wav` | `cinta.sasm` | 0,45 (tiempo/time) | 0,55 (realimentación/feedback) | 0,40 | 0,50 (wow) | |
 | `demo_reverse.wav` | `reverse.sasm` | 0,60 (tono/tone) | 0,40 (realimentación/feedback) | 0,50 | | |
+| `demo_lofi.wav` | `lofi.sasm` | 0,60 (muestreo/sample rate) | 0,70 (8 bit) | 0,70 | 0,40 (tono/tone) | |
+| `demo_swell.wav` | `swell.sasm` | 0,70 | 0,30 | 0,50 | 0,40 (subida/rise) | |
 
 PCM de 16 bit a 48 828 Hz (ADR 0005); el render es bit-exact en 24 bit. 16-bit PCM at 48,828 Hz; the render is bit-exact at 24 bits. 16 位 PCM，48,828 Hz；渲染在 24 位下逐位精确。

@@ -25,36 +25,5 @@ include  comun/entrada.sasm
         rdfx  bw, kbw
         wrax  bw, 1.0
 include  comun/dattorro_difusion.sasm
-; ── tanque, rama izquierda ───────────────────────────────────────────
-        rda   dr2#, 1.0
-        mulx  kdecay
-        rdax  entrada, 1.0
-        cho   tl1 + 672*s - ex, -kdd1, lfo0
-        wrap  tl1, kdd1
-        wra   dl1, 0
-        rda   dl1#, 1.0
-        rdax  lpl, -1.0
-        mulx  kdamp
-        rdax  lpl, 1.0
-        wrax  lpl, 1.0
-        mulx  kdecay
-        rda   tl2#, kdd2
-        wrap  tl2, -kdd2
-        wra   dl2, 0
-; ── tanque, rama derecha ─────────────────────────────────────────────
-        rda   dl2#, 1.0
-        mulx  kdecay
-        rdax  entrada, 1.0
-        cho   tr1 + 908*s - ex, -kdd1, lfo1
-        wrap  tr1, kdd1
-        wra   dr1, 0
-        rda   dr1#, 1.0
-        rdax  lpr, -1.0
-        mulx  kdamp
-        rdax  lpr, 1.0
-        wrax  lpr, 1.0
-        mulx  kdecay
-        rda   tr2#, kdd2
-        wrap  tr2, -kdd2
-        wra   dr2, 0
+include  comun/dattorro_tanque.sasm
 include  comun/dattorro_salida.sasm

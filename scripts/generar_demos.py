@@ -5,7 +5,7 @@ La guitarra es un arpegio de Em9 con cuerdas Karplus-Strong y semilla fija, así
 que todo es determinista: el núcleo es bit-exact y no hay remuestreo (la
 señal ya está a 48 828 Hz). Volver a correrlo debe dar los mismos bytes.
 
-Uso: ``.venv/bin/python scripts/generar_demos.py``  (unos 3 min)
+Uso: ``.venv/bin/python scripts/generar_demos.py``  (unos 4 min)
 """
 
 from __future__ import annotations
@@ -36,9 +36,11 @@ DEMOS: tuple[tuple[str, dict[int, str], tuple[tuple[float, float], ...], float],
     ("cloud", {0: "0.7", 1: "0.3", 2: "0.55", 3: "0.6"}, (), 6.0),
     ("cinta", {0: "0.45", 1: "0.55", 2: "0.4", 3: "0.5"}, (), 5.0),
     ("reverse", {0: "0.6", 1: "0.4", 2: "0.5"}, (), 3.0),
+    ("lofi", {0: "0.6", 1: "0.7", 2: "0.7", 3: "0.4"}, (), 1.0),
+    ("swell", {0: "0.7", 1: "0.3", 2: "0.5", 3: "0.4"}, (), 4.0),
 )
-# PCM de 16 bit: para escuchar no se pierde nada, y las demos caben en los
-# 16 MiB que admite la compuerta secrets. El render es bit-exact en 24 bit.
+# PCM de 16 bit: para escuchar no se pierde nada y ocupan un tercio menos.
+# El render es bit-exact en 24 bit.
 BITS_DEMO = 16
 
 

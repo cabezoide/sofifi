@@ -70,7 +70,7 @@ Todo corre en **un solo dominio de reloj de 100 MHz** (ADR 0005). La única exce
 | BSRAM | 56 de 56 | 38 de retardo + 6 de microcódigo + 12 de captura. En el pedal final, la captura no existe: 42 + 6 = 48. |
 | DSP | 2 de 28 | |
 | Frecuencia | 154 MHz según nextpnr; **120 MHz en la placa sin errores (4 de 4)**; 125 MHz, 3 de 4 | margen real de al menos un 20 % sobre 100 MHz (F-15, ADR 0011) |
-| Ciclos por muestra | reverse 431, cinta 658, plate 1 195, freeze 1 313, cloud 1 356, shimmer 1 514, hall 1 578 de 2 048 | coste de cada instrucción en `model/sofifi/domain/coste.py` |
+| Ciclos por muestra | reverse 431, lofi 620, cinta 658, plate 1 195, freeze 1 313, cloud 1 356, swell 1 467, shimmer 1 514, hall 1 578 de 2 048 | coste de cada instrucción en `model/sofifi/domain/coste.py` |
 
 ## Reglas de diseño que salen de los fallos
 
@@ -123,9 +123,10 @@ Se añaden los envoltorios del PLL (`pll_100`), del DSP (`mult_27x18`) y de la B
 - Margen medido: **120 MHz sin errores**, frente a 106 MHz en la Fase 05.
 - Ciclos por muestra: shimmer 1 514 (antes 1 601). La lectura adelantada ahorra unos 150 ciclos y la memoria segmentada gasta unos 65.
 
-### Fase 06 · Hall, cloud, cinta y reverse (el RTL no cambia)
+### Fase 06 · Biblioteca de programas (el RTL no cambia)
 
-- Cuatro programas nuevos, iguales al modelo en la simulación: `hall.sasm`, `cloud.sasm` y `reverse.sasm` en 4 883 muestras; `cinta.sasm` en 12 000, para llegar a su primer eco.
+- Seis programas nuevos, iguales al modelo en la simulación: hall, cloud, reverse, lofi y swell en 4 883 muestras; cinta en 12 000, para llegar a su primer eco.
+- **Cuantizar sin AND:** el lo-fi escala la muestra hacia abajo, la redondea al escribirla en un registro (`WRAX`) y la vuelve a escalar con `SOF`.
 - **Retardo variable sin instrucción nueva:** la cinta para un LFO senoidal en un cuarto de vuelta. Su forma vale 1 y el retardo del `CHO` sigue a `lfo0_depth`, que escribe el programa.
 - **Coste de cada instrucción en el RTL**, medido en simulación y copiado al modelo (`coste.py`):
 

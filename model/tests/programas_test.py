@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: MIT
-"""Programas del núcleo: plate, shimmer y freeze (Fase 01); hall, cloud, cinta y reverse (Fase 06).
+"""Programas del núcleo: plate, shimmer y freeze (Fase 01); el resto, de la Fase 06.
 
 Comprueban propiedades acústicas medibles (decae, se sostiene, sube una octava,
 el decay sigue al potenciómetro, la modulación cambia la respuesta, el eco
-llega cuando dice pot0, la señal sale al revés)
+llega cuando dice pot0, la señal sale al revés, hay menos muestras y menos
+bits, cada nota empieza en silencio)
 y una **huella bit-exact** por programa: cambiar la aritmética, la ISA o un
 programa cambia la huella, y actualizarla es una decisión que se ve en el diff.
 No comprueban que suene bonito: eso se escucha (ver `sofifi render`).
@@ -14,6 +15,7 @@ from __future__ import annotations
 import hashlib
 import math
 from functools import cache
+from itertools import pairwise
 from pathlib import Path
 
 import pytest
@@ -26,6 +28,7 @@ from sofifi.services.render import procesar
 
 PROGRAMAS = Path(__file__).resolve().parents[2] / "programas"
 FS = 48828
+PROGRAMAS_TODOS = sorted(p.stem for p in PROGRAMAS.glob("*.sasm"))
 
 
 @cache
@@ -63,9 +66,7 @@ def pots(*valores: str) -> tuple[int, ...]:
     return tuple(dato(v) for v in valores)
 
 
-@pytest.mark.parametrize(
-    "nombre", ["plate", "shimmer", "freeze", "hall", "cloud", "cinta", "reverse"]
-)
+@pytest.mark.parametrize("nombre", PROGRAMAS_TODOS)
 def test_cabe_en_el_nucleo(nombre: str) -> None:
     p = programa(nombre)
     assert cabe_en_el_rtl(p), f"{ciclos_rtl(p)} ciclos del RTL > 2 048"
@@ -190,8 +191,47 @@ def test_reverse_saca_la_senal_al_reves() -> None:
     assert invertidos >= 1 and directos == 0  # medido: 2 granos, los dos invertidos
 
 
+def tono(f: float, segundos: float, amplitud: float = 0.9) -> tuple[int, ...]:
+    w = 2 * math.pi * f / FS
+    return tuple(dato(str(round(amplitud * math.sin(w * k), 6))) for k in range(int(segundos * FS)))
+
+
+def test_lofi_reduce_muestras_y_bits() -> None:
+    """La entrada va por la derecha: la salida izquierda solo lleva lo-fi, sin señal seca."""
+    x = tono(220, 0.2)
+    entrada = Senal(FS, ((0,) * len(x), x))
+
+    def salida(muestreo: str, bits: str) -> tuple[int, ...]:
+        c = Controles(pots(muestreo, bits, "1", "1"))
+        return procesar(programa("lofi"), entrada, c).canales[0][2000:]
+
+    def cambios(v: tuple[int, ...]) -> float:
+        return sum(1 for a, b in pairwise(v) if a != b) / len(v)
+
+    assert cambios(salida("0", "0")) > 0.99
+    assert 0.015 < cambios(salida("1", "0")) < 0.025  # 1 de cada 50 muestras
+    for bits, pot in ((7, "1"), (8, "0.7"), (10, "0.5"), (12, "0.3")):
+        niveles = len(set(salida("0", pot)))
+        assert 2 ** (bits - 2) < niveles <= 2**bits  # medido: 117, 231, 923, 3 687
+
+
+def test_swell_cada_nota_empieza_en_silencio() -> None:
+    """Dos notas pulsadas: a la entrada, el ataque es lo más fuerte; a la salida, lo más débil."""
+    x = [0.0] * int(1.6 * FS)
+    for t in (0.2, 0.9):
+        k0 = int(t * FS)
+        for i in range(int(0.65 * FS)):
+            x[k0 + i] += 0.5 * math.exp(-i / FS / 0.4) * math.sin(2 * math.pi * 196 * i / FS)
+    entrada = tuple(dato(str(round(v, 6))) for v in x)
+    y = procesar(programa("swell"), Senal(FS, (entrada,)), Controles(pots("0.5", "0.3", "0", "0")))
+    for t in (0.2, 0.9):
+        assert rms(entrada, t, t + 0.01) > rms(entrada, t + 0.15, t + 0.25)
+        assert rms(y.canales[0], t, t + 0.01) < 0.3 * rms(y.canales[0], t + 0.15, t + 0.25)
+
+
 # Huellas bit-exact (sha256 de la salida estéreo de 0,1 s de impulso; más en
-# los ecos, que tardan más de 0,1 s en sonar).
+# los ecos, que tardan más de 0,1 s en sonar; un tono en lofi y swell, que con
+# un impulso casi no suenan).
 # Cambian si cambia la aritmética (ADR 0008), la ISA (ADR 0009) o el programa.
 HUELLAS = {
     "plate": "7967b952e0f3b48a",
@@ -201,15 +241,25 @@ HUELLAS = {
     "cloud": "496767ac991fd49c",
     "cinta": "1b1f06252a1762ad",
     "reverse": "2f113ede645767d1",
+    "lofi": "a4d6a87f66648356",
+    "swell": "627e231396b504fa",
 }
 
 
 SEGUNDOS_HUELLA = {"cinta": 0.6, "reverse": 0.4}
+CON_TONO = {"lofi", "swell"}
+
+
+def test_todo_programa_tiene_huella() -> None:
+    assert sorted(HUELLAS) == PROGRAMAS_TODOS
 
 
 @pytest.mark.parametrize("nombre", sorted(HUELLAS))
 def test_huella_bit_exact(nombre: str) -> None:
-    x = impulso(SEGUNDOS_HUELLA.get(nombre, 0.1))
+    if nombre in CON_TONO:
+        x = Senal(FS, (tono(196, 0.3, 0.5),))
+    else:
+        x = impulso(SEGUNDOS_HUELLA.get(nombre, 0.1))
     y = procesar(programa(nombre), x, Controles(pots("0.5", "0.3", "0.5", "0.5")))
     datos = b"".join(v.to_bytes(3, "little", signed=True) for c in y.canales for v in c)
     assert hashlib.sha256(datos).hexdigest()[:16] == HUELLAS[nombre]
