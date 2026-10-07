@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=da42d6e401a3 estado=al_dia -->
+<!-- i18n: fuente=README.md sha=b581423fa49d estado=al_dia -->
 # SOFIFI — 集成 FPGA 上的沉浸式波形与滤波合成器
 
 *英文名：Soundscapes On FPGA: Integrated Filters & Impulses；西班牙文名：Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada。*
@@ -12,32 +12,40 @@
 SOFIFI 是一款氛围（ambient）吉他效果器（混响、shimmer、磁带延迟、冻结、颗粒合成），
 基于 **Sipeed Tang Primer 25K** FPGA（高云 GW5A-LV25）实现。
 
-**版本：** `0.5`（版本号即最后一个已关闭的阶段；见 `docs/fases/estado_fases.csv`）。
+**版本：** `0.6`（版本号即最后一个已关闭的阶段；见 `docs/fases/estado_fases.csv`）。
 
-> 状态：**DSP 核心已在芯片上验证**（阶段 05）。在开发板上以 100 MHz 运行时，plate
-> 的每个样本都与逐位精确模型的输出完全一致；仿真中 shimmer 和 freeze 也一致。借助模型
-> 可在电脑上试听这三个程序。下一步：程序库（阶段 06）。初始调研见
-> `docs/investigacion/INVESTIGACION.md`（西班牙语）。
+> 状态：**43 个程序与 344 个预设组成的程序库**（阶段 06）：混响、延迟、调制、
+> 音高、动态、滤波和质感。43 个程序在 RTL 中的输出都与逐位精确模型一致（仿真）。
+> 在开发板上以 100 MHz 运行时，plate 已经验证（阶段 05）。下一步：微型循环器与
+> 颗粒引擎（阶段 07）。目前还不能接吉他演奏：缺少音频编解码器（阶段 11）。
 
 ## 试听效果（无需硬件）
 
+1. 试听 `demo_examples/` 中的演示：一段合成吉他（Em9 琶音）经过每个程序，格式为 Ogg Vorbis。
+2. 用预设处理自己的 WAV：
+
 ```bash
-.venv/bin/sofifi render programas/plate.sasm guitar.wav out/plate.wav --pot pot0=0.6 --pot pot2=0.4 --cola 4
-.venv/bin/sofifi render programas/shimmer.sasm guitar.wav out/shimmer.wav --pot pot0=0.7 --pot pot2=0.5 --pot pot3=0.6 --cola 6
-.venv/bin/sofifi render programas/freeze.sasm guitar.wav out/freeze.wav --pot pot2=0.5 --freeze 1.5:8 --cola 8
+.venv/bin/sofifi presets hall                      # 列出一个程序的预设
+.venv/bin/sofifi render programas/hall.sasm guitar.wav out/hall.wav --preset "Catedral" --cola 6
+.venv/bin/sofifi render programas/shimmer.sasm guitar.wav out/sh.wav --pot pot0=0.7 --pot pot3=0.6 --cola 6
+.venv/bin/sofifi render programas/freeze.sasm guitar.wav out/fz.wav --preset "Congelar suave" --freeze 1.5:8 --cola 8
 ```
 
-| 程序 | pot0 | pot1 | pot2 | pot3 | 脚踏开关 |
-|---|---|---|---|---|---|
-| `programas/plate.sasm` | 衰减 | 阻尼 | 干湿比 | — | — |
-| `programas/shimmer.sasm` | 衰减 | 阻尼 | 干湿比 | shimmer 量 | — |
-| `programas/freeze.sasm` | 衰减 | 阻尼 | 干湿比 | — | `--freeze 开始:结束`（秒） |
+| 类别 | 程序 |
+|---|---|
+| 混响 | plate, plate_vivo, hall, blackhole, cloud, bloom, spring, chorale, resonador, gated, reverb_inversa, infinite, freeze, freeze_givens, shimmer, shimmer_quinta, shimmer_energia |
+| 延迟 | delay, cinta, bbd, pingpong, lluvia, ducking, reverse |
+| 调制 | chorus, flanger, phaser, tremolo, vibrato, slicer |
+| 音高 | octava, armonizador, doblador, escalera |
+| 动态 | compresor, puerta, swell |
+| 滤波 | autowah, filtro, ancho |
+| 质感 | saturacion, lofi, ringmod |
 
-`demo_examples/` 中有预先渲染好的演示：一段合成吉他（Em9 琶音）分别经过
-三个程序处理。可用 `scripts/generar_demos.py` 重新生成。
+每个程序的作用、旋钮和开销见 `docs/programas.md`（西班牙语，由 `sofifi catalogo` 生成）。
+预设位于 `presets/banco.toml`，名称为西班牙语。
 
 输入 WAV 可以是 16、24 或 32 位、任意采样率，会被重采样到 48,828 Hz。
-`sofifi asm` 生成微码（`.hex` + `.json`）。（`--cola` 为尾音时长，单位秒。）
+`sofifi asm` 生成微码（`.hex` + `.json`），并给出它在 RTL 中使用的周期数。（`--cola` 为尾音时长，单位秒。）
 
 ## 将要构建的内容
 
@@ -97,7 +105,7 @@ make uart       # 读取调试器 UART（/dev/ttyUSB1），要求收到 "SOFIFI"
 
 需要缺少硬件的阶段排在计划末尾（09 至 12），因此在阶段 08 之前只需开发板和 microSD。
 
-![13 个阶段：4 个已关闭、下一个阶段以及等待硬件的阶段](docs/img/ruta.png)
+![13 个阶段：7 个已关闭、下一个阶段以及等待硬件的阶段](docs/img/ruta.png)
 
 ## 硬件文档（西班牙语）
 
@@ -105,6 +113,7 @@ make uart       # 读取调试器 UART（/dev/ttyUSB1），要求收到 "SOFIFI"
 - `SBOM.md`：FPGA 中每个组件的作用，以及构建所用的工具。
 - `docs/arquitectura_fpga.md`：FPGA 架构及其在各阶段的变化。
 - `fails.md`：遇到的故障及其解决方法。
+- `schematics/`：每个 RTL 模块的 PDF 原理图，由 Verilog 生成。
 
 ## 语言
 

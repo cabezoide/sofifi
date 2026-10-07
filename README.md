@@ -9,34 +9,43 @@
 SOFIFI es un pedal de guitarra ambient (reverbs, shimmer, delays de cinta, freeze, granular)
 implementado en una FPGA **Sipeed Tang Primer 25K** (Gowin GW5A-LV25).
 
-**Versión:** `0.5` (la versión es la última fase cerrada; ver `docs/fases/estado_fases.csv`).
+**Versión:** `0.6` (la versión es la última fase cerrada; ver `docs/fases/estado_fases.csv`).
 
-> Estado: **núcleo DSP verificado en el silicio** (Fase 05). En la placa, a
-> 100 MHz, el plate da muestra a muestra la misma salida que el modelo bit-exact.
-> En simulación coinciden también shimmer y freeze. El modelo deja escuchar en el
-> PC los tres programas. Sigue la biblioteca de programas (Fase 06).
-> La investigación está en `docs/investigacion/INVESTIGACION.md` y
-> `docs/investigacion/ESTADO_DEL_ARTE_2026.md`.
+> Estado: **biblioteca de 43 programas y 344 presets** (Fase 06). Reverbs,
+> delays, modulación, pitch, dinámica, filtros y textura. Los 43 dan en el RTL
+> la misma salida que el modelo bit-exact (simulación). En la placa, a 100 MHz,
+> está verificado el plate (Fase 05). Sigue el micro-looper y el granular
+> (Fase 07). Todavía no suena con guitarra: falta el códec de audio (Fase 11).
 
 ## Escuchar los efectos (sin hardware)
 
+1. Escuchar las demos de `demo_examples/`: una guitarra sintética (arpegio de
+   Em9) pasada por cada programa, en Ogg Vorbis.
+2. Procesar un WAV propio con un preset:
+
 ```bash
-.venv/bin/sofifi render programas/plate.sasm guitarra.wav out/plate.wav --pot pot0=0.6 --pot pot2=0.4 --cola 4
-.venv/bin/sofifi render programas/shimmer.sasm guitarra.wav out/shimmer.wav --pot pot0=0.7 --pot pot2=0.5 --pot pot3=0.6 --cola 6
-.venv/bin/sofifi render programas/freeze.sasm guitarra.wav out/freeze.wav --pot pot2=0.5 --freeze 1.5:8 --cola 8
+.venv/bin/sofifi presets hall                      # los presets de un programa
+.venv/bin/sofifi render programas/hall.sasm guitarra.wav out/hall.wav --preset "Catedral" --cola 6
+.venv/bin/sofifi render programas/shimmer.sasm guitarra.wav out/sh.wav --pot pot0=0.7 --pot pot3=0.6 --cola 6
+.venv/bin/sofifi render programas/freeze.sasm guitarra.wav out/fz.wav --preset "Congelar suave" --freeze 1.5:8 --cola 8
 ```
 
-| Programa | pot0 | pot1 | pot2 | pot3 | footswitch |
-|---|---|---|---|---|---|
-| `programas/plate.sasm` | decay | damping | mezcla | — | — |
-| `programas/shimmer.sasm` | decay | damping | mezcla | shimmer | — |
-| `programas/freeze.sasm` | decay | damping | mezcla | — | `--freeze INICIO:FIN` (segundos) |
+| Familia | Programas |
+|---|---|
+| Reverb | plate, plate_vivo, hall, blackhole, cloud, bloom, spring, chorale, resonador, gated, reverb_inversa, infinite, freeze, freeze_givens, shimmer, shimmer_quinta, shimmer_energia |
+| Delay | delay, cinta, bbd, pingpong, lluvia, ducking, reverse |
+| Modulación | chorus, flanger, phaser, tremolo, vibrato, slicer |
+| Pitch | octava, armonizador, doblador, escalera |
+| Dinámica | compresor, puerta, swell |
+| Filtro | autowah, filtro, ancho |
+| Textura | saturacion, lofi, ringmod |
 
-En `demo_examples/` hay demos ya procesadas: una guitarra sintética (arpegio
-de Em9) pasada por los tres programas. Se regeneran con `scripts/generar_demos.py`.
+Qué hace cada uno, sus mandos y su coste: `docs/programas.md` (lo genera
+`sofifi catalogo`). Los presets están en `presets/banco.toml`.
 
 El WAV de entrada puede ser de 16, 24 o 32 bit y de cualquier frecuencia; se
-remuestrea a 48 828 Hz. `sofifi asm` genera el microcódigo (`.hex` + `.json`).
+remuestrea a 48 828 Hz. `sofifi asm` genera el microcódigo (`.hex` + `.json`) y
+da los ciclos que gasta en el RTL.
 
 ## Qué se va a construir
 
@@ -103,7 +112,7 @@ Si una herramienta falta, la compuerta lo dice (`WARN … NO CORRIÓ`); no finge
 Las fases que necesitan hardware que falta van al final del plan (09 a 12), de
 modo que hasta la Fase 08 basta con la placa y la microSD.
 
-![Las 13 fases: 4 cerradas, la siguiente y las que esperan hardware](docs/img/ruta.png)
+![Las 13 fases: 7 cerradas, la siguiente y las que esperan hardware](docs/img/ruta.png)
 
 ## Documentación del hardware
 
@@ -111,6 +120,7 @@ modo que hasta la Fase 08 basta con la placa y la microSD.
 - `SBOM.md`: qué hace cada componente del FPGA y con qué herramientas se construye.
 - `docs/arquitectura_fpga.md`: la arquitectura del FPGA y cómo cambia fase a fase.
 - `fails.md`: los fallos encontrados y cómo se resolvieron.
+- `schematics/`: un esquemático PDF por cada módulo RTL, generado desde el Verilog.
 
 ## Idiomas
 
