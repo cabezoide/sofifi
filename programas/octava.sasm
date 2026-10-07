@@ -1,0 +1,53 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: pitch
+; resumen: Octavador: una octava abajo y una arriba, cada una con su nivel.
+;
+; octava.sasm — Dos pitch shifters de doble tap sobre la misma memoria. La rampa
+; del LFO0 sube 1/2 muestra por muestra (razón 0,5: −12) y la del LFO1 baja
+; 1 muestra por muestra (razón 2: +12). Ventanas complementarias, como el
+; shimmer. Diseño propio.
+;
+; pot0 = octava baja   (nivel de −12)
+; pot1 = octava alta   (nivel de +12)
+; pot2 = seco          (nivel de la señal sin cambiar)
+
+equ  w     4096
+
+equ  baja     reg0
+equ  voces    reg1
+
+mem  po    w + 3
+
+lfo  0  ramp w
+lfo  1  ramp w
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 1/4096                 ; −12: rate = 2·(1 − 0,5)/4096
+        wrax  lfo0_rate, 0
+        sof   0, -1/2048                ; +12: rate = 2·(1 − 2)/4096
+        wrax  lfo1_rate, 0
+inicio:
+; ── voces ────────────────────────────────────────────────────────────
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wra   po, 0
+        cho   po + 1, 1.0, lfo0, na
+        cho   po + 1, 1.0, lfo0, na|media
+        mulx  pot0
+        wrax  baja, 0
+        cho   po + 1, 1.0, lfo1, na
+        cho   po + 1, 1.0, lfo1, na|media
+        mulx  pot1
+        rdax  baja, 1.0
+        wrax  voces, 0
+; ── salida ───────────────────────────────────────────────────────────
+        rdax  adcl, 1.0
+        mulx  pot2
+        rdax  voces, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  pot2
+        rdax  voces, 1.0
+        wrax  dacr, 0

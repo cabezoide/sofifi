@@ -1,0 +1,54 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: pitch
+; resumen: Una voz a −12, −7, −5, +5, +7 o +12 semitonos, con realimentación.
+;
+; armonizador.sasm — Pitch shifter de doble tap con el intervalo elegido por
+; pot0 (comun/intervalo.sasm). La realimentación vuelve a subir o bajar la voz
+; ya movida: con +7 sale una escalera de quintas. Diseño propio.
+;
+; pot0 = intervalo        (seis tramos: −12 · −7 · −5 · +5 · +7 · +12)
+; pot1 = realimentación   (0 → una voz · 1 → 0,8)
+; pot2 = mezcla           (0 → seco · 1 → solo la voz)
+
+equ  w     4096
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  tmp      reg2
+equ  voz      reg3
+equ  vozw     reg4
+
+mem  pa    w + 3
+
+lfo  0  ramp w
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 1/512                  ; tmp = 2^-9
+        wrax  tmp, 0
+inicio:
+; ── controles ────────────────────────────────────────────────────────
+include  comun/mezcla.sasm
+include  comun/intervalo.sasm
+; ── voz con realimentación ───────────────────────────────────────────
+        rdax  voz, 1.0
+        mulx  pot1
+        sof   0.8, 0
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wra   pa, 0
+        cho   pa + 1, 1.0, lfo0, na
+        cho   pa + 1, 1.0, lfo0, na|media
+        wrax  voz, 1.0
+        mulx  kwet
+        wrax  vozw, 0
+; ── salida ───────────────────────────────────────────────────────────
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  vozw, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  vozw, 1.0
+        wrax  dacr, 0

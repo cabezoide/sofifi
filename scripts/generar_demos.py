@@ -51,6 +51,11 @@ DEMOS: tuple[tuple[str, dict[int, str], tuple[tuple[float, float], ...], float],
     ("phaser", {0: "0.2", 1: "0.9", 2: "0.5", 3: "0.5"}, (), 1.0),
     ("tremolo", {0: "0.3", 1: "0.7", 2: "0.6"}, (), 1.0),
     ("vibrato", {0: "0.4", 1: "0.5", 2: "1"}, (), 1.0),
+    ("octava", {0: "0.6", 1: "0.4", 2: "0.8"}, (), 1.0),
+    ("armonizador", {0: "0.75", 1: "0.3", 2: "0.45"}, (), 2.0),
+    ("doblador", {0: "0.5", 2: "0.5"}, (), 1.0),
+    ("escalera", {0: "0.95", 1: "0.6", 2: "0.45", 3: "0.4"}, (), 4.0),
+    ("shimmer_quinta", {0: "0.75", 1: "0.25", 2: "0.55", 3: "0.6"}, (), 6.0),
 )
 # Calidad de Vorbis: 0 es la mejor. Con 0,3, una demo de 8 s ocupa unos 190 kB.
 COMPRESION = 0.3

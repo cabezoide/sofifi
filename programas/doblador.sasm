@@ -1,0 +1,60 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: pitch
+; resumen: Dos voces desafinadas unos cents, una a cada lado: ensancha el sonido.
+;
+; doblador.sasm — Micro-pitch al estilo de los armonizadores de estudio. Dos
+; pitch shifters de doble tap con ventana corta (1 024 muestras): la voz
+; izquierda sube y la derecha baja, de 0 a 25 cents. Cada voz sale a su lado,
+; junto a la señal seca. Diseño propio.
+;
+; pot0 = desafinación   (0 → 0 cents · 1 → ±25 cents)
+; pot2 = mezcla         (0 → seco · 1 → solo las voces)
+
+equ  w     1024
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  tmp      reg2
+equ  alta     reg3
+equ  baja     reg4
+
+mem  pd    w + 3
+
+lfo  0  ramp w
+lfo  1  ramp w
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 1/512                  ; tmp = 2^-9
+        wrax  tmp, 0
+inicio:
+; ── controles: rate = 2·(1 − razón)/W; con tmp, coeficiente (1 − razón)·512/W ──
+include  comun/mezcla.sasm
+        rdax  pot0, 1.0
+        mulx  tmp
+        wrax  alta, -(1.01455 - 1)*512/w  ; +25 cents: razón 1,01455
+        wrax  lfo0_rate, 0
+        rdax  alta, (1 - 1/1.01455)*512/w ; −25 cents
+        wrax  lfo1_rate, 0
+; ── voces ────────────────────────────────────────────────────────────
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wra   pd, 0
+        cho   pd + 1, 1.0, lfo0, na
+        cho   pd + 1, 1.0, lfo0, na|media
+        mulx  kwet
+        wrax  alta, 0
+        cho   pd + 1, 1.0, lfo1, na
+        cho   pd + 1, 1.0, lfo1, na|media
+        mulx  kwet
+        wrax  baja, 0
+; ── salida ───────────────────────────────────────────────────────────
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  alta, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  baja, 1.0
+        wrax  dacr, 0

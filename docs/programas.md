@@ -3,7 +3,7 @@
 
 # Programas del núcleo
 
-14 programas. Cada uno es un fichero de texto en `programas/`.
+19 programas. Cada uno es un fichero de texto en `programas/`.
 Los ciclos son la cota del RTL, de 2 048 por muestra
 (`model/sofifi/domain/coste.py`). La memoria es de 43 008 palabras.
 
@@ -16,6 +16,7 @@ Los ciclos son la cota del RTL, de 2 048 por muestra
 | `hall` | Red de 8 retardos con matriz de Householder: sala grande. | 0: decay<br>1: damping<br>2: mezcla | 137 | 1 585 | 34 522 |
 | `plate` | Plate de Dattorro con el tanque modulado. | 0: decay<br>1: damping<br>2: mezcla | 86 | 1 202 | 37 439 |
 | `shimmer` | Plate con un +12 en la realimentación: cada vuelta sube una octava. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 108 | 1 553 | 41 539 |
+| `shimmer_quinta` | Shimmer de quinta: cada vuelta sube 7 semitonos, como un acorde que se abre. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 108 | 1 553 | 41 539 |
 
 ## Delay
 
@@ -33,6 +34,15 @@ Los ciclos son la cota del RTL, de 2 048 por muestra
 | `phaser` | Cuatro allpass con coeficiente móvil: muescas que barren. | 0: velocidad<br>1: profundidad<br>2: mezcla<br>3: realimentación | 79 | 802 | 1 |
 | `tremolo` | El volumen sube y baja; con pot2, de un lado a otro. | 0: velocidad<br>1: profundidad<br>2: panorama | 43 | 442 | 1 |
 | `vibrato` | El tono sube y baja. | 0: velocidad<br>1: profundidad<br>2: mezcla | 27 | 344 | 125 |
+
+## Pitch
+
+| Programa | Qué hace | Mandos | Instrucciones | Ciclos | Memoria |
+|---|---|---|---|---|---|
+| `armonizador` | Una voz a −12, −7, −5, +5, +7 o +12 semitonos, con realimentación. | 0: intervalo<br>1: realimentación<br>2: mezcla | 55 | 632 | 4 100 |
+| `doblador` | Dos voces desafinadas unos cents, una a cada lado: ensancha el sonido. | 0: desafinación<br>2: mezcla | 32 | 540 | 1 028 |
+| `escalera` | Eco en el que cada repetición sube o baja un intervalo: una escalera. | 0: intervalo<br>1: realimentación<br>2: mezcla<br>3: tiempo | 67 | 799 | 39 313 |
+| `octava` | Octavador: una octava abajo y una arriba, cada una con su nivel. | 0: octava baja<br>1: octava alta<br>2: seco | 25 | 470 | 4 100 |
 
 ## Dinámica
 

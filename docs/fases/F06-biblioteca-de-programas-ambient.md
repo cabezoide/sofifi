@@ -76,6 +76,7 @@ Además, la directiva `include` en el ensamblador.
 **Ampliación (2026-10-07): catálogo de familias.** La persona propietaria pide todos los efectos posibles del estado del arte. Son unos 35-40 algoritmos distintos (investigación §4.3 y hoja de ruta de la Fase 03); los cientos de variantes salen de presets. Se hace en lotes de unos 5 programas por PR, y después un banco de presets.
 
 - **Lote 1, modulación:** chorus (3 voces), flanger, phaser (4 etapas), trémolo con autopan y vibrato. Trémolo y phaser usan un LFO triangular por software (`comun/lfo_triangulo.sasm`): los LFO del núcleo no se pueden leer.
+- **Lote 2, pitch:** octava (−12 y +12), armonizador (−12, −7, −5, +5, +7 o +12, con realimentación), doblador (±25 cents), escalera (eco que cambia de intervalo en cada vuelta) y shimmer de quinta. El cuerpo del shimmer pasa a `comun/shimmer_cuerpo.sasm`: el intervalo es un `equ`. El tanque con CLIP de shimmer y freeze pasa a `comun/dattorro_tanque_clip.sasm`.
 - `docs/programas.md` se genera con `sofifi catalogo` desde la cabecera de cada programa (`; familia:`, `; resumen:`, `; potN =`).
 
 ## Criterios de aceptación

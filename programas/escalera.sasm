@@ -1,0 +1,75 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: pitch
+; resumen: Eco en el que cada repetición sube o baja un intervalo: una escalera.
+;
+; escalera.sasm — Un eco con el pitch shifter dentro de la realimentación: cada
+; vuelta pasa otra vez por el shifter. Con +12, los ecos suben de octava en
+; octava; con −7, bajan de quinta en quinta. El tiempo usa el LFO senoidal
+; parado de cinta.sasm. Diseño propio, con la idea del «dual pitch» con
+; realimentación global (docs/investigacion/INVESTIGACION.md §4.3).
+;
+; pot0 = intervalo        (−12 · −7 · −5 · +5 · +7 · +12, comun/intervalo.sasm)
+; pot1 = realimentación   (0 → un eco · 1 → 0,9)
+; pot2 = mezcla           (0 → seco · 1 → solo ecos)
+; pot3 = tiempo           (0 → 0,05 s · 1 → 0,72 s)
+
+equ  w     4096               ; ventana del pitch shifter
+equ  et    16384              ; recorrido del tiempo: 2·et muestras
+equ  base  2441               ; retardo mínimo (50 ms)
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  tmp      reg2
+equ  tiempo   reg3
+equ  eco      reg4
+equ  ecow     reg5
+
+mem  pe    w + 3
+mem  de    base + 2*et + 3
+
+lfo  0  ramp w
+lfo  1  sin  et
+
+; ── LFO del tiempo: rate 0 en cada muestra, salvo en la inicialización ──
+        wrax  lfo1_rate, 0              ; ACC vale 0 al empezar la muestra
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 0.5                    ; un cuarto de vuelta: la forma del LFO1 vale 1
+        wrax  lfo1_rate, 0
+        sof   0, 1/512                  ; tmp = 2^-9
+        wrax  tmp, 0
+inicio:
+; ── controles ────────────────────────────────────────────────────────
+include  comun/mezcla.sasm
+include  comun/intervalo.sasm
+        sof   0, -1.0                   ; objetivo = 2·pot3 − 1
+        rdax  pot3, 1.999
+        rdfx  tiempo, 0.0005
+        wrax  tiempo, 1.0
+        wrax  lfo1_depth, 0
+; ── eco y shifter ────────────────────────────────────────────────────
+        cho   de + base, 1.0, lfo1
+        wra   pe, 0
+        cho   pe + 1, 1.0, lfo0, na
+        cho   pe + 1, 1.0, lfo0, na|media
+        wrax  eco, 1.0
+        mulx  pot1
+        sof   0.9, 0
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        sof   2/3, 0                    ; curva_suave(2x/3): pendiente 1, techo ±1
+        clip
+        wra   de, 0
+; ── salida ───────────────────────────────────────────────────────────
+        rdax  eco, 1.0
+        mulx  kwet
+        wrax  ecow, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  ecow, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  ecow, 1.0
+        wrax  dacr, 0
