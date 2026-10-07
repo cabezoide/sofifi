@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+#
+# Hook pre-push versionado (ADR 0001). NO mantiene su propia lista de trabajos:
+# delega en `ci_local.sh --no-soft`, que es la única definición de lo duro.
+# Escapes con nombre: `git push --no-verify` o `PREPUSH_SKIP=1 git push`.
+set -euo pipefail
+
+if [[ "${PREPUSH_SKIP:-0}" == "1" ]]; then
+  echo "pre-push: PREPUSH_SKIP=1 → compuerta SALTADA a conciencia." >&2
+  exit 0
+fi
+
+ROOT="$(git rev-parse --show-toplevel)"
+exec "$ROOT/scripts/ci_local.sh" --no-soft

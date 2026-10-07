@@ -1,0 +1,22 @@
+# Promesas de portada (SPEC_RAIZ §9.4): lo que README y guías le dicen a quien usa el proyecto.
+# Campos: id · claim · source · verifier · kind · status (verificada|no_verificada|desmentida)
+#         · scope · not_checked (si verificada) · motivo · flag
+promesas:
+  - id: P-001
+    claim: "Todo el audio en BSRAM (unos 0,9–1,4 s de líneas de retardo)"
+    source: README.md
+    verifier: "pendiente: informe de síntesis de la primera fase con RTL"
+    kind: recurso
+    status: no_verificada
+    scope: presupuesto de BSRAM del GW5A-25
+    motivo: "Cifra calculada a partir del datasheet (56 bloques de 18 Kbit menos unos 12 de reserva); aún no hay síntesis que la confirme."
+    flag: null
+  - id: P-002
+    claim: "fs = 48 828 Hz con 2 048 ciclos por muestra exactos"
+    source: README.md
+    verifier: "pendiente: medición de LRCK con contador en hardware"
+    kind: reloj
+    status: no_verificada
+    scope: reloj de audio con el cristal de 50 MHz
+    motivo: "Derivado aritméticamente (100 MHz / 2048). La PLLA de apicula tiene un issue abierto (#427), así que hay que medir."
+    flag: null

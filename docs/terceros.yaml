@@ -1,0 +1,47 @@
+# Origen y licencia de código ajeno (ADR 0002). Lo comprueba scripts/check_licenses.py.
+# uso: estudiado (se lee, no se copia) | portado (hay derivado en el repo; exige licencia permisiva)
+# ficheros: rutas del repo derivadas de esta fuente (solo si uso: portado)
+# Licencias no SPDX: LicenseRef-PublicDomain, LicenseRef-STK-4.3, LicenseRef-Spin-Open-Reverb
+terceros:
+  - id: T-001
+    nombre: Mutable Instruments eurorack (Clouds, Rings, Elements)
+    url: https://github.com/pichenettes/eurorack
+    licencia: MIT
+    uso: estudiado
+    motivo: "fx_engine/reverb de Clouds: reverb tipo Griesinger en un buffer único, candidata a primer programa del núcleo. No se puede usar el nombre del módulo."
+  - id: T-002
+    nombre: CloudSeedCore (Ghost Note Audio)
+    url: https://github.com/GhostNoteAudio/CloudSeedCore
+    licencia: MIT
+    uso: estudiado
+    motivo: Referencia del modo Cloud.
+  - id: T-003
+    nombre: el-visio/dattorro-verb
+    url: https://github.com/el-visio/dattorro-verb
+    licencia: MIT
+    uso: estudiado
+    motivo: Plate de Dattorro en C; base del primer programa del núcleo.
+  - id: T-004
+    nombre: Spin FV-1 programas y knowledge base (Keith Barr)
+    url: https://www.spinsemi.com/programs.php
+    licencia: LicenseRef-Spin-Open-Reverb
+    uso: estudiado
+    motivo: "ISA de referencia del núcleo (ADR 0006) y programas .spn para validarlo."
+  - id: T-005
+    nombre: ndf-zz/asfv1
+    url: https://github.com/ndf-zz/asfv1
+    licencia: MIT
+    uso: estudiado
+    motivo: Ensamblador FV-1; posible base del ensamblador del núcleo.
+  - id: T-006
+    nombre: Surge XT (Nimbus, Reverb2)
+    url: https://github.com/surge-synthesizer/surge
+    licencia: GPL-3.0-only
+    uso: estudiado
+    motivo: Solo lectura de ideas. No se porta (ADR 0002).
+  - id: T-007
+    nombre: apfaudio/tiliqua
+    url: https://github.com/apfaudio/tiliqua
+    licencia: CERN-OHL-S-2.0
+    uso: estudiado
+    motivo: Delays y difusores en RAM externa en HDL abierto. Solo lectura (licencia recíproca).

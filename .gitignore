@@ -1,0 +1,30 @@
+# Entorno y cachés
+.venv/
+__pycache__/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+.coverage.json
+.ci_timing.log
+
+# Artefactos de síntesis y simulación (se publican en releases, no se versionan)
+build/
+impl/
+*.fs
+*.bit
+*.vcd
+*.fst
+sim_build/
+results.xml
+
+# Audio de prueba generado (los WAV de referencia pequeños van en model/tests/data)
+out/
+*.wav
+!model/tests/data/*.wav
+
+# Entorno local
+.env
+.env.*
+!.env.example

@@ -1,0 +1,31 @@
+# Registro de madurez (SPEC_RAIZ §9.2). Niveles: 0 ausente · 1 declarada · 2 implementada
+# · 3 verificada · 4 blindada · 5 medida. Un 2 honesto vale más que un 4 sin prueba.
+capacidades:
+  - id: M-01
+    capacidad: Compuerta local con hook versionado
+    nivel: 4
+    evidencia: scripts/ci_local.sh
+    scope: trabajos duros del día 0
+    no_cubre: "síntesis y simulación RTL (aún no existen)"
+    brecha: "añadir la compuerta de release cuando haya síntesis"
+  - id: M-02
+    capacidad: Arquitectura por capas del modelo
+    nivel: 4
+    evidencia: model/tests/arquitectura_test.py
+    scope: imports entre capas, I/O en el dominio y ciclos de cabecera
+    no_cubre: "que las capas tengan contenido: hoy están vacías"
+    brecha: "llenar el dominio en la Fase 1"
+  - id: M-03
+    capacidad: Modelo bit-exact del núcleo DSP
+    nivel: 1
+    evidencia: docs/adr/0006-los-efectos-son-programas-no-modulos-rtl.md
+    scope: decisión de diseño
+    no_cubre: "todo: no hay código"
+    brecha: "Fase 1"
+  - id: M-04
+    capacidad: Documentación trilingüe (es, en, zh-CN)
+    nivel: 4
+    evidencia: scripts/check_i18n.py
+    scope: README y sus traducciones selladas
+    no_cubre: "la calidad de la traducción; ADRs y specs solo en español"
+    brecha: "revisión de las traducciones por hablantes nativos"

@@ -1,0 +1,6 @@
+# Ratchets (SPEC_RAIZ §9.1). Vacío el día 0: el listón se pone donde se esté,
+# cuando haya algo que medir. Las medidas disponibles están en
+# scripts/check_ratchets.py (MEDIDAS); su foto se imprime en cada compuerta.
+# Campos: id · nombre · medida · liston · direccion (menor_mejor|mayor_mejor)
+#         · motivo (se amplía, no se reescribe) · aviso_holgura (opcional)
+ratchets: []

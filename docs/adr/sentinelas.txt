@@ -1,0 +1,13 @@
+# Sentinelas del adr-gate (ADR 0001). Estrechas: ficheros concretos que casi
+# siempre significan que una decisión cambió, no que se siguió. Globs de bash.
+LICENSE
+pyproject.toml
+scripts/ci_local.sh
+scripts/hooks/*
+scripts/check_i18n.py
+docs/terceros.yaml
+docs/adr/sentinelas.txt
+model/tests/arquitectura_test.py
+rtl/top/*.cst
+rtl/top/*.sdc
+rtl/core/isa*

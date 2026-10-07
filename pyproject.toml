@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: MIT
+[project]
+name = "ambient-model"
+version = "0.0.0"
+description = "Modelo de referencia bit-exact del pedal ambient FPGA (golden model del RTL)"
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = ["numpy>=2.0"]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-cov", "ruff", "mypy", "pyyaml", "types-PyYAML"]
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["model"]
+include = ["ambient*"]
+
+[tool.pytest.ini_options]
+# Recolección acotada: un solo directorio y sufijo propio (SPEC_RAIZ §4.1).
+testpaths = ["model/tests"]
+python_files = ["*_test.py"]
+pythonpath = ["model"]
+addopts = "-q --cov=ambient --cov-report=term --cov-report=json:.coverage.json"
+
+[tool.coverage.run]
+data_file = ".coverage"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+
+[tool.mypy]
+files = ["model/ambient", "model/tests", "scripts"]
+mypy_path = "model"
+strict = true
+explicit_package_bases = true

@@ -1,0 +1,2 @@
+fase;titulo;estado;spec;cerrada;descripcion
+00;Kit de arranque y compuerta local;cerrada;F00-kit-de-arranque-y-compuerta-local.md;2026-10-07;Hallazgo: el primer commit no puede ir por PR porque no existe rama base, así que el kit entra directo en main y desde ahí todo va por PR. Enmiendas: se añadió la compuerta i18n y el ADR 0007 (proyecto trilingüe es/en/zh-CN) a mitad de fase a petición de la persona propietaria.

@@ -1,0 +1,4 @@
+# Mediciones (SPEC_RAIZ §9.3). Todos los campos son obligatorios; caducan (P5).
+# Campos: id · caracteristica · nombre · valor · unidad · umbral · direccion · fecha
+#         · caduca_en_dias · como · entorno · no_dice
+mediciones: []
