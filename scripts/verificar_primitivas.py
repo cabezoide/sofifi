@@ -6,6 +6,7 @@ Uso::
     make prog TOP=prueba_dsp && .venv/bin/python scripts/verificar_primitivas.py dsp
     .venv/bin/python scripts/verificar_primitivas.py bsram --segundos 10
     .venv/bin/python scripts/verificar_primitivas.py pll
+    .venv/bin/python scripts/verificar_primitivas.py fs      # prueba_fs: fs y UART RX
 
 Cada top envía líneas "<etiqueta> <hexadecimal>":
 
@@ -15,6 +16,8 @@ Cada top envía líneas "<etiqueta> <hexadecimal>":
   errores a 0.
 - ``P``: bloqueado (1 dígito) y ciclos del PLL en un segundo del cristal (8).
   Se exige bloqueado = 1 y 100 000 000 ± 100 ciclos.
+- ``S``: muestras en un segundo (8). Se exige 48 828 o 48 829 (fs = 48 828,125 Hz).
+- ``R``: eco de cada byte enviado al empezar. Se exige el eco exacto y en orden.
 
 Termina con código 0 si todas las líneas son correctas y llegó al menos una.
 """
@@ -23,7 +26,9 @@ from __future__ import annotations
 
 import argparse
 import sys
+import time
 
+import serial
 from leer_uart import leer
 
 EXTREMOS_A = (0, 1, -1, (1 << 26) - 1, -(1 << 26))
@@ -78,6 +83,42 @@ def comprobar_pll(hexa: str) -> str | None:
     return None
 
 
+def comprobar_fs(hexa: str) -> str | None:
+    if len(hexa) != 8:
+        return f"longitud {len(hexa)}"
+    muestras = int(hexa, 16)
+    return None if muestras in (48_828, 48_829) else f"{muestras} muestras por segundo"
+
+
+ECO = b"SOFIFI\x00\xff\x55"
+
+
+def verificar_fs(puerto: str, segundos: float) -> int:
+    """Envía ECO, exige su eco en orden y comprueba las medidas de fs."""
+    lineas: list[str] = []
+    with serial.Serial(puerto, 115_200, timeout=0.2) as s:
+        s.reset_input_buffer()
+        # De uno en uno: prueba_fs guarda un solo eco pendiente, y cada línea de
+        # eco tarda ~1 ms mientras los bytes llegan cada 87 µs.
+        for byte in ECO:
+            s.write(bytes([byte]))
+            time.sleep(0.01)
+        fin = time.monotonic() + segundos
+        while time.monotonic() < fin:
+            crudo = s.readline()
+            if crudo:
+                lineas.append(crudo.decode("ascii", "replace").strip())
+    ecos = bytes(int(t[2:], 16) for t in lineas if t.startswith("R ") and len(t) == 10)
+    medidas = [t[2:] for t in lineas if t.startswith("S ")]
+    errores = [(t, e) for t in medidas[1:] if (e := comprobar_fs(t)) is not None]
+    for t, e in errores:
+        print(f"ERROR S {t}: {e}")
+    print(f"fs: eco {'correcto' if ecos == ECO else f'INCORRECTO: {ecos!r}'}")
+    print(f"fs: {len(medidas) - 1} medidas comprobadas, {len(errores)} con error")
+    print("fs: muestras por segundo: " + ", ".join(str(int(t, 16)) for t in medidas[1:]))
+    return 0 if ecos == ECO and len(medidas) > 1 and not errores else 1
+
+
 COMPROBADORES = {
     "dsp": ("D", comprobar_dsp),
     "bsram": ("B", comprobar_bsram),
@@ -87,11 +128,13 @@ COMPROBADORES = {
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("prueba", choices=sorted(COMPROBADORES))
+    ap.add_argument("prueba", choices=[*sorted(COMPROBADORES), "fs"])
     ap.add_argument("--puerto", default="/dev/ttyUSB1")
     ap.add_argument("--segundos", type=float, default=10.0)
     args = ap.parse_args(argv)
 
+    if args.prueba == "fs":
+        return verificar_fs(args.puerto, args.segundos)
     etiqueta, comprobar = COMPROBADORES[args.prueba]
     lineas = [txt for _, txt in leer(args.puerto, 115_200, args.segundos)]
     validas = [t[2:] for t in lineas if t.startswith(etiqueta + " ")]

@@ -134,3 +134,15 @@ mediciones:
     como: "sim/nucleo/nucleo_test.py (registra el máximo de la salida `ciclos`)"
     entorno: "núcleo multiciclo sin solapamiento: unas 6 por instrucción y unas 30 por CHO"
     no_dice: "El ADR 0009 cuenta 1 ciclo por instrucción: un programa de 2 048 instrucciones no cabría en esta primera versión. Se optimiza cuando un programa lo necesite."
+  - id: MED-12
+    caracteristica: M-06
+    nombre: Muestras por segundo medidas en la placa
+    valor: 48828.125
+    unidad: muestras/s (7 de cada 8 segundos dan 48 828 y 1 da 48 829)
+    umbral: 1
+    direccion: menor_mejor
+    fecha: 2026-10-07
+    caduca_en_dias: 180
+    como: "make prog TOP=prueba_fs && .venv/bin/python scripts/verificar_primitivas.py fs --segundos 9 (el umbral es la desviación admitida, ± 1 muestra/s)"
+    entorno: "Tang Primer 25K; generador_muestra a 100 MHz desde el PLL; ventana de 10^8 ciclos del PLL"
+    no_dice: "La ventana es del propio PLL; la relación con el cristal la da MED-08 y la precisión del cristal, MED-03 (~100 ppm)."

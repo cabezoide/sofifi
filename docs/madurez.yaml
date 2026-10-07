@@ -41,8 +41,8 @@ capacidades:
     nivel: 4
     evidencia: sim/comun/uart_tx_test.py
     scope: "UART TX con testbench cocotb y lint verilator en la compuerta dura; síntesis de hola_uart en la de release; mensaje recibido de la placa (MED-03)"
-    no_cubre: "la prueba en placa es manual: ninguna compuerta programa la FPGA; tampoco hay UART RX ni programación de la flash"
-    brecha: "Fase 05: banco de pruebas en placa por UART, con RX"
+    no_cubre: "la prueba en placa es manual: ninguna compuerta programa la FPGA; tampoco hay programación de la flash"
+    brecha: "Fase 05: captura del núcleo en la placa y comparación con el modelo (la UART RX ya está, MED-12)"
   - id: M-07
     capacidad: Primitivas Gowin del núcleo (DSP, BSRAM, PLL) verificadas en la placa
     nivel: 5

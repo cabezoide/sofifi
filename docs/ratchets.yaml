@@ -118,3 +118,19 @@ ratchets:
       2026-10-07, cierre de la Fase 04: 42 de memoria de retardo y 6 de
       microcódigo. La ROM Hermite va en LUT (las SPX9 daban violaciones de
       hold). Quedan 8 de 56; cada bloque de más es memoria de retardo de menos.
+  - id: RAT-14
+    nombre: LUT4 del top prueba_fs
+    medida: recursos:prueba_fs:LUT4
+    liston: 269
+    direccion: menor_mejor
+    aviso_holgura: 0
+    motivo: >-
+      2026-10-07, Fase 05: listón donde se está (ADR 0010).
+  - id: RAT-15
+    nombre: ALU del top prueba_fs
+    medida: recursos:prueba_fs:ALU
+    liston: 120
+    direccion: menor_mejor
+    aviso_holgura: 0
+    motivo: >-
+      2026-10-07, Fase 05: listón donde se está (ADR 0010).

@@ -14,10 +14,10 @@ promesas:
   - id: P-002
     claim: "fs = 48 828 Hz con 2 048 ciclos por muestra exactos"
     source: README.md
-    verifier: "pendiente: medición de LRCK con contador en hardware"
+    verifier: scripts/verificar_primitivas.py
     kind: reloj
-    status: no_verificada
-    scope: reloj de audio con el cristal de 50 MHz
+    status: verificada
+    scope: "ticks de muestra contados en la placa durante 1 s del PLL: 48 828 o 48 829, como da 48 828,125 Hz (MED-12); el PLL va exacto respecto al cristal (MED-08)"
     motivo: "Derivado aritméticamente (100 MHz / 2048). La PLLA de apicula tiene un issue abierto (#427), así que hay que medir."
     flag: null
   - id: P-003
