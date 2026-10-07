@@ -69,3 +69,7 @@ Los trabajos que lanzan herramientas EDA corren con `ulimit -u` acotado. El mism
 - `rtl-lint` hace un lint por top de `rtl/top/tops.txt`, porque varios tops juntos dan `MULTITOP`. Define `SIMULACION`, que elige el modelo de comportamiento de las primitivas Gowin. La rama de síntesis la comprueba `optimizacion`.
 - `mypy_path` incluye `scripts`, para que un script importe a otro (`verificar_primitivas.py` usa `leer_uart.py`).
 - `scripts/fpga.sh` pone 100 MHz de objetivo de timing a todos los relojes, porque nextpnr no deduce la salida del PLL.
+
+## Actualización 2026-10-07 (lint por módulo, Fase 04)
+
+`rtl-lint` también hace un lint de cada módulo de `rtl/comun`, `rtl/primitivas` y `rtl/nucleo` por separado. Los módulos del núcleo se escriben antes de que exista un top que los use, y sin esto quedarían fuera del lint.
