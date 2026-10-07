@@ -39,5 +39,10 @@
 | `demo_lluvia.ogg` | `lluvia.sasm` | 0,70 (difusión/diffusion) | 0,40 (realimentación/feedback) | 0,50 | | |
 | `demo_bbd.ogg` | `bbd.sasm` | 0,60 (tiempo/time) | 0,60 (realimentación/feedback) | 0,45 | 0,50 (modulación) | |
 | `demo_ducking.ogg` | `ducking.sasm` | 0,45 (tiempo/time) | 0,50 (realimentación/feedback) | 0,50 | 0,80 (ducking) | |
+| `demo_autowah.ogg` | `autowah.sasm` | 0,80 (sensibilidad/sensitivity) | 0,60 (resonancia/resonance) | 0,80 | | |
+| `demo_compresor.ogg` | `compresor.sasm` | 0,30 (umbral/threshold) | 0,80 (compresión/compression) | 1 | 0,40 (ganancia/gain) | |
+| `demo_filtro.ogg` | `filtro.sasm` | 0,25 (velocidad/rate) | 0,60 (resonancia/resonance) | 0,90 | 0,80 (profundidad/depth) | |
+| `demo_puerta.ogg` | `puerta.sasm` | 0,20 (umbral/threshold) | 0,40 (cierre/release) | | | |
+| `demo_saturacion.ogg` | `saturacion.sasm` | 0,60 (ganancia/gain) | 0,50 (tono/tone) | 1 | 0,70 (nivel/level) | |
 
 Ogg Vorbis a 48 828 Hz (ADR 0005); el render es bit-exact en 24 bit. Ogg Vorbis at 48,828 Hz; the render is bit-exact at 24 bits. Ogg Vorbis，48,828 Hz；渲染在 24 位下逐位精确。

@@ -1,0 +1,59 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: filtro
+; resumen: Wah automático: cuanto más fuerte se toca, más sube el filtro.
+;
+; autowah.sasm — Un seguidor de picos (MAXX) mueve la frecuencia de un filtro
+; pasa banda resonante (comun/svf.sasm) de unos 300 Hz a unos 3 kHz. Hoja de
+; ruta de la Fase 03 (seguidor de envolvente como fuente de modulación).
+; Diseño propio.
+;
+; pot0 = sensibilidad   (0 → filtro quieto en 300 Hz · 1 → recorrido completo)
+; pot1 = resonancia     (0 → suave, Q ≈ 1 · 1 → aguda, Q ≈ 7)
+; pot2 = mezcla         (0 → seco · 1 → solo filtro)
+
+equ  fmin  0.0386             ; 2·sen(π·300/fs)
+equ  fmax  0.385              ; 2·sen(π·3000/fs)
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  x        reg2
+equ  f        reg3
+equ  q        reg4
+equ  lp       reg5
+equ  bp       reg6
+equ  hp       reg7
+equ  qbp      reg8
+equ  env      reg9
+equ  sal      reg10
+
+include  comun/mezcla.sasm
+        rdax  pot1, -0.85               ; q de 1 a 0,15
+        sof   1.0, 0.99997
+        wrax  q, 0
+; ── envolvente: env = max(|x|, 0,99977·env), unos 90 ms de caída ────
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wrax  x, 0
+        rdax  env, 0.99977
+        maxx  x, 1.0
+        wrax  env, 1.0
+; ── f = fmin + sens·env·4·(fmax − fmin), con techo en fmax ───────────
+        mulx  pot0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   fmax - fmin, fmin
+        wrax  f, 0
+include  comun/svf.sasm
+; ── salida: pasa banda ───────────────────────────────────────────────
+        rdax  bp, 1.0
+        mulx  kwet
+        wrax  sal, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  sal, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  sal, 1.0
+        wrax  dacr, 0

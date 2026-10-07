@@ -1,0 +1,57 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: filtro
+; resumen: Filtro paso bajo resonante que sube y baja solo, con un LFO.
+;
+; filtro.sasm — El filtro de comun/svf.sasm, en paso bajo, con la frecuencia
+; movida por el LFO triangular por software (comun/lfo_triangulo.sasm) entre
+; unos 200 Hz y unos 4 kHz. Diseño propio.
+;
+; pot0 = velocidad     (0 → 0,05 Hz · 1 → 4 Hz)
+; pot1 = resonancia    (0 → suave · 1 → aguda)
+; pot2 = mezcla        (0 → seco · 1 → solo filtro)
+; pot3 = profundidad   (0 → quieto en el centro · 1 → recorrido completo)
+
+equ  fcen  0.27               ; centro: unos 2,1 kHz
+equ  frec  0.24               ; recorrido: de ~200 Hz a ~4 kHz
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  x        reg2
+equ  f        reg3
+equ  q        reg4
+equ  lp       reg5
+equ  bp       reg6
+equ  hp       reg7
+equ  qbp      reg8
+equ  tri      reg9
+equ  dir      reg10
+equ  vel      reg11
+equ  sal      reg12
+
+include  comun/mezcla.sasm
+        rdax  pot0, 4*3.95/48828.125
+        sof   1.0, 4*0.05/48828.125
+        wrax  vel, 0
+        rdax  pot1, -0.85
+        sof   1.0, 0.99997
+        wrax  q, 0
+include  comun/lfo_triangulo.sasm
+        mulx  pot3
+        sof   frec, fcen
+        wrax  f, 0
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wrax  x, 0
+include  comun/svf.sasm
+        rdax  lp, 1.0
+        mulx  kwet
+        wrax  sal, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  sal, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  sal, 1.0
+        wrax  dacr, 0

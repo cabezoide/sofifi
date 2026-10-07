@@ -1,0 +1,52 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: dinámica
+; resumen: Puerta de ruido: calla el zumbido entre notas y deja pasar lo que se toca.
+;
+; puerta.sasm — Un seguidor de picos (MAXX) abre la puerta cuando la entrada
+; pasa del umbral. Abre en ~1 ms y cierra en el tiempo de pot1, sin clics.
+; Diseño propio (docs/investigacion/INVESTIGACION.md §4.3).
+;
+; pot0 = umbral   (0 → 0,002 · 1 → 0,1)
+; pot1 = cierre   (0 → ~5 ms · 1 → ~200 ms)
+
+equ  x        reg0
+equ  env      reg1
+equ  umbral   reg2
+equ  g        reg3
+equ  kc       reg4
+
+        rdax  pot0, 0.098
+        sof   1.0, 0.002
+        wrax  umbral, 0
+        rdax  pot1, -0.004              ; kc: de 0,0041 (~5 ms) a 0,0001 (~200 ms)
+        sof   1.0, 0.0041
+        wrax  kc, 0
+; ── envolvente ───────────────────────────────────────────────────────
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wrax  x, 0
+        rdax  env, 0.999
+        maxx  x, 1.0
+        wrax  env, 1.0
+        rdax  umbral, -1.0
+        skp   neg, cerrar
+; ── abrir: g → 1 deprisa ─────────────────────────────────────────────
+        sof   0, 0.99997
+        rdfx  g, 0.02
+        wrax  g, 0
+        skp   zro, aplicar
+; ── cerrar: g → 0 con kc ─────────────────────────────────────────────
+cerrar:
+        clr
+        rdax  g, -1.0
+        mulx  kc
+        rdax  g, 1.0
+        wrax  g, 0
+aplicar:
+        rdax  adcl, 1.0
+        mulx  g
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  g
+        wrax  dacr, 0

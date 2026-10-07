@@ -1,0 +1,86 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: dinámica
+; resumen: Compresor: baja lo fuerte y deja lo suave; sostiene las notas.
+;
+; compresor.sasm — Compresor de realimentación. Mide los picos de la salida
+; (MAXX). Si pasan del umbral, baja la ganancia en proporción al exceso y a la
+; propia ganancia: así nunca cruza 0. Si no, la ganancia vuelve a 1 en unos
+; 85 ms. La ISA no tiene división: el lazo encuentra solo la ganancia que deja
+; la salida cerca del umbral. Diseño propio (docs/investigacion/INVESTIGACION.md §4.3).
+;
+; pot0 = umbral        (0 → 0,05 · 1 → 0,5)
+; pot1 = compresión    (0 → nada · 1 → fuerte)
+; pot2 = mezcla        (0 → seco · 1 → solo comprimido; a medias, compresión paralela)
+; pot3 = ganancia      (0 → ×1 · 1 → ×4 de recuperación)
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  g        reg2
+equ  env      reg3
+equ  umbral   reg4
+equ  ka       reg5
+equ  y        reg6
+equ  kmk      reg7
+equ  tmp      reg8
+
+; ── inicialización: ganancia 1 ───────────────────────────────────────
+        skp   run, inicio
+        sof   0, 0.99997
+        wrax  g, 0
+inicio:
+include  comun/mezcla.sasm
+        rdax  pot0, 0.45
+        sof   1.0, 0.05
+        wrax  umbral, 0
+        rdax  pot1, 0.002               ; velocidad de ataque
+        wrax  ka, 0
+        rdax  pot3, 0.75                ; kmk = (1 + 3·pot3)/4; ×4 a la salida
+        sof   1.0, 0.25
+        wrax  kmk, 0
+; ── salida comprimida y su envolvente ────────────────────────────────
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        mulx  g
+        wrax  y, 0
+        rdax  env, 0.9998
+        maxx  y, 1.0
+        wrax  env, 1.0
+; ── ganancia: baja ka·(env − umbral)·g si env > umbral; vuelve a 1 ──
+        rdax  umbral, -1.0
+        skp   neg, soltar
+        mulx  ka
+        mulx  g                         ; proporcional a g: g nunca pasa de 0
+        wrax  tmp, 0
+        rdax  g, 1.0
+        rdax  tmp, -1.0
+        wrax  g, 0
+soltar:
+        clr
+        rdax  g, -1.0
+        sof   1/4096, 1/4096            ; (1 − g)/4096: unos 85 ms (exacto en C y en D)
+        rdax  g, 1.0
+        wrax  g, 0
+; ── salida: seco + comprimido·ganancia ───────────────────────────────
+        rdax  g, 1.0
+        mulx  kmk
+        mulx  kwet
+        wrax  tmp, 0
+        rdax  adcl, 1.0
+        mulx  tmp
+        sof   1.999, 0
+        sof   1.999, 0
+        wrax  y, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  y, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  tmp
+        sof   1.999, 0
+        sof   1.999, 0
+        wrax  y, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  y, 1.0
+        wrax  dacr, 0
