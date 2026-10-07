@@ -1,0 +1,127 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: reverb
+; resumen: Freeze que se mueve sin perder energía: la cola congelada gira entre las ramas.
+;
+; freeze_givens.sasm — El freeze (freeze.sasm) con una rotación de Givens entre
+; las dos señales que cruzan de una rama del tanque a la otra. Una rotación
+; conserva la energía: la cola congelada cambia de color sin apagarse. El
+; freeze apaga la modulación del tanque, porque la interpolación pierde
+; energía; aquí el movimiento viene del giro. Hoja de ruta de la Fase 03,
+; punto 3. Diseño propio.
+;
+; pot0 = decay · pot1 = damping · pot2 = mezcla (cuando sw está suelto)
+; pot3 = giro   (0 → quieto · 1 → 0,3 vueltas por segundo)
+
+include  comun/dattorro_decl.sasm
+
+equ  ga       reg9
+equ  gb       reg10
+equ  ra       reg11
+equ  rb       reg12
+equ  gs       reg13
+equ  gc       reg14
+equ  kgiro    reg15
+equ  tmpg     reg16
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+include  comun/dattorro_lfo.sasm
+        sof   0, 0.99997            ; el giro empieza en 0: (sen, cos) = (0, 1)
+        wrax  gc, 0
+inicio:
+include  comun/controles.sasm
+; ── freeze: con el footswitch, decay ≈ 1, sin damping y sin entrada nueva ──
+        rdax  sw, 1.0
+        skp   zro, sin_freeze
+        sof   0, 1.0                    ; satura a 0,99999988 al escribir
+        wrax  kdecay, 0
+        sof   0, 1.0
+        wrax  kdamp, 0                  ; kdamp = 1: el paso bajo deja pasar todo
+        wrax  kwet, 0                   ; ACC = 0: la entrada no alimenta la cola
+        skp   zro, profundidad          ; ACC = 0: objetivo de modulación 0 (bucle sin pérdidas)
+sin_freeze:
+        sof   0, 0.99                   ; objetivo de modulación normal
+profundidad:
+; la profundidad sigue a su objetivo con una rampa de ~40 ms: sin clic al congelar
+        wrax  tmp, 0
+        rdax  tmp, 1.0
+        rdfx  lfo0_depth, 0.0005
+        wrax  lfo0_depth, 0
+        rdax  tmp, 1.0
+        rdfx  lfo1_depth, 0.0005
+        wrax  lfo1_depth, 0
+; ── entrada: mono, escalada por la mezcla, predelay y ancho de banda ─
+include  comun/entrada.sasm
+        rdfx  bw, kbw
+        wrax  bw, 1.0
+include  comun/dattorro_difusion.sasm
+; ── giro de Givens: (ra, rb) = R(θ)·(a, b), θ avanza con pot3 ──────────
+        rdax  pot3, 2*3.14159265*0.3/48828.125   ; kgiro ≈ 2π·f/fs, f de 0 a 0,3 Hz
+        wrax  kgiro, 0
+        rdax  gc, 1.0                   ; oscilador de forma acoplada: (sen θ, cos θ)
+        mulx  kgiro
+        rdax  gs, 1.0
+        wrax  gs, 1.0
+        mulx  kgiro
+        wrax  tmpg, 0
+        rdax  gc, 1.0
+        rdax  tmpg, -1.0
+        wrax  gc, 0
+        rda   dr2#, 1.0
+        wrax  ga, 0
+        rda   dl2#, 1.0
+        wrax  gb, 0
+        rdax  ga, 1.0                   ; ra = cos·a − sen·b
+        mulx  gc
+        wrax  ra, 0
+        rdax  gb, 1.0
+        mulx  gs
+        wrax  tmpg, 0
+        rdax  ra, 1.0
+        rdax  tmpg, -1.0
+        wrax  ra, 0
+        rdax  ga, 1.0                   ; rb = sen·a + cos·b
+        mulx  gs
+        wrax  rb, 0
+        rdax  gb, 1.0
+        mulx  gc
+        rdax  rb, 1.0
+        wrax  rb, 0
+; ── tanque, rama izquierda ───────────────────────────────────────────
+        rdax  ra, 1.0                   ; la rama derecha, ya girada
+        mulx  kdecay
+        rdax  entrada, 1.0
+        cho   tl1 + 672*s - ex, -kdd1, lfo0
+        wrap  tl1, kdd1
+        wra   dl1, 0
+        rda   dl1#, 1.0
+        rdax  lpl, -1.0
+        mulx  kdamp
+        rdax  lpl, 1.0
+        wrax  lpl, 1.0
+        mulx  kdecay
+        sof   2/3, 0                    ; curva_suave(2x/3): pendiente 1, techo ±1
+        clip
+        rda   tl2#, kdd2
+        wrap  tl2, -kdd2
+        wra   dl2, 0
+; ── tanque, rama derecha ─────────────────────────────────────────────
+        rdax  rb, 1.0                   ; la rama izquierda, ya girada
+        mulx  kdecay
+        rdax  entrada, 1.0
+        cho   tr1 + 908*s - ex, -kdd1, lfo1
+        wrap  tr1, kdd1
+        wra   dr1, 0
+        rda   dr1#, 1.0
+        rdax  lpr, -1.0
+        mulx  kdamp
+        rdax  lpr, 1.0
+        wrax  lpr, 1.0
+        mulx  kdecay
+        sof   2/3, 0
+        clip
+        rda   tr2#, kdd2
+        wrap  tr2, -kdd2
+        wra   dr2, 0
+include  comun/dattorro_salida.sasm

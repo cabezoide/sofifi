@@ -1,0 +1,39 @@
+; SPDX-License-Identifier: MIT
+;
+; comun/azar_lento.sasm — modulación aleatoria filtrada (hoja de ruta de la
+; Fase 03, punto 2). La ISA no tiene XOR para un LFSR: el azar sale del mapa
+; logístico x = 4·x·(1 − x), caótico.
+;
+; En punto fijo de 24 bit el mapa entra en un ciclo de 724 pasos (medido). Por
+; eso solo avanza un paso cada 0,4 s: la secuencia tarda unos 5 minutos en
+; repetirse. Un paso bajo lento (~0,1 s) une los saltos: `azar` se mueve suave
+; entre 0 y 1.
+;
+; Necesita los registros xlog, cuenta_az y azar (y tmp). Deja ACC = 0.
+
+        rdax  xlog, 1.0                 ; xlog = 0 solo al arrancar
+        skp   zro, semilla
+        clr
+        rdax  cuenta_az, 1.0
+        sof   1.0, -1/(0.4*48828.125)   ; un paso cada 0,4 s
+        wrax  cuenta_az, 1.0
+        skp   gez, suavizar_az
+        sof   1.0, 0.99997
+        wrax  cuenta_az, 0
+        rdax  xlog, 1.0                 ; x = 4·(x − x²)
+        mulx  xlog
+        wrax  tmp, 0
+        rdax  xlog, 1.0
+        rdax  tmp, -1.0
+        sof   1.999, 0
+        sof   1.999, 0
+        wrax  xlog, 0
+        skp   zro, suavizar_az
+semilla:
+        sof   0, 0.3141
+        wrax  xlog, 0
+suavizar_az:
+        clr
+        rdax  xlog, 1.0
+        rdfx  azar, 0.0002
+        wrax  azar, 0

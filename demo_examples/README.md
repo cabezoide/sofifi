@@ -49,5 +49,8 @@
 | `demo_ancho.ogg` | `ancho.sasm` | 0,80 (ancho/width) | 0,60 (tilt) | | | |
 | `demo_chorale.ogg` | `chorale.sasm` | 0,75 | 0,30 | 0,55 | 0,30 (vocal/vowel) | |
 | `demo_resonador.ogg` | `resonador.sasm` | 0,80 (sustain) | 0,70 (excitación/excitation) | 0,50 | | |
+| `demo_plate_vivo.ogg` | `plate_vivo.sasm` | 0,75 | 0,30 | 0,45 | 1 (vida/life) | |
+| `demo_shimmer_energia.ogg` | `shimmer_energia.sasm` | 0,80 | 0,25 | 0,55 | 0,90 | |
+| `demo_freeze_givens.ogg` | `freeze_givens.sasm` | 0,60 | 0,30 | 0,50 | 0,60 (giro/rotation) | 2,5 s → 8 s |
 
 Ogg Vorbis a 48 828 Hz (ADR 0005); el render es bit-exact en 24 bit. Ogg Vorbis at 48,828 Hz; the render is bit-exact at 24 bits. Ogg Vorbis，48,828 Hz；渲染在 24 位下逐位精确。

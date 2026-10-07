@@ -1,0 +1,54 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: reverb
+; resumen: Plate cuya modulación deriva al azar: la cola nunca se repite igual.
+;
+; plate_vivo.sasm — El plate (plate.sasm) con la velocidad de sus dos LFO movida
+; por una señal aleatoria lenta y suave (comun/azar_lento.sasm). Con pot3 = 0
+; es el plate, bit a bit. Hoja de ruta de la Fase 03, punto 2. Diseño propio.
+;
+; pot0 = decay · pot1 = damping · pot2 = mezcla (como plate.sasm)
+; pot3 = vida   (0 → plate · 1 → las velocidades se mueven ±40 %)
+
+include  comun/dattorro_decl.sasm
+
+equ  xlog       reg9
+equ  cuenta_az  reg10
+equ  azar       reg11
+equ  b0         reg12
+equ  b1         reg13
+equ  v          reg14
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+include  comun/dattorro_lfo.sasm
+        rdax  lfo0_rate, 1.0            ; guarda las velocidades del plate
+        wrax  b0, 0
+        rdax  lfo1_rate, 1.0
+        wrax  b1, 0
+        sof   0, 0.99
+        wrax  lfo0_depth, 1.0
+        wrax  lfo1_depth, 0
+inicio:
+include  comun/azar_lento.sasm
+; ── velocidades: b·(1 ± vida·0,8·(azar − 0,5)) ───────────────────────
+        rdax  azar, 1.0
+        sof   0.8, -0.4
+        mulx  pot3
+        wrax  v, 0
+        rdax  b0, 1.0
+        mulx  v
+        rdax  b0, 1.0
+        wrax  lfo0_rate, 0
+        rdax  b1, 1.0
+        mulx  v
+        rdax  b1, -1.0                  ; la otra rama, al revés: no van juntas
+        sof   -1.0, 0
+        wrax  lfo1_rate, 0
+include  comun/controles.sasm
+include  comun/entrada.sasm
+        rdfx  bw, kbw
+        wrax  bw, 1.0
+include  comun/dattorro_difusion.sasm
+include  comun/dattorro_tanque.sasm
+include  comun/dattorro_salida.sasm
