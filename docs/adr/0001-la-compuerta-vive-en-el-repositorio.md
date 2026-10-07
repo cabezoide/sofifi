@@ -63,3 +63,9 @@ Toda la cadena EDA abierta se instala con `make install` (extra `eda` de `pyproj
 `shell-lint` sigue blando: shellcheck no se instala con pip.
 
 Los trabajos que lanzan herramientas EDA corren con `ulimit -u` acotado. El mismo día, un enlace `.venv/bin/verilator -> verilator-cli` hizo que el envoltorio de pip se relanzara a sí mismo en bucle y la máquina cayó dos veces por OOM. La compuerta llama al binario del paquete con `VERILATOR_ROOT`, nunca al envoltorio.
+
+## Actualización 2026-10-07 (primitivas Gowin, Fase 03)
+
+- `rtl-lint` hace un lint por top de `rtl/top/tops.txt`, porque varios tops juntos dan `MULTITOP`. Define `SIMULACION`, que elige el modelo de comportamiento de las primitivas Gowin. La rama de síntesis la comprueba `optimizacion`.
+- `mypy_path` incluye `scripts`, para que un script importe a otro (`verificar_primitivas.py` usa `leer_uart.py`).
+- `scripts/fpga.sh` pone 100 MHz de objetivo de timing a todos los relojes, porque nextpnr no deduce la salida del PLL.

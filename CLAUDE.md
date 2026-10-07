@@ -13,6 +13,7 @@ por capa y el detalle que un agente necesita para trabajar sin releer todo.
 | Documentación | `make docs` |
 | RTL | `scripts/ci_local.sh rtl-lint` · `make sim` (cocotb sobre verilator, del `.venv`) |
 | Placa | `make synth` · `make prog` (SRAM) · `make uart` (lee `/dev/ttyUSB1`) |
+| Primitivas | `make prog TOP=prueba_dsp` y `.venv/bin/python scripts/verificar_primitivas.py dsp` (también `bsram` y `pll`) |
 | Optimización | `make optimizacion` (recursos, timing y pistas de cada top; ADR 0010) |
 | Release | `make release-check` (síntesis de los tops con informe de recursos) |
 
@@ -65,6 +66,8 @@ Se aplica a documentación, comentarios, mensajes de commit y descripciones de P
   el binario verilator del propio paquete con `VERILATOR_ROOT` (`sim/conftest.py`,
   `verilator_real` en `scripts/ci_local.sh`).
 - Probar herramientas nuevas que lanzan subprocesos con `ulimit -u` y `timeout`.
+- Un top que envía a pleno caudal por la UART cuelga el puente del BL616 si el PC
+  deja de leer, y hay que reconectar el USB. Limitar el caudal (`rtl/AGENTS.md`).
 
 ## Cómo extender
 

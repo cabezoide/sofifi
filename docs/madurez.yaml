@@ -43,3 +43,10 @@ capacidades:
     scope: "UART TX con testbench cocotb y lint verilator en la compuerta dura; síntesis de hola_uart en la de release; mensaje recibido de la placa (MED-03)"
     no_cubre: "la prueba en placa es manual: ninguna compuerta programa la FPGA; tampoco hay UART RX ni programación de la flash"
     brecha: "Fase 05: banco de pruebas en placa por UART, con RX"
+  - id: M-07
+    capacidad: Primitivas Gowin del núcleo (DSP, BSRAM, PLL) verificadas en la placa
+    nivel: 5
+    evidencia: sim/primitivas/prueba_bsram_test.py
+    scope: "envoltorios en rtl/primitivas/ con modelo de simulación; tops de prueba con testbench en la compuerta dura; MED-06 a MED-08 en la placa"
+    no_cubre: "los modos de MULTALU27X18 y la BSRAM con dos escrituras; las pruebas en placa son manuales"
+    brecha: "Fase 04: usar las primitivas en el núcleo y medir su timing a 100 MHz"

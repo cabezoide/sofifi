@@ -9,7 +9,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BIN="$ROOT/.venv/bin"
 CST="${CST:-$ROOT/rtl/top/primer25k.cst}"
-FREQ_MHZ="${FREQ_MHZ:-50}"
+FREQ_MHZ="${FREQ_MHZ:-100}"   # reloj del sistema (ADR 0005); nextpnr no deduce la salida del PLL
 
 orden="${1:-}"; shift || true
 case "$orden" in

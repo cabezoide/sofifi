@@ -5,11 +5,11 @@ promesas:
   - id: P-001
     claim: "Todo el audio en BSRAM (unos 0,9–1,4 s de líneas de retardo)"
     source: README.md
-    verifier: "pendiente: informe de síntesis de la primera fase con RTL"
+    verifier: sim/primitivas/prueba_bsram_test.py
     kind: recurso
-    status: no_verificada
-    scope: presupuesto de BSRAM del GW5A-25
-    motivo: "Cifra calculada a partir del datasheet (56 bloques de 18 Kbit menos unos 12 de reserva); aún no hay síntesis que la confirme."
+    status: verificada
+    scope: "43 008 palabras de 18 bit (0,88 s) en 42 bloques DPX9B, sintetizadas y probadas en la placa (MED-07)"
+    motivo: "Cifra calculada a partir del datasheet (56 bloques de 18 Kbit menos unos 12 de reserva); aún no hay síntesis que la confirme. Fase 03: verificada con 0,88 s, algo por debajo del rango que declara el claim (ADR 0004)."
     flag: null
   - id: P-002
     claim: "fs = 48 828 Hz con 2 048 ciclos por muestra exactos"
@@ -39,4 +39,14 @@ promesas:
     scope: "la UART TX pasa su testbench y el lint en la compuerta dura; la síntesis pasa en la de release; la recepción en placa está medida (MED-03)"
     not_checked: "ninguna compuerta programa la placa: la prueba en hardware es manual; no hay RX ni programación de la flash"
     motivo: Cierre de la Fase 02.
+    flag: null
+  - id: P-005
+    claim: "El núcleo puede usar el bloque DSP 27×18, los 42 bloques de BSRAM y el PLL de 100 MHz con la cadena libre"
+    source: docs/fases/F03-estado-del-arte-hoja-de-ruta-y-prueba-de-primitivas.md
+    verifier: sim/primitivas/prueba_dsp_test.py
+    kind: funcionalidad
+    status: verificada
+    scope: "testbenches en la compuerta dura; MED-06 a MED-08 en la placa"
+    not_checked: "ninguna compuerta programa la placa; la prueba en hardware es manual"
+    motivo: Cierre de la Fase 03.
     flag: null

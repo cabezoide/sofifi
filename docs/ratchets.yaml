@@ -42,3 +42,51 @@ ratchets:
     motivo: >-
       2026-10-07, segunda vuelta de la Fase 02: de 146 a 82 por el mismo cambio
       que RAT-03.
+  - id: RAT-05
+    nombre: LUT4 del top prueba_dsp
+    medida: recursos:prueba_dsp:LUT4
+    liston: 579
+    direccion: menor_mejor
+    aviso_holgura: 0
+    motivo: >-
+      2026-10-07, cierre de la Fase 03: listón donde se está (ADR 0010).
+  - id: RAT-06
+    nombre: ALU del top prueba_dsp
+    medida: recursos:prueba_dsp:ALU
+    liston: 70
+    direccion: menor_mejor
+    aviso_holgura: 0
+    motivo: >-
+      2026-10-07, cierre de la Fase 03: listón donde se está (ADR 0010).
+  - id: RAT-07
+    nombre: LUT4 del top prueba_bsram
+    medida: recursos:prueba_bsram:LUT4
+    liston: 2130
+    direccion: menor_mejor
+    aviso_holgura: 0
+    motivo: >-
+      2026-10-07, cierre de la Fase 03: listón donde se está (ADR 0010).
+  - id: RAT-08
+    nombre: ALU del top prueba_bsram
+    medida: recursos:prueba_bsram:ALU
+    liston: 152
+    direccion: menor_mejor
+    aviso_holgura: 0
+    motivo: >-
+      2026-10-07, cierre de la Fase 03: listón donde se está (ADR 0010).
+  - id: RAT-09
+    nombre: LUT4 del top prueba_pll
+    medida: recursos:prueba_pll:LUT4
+    liston: 355
+    direccion: menor_mejor
+    aviso_holgura: 0
+    motivo: >-
+      2026-10-07, cierre de la Fase 03: listón donde se está (ADR 0010).
+  - id: RAT-10
+    nombre: ALU del top prueba_pll
+    medida: recursos:prueba_pll:ALU
+    liston: 126
+    direccion: menor_mejor
+    aviso_holgura: 0
+    motivo: >-
+      2026-10-07, cierre de la Fase 03: listón donde se está (ADR 0010).

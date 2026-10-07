@@ -52,6 +52,14 @@ Hoja de ruta (`docs/investigacion/ESTADO_DEL_ARTE_2026.md`, hoja de ruta). El n�
 - un flag de acceso para la línea de retardo en coma flotante de 12 bit (punto 14, Fase 07);
 - un LFO que entregue seno y coseno a la vez, para la matriz de Givens (punto 3, Fase 06).
 
+## Hallazgos de la Fase 03 (primitivas en la placa)
+
+| Primitiva | Resultado | Consecuencia para el núcleo |
+|---|---|---|
+| DSP 27×18 | Yosys no lo infiere para gw5a. `rtl/primitivas/mult_27x18.v` instancia `MULT27X36`, que ocupa 2 de los 28 bloques. 2 500 productos sin error (MED-06). | El diseño dice «MULT27X18 inferido»: se usa el envoltorio. Estudiar `MULTALU27X18` (1 bloque, con acumulador) si hacen falta más multiplicadores. |
+| BSRAM | 43 008 × 18 se infiere como 42 DPX9B. 1 600 millones de lecturas sin error, también con colisión (MED-07). | El array único funciona. Su multiplexor de salida cuesta unos 1 270 MUX2: se puede cambiar por un OR si los bloques no seleccionados ponen su salida a 0 con RESET [INF]. |
+| PLL | 100 MHz exactos respecto al cristal (MED-08). apicula exige fijar todos los divisores. | Usar `rtl/primitivas/pll_100.v`. |
+
 ## Lo que NO entra
 
 I2S, SD, controles físicos.

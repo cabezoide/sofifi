@@ -67,7 +67,7 @@ MEDIDAS: dict[str, Callable[[], float]] = {
     "lineas_max_rtl": lineas_max_rtl,
 }
 
-CELDAS_FOTO = ("LUT4", "ALU", "DFF", "BSRAM", "MULT12X12")
+CELDAS_FOTO = ("LUT4", "ALU", "DFF", "BSRAM", "MULTALU27X18")
 
 
 def _recursos(top: str, celda: str) -> Callable[[], float]:

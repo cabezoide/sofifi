@@ -87,7 +87,7 @@ def main() -> int:
         r = informe["recursos"]
         print(
             f"{top}: {usado(r, 'LUT4')} LUT4 · {usado(r, 'ALU')} ALU · {usado(r, 'DFF')} DFF"
-            f" · {usado(r, 'BSRAM')} BSRAM · {usado(r, 'MULT12X12')} MULT12X12"
+            f" · {usado(r, 'BSRAM')} BSRAM · {usado(r, 'MULTALU27X18')} DSP"
         )
         for reloj, f in informe["relojes"].items():
             if f["alcanzada_mhz"] < f["objetivo_mhz"]:
