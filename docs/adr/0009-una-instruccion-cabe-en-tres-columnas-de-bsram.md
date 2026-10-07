@@ -60,3 +60,9 @@ Opción 2, implementada en `model/sofifi/domain/isa.py`.
 
 - **36 bit:** los coeficientes de 14 bit limitan los decays largos (feedback ≈ 0,9999).
 - **Dos palabras:** a la mitad de instrucciones por muestra no cabe una plate con shimmer.
+
+## Actualización 2026-10-07 (alcance de CHO, Fase 04)
+
+Un `CHO` sobre la dirección `a` lee entre `a − 1` y `a + alcance + 1`, por el Hermite de 4 puntos. El alcance es 2·E para SIN y RND, y W para RAMP. Desde ahora `Programa` exige que la última dirección quepa en la memoria declarada (`alcance_cho` en `isa.py`).
+
+Con eso, la dirección relativa queda en [−1, P−1] y el RTL la reduce con una sola corrección de ±P (`rtl/nucleo/memoria_retardo.v`), sin el módulo general que hace el modelo. plate, shimmer y freeze ya cumplían la condición; el shimmer queda en el límite (41 537 frente a 41 539 palabras).

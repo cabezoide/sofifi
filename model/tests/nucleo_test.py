@@ -92,6 +92,11 @@ def test_programa_rechaza_limites() -> None:
         prog(Ins(Op.SKP, flags=Skp.RUN, addr=5))
     with pytest.raises(ValueError, match="fuera de la memoria"):
         prog(Ins(Op.RDA, addr=64), mem=64)
+    # CHO SIN con E = 4 sobre 0 lee hasta 0 + 2·4 + 1 = 9: con 9 palabras no cabe.
+    sin4 = (ConfigLfo(TipoLfo.SIN, 4), None, None, None)
+    with pytest.raises(ValueError, match="CHO lee hasta la dirección 9"):
+        prog(Ins(Op.CHO, reg=0), lfos=sin4, mem=9)
+    prog(Ins(Op.CHO, reg=0), lfos=sin4, mem=10)
 
 
 # ── semántica ────────────────────────────────────────────────────────────
