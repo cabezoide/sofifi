@@ -1,4 +1,4 @@
-# Fase 09 — Micro-looper y granular en BSRAM
+# Fase 06 — Micro-looper y granular en BSRAM
 
 > Planificada: no está en el control hasta cerrarse.
 

@@ -1,6 +1,8 @@
 # Fase 11 — Integración del pedal y limitador de seguridad
 
 > Planificada: no está en el control hasta cerrarse.
+>
+> **Hardware que falta:** el códec I2S, el MCP3208 con potenciómetros y la OLED. La fase va al final del plan para avanzar antes en todo lo que no lo necesita; lo que dependa de él se declara `no_verificada`.
 
 ## Objetivo
 

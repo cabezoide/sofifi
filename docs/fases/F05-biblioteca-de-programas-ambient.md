@@ -1,4 +1,4 @@
-# Fase 08 — Biblioteca de programas ambient
+# Fase 05 — Biblioteca de programas ambient
 
 > Planificada: no está en el control hasta cerrarse.
 
@@ -46,4 +46,4 @@ Además, la directiva `include` en el ensamblador.
 
 ## Lo que NO entra
 
-Granular y looper (Fase 09).
+Granular y looper (Fase 06).

@@ -1,6 +1,8 @@
-# Fase 05 — Audio I2S con el códec PCM1808 y PCM5102A
+# Fase 10 — Audio I2S con el códec PCM1808 y PCM5102A
 
 > Planificada: no está en el control hasta cerrarse.
+>
+> **Hardware que falta:** el códec I2S (PCM1808 + PCM5102A o Pmod I2S2). La fase va al final del plan para avanzar antes en todo lo que no lo necesita; lo que dependa de él se declara `no_verificada`.
 
 ## Objetivo
 

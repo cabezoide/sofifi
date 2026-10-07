@@ -1,6 +1,8 @@
-# Fase 06 — Controles físicos: potenciómetros y footswitches
+# Fase 08 — Controles físicos: potenciómetros y footswitches
 
 > Planificada: no está en el control hasta cerrarse.
+>
+> **Hardware que falta:** el MCP3208 y los potenciómetros (los botones de la Dock sustituyen a los footswitches). La fase va al final del plan para avanzar antes en todo lo que no lo necesita; lo que dependa de él se declara `no_verificada`.
 
 ## Objetivo
 

@@ -1,6 +1,8 @@
-# Fase 10 — Interfaz trilingüe en OLED
+# Fase 09 — Interfaz trilingüe en OLED
 
 > Planificada: no está en el control hasta cerrarse.
+>
+> **Hardware que falta:** el módulo OLED SSD1306. La fase va al final del plan para avanzar antes en todo lo que no lo necesita; lo que dependa de él se declara `no_verificada`.
 
 ## Objetivo
 
@@ -12,7 +14,7 @@ ADR 0007 (catálogos espejados y fuente CJK reducida).
 
 ## Diagnóstico
 
-- **Se reutiliza:** controles (Fase 06) y nombres de presets (Fase 07).
+- **Se reutiliza:** controles (Fase 08) y nombres de presets (Fase 07).
 - **Falta:**
   - catálogo de textos por idioma;
   - generador de la fuente de mapa de bits;

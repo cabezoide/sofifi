@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=a21c266fcab1 estado=al_dia -->
+<!-- i18n: fuente=README.md sha=cb5f114b0c98 estado=al_dia -->
 # SOFIFI — 集成 FPGA 上的沉浸式波形与滤波合成器
 
 *英文名：Soundscapes On FPGA: Integrated Filters & Impulses；西班牙文名：Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada。*
@@ -80,9 +80,13 @@ make uart       # 读取调试器 UART（/dev/ttyUSB1），要求收到 "SOFIFI"
 |---|---|
 | Tang Primer 25K + Dock 底板 | 已有 |
 | 64 GB microSD（PMOD TF） | 已有 |
-| I2S 音频编解码器（PCM1808 + PCM5102A 或 Digilent Pmod I2S2） | **缺少** |
+| I2S 音频编解码器（PCM1808 + PCM5102A 或 Digilent Pmod I2S2） | **缺少**（阶段 10） |
+| MCP3208 + 电位器 | 缺少（阶段 08；Dock 底板按键充当脚踏开关） |
+| 128×64 SSD1306 OLED | 缺少（阶段 09） |
 | 吉他输入缓冲 | 缺少（临时方案：任意带缓冲的效果器） |
 | Sipeed SDRAM 模块 | 未来（可实现长循环录音和长颗粒合成） |
+
+需要缺少硬件的阶段排在计划末尾（08 至 11），因此在阶段 07 之前只需开发板和 microSD。
 
 ## 语言
 
