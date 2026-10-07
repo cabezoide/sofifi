@@ -1,6 +1,24 @@
-# Ratchets (SPEC_RAIZ §9.1). Vacío el día 0: el listón se pone donde se esté,
-# cuando haya algo que medir. Las medidas disponibles están en
-# scripts/check_ratchets.py (MEDIDAS); su foto se imprime en cada compuerta.
+# Ratchets (SPEC_RAIZ §9.1). El listón se pone donde se está (P9).
+# Las medidas disponibles están en scripts/check_ratchets.py (MEDIDAS).
 # Campos: id · nombre · medida · liston · direccion (menor_mejor|mayor_mejor)
 #         · motivo (se amplía, no se reescribe) · aviso_holgura (opcional)
-ratchets: []
+ratchets:
+  - id: RAT-01
+    nombre: Cobertura del modelo
+    medida: cobertura_modelo
+    liston: 95.0
+    direccion: mayor_mejor
+    aviso_holgura: 2.0
+    motivo: >-
+      2026-10-07, cierre de la Fase 01: medida 95,8 %. El listón queda 0,8 por
+      debajo porque las ramas de error del ensamblador varían al añadir
+      sintaxis; un ratchet con falsos rojos se desactiva (P1).
+  - id: RAT-02
+    nombre: Líneas del fichero más largo del modelo
+    medida: lineas_max_modelo
+    liston: 346
+    direccion: menor_mejor
+    motivo: >-
+      2026-10-07, cierre de la Fase 01: el mayor es domain/ensamblador.py (346
+      líneas). Si crece, hay que partir el análisis de expresiones o el de
+      operandos antes de mover el listón.

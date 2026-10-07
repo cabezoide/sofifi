@@ -20,3 +20,13 @@ promesas:
     scope: reloj de audio con el cristal de 50 MHz
     motivo: "Derivado aritméticamente (100 MHz / 2048). La PLLA de apicula tiene un issue abierto (#427), así que hay que medir."
     flag: null
+  - id: P-003
+    claim: "Plate, shimmer y freeze se pueden escuchar hoy con `sofifi render`"
+    source: README.md
+    verifier: model/tests/programas_test.py
+    kind: funcionalidad
+    status: verificada
+    scope: "los tres programas ensamblan, caben en el núcleo y producen la respuesta esperada"
+    not_checked: "calidad sonora subjetiva; tiempo real (el modelo va unas 2,2 veces más lento que el tiempo real en un PC)"
+    motivo: Cierre de la Fase 01.
+    flag: null

@@ -45,3 +45,4 @@ Ver `docs/EXTENDING.md`.
 | ADR 0006 | Los efectos son programas, no módulos RTL |
 | ADR 0007 | El español es la fuente; las traducciones llevan sello (es · en · zh-CN) |
 | ADR 0008 | La aritmética es parte del contrato con el RTL |
+| ADR 0009 | Una instrucción cabe en tres columnas de BSRAM (ISA de 54 bit) |

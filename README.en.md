@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=31ed346ae1e3 estado=al_dia -->
+<!-- i18n: fuente=README.md sha=63a83d792245 estado=al_dia -->
 # SOFIFI — Soundscapes On FPGA: Integrated Filters & Impulses
 
 *In Spanish: Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada.*
@@ -8,11 +8,29 @@
 SOFIFI is an ambient guitar pedal (reverbs, shimmer, tape delays, freeze, granular)
 implemented on a **Sipeed Tang Primer 25K** FPGA (Gowin GW5A-LV25).
 
-**Version:** `0.0` (the version is the last closed phase; see `docs/fases/estado_fases.csv`).
+**Version:** `0.1` (the version is the last closed phase; see `docs/fases/estado_fases.csv`).
 
-> Status: bootstrap kit. There is no DSP or RTL yet. The initial research
-> (reference pedals, algorithms, open-source resources and board budget) is in
-> `docs/investigacion/INVESTIGACION.md` (Spanish).
+> Status: **bit-exact reference model ready** (Phase 01). The plate, shimmer
+> and freeze programs can already be heard on a PC. There is no RTL yet.
+> The initial research is in `docs/investigacion/INVESTIGACION.md` (Spanish).
+
+## Listening to the effects (no hardware needed)
+
+```bash
+.venv/bin/sofifi render programas/plate.sasm guitar.wav out/plate.wav --pot pot0=0.6 --pot pot2=0.4 --cola 4
+.venv/bin/sofifi render programas/shimmer.sasm guitar.wav out/shimmer.wav --pot pot0=0.7 --pot pot2=0.5 --pot pot3=0.6 --cola 6
+.venv/bin/sofifi render programas/freeze.sasm guitar.wav out/freeze.wav --pot pot2=0.5 --freeze 1.5:8 --cola 8
+```
+
+| Program | pot0 | pot1 | pot2 | pot3 | footswitch |
+|---|---|---|---|---|---|
+| `programas/plate.sasm` | decay | damping | mix | — | — |
+| `programas/shimmer.sasm` | decay | damping | mix | shimmer | — |
+| `programas/freeze.sasm` | decay | damping | mix | — | `--freeze START:END` (seconds) |
+
+The input WAV may be 16, 24 or 32-bit at any sample rate; it is resampled to
+48,828 Hz. `sofifi asm` generates the microcode (`.hex` + `.json`). (`--cola` is
+the tail length in seconds.)
 
 ## What will be built
 

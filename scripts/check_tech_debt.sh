@@ -7,12 +7,12 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 MARKERS='(TODO|FIXME|HACK|XXX)'
-# Comentarios: # (py, sh, yaml, make), // (verilog), /* (verilog), -- (vhdl).
-PATTERN="^[[:space:]]*(#|//|/\*|\*|--)[[:space:]]*${MARKERS}\b"
+# Comentarios: # (py, sh, yaml, make), // (verilog), /* (verilog), -- (vhdl), ; (sasm).
+PATTERN="^[[:space:]]*(#|//|/\*|\*|--|;)[[:space:]]*${MARKERS}\b"
 
 mapfile -t FILES < <(git ls-files --cached --others --exclude-standard \
   -- '*.py' '*.sh' '*.v' '*.sv' '*.vh' '*.svh' '*.yaml' '*.yml' '*.cst' '*.sdc' \
-     'Makefile' 'scripts/hooks/*' \
+     '*.sasm' 'Makefile' 'scripts/hooks/*' \
   | grep -v '^scripts/check_tech_debt.sh$' \
   | while read -r f; do [[ -f "$f" ]] && echo "$f"; done)
 

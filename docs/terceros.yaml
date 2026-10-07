@@ -21,6 +21,12 @@ terceros:
     licencia: MIT
     uso: estudiado
     motivo: Plate de Dattorro en C; base del primer programa del núcleo.
+  - id: T-008
+    nombre: "J. Dattorro, Effect Design Part 1 (JAES 45(9), 1997)"
+    url: https://ccrma.stanford.edu/~dattorro/EffectDesignPart1.pdf
+    licencia: LicenseRef-Publicacion
+    uso: estudiado
+    motivo: "Topología, longitudes, coeficientes y taps de programas/plate.sasm, reescritos desde el paper (no desde código ajeno)."
   - id: T-004
     nombre: Spin FV-1 programas y knowledge base (Keith Barr)
     url: https://www.spinsemi.com/programs.php
