@@ -1,4 +1,4 @@
-# Fase 04 — Núcleo verificado en la FPGA por UART
+# Fase 05 — Núcleo verificado en la FPGA por UART
 
 > Planificada: no está en el control hasta cerrarse.
 
@@ -8,7 +8,7 @@ Ejecutar el núcleo **en la placa real** a 100 MHz y fs = 48 828 Hz, con una se�
 
 ## Origen
 
-Fase 02 (UART y programación) y Fase 03 (núcleo RTL equivalente en simulación).
+Fase 02 (UART y programación) y Fase 04 (núcleo RTL equivalente en simulación).
 
 ## Diagnóstico
 

@@ -1,4 +1,4 @@
-# Fase 09 — Interfaz trilingüe en OLED
+# Fase 10 — Interfaz trilingüe en OLED
 
 > Planificada: no está en el control hasta cerrarse.
 >
@@ -14,7 +14,7 @@ ADR 0007 (catálogos espejados y fuente CJK reducida).
 
 ## Diagnóstico
 
-- **Se reutiliza:** controles (Fase 08) y nombres de presets (Fase 07).
+- **Se reutiliza:** controles (Fase 09) y nombres de presets (Fase 08).
 - **Falta:**
   - catálogo de textos por idioma;
   - generador de la fuente de mapa de bits;
@@ -47,6 +47,10 @@ Una fuente CJK completa no cabe en BSRAM: unos 7 000 glifos de 16×16 dan 1,8 Mb
 - Las tres pantallas de ejemplo se renderizan a PNG en los tres idiomas.
 - Los contratos están en verde.
 - El RTL coincide con el framebuffer del modelo.
+
+## Ampliaciones de la Fase 03
+
+Punto 20 de la hoja de ruta (`docs/investigacion/ESTADO_DEL_ARTE_2026.md`, hoja de ruta): la OLED muestra la función activa de cada mando y el valor guardado en el preset. Así se evitan las funciones ocultas sin rotular, una queja frecuente en otros pedales.
 
 ## Lo que NO entra
 

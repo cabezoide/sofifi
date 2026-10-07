@@ -1,4 +1,4 @@
-# Fase 10 — Audio I2S con el códec PCM1808 y PCM5102A
+# Fase 11 — Audio I2S con el códec PCM1808 y PCM5102A
 
 > Planificada: no está en el control hasta cerrarse.
 >
@@ -42,6 +42,10 @@ El PCM1808 exige SCKI = 256·fs **sincronizado** con LRCK, y el PCM5102A tolera 
 - Ida y vuelta exacta en simulación, con la latencia en muestras declarada.
 - Bitstream generado.
 - La prueba con el códec físico se declara `no_verificada` hasta que haya códec.
+
+## Ampliaciones de la Fase 03
+
+Punto 21 de la hoja de ruta (`docs/investigacion/ESTADO_DEL_ARTE_2026.md`, hoja de ruta): medir y publicar la latencia total y la relación señal/ruido real, no la de la ficha del códec. Se registran en `docs/mediciones.yaml`.
 
 ## Lo que NO entra
 

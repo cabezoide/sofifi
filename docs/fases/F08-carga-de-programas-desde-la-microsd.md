@@ -1,4 +1,4 @@
-# Fase 07 — Carga de programas desde la microSD
+# Fase 08 — Carga de programas desde la microSD
 
 > Planificada: no está en el control hasta cerrarse.
 
@@ -46,6 +46,10 @@ Un sistema de ficheros FAT en RTL es caro y su parser es superficie de ataque (C
 
 - Un banco corrupto (bit volteado o longitud fuera de rango) se rechaza en el modelo y en el RTL.
 - En la placa, el cargador lee la cabecera de la tarjeta real.
+
+## Ampliaciones de la Fase 03
+
+Punto 16 de la hoja de ruta (`docs/investigacion/ESTADO_DEL_ARTE_2026.md`, hoja de ruta): **presets de texto** en la microSD. Un preset guarda todo el estado: programa, mandos, segunda capa, rampas y asignación de expresión. El microcódigo sigue en el banco binario con CRC; el preset es un fichero aparte que se puede leer y compartir.
 
 ## Lo que NO entra
 

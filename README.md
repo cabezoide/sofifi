@@ -85,14 +85,14 @@ Si una herramienta falta, la compuerta lo dice (`WARN … NO CORRIÓ`); no finge
 |---|---|
 | Tang Primer 25K + Dock | disponible |
 | microSD de 64 GB (PMOD TF) | disponible |
-| Códec I2S (PCM1808 + PCM5102A o Digilent Pmod I2S2) | **falta** (Fase 10) |
-| MCP3208 + potenciómetros | falta (Fase 08; los botones de la Dock hacen de footswitch) |
-| OLED SSD1306 de 128×64 | falta (Fase 09) |
+| Códec I2S (PCM1808 + PCM5102A o Digilent Pmod I2S2) | **falta** (Fase 11) |
+| MCP3208 + potenciómetros | falta (Fase 09; los botones de la Dock hacen de footswitch) |
+| OLED SSD1306 de 128×64 | falta (Fase 10) |
 | Buffer de entrada de guitarra | falta (provisional: cualquier pedal con buffer) |
 | Módulo SDRAM de Sipeed | futuro (habilita looper y granular largos) |
 
-Las fases que necesitan hardware que falta van al final del plan (08 a 11), de
-modo que hasta la Fase 07 basta con la placa y la microSD.
+Las fases que necesitan hardware que falta van al final del plan (09 a 12), de
+modo que hasta la Fase 08 basta con la placa y la microSD.
 
 ## Idiomas
 

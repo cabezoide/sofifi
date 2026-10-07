@@ -21,6 +21,8 @@ el oráculo del RTL (ADR 0003). Todo el audio vive en BSRAM, porque no hay SDRAM
 |---|---|
 | `docs/SPEC_RAIZ.md` | disciplina de flujo, documentación y pruebas. **Manda.** |
 | `docs/investigacion/INVESTIGACION.md` | investigación de partida: pedales, algoritmos, open source, placa |
+| `docs/investigacion/ESTADO_DEL_ARTE_2026.md` | estado del arte 2026 (mercado, arXiv, plataformas) y hoja de ruta de 27 puntos (Fase 03) |
+| `docs/infografias/` | infografías del proyecto (HTML autocontenido); publicadas como artefactos privados |
 | `docs/adr/README.md` | índice de decisiones. Leerlo antes de proponer un cambio estructural |
 | `docs/fases/` | spec por fase + control `docs/fases/estado_fases.csv` |
 | `docs/terceros.yaml` | origen y licencia de todo código ajeno estudiado o portado |
@@ -43,6 +45,11 @@ el oráculo del RTL (ADR 0003). Todo el audio vive en BSRAM, porque no hay SDRAM
 4. **Todo fichero fuente lleva `SPDX-License-Identifier`**, y lo ajeno se declara en
    `docs/terceros.yaml`.
 5. **Una fase planificada no entra en el control**; entra al cerrarse.
+6. **Documentación fácil de entender.** Toda la documentación, comentarios y
+   anotaciones siguen las reglas de redacción de ASD-STE100 (Simplified Technical
+   English) cuando es posible. STE100 se define para el inglés: en español se
+   aplican sus reglas de escritura y en la traducción inglesa, el estándar
+   completo. Las reglas concretas están en `CLAUDE.md`, sección «Redacción».
 
 ## Qué no tocar
 

@@ -1,4 +1,4 @@
-# Fase 08 — Controles físicos: potenciómetros y footswitches
+# Fase 09 — Controles físicos: potenciómetros y footswitches
 
 > Planificada: no está en el control hasta cerrarse.
 >
@@ -44,6 +44,25 @@ Un potenciómetro leído con 10 o 12 bit tiembla en el LSB. En un tanque con dec
 - Equivalencia entre modelo y RTL.
 - Los botones de la Dock se leen sin rebotes, verificado por UART.
 - El MCP3208 queda `no_verificada` mientras no esté el chip.
+
+## Ampliaciones de la Fase 03
+
+Puntos de la hoja de ruta (`docs/investigacion/ESTADO_DEL_ARTE_2026.md`, hoja de ruta).
+
+| Punto | Función | Hardware |
+|---|---|---|
+| 17 | Segunda capa con A+B mantenidos, rampas, morphing por expresión y *pickup* del mando | Jack de expresión |
+| 18 | Trails al hacer bypass y kill-dry (solo señal procesada) | Ninguno |
+| 19 | MIDI por TRS tipo A: program change, CC y clock; tap tempo | Falta: optoacoplador y jack TRS |
+
+Reparto propuesto de los pulsadores:
+
+| Acción | Función |
+|---|---|
+| Pulsador A | Bypass con trails |
+| Pulsador B, pulsación corta | Freeze enclavado |
+| Pulsador B, mantenido | Freeze momentáneo |
+| A y B mantenidos | Segunda capa de mandos |
 
 ## Lo que NO entra
 

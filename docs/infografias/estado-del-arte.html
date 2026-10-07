@@ -1,0 +1,198 @@
+<!-- SPDX-License-Identifier: MIT -->
+<title>SOFIFI contra los grandes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Mismo cartel serigrafiado que «SOFIFI»: hueso + latón sobre burdeos. El latón marca lo medido; el rojo LED, lo que falta. */
+:root{
+  --caja:#2a0d12; --caja-2:#3a141a; --linea:#5c2a31;
+  --hueso:#efe6d6; --hueso-2:#c9bba5;
+  --laton:#d4a24c; --led:#ff4b3e;
+  --f-titulo:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --f-texto:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --f-dato:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--caja);color:var(--hueso);font-family:var(--f-texto);font-size:17px;line-height:1.55;margin:0}
+.grano{background-image:radial-gradient(rgba(239,230,214,.035) 1px,transparent 1px);background-size:3px 3px}
+.envoltorio{max-width:1040px;margin:0 auto;padding-inline:20px;padding-block:28px 56px}
+h1,h2,h3{font-family:var(--f-titulo);text-transform:uppercase;line-height:.92;margin:0;text-wrap:balance}
+.etiqueta{font-family:var(--f-dato);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--hueso-2)}
+.dato{font-family:var(--f-dato);font-variant-numeric:tabular-nums}
+.marca{font-family:var(--f-dato);font-size:11px;letter-spacing:.06em;color:var(--hueso-2);border:1px solid var(--linea);padding:0 4px;border-radius:3px;white-space:nowrap}
+a{color:var(--laton)}
+a:focus-visible{outline:2px solid var(--laton);outline-offset:3px}
+
+/* Portada: dos barras medidas */
+.portada{padding-block:12px 44px;border-bottom:2px solid var(--linea)}
+.portada h1{font-size:clamp(64px,12vw,148px);font-weight:900;letter-spacing:-.005em;margin-top:8px}
+.portada h1 span{color:var(--laton)}
+.tesis{font-size:clamp(19px,2.2vw,23px);max-width:44ch;margin:20px 0 34px}
+.medidor{display:grid;gap:26px;max-width:860px}
+.fila{display:grid;grid-template-columns:minmax(0,190px) minmax(0,1fr) auto;gap:16px;align-items:center}
+.fila .nombre{font-family:var(--f-titulo);font-size:24px;font-weight:800;text-transform:uppercase;line-height:1}
+.fila .nombre small{display:block;font-family:var(--f-dato);font-size:11.5px;font-weight:400;letter-spacing:.06em;text-transform:none;color:var(--hueso-2);margin-top:4px}
+.pista{height:34px;background:#1b0709;border:1px solid var(--linea);position:relative;overflow:hidden}
+.pista i{position:absolute;inset:0 auto 0 0;background:var(--laton)}
+.pista.lleno i{background:repeating-linear-gradient(135deg,var(--led) 0 10px,#d43a30 10px 20px)}
+.fila .pct{font-family:var(--f-titulo);font-size:46px;font-weight:900;line-height:1;font-variant-numeric:tabular-nums;min-width:3.6ch;text-align:right}
+.fila .pct.ok{color:var(--laton)}
+.fila .pct.mal{color:var(--led)}
+.pie-medidor{font-family:var(--f-dato);font-size:12px;color:var(--hueso-2);margin-top:14px}
+
+section{padding-block:44px;border-bottom:2px solid var(--linea)}
+section:last-of-type{border-bottom:0}
+.cabeza{display:grid;gap:10px;margin-bottom:26px;max-width:50ch}
+.cabeza h2{font-size:clamp(36px,5.6vw,60px);font-weight:900}
+.cabeza p{margin:0;color:var(--hueso-2)}
+
+/* Comparativa */
+.tabla-caja{overflow-x:auto;border:1px solid var(--linea)}
+table{border-collapse:collapse;width:100%;min-width:720px}
+th,td{padding:12px 14px;text-align:left;vertical-align:top;border-bottom:1px solid var(--linea);font-size:15px;line-height:1.4}
+thead th{font-family:var(--f-titulo);font-size:22px;font-weight:800;text-transform:uppercase;line-height:1;color:var(--hueso)}
+thead th small{display:block;font-family:var(--f-dato);font-size:11px;font-weight:400;text-transform:none;color:var(--hueso-2);margin-top:4px}
+tbody th{font-family:var(--f-dato);font-size:12px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--hueso-2);width:150px}
+.col-sofifi{background:var(--caja-2)}
+thead .col-sofifi{color:var(--laton)}
+tr:last-child th,tr:last-child td{border-bottom:0}
+td.pierde{color:var(--led)}
+td.gana{color:var(--laton)}
+
+/* Coste */
+.costes{display:grid;gap:14px}
+.coste{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) 120px;gap:16px;align-items:center;padding-block:10px;border-bottom:1px dashed var(--linea)}
+.coste:last-child{border-bottom:0}
+.coste h3{font-size:24px;font-weight:800}
+.coste p{margin:4px 0 0;font-size:14.5px;color:var(--hueso-2);line-height:1.4}
+.coste .pista{height:16px}
+.coste .cifra{font-family:var(--f-dato);font-size:14px;text-align:right;font-variant-numeric:tabular-nums}
+.escala{display:flex;justify-content:space-between;font-family:var(--f-dato);font-size:11px;color:var(--hueso-2);margin-top:6px}
+
+/* Rasgos */
+.rasgos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;border:1px solid var(--linea)}
+.rasgo{padding:20px 20px 22px;border-bottom:1px solid var(--linea)}
+.rasgo:nth-child(odd){border-right:1px solid var(--linea)}
+.rasgo:nth-last-child(-n+2){border-bottom:0}
+.rasgo h3{font-size:28px;font-weight:900;margin-bottom:8px}
+.rasgo p{margin:0;font-size:15px;color:var(--hueso-2)}
+.rasgo.lider{background:var(--hueso);color:var(--caja);grid-column:1/-1;border-right:0}
+.rasgo.lider p{color:#4b2a2e}
+.rasgo.lider h3{font-size:clamp(30px,4.4vw,44px)}
+
+footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;color:var(--hueso-2)}
+
+@media (max-width:760px){
+  .fila{grid-template-columns:minmax(0,1fr) auto}
+  .fila .pista{grid-column:1/-1;grid-row:2}
+  .coste{grid-template-columns:minmax(0,1fr) 96px}
+  .coste .pista{grid-column:1/-1;grid-row:2}
+  .rasgos{grid-template-columns:minmax(0,1fr)}
+  .rasgo:nth-child(odd){border-right:0}
+  .rasgo:nth-last-child(2){border-bottom:1px solid var(--linea)}
+}
+</style>
+
+<div class="grano">
+<div class="envoltorio">
+
+<header class="portada">
+  <div class="etiqueta">Estado del arte 2026 · Fase 03 de SOFIFI</div>
+  <h1>La memoria manda, <span>no el cómputo</span></h1>
+  <p class="tesis">A SOFIFI le sobra potencia de cálculo y le falta memoria. Lo que la hará única casi no cuesta instrucciones.</p>
+  <div class="medidor">
+    <div class="fila">
+      <div class="nombre">Ciclos<small>shimmer: 120 de 2 048 por muestra</small></div>
+      <div class="pista" role="img" aria-label="5,9 por ciento"><i style="width:5.9%"></i></div>
+      <div class="pct ok">5,9 %</div>
+    </div>
+    <div class="fila">
+      <div class="nombre">Memoria<small>shimmer: 41 539 de 43 008 palabras</small></div>
+      <div class="pista lleno" role="img" aria-label="96,6 por ciento"><i style="width:96.6%"></i></div>
+      <div class="pct mal">96,6 %</div>
+    </div>
+  </div>
+  <div class="pie-medidor">Medido con <span class="dato">sofifi asm programas/shimmer.sasm</span>, 2026-10-07.</div>
+</header>
+
+<section>
+  <div class="cabeza">
+    <div class="etiqueta">El cartel de la gira</div>
+    <h2>Los grandes ganan en memoria. SOFIFI, en apertura.</h2>
+    <p>Comparación con tres pedales insignia. Donde SOFIFI pierde, la fila también va.</p>
+  </div>
+  <div class="tabla-caja">
+    <table>
+      <thead><tr>
+        <th></th>
+        <th class="col-sofifi">SOFIFI<small>hoy y plan</small></th>
+        <th>MOOD MkII<small>Chase Bliss · 399 USD <span class="marca">V</span></small></th>
+        <th>Microcosm<small>Hologram · 459 USD <span class="marca">V</span></small></th>
+        <th>BigSky MX<small>Strymon · 679 USD <span class="marca">V</span></small></th>
+      </tr></thead>
+      <tbody>
+        <tr><th>Memoria de audio</th><td class="col-sofifi pierde">0,88 s en BSRAM</td><td>No publicada</td><td>Looper de 60 s <span class="marca">V</span></td><td>IR de 10 s <span class="marca">V</span></td></tr>
+        <tr><th>Presets</th><td class="col-sofifi">Sin límite práctico en la microSD (Fase 08)</td><td>2 en el pedal <span class="marca">V</span></td><td>16 <span class="marca">V</span></td><td>300 <span class="marca">V</span></td></tr>
+        <tr><th>MIDI</th><td class="col-sofifi pierde">TRS tipo A en la Fase 09; falta el hardware</td><td>Sí <span class="marca">V</span></td><td>DIN In/Out/Thru <span class="marca">V</span></td><td>DIN y USB-C <span class="marca">V</span></td></tr>
+        <tr><th>Idea icónica</th><td class="col-sofifi">Freeze que modula sin perder energía (plan) <span class="marca">INF</span></td><td>Micro-looper que siempre escucha <span class="marca">V</span></td><td>Frases granulares <span class="marca">V</span></td><td>Cloud y dos motores <span class="marca">V</span></td></tr>
+        <tr><th>Plataforma</th><td class="col-sofifi gana">FPGA abierta, ciclos fijos por programa</td><td>No publicada</td><td>No publicada</td><td>ARM tri-core a 800 MHz <span class="marca">V</span></td></tr>
+        <tr><th>Programas propios</th><td class="col-sofifi gana">Abiertos, con modelo bit-exact en Python</td><td colspan="3">Ningún fabricante revisado publica su formato de preset <span class="marca">INF</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="cabeza">
+    <div class="etiqueta">Hoja de ruta · Fase 06</div>
+    <h2>Lo que más se oye es lo que menos cuesta</h2>
+    <p>Cuatro mejoras de la investigación reciente (Aalto, DAFx 2020-2026). Todas son programas: no cambian la ISA. Barra sobre el presupuesto de 2 048 instrucciones, con el coste máximo estimado.</p>
+  </div>
+  <div class="costes">
+    <div class="coste">
+      <div><h3>Modulación aleatoria filtrada</h3><p>El truco del Lexicon 224 contra el anillo metálico. Por cada línea modulada.</p></div>
+      <div class="pista" role="img" aria-label="hasta 4 de 2 048"><i style="width:.2%;min-width:3px"></i></div>
+      <div class="cifra">3-4 <span class="marca">INF</span></div>
+    </div>
+    <div class="coste">
+      <div><h3>Matriz de Givens en el freeze</h3><p>El freeze modula sin perder energía. Corrige un fallo medido en la Fase 01.</p></div>
+      <div class="pista" role="img" aria-label="hasta 20 de 2 048"><i style="width:1%"></i></div>
+      <div class="cifra">+10-20 <span class="marca">INF</span></div>
+    </div>
+    <div class="coste">
+      <div><h3>Detección de ataque</h3><p>Swell, ducking y auto-freeze: un pedal que escucha.</p></div>
+      <div class="pista" role="img" aria-label="hasta 50 de 2 048"><i style="width:2.4%"></i></div>
+      <div class="cifra">&lt; 50 <span class="marca">INF</span></div>
+    </div>
+    <div class="coste">
+      <div><h3>FDN incolora y velvet noise</h3><p>Cola más densa con menos líneas. Velvet noise: más del 50 % menos operaciones <span class="marca">V</span>.</p></div>
+      <div class="pista" role="img" aria-label="hasta 220 de 2 048"><i style="width:10.7%"></i></div>
+      <div class="cifra">100-220 <span class="marca">INF</span></div>
+    </div>
+  </div>
+  <div class="escala"><span>0</span><span>2 048 instrucciones por muestra</span></div>
+</section>
+
+<section>
+  <div class="cabeza">
+    <div class="etiqueta">El bis</div>
+    <h2>Cinco rasgos que ningún pedal junta</h2>
+    <p>Ninguna fuente consultada cita un pedal ambient comercial en FPGA <span class="marca">INF</span>. Cada rasgo sale de una decisión que el proyecto ya tomó.</p>
+  </div>
+  <div class="rasgos">
+    <div class="rasgo lider"><h3>Programas abiertos con modelo bit-exact</h3><p>Escribes un efecto en ensamblador, lo escuchas en el PC y suena igual en el pedal, bit a bit (ADR 0003, ADR 0006).</p></div>
+    <div class="rasgo"><h3>Cero crujidos por CPU</h3><p>Cada programa tiene un número fijo de ciclos. Los usuarios del MOD Dwarf describen crujidos con la CPU al 100 % <span class="marca">V</span>.</p></div>
+    <div class="rasgo"><h3>Presets que se leen</h3><p>Ficheros de texto en la microSD, con todo el estado. Se versionan y se comparten.</p></div>
+    <div class="rasgo"><h3>La segunda capa, a la vista</h3><p>La OLED muestra qué hace cada mando, en español, inglés y chino. Las funciones sin rotular son una queja frecuente <span class="marca">?</span>.</p></div>
+    <div class="rasgo"><h3>Compatible con el FV-1</h3><p>Un traductor de SpinASM trae su biblioteca. En 2026 salió un emulador abierto del FV-1 <span class="marca">V</span>.</p></div>
+  </div>
+</section>
+
+<footer>
+  Fuente: <span class="dato">docs/investigacion/ESTADO_DEL_ARTE_2026.md</span>, con cinco líneas de investigación (mercado, arXiv clásico, arXiv neuronal, interacción, plataformas). Marcas: V verificado en fuente primaria · ? dudoso o secundario · INF inferencia. Precios y especificaciones de las páginas de Chase Bliss, Hologram y Strymon. Ciclos y memoria medidos sobre el repositorio el 2026-10-07.
+</footer>
+
+</div>
+</div>

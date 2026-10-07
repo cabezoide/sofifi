@@ -1,4 +1,4 @@
-# Fase 06 — Micro-looper y granular en BSRAM
+# Fase 07 — Micro-looper y granular en BSRAM
 
 > Planificada: no está en el control hasta cerrarse.
 
@@ -43,6 +43,18 @@ La memoria circular del FV-1 no puede guardar un loop. Su puntero avanza siempre
 - Un loop grabado se repite idéntico N veces.
 - Con 2× suena una octava arriba; con reverse sale invertido.
 - El granular produce granos dentro de la ventana declarada.
+
+## Ampliaciones de la Fase 03
+
+Puntos de la hoja de ruta (`docs/investigacion/ESTADO_DEL_ARTE_2026.md`, hoja de ruta).
+
+| Punto | Función | Cambio |
+|---|---|---|
+| 11 | `RDAA` / `WRAA` y escritura congelada | ISA: actualización del ADR 0009 (ya prevista) |
+| 12 | Freeze granular de 4-8 granos y granular sobre el tanque de la reverb | Usa el punto 11 |
+| 13 | «Gravity»: reverb que pasa a inversa | Usa el punto 11 |
+| 14 | Línea de retardo en coma flotante de 12 bit: 1,5 veces más memoria (≈ 1,32 s) | ISA y aritmética: actualización del ADR 0008 |
+| 15 | Pitch por WSOLA repartido entre muestras, con menos gorjeo | Ninguno, o un registro índice |
 
 ## Lo que NO entra
 

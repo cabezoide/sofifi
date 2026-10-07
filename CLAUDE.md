@@ -37,6 +37,27 @@ por capa y el detalle que un agente necesita para trabajar sin releer todo.
   ahí llevan su marca de confianza ([V], [?], [INF]), como en
   `docs/investigacion/INVESTIGACION.md`.
 
+## Redacción (ASD-STE100, regla 6 de `AGENTS.md`)
+
+Se aplica a documentación, comentarios, mensajes de commit y descripciones de PR.
+
+- **Frases cortas:** como máximo 20 palabras en un procedimiento y 25 en una
+  descripción. Un párrafo tiene como máximo 6 frases.
+- **Una instrucción por frase.** En los procedimientos se usa el imperativo o el
+  infinitivo y el orden en que se hacen los pasos. Los pasos van en una lista
+  numerada.
+- **Voz activa:** «el núcleo lee la muestra», no «la muestra es leída».
+- **Un término para cada concepto, y un significado para cada término.** Si un
+  término técnico es nuevo, se define la primera vez que aparece.
+- **Como máximo tres sustantivos seguidos.** «Memoria de retardo» sí; «tabla de
+  coeficientes de interpolación de la memoria de retardo», no: se reescribe.
+- **La advertencia va antes de la acción**, no después.
+- **Listas y tablas** para pasos, comparaciones y datos. No se esconden datos en
+  la prosa.
+- **Sin ambigüedades:** nada de «etc.», «y demás» ni pronombres con un referente
+  dudoso.
+- En la traducción inglesa se usa el vocabulario aprobado de STE100 cuando existe.
+
 ## Trampas de la cadena EDA
 
 - **Nunca** enlazar `.venv/bin/verilator -> verilator-cli`: el envoltorio de pip
