@@ -1,0 +1,122 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: reverb
+; resumen: Cuatro cuerdas afinadas en mi mayor que vibran por simpatía con lo que se toca.
+;
+; resonador.sasm — Banco de cuatro resonadores modales: filtros pasa banda de
+; Q alto (comun/svf.sasm, escrito cuatro veces) en mi2, si2, mi3 y sol#3. Lo
+; que se toca los excita y suenan un rato, como las cuerdas simpáticas de un
+; sitar. pot3 los transpone hasta una octava abajo. Idea de los resonadores
+; modales (docs/investigacion/INVESTIGACION.md §4.3). Diseño propio.
+;
+; pot0 = sustain       (0 → corto, Q ≈ 50 · 1 → largo, Q ≈ 500)
+; pot1 = excitación    (cuánta señal entra en los resonadores)
+; pot2 = mezcla        (0 → seco · 1 → solo resonadores)
+; pot3 = afinación     (0 → mi mayor · 1 → una octava abajo)
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  q        reg2
+equ  x        reg3
+equ  qbp      reg4
+equ  kt       reg5
+equ  fe2      reg6
+equ  fb2      reg7
+equ  fe3      reg8
+equ  fg3      reg9
+equ  lp1      reg10
+equ  bp1      reg11
+equ  lp2      reg12
+equ  bp2      reg13
+equ  lp3      reg14
+equ  bp3      reg15
+equ  lp4      reg16
+equ  bp4      reg17
+equ  sal      reg18
+
+include  comun/mezcla.sasm
+        rdax  pot0, -0.018              ; q = 1/Q, de 0,02 a 0,002
+        sof   1.0, 0.02
+        wrax  q, 0
+        rdax  pot3, -0.5                ; kt de 1 a 0,5: transpone hasta una octava
+        sof   1.0, 0.99997
+        wrax  kt, 1.0
+        sof   0.010604, 0               ; mi2: 82,4 Hz
+        wrax  fe2, 0
+        rdax  kt, 0.015888              ; si2: 123,5 Hz
+        wrax  fb2, 0
+        rdax  kt, 0.021207              ; mi3: 164,8 Hz
+        wrax  fe3, 0
+        rdax  kt, 0.02672               ; sol#3: 207,7 Hz
+        wrax  fg3, 0
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        mulx  pot1
+        sof   0.1, 0                    ; Q alto: la excitación entra baja
+        wrax  x, 0
+        rdax  bp1, 1.0
+        mulx  fe2
+        rdax  lp1, 1.0
+        wrax  lp1, 0
+        rdax  bp1, 1.0
+        mulx  q
+        wrax  qbp, 0
+        rdax  x, 1.0
+        rdax  lp1, -1.0
+        rdax  qbp, -1.0
+        mulx  fe2
+        rdax  bp1, 1.0
+        wrax  bp1, 0
+        rdax  bp2, 1.0
+        mulx  fb2
+        rdax  lp2, 1.0
+        wrax  lp2, 0
+        rdax  bp2, 1.0
+        mulx  q
+        wrax  qbp, 0
+        rdax  x, 1.0
+        rdax  lp2, -1.0
+        rdax  qbp, -1.0
+        mulx  fb2
+        rdax  bp2, 1.0
+        wrax  bp2, 0
+        rdax  bp3, 1.0
+        mulx  fe3
+        rdax  lp3, 1.0
+        wrax  lp3, 0
+        rdax  bp3, 1.0
+        mulx  q
+        wrax  qbp, 0
+        rdax  x, 1.0
+        rdax  lp3, -1.0
+        rdax  qbp, -1.0
+        mulx  fe3
+        rdax  bp3, 1.0
+        wrax  bp3, 0
+        rdax  bp4, 1.0
+        mulx  fg3
+        rdax  lp4, 1.0
+        wrax  lp4, 0
+        rdax  bp4, 1.0
+        mulx  q
+        wrax  qbp, 0
+        rdax  x, 1.0
+        rdax  lp4, -1.0
+        rdax  qbp, -1.0
+        mulx  fg3
+        rdax  bp4, 1.0
+        wrax  bp4, 0
+        rdax  bp1, 1.0
+        rdax  bp2, 1.0
+        rdax  bp3, 1.0
+        rdax  bp4, 1.0
+        mulx  kwet
+        wrax  sal, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  sal, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  sal, 1.0
+        wrax  dacr, 0

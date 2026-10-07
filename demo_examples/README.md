@@ -44,5 +44,10 @@
 | `demo_filtro.ogg` | `filtro.sasm` | 0,25 (velocidad/rate) | 0,60 (resonancia/resonance) | 0,90 | 0,80 (profundidad/depth) | |
 | `demo_puerta.ogg` | `puerta.sasm` | 0,20 (umbral/threshold) | 0,40 (cierre/release) | | | |
 | `demo_saturacion.ogg` | `saturacion.sasm` | 0,60 (ganancia/gain) | 0,50 (tono/tone) | 1 | 0,70 (nivel/level) | |
+| `demo_ringmod.ogg` | `ringmod.sasm` | 0,15 (frecuencia/frequency) | | 0,60 | | |
+| `demo_slicer.ogg` | `slicer.sasm` | 0,30 (velocidad/rate) | 0,90 (profundidad/depth) | 0,40 (ciclo/duty) | 0,40 (suavizado/smoothing) | |
+| `demo_ancho.ogg` | `ancho.sasm` | 0,80 (ancho/width) | 0,60 (tilt) | | | |
+| `demo_chorale.ogg` | `chorale.sasm` | 0,75 | 0,30 | 0,55 | 0,30 (vocal/vowel) | |
+| `demo_resonador.ogg` | `resonador.sasm` | 0,80 (sustain) | 0,70 (excitación/excitation) | 0,50 | | |
 
 Ogg Vorbis a 48 828 Hz (ADR 0005); el render es bit-exact en 24 bit. Ogg Vorbis at 48,828 Hz; the render is bit-exact at 24 bits. Ogg Vorbis，48,828 Hz；渲染在 24 位下逐位精确。

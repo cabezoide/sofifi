@@ -80,6 +80,7 @@ Además, la directiva `include` en el ensamblador.
 - **Lote 3, reverbs:** blackhole (T60 de 49 s), infinite (capa que no decae), bloom (la cola crece tras el ataque), spring (30 allpass de dispersión), gated y reverb inversa. La red del hall pasa a `comun/fdn8_decl.sasm` y `comun/fdn8_cuerpo.sasm`, con las longitudes como `equ`. Gated, reverb inversa y bloom comparten el detector de ataque (`comun/compuerta.sasm`) y la curva de duración (`comun/duracion.sasm`).
 - **Lote 4, delays:** delay limpio, ping-pong, lluvia (6 taps difusos), BBD (oscuro y saturado) y ducking (los ecos se apartan mientras se toca; hoja de ruta, punto 4). El retardo variable de la cinta pasa a `comun/tiempo.sasm`. Una prueba exige huellas distintas: dos iguales suelen ser solo señal seca.
 - **Lote 5, dinámica, filtros y textura:** compresor (de realimentación, sin división), puerta de ruido, autowah, filtro con LFO y saturación de dos etapas. Autowah y filtro comparten el filtro de variable de estado (`comun/svf.sasm`).
+- **Lote 6, textura y color:** ring modulator (oscilador por software de forma acoplada), slicer, ancho (Haas y tilt), chorale (tres formantes de «a» a «i» sobre un plate) y resonador (cuatro cuerdas simpáticas en mi mayor).
 - `docs/programas.md` se genera con `sofifi catalogo` desde la cabecera de cada programa (`; familia:`, `; resumen:`, `; potN =`).
 
 ## Criterios de aceptación

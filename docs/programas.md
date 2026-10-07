@@ -3,7 +3,7 @@
 
 # Programas del núcleo
 
-35 programas. Cada uno es un fichero de texto en `programas/`.
+40 programas. Cada uno es un fichero de texto en `programas/`.
 Los ciclos son la cota del RTL, de 2 048 por muestra
 (`model/sofifi/domain/coste.py`). La memoria es de 43 008 palabras.
 
@@ -13,12 +13,14 @@ Los ciclos son la cota del RTL, de 2 048 por muestra
 |---|---|---|---|---|---|
 | `blackhole` | Sala gigante con un decay de decenas de segundos. | 0: decay<br>1: damping<br>2: mezcla | 140 | 1 615 | 40 882 |
 | `bloom` | La reverb crece despacio después de cada nota, como una flor que se abre. | 0: decay<br>1: damping<br>2: mezcla<br>3: apertura | 84 | 979 | 23 520 |
+| `chorale` | La cola del plate canta una vocal, de «a» a «i». | 0: decay<br>1: damping<br>2: mezcla<br>3: vocal | 160 | 1 942 | 37 439 |
 | `cloud` | Difusores largos con modulación aleatoria: el ataque se disuelve. | 0: decay<br>1: damping<br>2: mezcla<br>3: modulación | 96 | 1 385 | 42 814 |
 | `freeze` | Plate que congela la cola con el pulsador. | 0: decay<br>1: damping<br>2: mezcla | 103 | 1 378 | 37 439 |
 | `gated` | Reverb que se corta de golpe tras cada ataque, como en los años 80. | 0: decay<br>1: damping<br>2: mezcla<br>3: duración | 133 | 1 657 | 37 439 |
 | `hall` | Red de 8 retardos con matriz de Householder: sala grande. | 0: decay<br>1: damping<br>2: mezcla | 137 | 1 585 | 34 522 |
 | `infinite` | Plate que no decae: cada nota se suma a una capa que no se apaga. | 0: vaciado<br>1: damping<br>2: mezcla | 95 | 1 300 | 37 439 |
 | `plate` | Plate de Dattorro con el tanque modulado. | 0: decay<br>1: damping<br>2: mezcla | 86 | 1 202 | 37 439 |
+| `resonador` | Cuatro cuerdas afinadas en mi mayor que vibran por simpatía con lo que se toca. | 0: sustain<br>1: excitación<br>2: mezcla<br>3: afinación | 89 | 924 | 1 |
 | `reverb_inversa` | Reverb al revés: tras cada ataque, la cola crece y se corta de golpe. | 0: decay<br>1: damping<br>2: mezcla<br>3: duración | 133 | 1 657 | 37 439 |
 | `shimmer` | Plate con un +12 en la realimentación: cada vuelta sube una octava. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 108 | 1 553 | 41 539 |
 | `shimmer_quinta` | Shimmer de quinta: cada vuelta sube 7 semitonos, como un acorde que se abre. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 108 | 1 553 | 41 539 |
@@ -43,6 +45,7 @@ Los ciclos son la cota del RTL, de 2 048 por muestra
 | `chorus` | Tres voces con retardos que se mueven. | 0: velocidad<br>1: profundidad<br>2: mezcla | 42 | 578 | 1 101 |
 | `flanger` | Retardo muy corto y móvil con realimentación: peines que barren. | 0: velocidad<br>1: profundidad<br>2: mezcla<br>3: realimentación | 31 | 384 | 247 |
 | `phaser` | Cuatro allpass con coeficiente móvil: muescas que barren. | 0: velocidad<br>1: profundidad<br>2: mezcla<br>3: realimentación | 79 | 802 | 1 |
+| `slicer` | Corta el sonido en pulsos rítmicos, como una puerta que abre y cierra. | 0: velocidad<br>1: profundidad<br>2: ciclo<br>3: suavizado | 37 | 390 | 1 |
 | `tremolo` | El volumen sube y baja; con pot2, de un lado a otro. | 0: velocidad<br>1: profundidad<br>2: panorama | 43 | 442 | 1 |
 | `vibrato` | El tono sube y baja. | 0: velocidad<br>1: profundidad<br>2: mezcla | 27 | 344 | 125 |
 
@@ -68,11 +71,13 @@ Los ciclos son la cota del RTL, de 2 048 por muestra
 | Programa | Qué hace | Mandos | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|
 | `lofi` | Menos muestras por segundo y menos bits, con aliasing. | 0: muestreo<br>1: bits<br>2: mezcla<br>3: tono | 81 | 800 | 1 |
+| `ringmod` | Modulador en anillo: multiplica la guitarra por un seno; suena metálico. | 0: frecuencia<br>2: mezcla | 33 | 362 | 1 |
 | `saturacion` | Saturación tipo overdrive: de un brillo cálido a una distorsión espesa. | 0: ganancia<br>1: tono<br>2: mezcla<br>3: nivel | 42 | 462 | 1 |
 
 ## Filtro
 
 | Programa | Qué hace | Mandos | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|
+| `ancho` | Ensancha el estéreo de una guitarra mono y ajusta el tono graves-agudos. | 0: ancho<br>1: tilt | 26 | 304 | 636 |
 | `autowah` | Wah automático: cuanto más fuerte se toca, más sube el filtro. | 0: sensibilidad<br>1: resonancia<br>2: mezcla | 43 | 464 | 1 |
 | `filtro` | Filtro paso bajo resonante que sube y baja solo, con un LFO. | 0: velocidad<br>1: resonancia<br>2: mezcla<br>3: profundidad | 60 | 608 | 1 |

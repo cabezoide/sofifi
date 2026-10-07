@@ -1,0 +1,123 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: reverb
+; resumen: La cola del plate canta una vocal, de «a» a «i».
+;
+; chorale.sasm — Plate cuya cola pasa por tres filtros de formante (pasa
+; banda, Q ≈ 5), los tres primeros formantes de una vocal. pot3 desliza los
+; tres de la «a» (730 · 1 090 · 2 440 Hz) a la «i» (270 · 2 290 · 3 010 Hz).
+; Los filtros son los de comun/svf.sasm, escritos tres veces con su propio
+; estado. Idea de las reverbs «chorale» (docs/investigacion/INVESTIGACION.md
+; §4.3). Diseño propio.
+;
+; pot0 = decay · pot1 = damping · pot2 = mezcla (como plate.sasm)
+; pot3 = vocal      (0 → «a» · 1 → «i»)
+
+include  comun/dattorro_decl.sasm
+
+equ  q        reg9
+equ  x        reg10
+equ  qbp      reg11
+equ  f1       reg12
+equ  f2       reg13
+equ  f3       reg14
+equ  lp1      reg15
+equ  bp1      reg16
+equ  lp2      reg17
+equ  bp2      reg18
+equ  lp3      reg19
+equ  bp3      reg20
+equ  kdrys    reg21
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+include  comun/dattorro_lfo.sasm
+        sof   0, 0.99
+        wrax  lfo0_depth, 1.0
+        wrax  lfo1_depth, 0
+        sof   0, 0.2                    ; q = 1/Q: Q = 5
+        wrax  q, 0
+inicio:
+include  comun/controles.sasm
+; ── formantes: de «a» (pot3 = 0) a «i» (pot3 = 1) ────────────────────
+        rdax  pot3, 0.03474 - 0.0939
+        sof   1.0, 0.0939
+        wrax  f1, 0
+        rdax  pot3, 0.29361 - 0.14015
+        sof   1.0, 0.14015
+        wrax  f2, 0
+        rdax  pot3, 0.38491 - 0.31269
+        sof   1.0, 0.31269
+        wrax  f3, 0
+; ── plate sin señal seca ─────────────────────────────────────────────
+        rdax  kdry, 1.0
+        wrax  kdrys, 0
+        wrax  kdry, 0
+include  comun/entrada.sasm
+        rdfx  bw, kbw
+        wrax  bw, 1.0
+include  comun/dattorro_difusion.sasm
+include  comun/dattorro_tanque.sasm
+include  comun/dattorro_salida.sasm
+; ── tres formantes sobre la cola mono ────────────────────────────────
+        rdax  dacl, 0.5
+        rdax  dacr, 0.5
+        wrax  x, 0
+        rdax  bp1, 1.0
+        mulx  f1
+        rdax  lp1, 1.0
+        wrax  lp1, 0
+        rdax  bp1, 1.0
+        mulx  q
+        wrax  qbp, 0
+        rdax  x, 1.0
+        rdax  lp1, -1.0
+        rdax  qbp, -1.0
+        mulx  f1
+        rdax  bp1, 1.0
+        wrax  bp1, 0
+        rdax  bp2, 1.0
+        mulx  f2
+        rdax  lp2, 1.0
+        wrax  lp2, 0
+        rdax  bp2, 1.0
+        mulx  q
+        wrax  qbp, 0
+        rdax  x, 1.0
+        rdax  lp2, -1.0
+        rdax  qbp, -1.0
+        mulx  f2
+        rdax  bp2, 1.0
+        wrax  bp2, 0
+        rdax  bp3, 1.0
+        mulx  f3
+        rdax  lp3, 1.0
+        wrax  lp3, 0
+        rdax  bp3, 1.0
+        mulx  q
+        wrax  qbp, 0
+        rdax  x, 1.0
+        rdax  lp3, -1.0
+        rdax  qbp, -1.0
+        mulx  f3
+        rdax  bp3, 1.0
+        wrax  bp3, 0
+; ── salida: seco + media cola + formantes ────────────────────────────
+        rdax  bp1, 0.6
+        rdax  bp2, 0.6
+        rdax  bp3, 0.6
+        wrax  x, 0
+        rdax  dacl, 0.4
+        rdax  x, 1.0
+        wrax  dacl, 0
+        rdax  adcl, 1.0
+        mulx  kdrys
+        rdax  dacl, 1.0
+        wrax  dacl, 0
+        rdax  dacr, 0.4
+        rdax  x, 1.0
+        wrax  dacr, 0
+        rdax  adcr, 1.0
+        mulx  kdrys
+        rdax  dacr, 1.0
+        wrax  dacr, 0

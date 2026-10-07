@@ -232,6 +232,11 @@ HUELLAS = {
     "filtro": "ff8a6846cc9478cf",
     "puerta": "62aed0a4198303de",
     "saturacion": "afe17ca65691cfc1",
+    "ancho": "c4b73a1ac2872ead",
+    "chorale": "1345471d772e16c5",
+    "resonador": "ef187741375a3185",
+    "ringmod": "341b5c04807e4c42",
+    "slicer": "6b8940ad32b691cd",
 }
 
 
@@ -254,6 +259,8 @@ CON_TONO = {
     "compresor",
     "puerta",
     "saturacion",
+    "ringmod",
+    "slicer",
 }
 
 
