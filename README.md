@@ -4,6 +4,8 @@
 
 **Idiomas:** Español (fuente) · [English](README.en.md) · [简体中文](README.zh-CN.md)
 
+![SOFIFI: el logotipo y la cara del pedal, con la OLED, seis mandos y dos pulsadores](docs/img/portada.png)
+
 SOFIFI es un pedal de guitarra ambient (reverbs, shimmer, delays de cinta, freeze, granular)
 implementado en una FPGA **Sipeed Tang Primer 25K** (Gowin GW5A-LV25).
 
@@ -47,6 +49,12 @@ remuestrea a 48 828 Hz. `sofifi asm` genera el microcódigo (`.hex` + `.json`).
   exactos (ADR 0005).
 - **Modelo de referencia bit-exact en Python**, que es el oráculo contra el que se
   valida el RTL (ADR 0003).
+
+![La memoria manda, no el cómputo: el shimmer usa el 5,9 % de los ciclos y el 96,6 % de la memoria](docs/img/memoria.png)
+
+El estado del arte de 2026 y la hoja de ruta están en
+`docs/investigacion/ESTADO_DEL_ARTE_2026.md`. Las infografías completas están en
+`docs/infografias/`.
 
 ## Arranque
 
@@ -94,6 +102,8 @@ Si una herramienta falta, la compuerta lo dice (`WARN … NO CORRIÓ`); no finge
 
 Las fases que necesitan hardware que falta van al final del plan (09 a 12), de
 modo que hasta la Fase 08 basta con la placa y la microSD.
+
+![Las 13 fases: 4 cerradas, la siguiente y las que esperan hardware](docs/img/ruta.png)
 
 ## Idiomas
 

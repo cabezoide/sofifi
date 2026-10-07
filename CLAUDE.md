@@ -29,6 +29,11 @@ por capa y el detalle que un agente necesita para trabajar sin releer todo.
   `docs/ratchets.yaml`. Revisar también lo que ninguna pista ve: aritmética
   repetida, registros más anchos de lo necesario y, en el modelo, tiempos
   (MED-01/02) y código duplicado.
+- **Al cerrar una fase**, actualizar la versión y la ruta en
+  `docs/infografias/sofifi.html` y regenerar `docs/img/portada.png` y
+  `docs/img/ruta.png`: el README las muestra. Se capturan con
+  `chrome-headless-shell` (caché de Playwright, `--no-sandbox`) a escala 2, una
+  sección cada vez.
 - **Un ADR no se reescribe:** se le añade al pie «Actualización AAAA-MM-DD».
 - **Al portar un algoritmo de un tercero:** entrada en `docs/terceros.yaml` con
   `uso: portado`, cabecera SPDX del origen en el fichero y cita al origen en el

@@ -1,9 +1,13 @@
-<!-- i18n: fuente=README.md sha=6f681132315c estado=al_dia -->
+<!-- i18n: fuente=README.md sha=f3af8ed0bcd0 estado=al_dia -->
 # SOFIFI — 集成 FPGA 上的沉浸式波形与滤波合成器
 
 *英文名：Soundscapes On FPGA: Integrated Filters & Impulses；西班牙文名：Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada。*
 
 **语言：** [Español](README.md)（源文本） · [English](README.en.md) · 简体中文
+
+![SOFIFI：标志与效果器面板，含 OLED、六个旋钮和两个脚踏开关](docs/img/portada.png)
+
+*图片为西班牙语，即本项目的源语言。*
 
 SOFIFI 是一款氛围（ambient）吉他效果器（混响、shimmer、磁带延迟、冻结、颗粒合成），
 基于 **Sipeed Tang Primer 25K** FPGA（高云 GW5A-LV25）实现。
@@ -43,6 +47,11 @@ SOFIFI 是一款氛围（ambient）吉他效果器（混响、shimmer、磁带�
   录音，但不能用作延迟存储器（ADR 0004）。
 - **fs = 48,828 Hz**，系统时钟 100 MHz：每个采样恰好 2,048 个时钟周期（ADR 0005）。
 - **Python 编写的逐位精确（bit-exact）参考模型**，作为验证 RTL 的基准（ADR 0003）。
+
+![内存才是瓶颈，而不是算力：shimmer 只用 5.9% 的周期，却占用 96.6% 的内存](docs/img/memoria.png)
+
+2026 年技术现状与路线图见 `docs/investigacion/ESTADO_DEL_ARTE_2026.md`（西班牙语）。
+完整信息图见 `docs/infografias/`。
 
 ## 快速开始
 
@@ -87,6 +96,8 @@ make uart       # 读取调试器 UART（/dev/ttyUSB1），要求收到 "SOFIFI"
 | Sipeed SDRAM 模块 | 未来（可实现长循环录音和长颗粒合成） |
 
 需要缺少硬件的阶段排在计划末尾（09 至 12），因此在阶段 08 之前只需开发板和 microSD。
+
+![13 个阶段：4 个已关闭、下一个阶段以及等待硬件的阶段](docs/img/ruta.png)
 
 ## 语言
 

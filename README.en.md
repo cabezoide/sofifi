@@ -1,9 +1,13 @@
-<!-- i18n: fuente=README.md sha=6f681132315c estado=al_dia -->
+<!-- i18n: fuente=README.md sha=f3af8ed0bcd0 estado=al_dia -->
 # SOFIFI — Soundscapes On FPGA: Integrated Filters & Impulses
 
 *In Spanish: Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada.*
 
 **Languages:** [Español](README.md) (source) · English · [简体中文](README.zh-CN.md)
+
+![SOFIFI: the logo and the pedal face, with the OLED, six knobs and two footswitches](docs/img/portada.png)
+
+*The images are in Spanish, the source language of the project.*
 
 SOFIFI is an ambient guitar pedal (reverbs, shimmer, tape delays, freeze, granular)
 implemented on a **Sipeed Tang Primer 25K** FPGA (Gowin GW5A-LV25).
@@ -49,6 +53,12 @@ the tail length in seconds.)
   (ADR 0005).
 - **A bit-exact reference model in Python**, which is the oracle the RTL is
   validated against (ADR 0003).
+
+![Memory rules, not compute: the shimmer uses 5.9 % of the cycles and 96.6 % of the memory](docs/img/memoria.png)
+
+The 2026 state of the art and the roadmap are in
+`docs/investigacion/ESTADO_DEL_ARTE_2026.md` (Spanish). The full infographics are
+in `docs/infografias/`.
 
 ## Getting started
 
@@ -96,6 +106,8 @@ If a tool is missing, the gate says so (`WARN … NO CORRIÓ`); it does not fake
 
 Phases that need missing hardware are at the end of the plan (09 to 12), so up
 to Phase 08 the board and the microSD are enough.
+
+![The 13 phases: 4 closed, the next one and the ones that wait for hardware](docs/img/ruta.png)
 
 ## Languages
 
