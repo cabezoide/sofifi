@@ -65,6 +65,14 @@ Además, la directiva `include` en el ensamblador.
 - **La compuerta no ve el eco de la cinta:** compara 1 000 muestras y el primer eco llega a las 8 782. La aceptación usa 12 000 muestras con pot0 = 0.
 - Las huellas de cinta y reverse duran 0,6 s y 0,4 s: en 0,1 s solo suena la señal seca.
 
+**Estado del PR 3 del plan (2026-10-07):** hecho, con estas diferencias.
+
+- **Lo-fi:** muestreo de 48,8 kHz a ~1 kHz y 24, 12, 10, 8 o 7 bit, 620 ciclos. La ISA no tiene AND. El cuantizador escala la muestra por 2^-(23-b), la redondea con `WRAX` y la multiplica por casi 2 con `SOF` (23-b) veces. Por debajo de 7 bit haría falta un coeficiente menor que 2^-16.
+- **Swell:** detector de ataque con dos envolventes y ganancia² antes del plate, 1 467 ciclos. Usa `rdfx` y `absa`, no `maxx`. La subida va de ~50 ms a ~1,3 s.
+- **El tanque del plate** pasa a `comun/dattorro_tanque.sasm`: lo comparten plate y swell.
+- La mezcla deja pasar un −0,1 % de señal seca con pot2 = 1 (`comun/mezcla.sasm`, D = 0,999). La prueba del lo-fi mete la señal por la derecha y mide la izquierda.
+- Las demos están en PCM de 16 bit (15,2 MB). La compuerta `secrets` ya no limita su total, solo 4 MiB por demo (ADR 0001, actualización).
+
 ## Criterios de aceptación
 
 - Cada programa cabe en el núcleo.

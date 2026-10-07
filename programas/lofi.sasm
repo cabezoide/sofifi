@@ -1,0 +1,121 @@
+; SPDX-License-Identifier: MIT
+;
+; lofi.sasm — Lo-fi: menos muestras por segundo y menos bits, con aliasing.
+; Diseño propio (docs/investigacion/INVESTIGACION.md §1.1).
+;
+; Cada muestra:
+;   1. Paso bajo de tono (pot3) sobre la entrada mono.
+;   2. Muestreo y retención (S&H): un contador baja `paso` cada muestra. Cuando
+;      pasa de 0, guarda la muestra nueva; si no, repite la anterior. No hay
+;      filtro antialiasing: el aliasing es parte del efecto.
+;   3. Menos bits: escala la muestra por 2^-(23-b), la redondea a 24 bit al
+;      escribirla en un registro y la multiplica por 2 (23-b) veces. La ISA no
+;      tiene AND: el redondeo de WRAX hace de cuantizador.
+;
+; pot0 = muestreo   (0 → 48,8 kHz · 1 → unos 1 kHz)
+; pot1 = bits       (< 0,2 → 24 · 12 · 10 · 8 · ≥ 0,8 → 7)
+; pot2 = mezcla     (0 → seco · 1 → solo lo-fi)
+; pot3 = tono       (0 → oscuro · 1 → brillante)
+
+equ  x2    2 - 1/65536        ; el coeficiente más cercano a 2 (S1.16)
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  paso     reg2
+equ  cuenta   reg3
+equ  lp       reg4
+equ  muestra  reg5
+equ  tmp      reg6
+equ  lofi     reg7
+equ  ktono    reg8
+equ  lofiw    reg9
+
+; ── controles ────────────────────────────────────────────────────────
+include  comun/mezcla.sasm
+        rdax  pot0, -0.98               ; paso = 1 − 0,98·pot0: de cada muestra a 1 de cada 50
+        sof   1.0, 0.99997
+        wrax  paso, 0
+        rdax  pot3, 0.95
+        sof   1.0, 0.05
+        wrax  ktono, 0
+; ── 1. tono: lp = lp + ktono·(x − lp) ────────────────────────────────
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        rdax  lp, -1.0
+        mulx  ktono
+        rdax  lp, 1.0
+        wrax  lp, 0
+; ── 2. muestreo y retención ──────────────────────────────────────────
+        rdax  cuenta, 1.0
+        rdax  paso, -1.0
+        wrax  cuenta, 1.0
+        skp   gez, retener
+        sof   1.0, 0.99997              ; el contador vuelve a subir casi 1
+        wrax  cuenta, 0
+        rdax  lp, 1.0
+        wrax  muestra, 0
+retener:
+        clr
+; ── 3. bits: pot1 elige cuántas veces se duplica ─────────────────────
+        rdax  pot1, 1.0
+        sof   1.0, -0.2
+        skp   neg, b24
+        sof   1.0, -0.2
+        skp   neg, b12
+        sof   1.0, -0.2
+        skp   neg, b10
+        sof   1.0, -0.2
+        skp   neg, b8
+        clr                             ; 7 bit: escala 2^-16 y 16 duplicaciones
+        rdax  muestra, 1/65536
+        wrax  tmp, 1.0
+        skp   gez|neg, d16
+b8:
+        clr                             ; 8 bit: escala 2^-15 y 15 duplicaciones
+        rdax  muestra, 1/32768
+        wrax  tmp, 1.0
+        skp   gez|neg, d15
+b10:
+        clr                             ; 10 bit: escala 2^-13 y 13 duplicaciones
+        rdax  muestra, 1/8192
+        wrax  tmp, 1.0
+        skp   gez|neg, d13
+b12:
+        clr                             ; 12 bit: escala 2^-11 y 11 duplicaciones
+        rdax  muestra, 1/2048
+        wrax  tmp, 1.0
+        skp   gez|neg, d11
+b24:
+        clr                             ; 24 bit: sin cuantizar
+        rdax  muestra, 1.0
+        skp   gez|neg, fin
+d16:    sof   x2, 0
+d15:    sof   x2, 0
+        sof   x2, 0
+d13:    sof   x2, 0
+        sof   x2, 0
+d11:    sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+fin:
+        wrax  lofi, 0
+; ── salida ───────────────────────────────────────────────────────────
+        rdax  lofi, 1.0
+        mulx  kwet
+        wrax  lofiw, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  lofiw, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  lofiw, 1.0
+        wrax  dacr, 0

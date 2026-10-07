@@ -77,3 +77,11 @@ Los trabajos que lanzan herramientas EDA corren con `ulimit -u` acotado. El mism
 ## Actualización 2026-10-07 (síntesis fuera del pre-push, Fase 04)
 
 `optimizacion` pasa de dura a `release` (ADR 0010, revisión prevista) y desaparece `synth`. El pre-push queda en lint, simulación y modelo; la síntesis corre en `make optimizacion` y en `make release-check`.
+
+## Actualización 2026-10-07 (demos sin límite total, Fase 06)
+
+A petición de la persona propietaria, `secrets` ya no limita el total de `demo_examples/`. Cada programa tiene su demo y la biblioteca crece. Esto sustituye a la regla anterior («si pasan de 16 MiB, van a assets de release»): la persona propietaria prefiere tenerlas en el repositorio.
+
+- Se mantiene el límite de 4 MiB por demo: evita subir un WAV enorme por error.
+- Las demos están en PCM de 16 bit.
+- Cada regeneración de las demos aumenta el historial de git. Si el repositorio crece demasiado, la alternativa es MP3. Para eso hace falta un codificador (LAME es LGPL) y un ADR propio.

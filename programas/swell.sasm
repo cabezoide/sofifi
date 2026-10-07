@@ -1,0 +1,76 @@
+; SPDX-License-Identifier: MIT
+;
+; swell.sasm — Swell automático antes del plate: cada nota nueva empieza en
+; silencio y sube poco a poco, como con el pedal de volumen. Diseño propio
+; (docs/investigacion/ESTADO_DEL_ARTE_2026.md, hoja de ruta, punto 4).
+;
+; Cada muestra:
+;   1. Dos envolventes de |x|: una rápida (~2 ms) y una lenta (~40 ms).
+;   2. Ataque: si la rápida pasa de 2 veces la lenta más un umbral, la
+;      ganancia vuelve a 0.
+;   3. La ganancia sube hacia 1 con la constante de tiempo de pot3.
+;   4. kwet y kdry se multiplican por ganancia²: la señal seca y la que entra
+;      en el plate suben juntas. El resto es el plate (comun/dattorro_*).
+;
+; pot0 = decay · pot1 = damping · pot2 = mezcla (como plate.sasm)
+; pot3 = subida     (constante de tiempo: 0 → unos 50 ms · 1 → unos 1,3 s)
+
+include  comun/dattorro_decl.sasm
+
+equ  umbral   0.01            ; nivel mínimo de un ataque
+
+equ  envr     reg9
+equ  envl     reg10
+equ  gan      reg11
+equ  ksub     reg12
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+include  comun/dattorro_lfo.sasm
+        sof   0, 0.99
+        wrax  lfo0_depth, 1.0
+        wrax  lfo1_depth, 0
+inicio:
+include  comun/controles.sasm
+        rdax  pot3, -25/65536           ; ksub = (26 − 25·pot3)/65536: de ~50 ms a ~1,3 s
+        sof   1.0, 26/65536
+        wrax  ksub, 0
+; ── 1. envolventes ───────────────────────────────────────────────────
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        absa
+        rdfx  envr, 0.01
+        wrax  envr, 1.0
+        rdfx  envl, 0.0005
+        wrax  envl, 0
+; ── 2. ataque: envr − 2·envl − umbral ≥ 0 ────────────────────────────
+        rdax  envr, 1.0
+        rdax  envl, -2.0
+        sof   1.0, -umbral
+        skp   neg, subir
+        clr
+        wrax  gan, 0
+; ── 3. ganancia: gan = gan + ksub·(1 − gan) ──────────────────────────
+subir:
+        clr
+        rdax  gan, -1.0
+        sof   1.0, 0.99997
+        mulx  ksub
+        rdax  gan, 1.0
+        wrax  gan, 1.0
+; ── 4. kwet y kdry por ganancia² ─────────────────────────────────────
+        mulx  gan
+        wrax  tmp, 0
+        rdax  kwet, 1.0
+        mulx  tmp
+        wrax  kwet, 0
+        rdax  kdry, 1.0
+        mulx  tmp
+        wrax  kdry, 0
+; ── plate ────────────────────────────────────────────────────────────
+include  comun/entrada.sasm
+        rdfx  bw, kbw
+        wrax  bw, 1.0
+include  comun/dattorro_difusion.sasm
+include  comun/dattorro_tanque.sasm
+include  comun/dattorro_salida.sasm

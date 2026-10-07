@@ -36,7 +36,7 @@ from sofifi.domain.isa import Programa, codificar
 from sofifi.domain.lfo import TipoLfo
 from sofifi.domain.nucleo import Nucleo
 
-PROGRAMAS = ("plate", "shimmer", "freeze", "hall", "cloud", "cinta", "reverse")
+PROGRAMAS = tuple(sorted(p.stem for p in (RAIZ / "programas").glob("*.sasm")))
 # La cinta, con pot0 = 0: el primer eco llega a las ~8 800 muestras y no a las ~31 700.
 POTS_PRUEBA = {
     "plate": ("0.7", "0.5", "0.3", "0.6", "0.4", "0.2"),
