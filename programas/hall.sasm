@@ -1,5 +1,8 @@
 ; SPDX-License-Identifier: MIT
 ;
+; familia: reverb
+; resumen: Red de 8 retardos con matriz de Householder: sala grande.
+;
 ; hall.sasm — Hall de red de retardo con realimentación (FDN) de 8 líneas.
 ; Diseño propio a partir de la literatura: J.-M. Jot y A. Chaigne, «Digital
 ; delay networks for designing artificial reverberators», AES 1991 [?]. No

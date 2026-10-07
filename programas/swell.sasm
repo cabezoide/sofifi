@@ -1,5 +1,8 @@
 ; SPDX-License-Identifier: MIT
 ;
+; familia: dinámica
+; resumen: Cada nota empieza en silencio y sube, antes de un plate.
+;
 ; swell.sasm — Swell automático antes del plate: cada nota nueva empieza en
 ; silencio y sube poco a poco, como con el pedal de volumen. Diseño propio
 ; (docs/investigacion/ESTADO_DEL_ARTE_2026.md, hoja de ruta, punto 4).

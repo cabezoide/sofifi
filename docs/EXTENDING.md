@@ -9,15 +9,19 @@ Un efecto es un programa, no un módulo RTL (ADR 0006).
 
 1. Si viene de un tercero, se añade la entrada en `docs/terceros.yaml`. `uso: portado`
    solo vale con licencia permisiva (ADR 0002).
-2. Se escribe `programas/<nombre>.sasm`. Los bloques que ya existen se toman de
-   `programas/comun/` con `include`.
+2. Se escribe `programas/<nombre>.sasm`. La cabecera lleva `; familia:`,
+   `; resumen:` y una línea `; potN = nombre` por mando. Los bloques que ya
+   existen se toman de `programas/comun/` con `include`.
 3. Se comprueba que cabe: `sofifi asm` da los ciclos del RTL, que deben ser
    2 048 o menos (`model/sofifi/domain/coste.py`).
-4. En `model/tests/programas_test.py` se añade el nombre a `test_cabe_en_el_nucleo`,
-   una prueba de su propiedad acústica y su huella en `HUELLAS`.
-5. Se añade a `PROGRAMAS` en `sim/nucleo/nucleo_test.py`: el RTL debe dar la
-   misma salida que el modelo.
-6. Se añade la demo en `DEMOS` (`scripts/generar_demos.py`) y en
+4. Se escribe la prueba de su propiedad acústica en el fichero de su familia
+   (`model/tests/programas_<familia>_test.py`). Las medidas comunes están en
+   `model/tests/acustica.py`.
+5. Se añade su huella en `HUELLAS` (`model/tests/programas_test.py`). Las
+   pruebas de «cabe», de huella y de igualdad con el RTL (`sim/nucleo/nucleo_test.py`)
+   recorren todos los `.sasm`: fallan si falta algo.
+6. Se regenera el catálogo con `sofifi catalogo`.
+7. Se añade la demo en `DEMOS` (`scripts/generar_demos.py`) y en
    `demo_examples/README.md`.
 
 ## Una instrucción del núcleo

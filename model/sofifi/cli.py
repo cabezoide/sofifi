@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: MIT
 """Entrada de línea de mandos; raíz de composición: único sitio que elige adaptadores.
 
-sofifi asm     PROGRAMA.sasm  SALIDA_BASE
+sofifi asm       PROGRAMA.sasm  SALIDA_BASE
+sofifi catalogo  (regenera docs/programas.md)
 sofifi render  PROGRAMA.sasm  ENTRADA.wav  SALIDA.wav  [--pot N=V] [--freeze A:B] [--cola S]
 """
 
@@ -19,6 +20,7 @@ from sofifi.domain.coste import ciclos_rtl
 from sofifi.domain.ensamblador import ErrorEnsamblado
 from sofifi.domain.isa import NUM_POTS
 from sofifi.domain.senal import Controles
+from sofifi.services.catalogo import RUTA_CATALOGO, ficha, markdown
 from sofifi.services.render import exportar_microcodigo, renderizar
 from sofifi.services.tablas import (
     PROGRAMAS_EN_ROM,
@@ -58,6 +60,7 @@ def main(argv: list[str] | None = None) -> int:
     a.add_argument("programa", type=Path)
     a.add_argument("salida", type=Path)
     sub.add_parser("tablas", help="regenera las tablas y programas en ROM del RTL")
+    sub.add_parser("catalogo", help="regenera docs/programas.md desde programas/*.sasm")
     r = sub.add_parser("render", help="procesa un WAV con un programa")
     r.add_argument("programa", type=Path)
     r.add_argument("entrada", type=Path)
@@ -67,7 +70,14 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--cola", type=float, default=0.0, help="segundos de silencio al final")
     args = p.parse_args(argv)
     try:
-        if args.orden == "tablas":
+        if args.orden == "catalogo":
+            fichas = [
+                ficha(r.stem, r.read_text(encoding="utf-8"), ensamblar_archivo(r))
+                for r in sorted(Path("programas").glob("*.sasm"))
+            ]
+            Path(RUTA_CATALOGO).write_text(markdown(fichas), encoding="utf-8")
+            print(f"{len(fichas)} programas → {RUTA_CATALOGO}")
+        elif args.orden == "tablas":
             Path(RUTA_TABLA_HERMITE).write_text(verilog_tabla_hermite(), encoding="utf-8")
             print(f"tabla Hermite → {RUTA_TABLA_HERMITE}")
             for nombre in PROGRAMAS_EN_ROM:

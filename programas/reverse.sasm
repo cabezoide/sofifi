@@ -1,5 +1,8 @@
 ; SPDX-License-Identifier: MIT
 ;
+; familia: delay
+; resumen: Eco invertido en granos de 0,17 s.
+;
 ; reverse.sasm — Eco invertido: la señal sale al revés, en granos de 0,17 s
 ; fundidos con ventanas complementarias. Diseño propio
 ; (docs/investigacion/INVESTIGACION.md §1.1).

@@ -14,56 +14,24 @@ from __future__ import annotations
 
 import hashlib
 import math
-from functools import cache
 from itertools import pairwise
-from pathlib import Path
 
 import pytest
-from sofifi.adapters.archivos import ensamblar_archivo
-from sofifi.domain.aritmetica import DATO_MAX, UNO, dato
+from sofifi.domain.aritmetica import DATO_MAX, dato
 from sofifi.domain.coste import cabe_en_el_rtl, ciclos_rtl
-from sofifi.domain.isa import Programa
 from sofifi.domain.senal import Controles, Senal
 from sofifi.services.render import procesar
-
-PROGRAMAS = Path(__file__).resolve().parents[2] / "programas"
-FS = 48828
-PROGRAMAS_TODOS = sorted(p.stem for p in PROGRAMAS.glob("*.sasm"))
-
-
-@cache
-def programa(nombre: str) -> Programa:
-    return ensamblar_archivo(PROGRAMAS / f"{nombre}.sasm")
-
-
-def impulso(segundos: float, en: int = 0) -> Senal:
-    x = [0] * int(segundos * FS)
-    x[en] = dato("0.5")
-    return Senal(FS, (tuple(x),))
-
-
-def maximos(v: tuple[int, ...], umbral: float, signo: int = 1) -> list[int]:
-    """Posiciones de los máximos locales de signo·v por encima del umbral."""
-    u = dato(str(umbral))
-    w = [signo * s for s in v]
-    return [k for k in range(1, len(w) - 1) if w[k] > u and w[k] >= w[k - 1] and w[k] >= w[k + 1]]
-
-
-def rms(v: tuple[int, ...], a: float, b: float) -> float:
-    seg = v[int(a * FS) : int(b * FS)]
-    return math.sqrt(sum((s / UNO) ** 2 for s in seg) / len(seg))
-
-
-def potencia(v: tuple[int, ...], f: float, a: float, b: float) -> float:
-    seg = v[int(a * FS) : int(b * FS)]
-    w = 2 * math.pi * f / FS
-    re = sum(s * math.cos(w * k) for k, s in enumerate(seg))
-    im = sum(s * math.sin(w * k) for k, s in enumerate(seg))
-    return (re * re + im * im) / UNO**2
-
-
-def pots(*valores: str) -> tuple[int, ...]:
-    return tuple(dato(v) for v in valores)
+from tests.acustica import (
+    FS,
+    PROGRAMAS_TODOS,
+    impulso,
+    maximos,
+    potencia,
+    pots,
+    programa,
+    rms,
+    tono,
+)
 
 
 @pytest.mark.parametrize("nombre", PROGRAMAS_TODOS)
@@ -191,11 +159,6 @@ def test_reverse_saca_la_senal_al_reves() -> None:
     assert invertidos >= 1 and directos == 0  # medido: 2 granos, los dos invertidos
 
 
-def tono(f: float, segundos: float, amplitud: float = 0.9) -> tuple[int, ...]:
-    w = 2 * math.pi * f / FS
-    return tuple(dato(str(round(amplitud * math.sin(w * k), 6))) for k in range(int(segundos * FS)))
-
-
 def test_lofi_reduce_muestras_y_bits() -> None:
     """La entrada va por la derecha: la salida izquierda solo lleva lo-fi, sin señal seca."""
     x = tono(220, 0.2)
@@ -243,11 +206,16 @@ HUELLAS = {
     "reverse": "2f113ede645767d1",
     "lofi": "a4d6a87f66648356",
     "swell": "627e231396b504fa",
+    "chorus": "751ad4420cef058d",
+    "flanger": "cb4159f30e5bed32",
+    "phaser": "f56d3cf9add10ab7",
+    "tremolo": "1b6fc45fd6e309e6",
+    "vibrato": "82980fc514ddf04c",
 }
 
 
 SEGUNDOS_HUELLA = {"cinta": 0.6, "reverse": 0.4}
-CON_TONO = {"lofi", "swell"}
+CON_TONO = {"lofi", "swell", "tremolo"}
 
 
 def test_todo_programa_tiene_huella() -> None:

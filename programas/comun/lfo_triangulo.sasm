@@ -1,0 +1,34 @@
+; SPDX-License-Identifier: MIT
+;
+; comun/lfo_triangulo.sasm — LFO triangular por software, legible por el programa.
+; Los LFO del núcleo solo mueven lecturas de CHO; este deja su valor en un
+; registro, para multiplicar con él (trémolo, phaser, filtros).
+;
+; Necesita tres registros:
+;   tri    valor del triángulo, de −1 a 1
+;   dir    sentido: +0,99999 o −0,99999 (empieza en 0: el primer paso lo fija)
+;   vel    subida por muestra (4f/fs para f Hz); lo escribe el programa antes
+; Deja tri en ACC.
+
+        rdax  dir, 1.0                  ; dir = 0 solo en la primera muestra
+        skp   zro, arranque_tri
+        clr
+        skp   zro, paso_tri
+arranque_tri:
+        sof   0, 0.99999
+        wrax  dir, 0
+paso_tri:
+        clr
+        rdax  vel, 1.0
+        mulx  dir
+        rdax  tri, 1.0
+        wrax  tri, 1.0
+        absa                            ; en el borde, el sentido cambia
+        sof   1.0, -0.999
+        skp   neg, fin_tri
+        clr
+        rdax  dir, -1.0
+        wrax  dir, 0
+fin_tri:
+        clr
+        rdax  tri, 1.0
