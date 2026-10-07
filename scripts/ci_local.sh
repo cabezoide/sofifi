@@ -76,13 +76,17 @@ run_job() {
     ratchets)   "$PY" scripts/check_ratchets.py ;;
     rtl-lint)
       local files
-      files="$(git ls-files 'rtl/*.v' 'rtl/*.sv' 2>/dev/null)"
-      if [[ -z "$files" ]]; then
-        echo "rtl-lint: no hay fuentes RTL todavía (nada que comprobar)."
-        return 0
-      fi
-      # shellcheck disable=SC2086
-      (ulimit -u "$TOPE_PROCESOS"; verilator_real --lint-only -Wall $files)
+      # Un lint por top (rtl/top/tops.txt): varios tops juntos darían MULTITOP.
+      # SIMULACION elige el modelo de comportamiento de las primitivas Gowin;
+      # la rama de síntesis la comprueba el trabajo `optimizacion`.
+      local linea fallos=0
+      while read -r -a linea; do
+        [[ ${#linea[@]} -eq 0 || "${linea[0]}" == \#* ]] && continue
+        (ulimit -u "$TOPE_PROCESOS"
+         verilator_real --lint-only -Wall -DSIMULACION --top-module "${linea[0]}" "${linea[@]:1}") \
+          || fallos=1
+      done < rtl/top/tops.txt
+      return "$fallos"
       ;;
     sim)
       (ulimit -u "$TOPE_PROCESOS"; "$PY" -m pytest sim --no-cov -p no:cacheprovider)

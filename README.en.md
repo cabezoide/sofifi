@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=becd5da7d0d9 estado=al_dia -->
+<!-- i18n: fuente=README.md sha=6f681132315c estado=al_dia -->
 # SOFIFI — Soundscapes On FPGA: Integrated Filters & Impulses
 
 *In Spanish: Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada.*
@@ -8,12 +8,12 @@
 SOFIFI is an ambient guitar pedal (reverbs, shimmer, tape delays, freeze, granular)
 implemented on a **Sipeed Tang Primer 25K** FPGA (Gowin GW5A-LV25).
 
-**Version:** `0.2` (the version is the last closed phase; see `docs/fases/estado_fases.csv`).
+**Version:** `0.3` (the version is the last closed phase; see `docs/fases/estado_fases.csv`).
 
-> Status: **open EDA toolchain working** (Phase 02). The bit-exact model lets
-> you hear the plate, shimmer and freeze programs on a PC, and the board already
-> takes a bitstream built with free tools and answers over the UART.
-> There is no DSP core in RTL yet.
+> Status: **core primitives verified on the board** (Phase 03). The 27×18 DSP
+> block, the 42 BSRAM blocks and the 100 MHz PLL work with the free toolchain.
+> The bit-exact model lets you hear the plate, shimmer and freeze programs on a
+> PC. There is no DSP core in RTL yet.
 > The initial research is in `docs/investigacion/INVESTIGACION.md` (Spanish).
 
 ## Listening to the effects (no hardware needed)

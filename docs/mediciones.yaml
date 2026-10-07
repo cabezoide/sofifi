@@ -62,3 +62,39 @@ mediciones:
     como: "make synth; campo relojes de build/hola_uart_recursos.json"
     entorno: "mismas herramientas que MED-04; restricción de 50 MHz (reloj E2)"
     no_dice: "Es el análisis estático de nextpnr para un diseño trivial; no anticipa la Fmax del núcleo DSP a 100 MHz (ADR 0005) ni valida la PLL (apicula #427)."
+  - id: MED-06
+    caracteristica: M-07
+    nombre: Productos 27×18 con signo del bloque DSP comprobados en la placa sin error
+    valor: 2500
+    unidad: productos (2 cargas × 1 250), con las 25 combinaciones de casos extremos en cada carga
+    umbral: 1000
+    direccion: mayor_mejor
+    fecha: 2026-10-07
+    caduca_en_dias: 180
+    como: "make prog TOP=prueba_dsp && .venv/bin/python scripts/verificar_primitivas.py dsp --segundos 25"
+    entorno: "Tang Primer 25K, MULT27X36 a 100 MHz desde el PLL; yosys 0.69, nextpnr-himbaechel-gowin 0.11.1, apicula 0.32"
+    no_dice: "No prueba los modos de MULTALU27X18 (acumulador, pre-sumador) ni los 28 bloques: solo un MULT27X36, que ocupa 2. El PC comprueba cada producto contra Python."
+  - id: MED-07
+    caracteristica: M-07
+    nombre: Lecturas de BSRAM comprobadas en la placa sin error, con los 42 bloques del núcleo
+    valor: 1.6
+    unidad: miles de millones de lecturas (2 cargas × 97 informes × 64 vueltas × 3 pasadas × 43 008)
+    umbral: 0.1
+    direccion: mayor_mejor
+    fecha: 2026-10-07
+    caduca_en_dias: 180
+    como: "make prog TOP=prueba_bsram && .venv/bin/python scripts/verificar_primitivas.py bsram --segundos 8"
+    entorno: "43 008 × 18 bit inferidos como 42 DPX9B, a 100 MHz desde el PLL"
+    no_dice: "Cubre escritura y lectura en el ciclo siguiente, colisión (devuelve el dato anterior) y retención durante una vuelta. No prueba dos escrituras simultáneas ni la memoria con el núcleo leyendo a su patrón real."
+  - id: MED-08
+    caracteristica: M-07
+    nombre: Ciclos del PLL de 100 MHz por segundo del cristal de 50 MHz
+    valor: 100000000
+    unidad: ciclos por segundo (6 medidas en 2 cargas, todas iguales)
+    umbral: 100
+    direccion: menor_mejor
+    fecha: 2026-10-07
+    caduca_en_dias: 180
+    como: "make prog TOP=prueba_pll && .venv/bin/python scripts/verificar_primitivas.py pll --segundos 4 (el umbral es la desviación máxima admitida, ± 100 ciclos)"
+    entorno: "PLLA con VCO de 800 MHz y ODIV0 = 8, bloqueado"
+    no_dice: "Mide la relación con el cristal, no la precisión absoluta del cristal (eso acota MED-03, unas 100 ppm). No mide el jitter."

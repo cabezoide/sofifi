@@ -7,13 +7,14 @@
 SOFIFI es un pedal de guitarra ambient (reverbs, shimmer, delays de cinta, freeze, granular)
 implementado en una FPGA **Sipeed Tang Primer 25K** (Gowin GW5A-LV25).
 
-**Versión:** `0.2` (la versión es la última fase cerrada; ver `docs/fases/estado_fases.csv`).
+**Versión:** `0.3` (la versión es la última fase cerrada; ver `docs/fases/estado_fases.csv`).
 
-> Estado: **cadena EDA abierta funcionando** (Fase 02). El modelo bit-exact
-> deja escuchar en el PC los programas plate, shimmer y freeze, y la placa ya
-> recibe un bitstream sintetizado con herramientas libres y responde por la UART.
-> Todavía no hay núcleo DSP en RTL.
-> La investigación de partida está en `docs/investigacion/INVESTIGACION.md`.
+> Estado: **primitivas del núcleo verificadas en la placa** (Fase 03). El bloque
+> DSP 27×18, los 42 bloques de BSRAM y el PLL de 100 MHz funcionan con la cadena
+> libre. El modelo bit-exact deja escuchar en el PC los programas plate, shimmer y
+> freeze. Todavía no hay núcleo DSP en RTL.
+> La investigación está en `docs/investigacion/INVESTIGACION.md` y
+> `docs/investigacion/ESTADO_DEL_ARTE_2026.md`.
 
 ## Escuchar los efectos (sin hardware)
 

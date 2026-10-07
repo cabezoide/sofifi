@@ -55,6 +55,6 @@ ignore = ["RUF001", "RUF002", "RUF003"]
 
 [tool.mypy]
 files = ["model/sofifi", "model/tests", "scripts"]
-mypy_path = "model"
+mypy_path = "model:scripts"   # los scripts se importan entre sí (leer_uart)
 strict = true
 explicit_package_bases = true

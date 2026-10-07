@@ -72,4 +72,6 @@ def test_uart_tx(tmp_path: Path) -> None:
         build_args=["-Wall"],
         always=True,
     )
-    runner.test(hdl_toplevel="uart_tx", test_module="uart_tx_test", test_dir=AQUI, build_dir=tmp_path)
+    runner.test(
+        hdl_toplevel="uart_tx", test_module="uart_tx_test", test_dir=AQUI, build_dir=tmp_path
+    )

@@ -1,6 +1,6 @@
 # Fase 03 — Estado del arte, hoja de ruta y prueba de primitivas
 
-> Planificada: no está en el control hasta cerrarse.
+> Cerrada el 2026-10-07. Enmiendas respecto de esta spec: ver la fila 03 de `docs/fases/estado_fases.csv`.
 
 ## Objetivo
 
