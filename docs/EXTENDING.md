@@ -27,16 +27,21 @@ Es una decisión estructural: `model/sofifi/domain/isa.py` es sentinela, así qu
 1. Primero el modelo, en `model/sofifi/domain/`.
 2. El RTL va en `rtl/`, con cabecera SPDX.
 3. El testbench va en `sim/` y compara muestra a muestra.
-4. Si fija pines, relojes o el mapa de memoria, va con su ADR: esos ficheros son
+4. Si es un top, va en `rtl/top/tops.txt` con sus fuentes y lleva listones
+   `recursos:<top>:LUT4` y `recursos:<top>:ALU` en `docs/ratchets.yaml`, puestos
+   donde se está (ADR 0010).
+5. Si fija pines, relojes o el mapa de memoria, va con su ADR: esos ficheros son
    sentinelas (`docs/adr/sentinelas.txt`).
 
 ## Una compuerta
 
-1. Se añade el script en `scripts/` y una línea `"nombre:dura|blanda"` en el array
-   `JOBS` de `scripts/ci_local.sh`, más su rama en `run_job`. El hook no se toca.
+1. Se añade el script en `scripts/` y una línea `"nombre:dura|blanda|release"` en
+   el array `JOBS` de `scripts/ci_local.sh`, más su rama en `run_job`. El hook no
+   se toca.
 2. La clase se declara: dura solo si todo el mundo puede correrla y arreglarla
-   hoy (P1).
-3. Tocar `scripts/ci_local.sh` es una sentinela, así que va con su ADR o
+   hoy (P1); release si es cara y solo corre al nombrarla (`make release-check`).
+3. Si lanza herramientas EDA, va dentro de `(ulimit -u "$TOPE_PROCESOS"; …)`.
+4. Tocar `scripts/ci_local.sh` es una sentinela, así que va con su ADR o
    actualización de ADR.
 
 ## Un ADR

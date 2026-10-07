@@ -1,0 +1,35 @@
+# SPDX-License-Identifier: MIT
+"""Extrae del informe JSON de nextpnr el uso de recursos y la frecuencia alcanzada."""
+
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+from typing import Any
+
+
+def resumir(informe: dict[str, Any]) -> dict[str, Any]:
+    uso = {
+        nombre: {"usado": d["used"], "disponible": d["available"]}
+        for nombre, d in sorted(informe.get("utilization", {}).items())
+        if d.get("used")
+    }
+    relojes = {
+        nombre: {
+            "alcanzada_mhz": round(d["achieved"], 2),
+            "objetivo_mhz": round(d["constraint"], 2),
+        }
+        for nombre, d in sorted(informe.get("fmax", {}).items())
+    }
+    return {"recursos": uso, "relojes": relojes}
+
+
+def main(argv: list[str]) -> int:
+    datos = json.loads(Path(argv[0]).read_text(encoding="utf-8"))
+    print(json.dumps(resumir(datos), ensure_ascii=False, indent=2, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

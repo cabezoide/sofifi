@@ -26,3 +26,39 @@ mediciones:
     como: ".venv/bin/python -m pytest model/tests/programas_test.py --durations=5"
     entorno: "Intel i7-11390H, Linux 7.0, Python 3.14.4"
     no_dice: "No incluye el resto de la compuerta (unos 3 s). Si supera el umbral, las pruebas largas pasan a compuerta blanda o se acortan."
+  - id: MED-03
+    caracteristica: M-06
+    nombre: Recepción de "SOFIFI" desde la placa por la UART del depurador
+    valor: 1.0001
+    unidad: segundos entre mensajes (medidos con el reloj del PC, 30 s)
+    umbral: 1.01
+    direccion: menor_mejor
+    fecha: 2026-10-07
+    caduca_en_dias: 90
+    como: "make prog && .venv/bin/python scripts/leer_uart.py --segundos 30"
+    entorno: "Tang Primer 25K + Dock, BL616 en /dev/ttyUSB1, 115 200 8N1, cadena EDA del extra eda de pyproject.toml"
+    no_dice: "No mide el reloj con precisión: la marca de tiempo es la del PC y solo acota el error en torno a 100 ppm. No prueba la recepción UART (RX) ni la flash: se programa la SRAM."
+  - id: MED-04
+    caracteristica: M-06
+    nombre: LUT4 que ocupa el top hola_uart
+    valor: 207
+    unidad: LUT4 de 23 040
+    umbral: 1000
+    direccion: menor_mejor
+    fecha: 2026-10-07
+    caduca_en_dias: 180
+    como: "make synth; build/hola_uart_recursos.json (además, 82 ALU, 91 DFF y 3 IOB)"
+    entorno: "yowasp-yosys 0.69, nextpnr-himbaechel-gowin 0.11.1, apycula 0.32, GW5A-LV25MG121NES"
+    no_dice: "Nada del núcleo DSP. El log de nextpnr (Device utilisation) da 263 LUT4, más que el informe JSON: no se ha aclarado qué cuenta cada uno. La primera versión ocupaba 353 (466 según el log) porque convertía los 8 nibbles a ASCII con sumadores en paralelo."
+  - id: MED-05
+    caracteristica: M-06
+    nombre: Frecuencia máxima del top hola_uart según nextpnr
+    valor: 366.84
+    unidad: MHz
+    umbral: 100
+    direccion: mayor_mejor
+    fecha: 2026-10-07
+    caduca_en_dias: 180
+    como: "make synth; campo relojes de build/hola_uart_recursos.json"
+    entorno: "mismas herramientas que MED-04; restricción de 50 MHz (reloj E2)"
+    no_dice: "Es el análisis estático de nextpnr para un diseño trivial; no anticipa la Fmax del núcleo DSP a 100 MHz (ADR 0005) ni valida la PLL (apicula #427)."

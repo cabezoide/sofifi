@@ -12,6 +12,18 @@ sofifi = "sofifi.cli:main"
 
 [project.optional-dependencies]
 dev = ["pytest", "pytest-cov", "hypothesis", "ruff", "mypy", "pyyaml", "types-PyYAML"]
+# Cadena EDA abierta (Fase 02), toda instalable por pip. Las versiones mínimas son
+# las verificadas con la Tang Primer 25K.
+eda = [
+    "yowasp-yosys>=0.69",
+    "yowasp-nextpnr-himbaechel-gowin>=0.11.1",
+    "apycula>=0.32",
+    "openfpgaloader>=1.1.1",
+    "verilator>=5.48",
+    "cocotb>=2.1",
+    "pyserial>=3.5",
+    "types-pyserial",
+]
 
 [build-system]
 requires = ["setuptools>=69"]

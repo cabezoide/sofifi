@@ -1,0 +1,3 @@
+# Tops sintetizables: <top> <fuentes...> (la primera fuente define el top).
+# Lista única: la leen el Makefile, scripts/ci_local.sh y scripts/check_optimizacion.py.
+hola_uart rtl/top/hola_uart.v rtl/comun/uart_tx.v

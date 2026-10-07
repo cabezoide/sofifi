@@ -11,3 +11,11 @@ contra el modelo de `model/sofifi/` (ADR 0003).
 - **Igualdad exacta**: tolerancia cero salvo que un ADR diga lo contrario.
 - Los WAV y los volcados generados van a un directorio temporal o al directorio out/, que
   está ignorado por git.
+
+## Trampas
+
+- Verilator viene del paquete pip `verilator`. `sim/conftest.py` pone en PATH su
+  binario real con `VERILATOR_ROOT`; nunca se enlaza `verilator -> verilator-cli`,
+  porque se relanzaría en bucle hasta agotar la memoria.
+- Los bancos que no son DSP (UART, controles) se validan contra el protocolo, no
+  contra el modelo: ADR 0003 solo obliga a los bloques DSP.

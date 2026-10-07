@@ -30,3 +30,13 @@ promesas:
     not_checked: "calidad sonora subjetiva; tiempo real (el modelo va unas 2,2 veces más lento que el tiempo real en un PC)"
     motivo: Cierre de la Fase 01.
     flag: null
+  - id: P-004
+    claim: "make prog carga en la Tang Primer 25K un bitstream hecho con herramientas libres, y la placa responde por la UART"
+    source: README.md
+    verifier: sim/comun/uart_tx_test.py
+    kind: funcionalidad
+    status: verificada
+    scope: "la UART TX pasa su testbench y el lint en la compuerta dura; la síntesis pasa en la de release; la recepción en placa está medida (MED-03)"
+    not_checked: "ninguna compuerta programa la placa: la prueba en hardware es manual; no hay RX ni programación de la flash"
+    motivo: Cierre de la Fase 02.
+    flag: null
