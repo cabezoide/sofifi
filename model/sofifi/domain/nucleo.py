@@ -59,6 +59,8 @@ class Nucleo:
         self.primera = True
         self._tabla = tabla_hermite()
         self._codigo = programa.instrucciones
+        # El despacho se resuelve una vez: (manejador, instrucción) por paso.
+        self._pasos = [(MANEJADORES[i.op], i) for i in programa.instrucciones]
 
     def procesar(
         self,
@@ -85,11 +87,11 @@ class Nucleo:
         self.acc = 0
         self.lr = 0
         pc = 0
-        codigo = self._codigo
-        while pc < len(codigo):
-            ins = codigo[pc]
-            salto = MANEJADORES[ins.op](self, ins)
-            pc += 1 + salto
+        pasos = self._pasos
+        fin = len(pasos)
+        while pc < fin:
+            manejador, ins = pasos[pc]
+            pc += 1 + manejador(self, ins)
             if traza is not None:
                 traza.append((pc, self.acc))
         self.memoria.avanzar()
@@ -168,13 +170,17 @@ def _clip(n: Nucleo, i: Instruccion) -> int:
     return 0
 
 
+_RUN, _ZRO, _GEZ, _NEG = int(Skp.RUN), int(Skp.ZRO), int(Skp.GEZ), int(Skp.NEG)
+_NA, _MEDIA = int(Cho.NA), int(Cho.MEDIA)
+
+
 def _skp(n: Nucleo, i: Instruccion) -> int:
-    f = Skp(i.flags)
+    f = i.flags  # entero: construir un IntFlag en cada muestra era lento
     condicion = (
-        (Skp.RUN in f and not n.primera)
-        or (Skp.ZRO in f and n.acc == 0)
-        or (Skp.GEZ in f and n.acc >= 0)
-        or (Skp.NEG in f and n.acc < 0)
+        (f & _RUN and not n.primera)
+        or (f & _ZRO and n.acc == 0)
+        or (f & _GEZ and n.acc >= 0)
+        or (f & _NEG and n.acc < 0)
     )
     return i.addr if condicion else 0
 
@@ -183,11 +189,10 @@ def _cho(n: Nucleo, i: Instruccion) -> int:
     lfo = n.lfos[i.reg]
     if lfo is None:  # el Programa lo impide; defensa en profundidad
         raise RuntimeError(f"CHO sobre LFO {i.reg} no declarado")
-    f = Cho(i.flags)
-    media = Cho.MEDIA in f
+    media = bool(i.flags & _MEDIA)
     depth = n.regs[LFO_BASE + 2 * i.reg + 1]
     v = n.memoria.leer_interpolado(i.addr, lfo.desplazamiento_q8(depth, media), n._tabla)
-    if Cho.NA in f:
+    if i.flags & _NA:
         v = (v * lfo.ventana(media)) >> DATO_FRAC
     n.lr = v
     n.acc = saturar_acc(n.acc + v * i.coef)

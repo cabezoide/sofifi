@@ -5,7 +5,7 @@ mediciones:
   - id: MED-01
     caracteristica: M-03
     nombre: Velocidad del modelo procesando el plate
-    valor: 2.2
+    valor: 1.16
     unidad: segundos de cómputo por segundo de audio
     umbral: 10
     direccion: menor_mejor
@@ -13,7 +13,7 @@ mediciones:
     caduca_en_dias: 97
     como: ".venv/bin/sofifi render programas/plate.sasm <entrada.wav> out/plate.wav (cronometrado), o model/tests/programas_test.py con --durations"
     entorno: "Intel i7-11390H, Linux 7.0, Python 3.14.4, intérprete puro sin numpy en el bucle"
-    no_dice: "Nada del hardware: la FPGA procesa en tiempo real por construcción (109 de 2048 ciclos). Solo mide si escuchar un algoritmo en el PC es ágil."
+    no_dice: "Nada del hardware: la FPGA procesa en tiempo real por construcción (1 195 de 2 048 ciclos). Solo mide si escuchar un algoritmo en el PC es ágil. Fase 01: 2,2 s; Fase 06: 1,16 s, con saturar y acc_a_dato especializadas (ADR 0008, actualización)."
   - id: MED-02
     caracteristica: M-05
     nombre: Duración de la suite de programas en la compuerta

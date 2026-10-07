@@ -10,6 +10,8 @@ from hypothesis import given
 from hypothesis import strategies as st
 from sofifi.domain.aritmetica import (
     ACC_BITS,
+    COEF_FRAC,
+    DATO_BITS,
     DATO_MAX,
     DATO_MIN,
     FS_EXACTA,
@@ -22,6 +24,7 @@ from sofifi.domain.aritmetica import (
     mac,
     redondear,
     saturar,
+    saturar_acc,
 )
 
 datos = st.integers(DATO_MIN, DATO_MAX)
@@ -52,6 +55,14 @@ def test_dato_satura_uno() -> None:
 @given(datos)
 def test_ida_y_vuelta_acc(x: int) -> None:
     assert acc_a_dato(dato_a_acc(x)) == x
+
+
+@given(st.integers(-(1 << 60), 1 << 60))
+def test_las_versiones_rapidas_son_la_definicion(acc: int) -> None:
+    """acc_a_dato y saturar_acc especializan saturar y redondear: mismo resultado."""
+    assert acc_a_dato(acc) == saturar(redondear(acc, COEF_FRAC), DATO_BITS)
+    assert saturar_acc(acc) == saturar(acc, ACC_BITS)
+    assert saturar(acc, 24) == max(-(1 << 23), min((1 << 23) - 1, acc))
 
 
 @given(st.integers(-(1 << 60), 1 << 60))

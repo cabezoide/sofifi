@@ -43,10 +43,16 @@ FS_WAV = 48828  # la cabecera WAV solo admite enteros
 
 
 def saturar(valor: int, bits: int) -> int:
-    """Recorta ``valor`` al rango con signo de ``bits`` bits."""
+    """Recorta ``valor`` al rango con signo de ``bits`` bits.
+
+    Con comparaciones y no con ``min``/``max``: el intérprete la llama millones
+    de veces y así tarda la mitad. El resultado es el mismo.
+    """
     maximo = (1 << (bits - 1)) - 1
-    minimo = -(1 << (bits - 1))
-    return max(minimo, min(maximo, valor))
+    if valor > maximo:
+        return maximo
+    minimo = -1 - maximo
+    return minimo if valor < minimo else valor
 
 
 def redondear(valor: int, desplazamiento: int) -> int:
@@ -56,9 +62,19 @@ def redondear(valor: int, desplazamiento: int) -> int:
     return (valor + (1 << (desplazamiento - 1))) >> desplazamiento
 
 
+_MEDIO_COEF = 1 << (COEF_FRAC - 1)
+ACC_MAX = (1 << (ACC_BITS - 1)) - 1
+ACC_MIN = -(1 << (ACC_BITS - 1))
+
+
 def acc_a_dato(acc: int) -> int:
-    """ACC (S8.39) → dato (S.23): redondea y satura. Lo que ve un ``WRAX``."""
-    return saturar(redondear(acc, COEF_FRAC), DATO_BITS)
+    """ACC (S8.39) → dato (S.23): redondea y satura. Lo que ve un ``WRAX``.
+
+    Es ``saturar(redondear(acc, COEF_FRAC), DATO_BITS)`` con las constantes ya
+    calculadas: el intérprete la llama en casi cada instrucción.
+    """
+    v = (acc + _MEDIO_COEF) >> COEF_FRAC
+    return DATO_MAX if v > DATO_MAX else (DATO_MIN if v < DATO_MIN else v)
 
 
 def dato_a_acc(dato: int) -> int:
@@ -67,7 +83,8 @@ def dato_a_acc(dato: int) -> int:
 
 
 def saturar_acc(acc: int) -> int:
-    return saturar(acc, ACC_BITS)
+    """``saturar(acc, ACC_BITS)`` con las constantes ya calculadas."""
+    return ACC_MAX if acc > ACC_MAX else (ACC_MIN if acc < ACC_MIN else acc)
 
 
 def mac(acc: int, dato: int, coef: int) -> int:
