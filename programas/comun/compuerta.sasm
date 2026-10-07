@@ -1,0 +1,29 @@
+; SPDX-License-Identifier: MIT
+;
+; comun/compuerta.sasm — detector de ataque y cuenta atrás, para las reverbs
+; no lineales (gated, reverb_inversa).
+;
+; Cada muestra:
+;   1. Envolvente rápida (~2 ms) y lenta (~40 ms) de |entrada|, como swell.sasm.
+;   2. En un ataque (rápida > 2·lenta + 0,01), `cuenta` vuelve a 1.
+;   3. Si no, `cuenta` baja `kpaso` por muestra (y pasa de 0 a negativo).
+; Necesita los registros envr, envl, cuenta y kpaso. Deja `cuenta` en ACC.
+
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        absa
+        rdfx  envr, 0.01
+        wrax  envr, 1.0
+        rdfx  envl, 0.0005
+        wrax  envl, 0
+        rdax  envr, 1.0
+        rdax  envl, -2.0
+        sof   1.0, -0.01
+        skp   neg, bajar_cuenta
+        sof   0, 0.99997                ; ataque: cuenta = 1
+        wrax  cuenta, 0
+bajar_cuenta:
+        clr
+        rdax  cuenta, 1.0
+        rdax  kpaso, -1.0
+        wrax  cuenta, 1.0

@@ -3,7 +3,7 @@
 
 # Programas del núcleo
 
-19 programas. Cada uno es un fichero de texto en `programas/`.
+25 programas. Cada uno es un fichero de texto en `programas/`.
 Los ciclos son la cota del RTL, de 2 048 por muestra
 (`model/sofifi/domain/coste.py`). La memoria es de 43 008 palabras.
 
@@ -11,12 +11,18 @@ Los ciclos son la cota del RTL, de 2 048 por muestra
 
 | Programa | Qué hace | Mandos | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|
+| `blackhole` | Sala gigante con un decay de decenas de segundos. | 0: decay<br>1: damping<br>2: mezcla | 140 | 1 615 | 40 882 |
+| `bloom` | La reverb crece despacio después de cada nota, como una flor que se abre. | 0: decay<br>1: damping<br>2: mezcla<br>3: apertura | 84 | 979 | 23 520 |
 | `cloud` | Difusores largos con modulación aleatoria: el ataque se disuelve. | 0: decay<br>1: damping<br>2: mezcla<br>3: modulación | 96 | 1 385 | 42 814 |
 | `freeze` | Plate que congela la cola con el pulsador. | 0: decay<br>1: damping<br>2: mezcla | 103 | 1 378 | 37 439 |
+| `gated` | Reverb que se corta de golpe tras cada ataque, como en los años 80. | 0: decay<br>1: damping<br>2: mezcla<br>3: duración | 133 | 1 657 | 37 439 |
 | `hall` | Red de 8 retardos con matriz de Householder: sala grande. | 0: decay<br>1: damping<br>2: mezcla | 137 | 1 585 | 34 522 |
+| `infinite` | Plate que no decae: cada nota se suma a una capa que no se apaga. | 0: vaciado<br>1: damping<br>2: mezcla | 95 | 1 300 | 37 439 |
 | `plate` | Plate de Dattorro con el tanque modulado. | 0: decay<br>1: damping<br>2: mezcla | 86 | 1 202 | 37 439 |
+| `reverb_inversa` | Reverb al revés: tras cada ataque, la cola crece y se corta de golpe. | 0: decay<br>1: damping<br>2: mezcla<br>3: duración | 133 | 1 657 | 37 439 |
 | `shimmer` | Plate con un +12 en la realimentación: cada vuelta sube una octava. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 108 | 1 553 | 41 539 |
 | `shimmer_quinta` | Shimmer de quinta: cada vuelta sube 7 semitonos, como un acorde que se abre. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 108 | 1 553 | 41 539 |
+| `spring` | Reverb de muelle: el sonido gotea, con los agudos antes que los graves. | 0: decay<br>1: damping<br>2: mezcla | 95 | 1 273 | 1 850 |
 
 ## Delay
 

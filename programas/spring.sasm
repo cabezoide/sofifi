@@ -1,0 +1,146 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: reverb
+; resumen: Reverb de muelle: el sonido gotea, con los agudos antes que los graves.
+;
+; spring.sasm — Modelo de un muelle: una cadena de 30 allpass muy cortos (2
+; muestras, coeficiente 0,6) dispersa la señal. En cada sección, los graves se
+; retrasan 8 muestras y los agudos cerca de 12 kHz, solo media: el impulso se
+; vuelve un «chirp» que baja. La cadena está dentro de un bucle de 35 ms con
+; paso bajo, como las vueltas de la onda en el muelle. Idea de los modelos de
+; muelle por allpass de dispersión (docs/investigacion/INVESTIGACION.md §4.3).
+; Diseño propio.
+;
+; pot0 = decay    (0 → 0,25 · 1 → 0,95)
+; pot1 = damping  (0 → brillante · 1 → oscuro)
+; pot2 = mezcla   (0 → seco · 1 → solo muelle)
+
+equ  kd    0.6                ; dispersión de cada sección
+
+equ  kdecay   reg0
+equ  kdamp    reg1
+equ  kwet     reg2
+equ  kdry     reg3
+equ  fb       reg4
+equ  lp       reg5
+equ  muelle   reg6
+equ  bw       reg7
+
+mem  pre   49                 ; 1 ms
+mem  vuelta  1709             ; 35 ms
+mem  s1    2
+mem  s2    2
+mem  s3    2
+mem  s4    2
+mem  s5    2
+mem  s6    2
+mem  s7    2
+mem  s8    2
+mem  s9    2
+mem  s10    2
+mem  s11    2
+mem  s12    2
+mem  s13    2
+mem  s14    2
+mem  s15    2
+mem  s16    2
+mem  s17    2
+mem  s18    2
+mem  s19    2
+mem  s20    2
+mem  s21    2
+mem  s22    2
+mem  s23    2
+mem  s24    2
+mem  s25    2
+mem  s26    2
+mem  s27    2
+mem  s28    2
+mem  s29    2
+mem  s30    2
+
+include  comun/controles.sasm
+include  comun/entrada.sasm
+        rdfx  bw, 0.25                  ; paso bajo de entrada: el muelle no pasa de ~5 kHz
+        wrax  bw, 1.0
+        rdax  fb, 1.0
+; ── dispersión: 30 allpass de 2 muestras ─────────────────────────────
+        rda   s1#, kd
+        wrap  s1, -kd
+        rda   s2#, kd
+        wrap  s2, -kd
+        rda   s3#, kd
+        wrap  s3, -kd
+        rda   s4#, kd
+        wrap  s4, -kd
+        rda   s5#, kd
+        wrap  s5, -kd
+        rda   s6#, kd
+        wrap  s6, -kd
+        rda   s7#, kd
+        wrap  s7, -kd
+        rda   s8#, kd
+        wrap  s8, -kd
+        rda   s9#, kd
+        wrap  s9, -kd
+        rda   s10#, kd
+        wrap  s10, -kd
+        rda   s11#, kd
+        wrap  s11, -kd
+        rda   s12#, kd
+        wrap  s12, -kd
+        rda   s13#, kd
+        wrap  s13, -kd
+        rda   s14#, kd
+        wrap  s14, -kd
+        rda   s15#, kd
+        wrap  s15, -kd
+        rda   s16#, kd
+        wrap  s16, -kd
+        rda   s17#, kd
+        wrap  s17, -kd
+        rda   s18#, kd
+        wrap  s18, -kd
+        rda   s19#, kd
+        wrap  s19, -kd
+        rda   s20#, kd
+        wrap  s20, -kd
+        rda   s21#, kd
+        wrap  s21, -kd
+        rda   s22#, kd
+        wrap  s22, -kd
+        rda   s23#, kd
+        wrap  s23, -kd
+        rda   s24#, kd
+        wrap  s24, -kd
+        rda   s25#, kd
+        wrap  s25, -kd
+        rda   s26#, kd
+        wrap  s26, -kd
+        rda   s27#, kd
+        wrap  s27, -kd
+        rda   s28#, kd
+        wrap  s28, -kd
+        rda   s29#, kd
+        wrap  s29, -kd
+        rda   s30#, kd
+        wrap  s30, -kd
+        wrax  muelle, 1.0
+        wra   vuelta, 0
+; ── bucle: la onda vuelve, más oscura y más baja ─────────────────────
+        rda   vuelta#, 1.0
+        rdax  lp, -1.0
+        mulx  kdamp
+        rdax  lp, 1.0
+        wrax  lp, 1.0
+        mulx  kdecay
+        wrax  fb, 0
+; ── salida ───────────────────────────────────────────────────────────
+        rdax  adcl, 1.0                 ; la mezcla ya escaló la entrada (comun/entrada.sasm)
+        mulx  kdry
+        rdax  muelle, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  muelle, 1.0
+        wrax  dacr, 0

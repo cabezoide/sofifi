@@ -216,11 +216,17 @@ HUELLAS = {
     "escalera": "63c082164fefbd79",
     "octava": "9db69730833af9a6",
     "shimmer_quinta": "2ffc6c5bd7ddb4bf",
+    "blackhole": "910ad8eed7ac34cd",
+    "bloom": "0ce2ef3235e80bc3",
+    "gated": "ac97c811894386d9",
+    "infinite": "cab794fe727bc8ec",
+    "reverb_inversa": "f6a907eefc2b7311",
+    "spring": "c20eeffbf37f0c0f",
 }
 
 
-SEGUNDOS_HUELLA = {"cinta": 0.6, "reverse": 0.4, "escalera": 0.6}
-CON_TONO = {"lofi", "swell", "tremolo"}
+SEGUNDOS_HUELLA = {"cinta": 0.6, "reverse": 0.4, "escalera": 0.6, "blackhole": 0.3}
+CON_TONO = {"lofi", "swell", "tremolo", "gated", "reverb_inversa"}
 
 
 def test_todo_programa_tiene_huella() -> None:

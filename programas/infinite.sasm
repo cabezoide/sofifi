@@ -1,0 +1,38 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: reverb
+; resumen: Plate que no decae: cada nota se suma a una capa que no se apaga.
+;
+; infinite.sasm — El plate con el tanque de CLIP (comun/dattorro_tanque_clip.sasm)
+; y decay ≈ 1, con la entrada abierta. Freeze corta la entrada; infinite la
+; deja pasar: lo que se toca se acumula. CLIP impide que el bucle crezca sin
+; control. pot0 baja el sustain de 1 a 0,9 para que la capa se pueda vaciar.
+; Idea del modo «infinite» (docs/investigacion/INVESTIGACION.md §4.3).
+;
+; pot0 = vaciado  (0 → sustain infinito · 1 → decay 0,9)
+; pot1 = damping  (0 → brillante · 1 → oscuro)
+; pot2 = mezcla   (0 → seco · 1 → solo reverb)
+
+include  comun/dattorro_decl.sasm
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+include  comun/dattorro_lfo.sasm
+inicio:
+include  comun/controles.sasm
+        rdax  pot0, -0.1                ; kdecay de 0,99999 a 0,9
+        sof   1.0, 0.99997
+        wrax  kdecay, 0
+; La modulación baja a 0 con el sustain infinito: la interpolación apagaría
+; la cola poco a poco (ver freeze.sasm). Profundidad = pot0.
+        rdax  pot0, 1.0
+        wrax  lfo0_depth, 1.0
+        wrax  lfo1_depth, 0
+        rdax  kwet, 0.5                 ; la capa se acumula: entra a la mitad
+        wrax  kwet, 0
+include  comun/entrada.sasm
+        rdfx  bw, kbw
+        wrax  bw, 1.0
+include  comun/dattorro_difusion.sasm
+include  comun/dattorro_tanque_clip.sasm
+include  comun/dattorro_salida.sasm

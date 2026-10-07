@@ -28,5 +28,11 @@
 | `demo_doblador.ogg` | `doblador.sasm` | 0,50 (±12 cents) | | 0,50 | | |
 | `demo_escalera.ogg` | `escalera.sasm` | 0,95 (+12) | 0,60 (realimentación/feedback) | 0,45 | 0,40 (tiempo/time) | |
 | `demo_shimmer_quinta.ogg` | `shimmer_quinta.sasm` | 0,75 | 0,25 | 0,55 | 0,60 | |
+| `demo_blackhole.ogg` | `blackhole.sasm` | 0,85 | 0,35 | 0,50 | | |
+| `demo_bloom.ogg` | `bloom.sasm` | 0,80 | 0,30 | 0,55 | 0,40 (apertura/bloom) | |
+| `demo_gated.ogg` | `gated.sasm` | 0,80 | 0,20 | 0,50 | 0,50 (duración/length) | |
+| `demo_infinite.ogg` | `infinite.sasm` | 0,10 (vaciado/release) | 0,30 | 0,45 | | |
+| `demo_reverb_inversa.ogg` | `reverb_inversa.sasm` | 0,80 | 0,30 | 0,55 | 0,60 (duración/length) | |
+| `demo_spring.ogg` | `spring.sasm` | 0,60 | 0,40 | 0,40 | | |
 
 Ogg Vorbis a 48 828 Hz (ADR 0005); el render es bit-exact en 24 bit. Ogg Vorbis at 48,828 Hz; the render is bit-exact at 24 bits. Ogg Vorbis，48,828 Hz；渲染在 24 位下逐位精确。

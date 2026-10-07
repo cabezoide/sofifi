@@ -1,0 +1,54 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: reverb
+; resumen: Reverb al revés: tras cada ataque, la cola crece y se corta de golpe.
+;
+; reverb_inversa.sasm — Plate con una ganancia que crece en la salida. Cada ataque
+; reinicia la cuenta (comun/compuerta.sasm): la ganancia sube de 0 a 1 en el
+; tiempo de pot3 y después cae a 0. La cola suena al revés. Idea del «reverse»
+; de las reverbs no lineales (docs/investigacion/INVESTIGACION.md §4.3). Diseño propio.
+;
+; pot0 = decay · pot1 = damping · pot2 = mezcla (como plate.sasm)
+; pot3 = duración  (0 → 50 ms · 0,5 → 150 ms · 1 → 500 ms)
+
+include  comun/dattorro_decl.sasm
+
+equ  envr     reg9
+equ  envl     reg10
+equ  cuenta   reg11
+equ  tmin     0.05             ; duración con pot3 = 0 (s)
+equ  tmax     0.5             ; duración con pot3 = 1 (s)
+equ  kpaso    reg12
+equ  gan      reg13
+equ  kdrys    reg14
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+include  comun/dattorro_lfo.sasm
+        sof   0, 0.99
+        wrax  lfo0_depth, 1.0
+        wrax  lfo1_depth, 0
+inicio:
+include  comun/controles.sasm
+include  comun/duracion.sasm
+; ── ganancia: 1 − cuenta mientras cuenta > 0; después, 0 ─────────────
+include  comun/compuerta.sasm
+        skp   neg, cerrada
+        sof   -1.0, 0.99997             ; 1 − cuenta
+        skp   gez, ganancia
+cerrada:
+        clr
+ganancia:
+        rdfx  gan, 0.05                 ; sin clics: unos 0,4 ms de rampa
+        wrax  gan, 0
+; ── plate: la salida sale sin señal seca y después se multiplica ─────
+        rdax  kdry, 1.0
+        wrax  kdrys, 0
+        wrax  kdry, 0
+include  comun/entrada.sasm
+        rdfx  bw, kbw
+        wrax  bw, 1.0
+include  comun/dattorro_difusion.sasm
+include  comun/dattorro_tanque.sasm
+include  comun/dattorro_salida.sasm
+include  comun/salida_con_ganancia.sasm

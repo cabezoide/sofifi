@@ -1,0 +1,40 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: reverb
+; resumen: Sala gigante con un decay de decenas de segundos.
+;
+; blackhole.sasm — La red de 8 retardos del hall (comun/fdn8_*.sasm) con líneas
+; un 20 % más largas (de 66 a 124 ms), más difusión y más modulación, y un decay
+; que llega a 0,995. Idea de los modos «blackhole» de los pedales comerciales
+; (docs/investigacion/INVESTIGACION.md §4.3). Diseño propio.
+;
+; pot0 = decay    (kdecay 0,6 → 0,995)
+; pot1 = damping  (0 → brillante · 1 → oscuro)
+; pot2 = mezcla   (0 → seco · 1 → solo reverb)
+
+equ  ex    20                 ; más modulación que el hall
+equ  kap   0.7
+equ  kin   0.6
+equ  ksal  0.6
+equ  lpre  977                ; predelay de 20 ms
+equ  la1   293
+equ  la2   439
+equ  la3   727
+equ  la4   1009
+equ  l0    3229               ; líneas de 66 a 124 ms, primas
+equ  l1    3709
+equ  l2    4099
+equ  l3    4493
+equ  l4    4861
+equ  l5    5237
+equ  l6    5683
+equ  l7    6067
+equ  f0    0.23
+equ  f1    0.31
+
+include  comun/fdn8_decl.sasm
+include  comun/controles.sasm
+        rdax  pot0, 0.395               ; kdecay de 0,6 a 0,995
+        sof   1.0, 0.6
+        wrax  kdecay, 0
+include  comun/fdn8_cuerpo.sasm

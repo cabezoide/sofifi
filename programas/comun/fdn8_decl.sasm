@@ -1,0 +1,55 @@
+; SPDX-License-Identifier: MIT
+;
+; comun/fdn8_decl.sasm — registros, memoria, LFOs e inicialización de la red de
+; 8 retardos (FDN) de hall.sasm. Quien lo incluye define antes con `equ`:
+;   ex, kap, kin, ksal       modulación, difusión y ganancias (ver hall.sasm)
+;   lpre, la1..la4           predelay y allpass de entrada, en muestras
+;   l0..l7                   las 8 líneas; l0 y l4 van moduladas
+;   f0, f1                   frecuencias de los dos LFO, en Hz
+; Termina en la etiqueta `inicio:`, tras la inicialización.
+
+equ  kdecay   reg0
+equ  kdamp    reg1
+equ  kwet     reg2
+equ  kdry     reg3
+equ  tmp      reg4
+equ  entrada  reg5
+equ  suma     reg6
+equ  x0       reg8
+equ  x1       reg9
+equ  x2       reg10
+equ  x3       reg11
+equ  x4       reg12
+equ  x5       reg13
+equ  x6       reg14
+equ  x7       reg15
+
+mem  pre   lpre
+mem  ai1   la1
+mem  ai2   la2
+mem  ai3   la3
+mem  ai4   la4
+mem  d0    l0 + ex + 3        ; modulada: lee de l0 − ex a l0 + ex
+mem  d1    l1
+mem  d2    l2
+mem  d3    l3
+mem  d4    l4 + ex + 3        ; modulada
+mem  d5    l5
+mem  d6    l6
+mem  d7    l7
+
+lfo  0  sin  ex
+lfo  1  sin  ex
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 1/512                  ; tmp = 2^-9 para fijar frecuencias finas
+        wrax  tmp, 0
+        rdax  tmp, 1024*f0/48828.125    ; LFO0 a f0 Hz (rate = 2f/fs)
+        wrax  lfo0_rate, 0
+        rdax  tmp, 1024*f1/48828.125    ; LFO1 a f1 Hz
+        wrax  lfo1_rate, 0
+        sof   0, 0.99
+        wrax  lfo0_depth, 1.0
+        wrax  lfo1_depth, 0
+inicio:
