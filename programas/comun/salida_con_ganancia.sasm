@@ -1,0 +1,20 @@
+; SPDX-License-Identifier: MIT
+;
+; comun/salida_con_ganancia.sasm — multiplica la reverb de dacl y dacr por
+; `gan` y le suma la señal seca escalada por `kdrys`. Va detrás de
+; comun/dattorro_salida.sasm, que se ejecutó con kdry = 0.
+
+        rdax  dacl, 1.0
+        mulx  gan
+        wrax  dacl, 0
+        rdax  adcl, 1.0
+        mulx  kdrys
+        rdax  dacl, 1.0
+        wrax  dacl, 0
+        rdax  dacr, 1.0
+        mulx  gan
+        wrax  dacr, 0
+        rdax  adcr, 1.0
+        mulx  kdrys
+        rdax  dacr, 1.0
+        wrax  dacr, 0

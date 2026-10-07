@@ -1,0 +1,97 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: reverb
+; resumen: La reverb crece despacio después de cada nota, como una flor que se abre.
+;
+; bloom.sasm — Seis allpass largos (de 41 a 113 ms) en cascada, con la salida de
+; la cadena de vuelta a su entrada (decay y damping). En cada ataque
+; (comun/compuerta.sasm), la reverb vuelve a 0 y sube en el tiempo de pot3; la
+; señal seca no cambia. La nota suena limpia y la cola se abre después. Idea
+; del modo «bloom» con envolvente (docs/investigacion/INVESTIGACION.md §4.3).
+; Diseño propio.
+;
+; pot0 = decay    (0 → 0,25 · 1 → 0,95)
+; pot1 = damping  (0 → brillante · 1 → oscuro)
+; pot2 = mezcla   (0 → seco · 1 → solo reverb)
+; pot3 = apertura (0 → 0,2 s · 0,5 → 0,6 s · 1 → 2 s)
+
+equ  kb    0.6                ; difusión de la cadena
+equ  ksal  0.5
+
+equ  kdecay   reg0
+equ  kdamp    reg1
+equ  kwet     reg2
+equ  kdry     reg3
+equ  fb       reg4
+equ  lp       reg5
+equ  cola     reg6
+equ  envr     reg7
+equ  envl     reg8
+equ  cuenta   reg9
+equ  tmin     0.2             ; duración con pot3 = 0 (s)
+equ  tmax     2             ; duración con pot3 = 1 (s)
+equ  kpaso    reg10
+equ  gan      reg11
+equ  wet      reg12
+
+mem  pre   977                ; predelay de 20 ms
+mem  b1    1999
+mem  b2    2711
+mem  b3    3407
+mem  b4    4111
+mem  b5    4801
+mem  b6    5507
+
+include  comun/controles.sasm
+include  comun/duracion.sasm
+; ── apertura: gan = 1 − cuenta mientras cuenta > 0; después, 1 ───────
+include  comun/compuerta.sasm
+        skp   neg, abierta
+        sof   -1.0, 0.99997
+        skp   gez, fija_gan
+abierta:
+        sof   0, 0.99997
+fija_gan:
+        wrax  gan, 0
+include  comun/entrada.sasm
+        rdax  fb, 1.0                   ; la cadena se realimenta
+        rda   b1#, kb
+        wrap  b1, -kb
+        rda   b2#, kb
+        wrap  b2, -kb
+        rda   b3#, kb
+        wrap  b3, -kb
+        rda   b4#, kb
+        wrap  b4, -kb
+        rda   b5#, kb
+        wrap  b5, -kb
+        rda   b6#, kb
+        wrap  b6, -kb
+        wrax  cola, 1.0
+        rdax  lp, -1.0                  ; damping: lp = lp + kdamp·(cola − lp)
+        mulx  kdamp
+        rdax  lp, 1.0
+        wrax  lp, 1.0
+        mulx  kdecay
+        wrax  fb, 0
+; ── salida: taps de dentro de la cadena, por la ganancia de apertura ──
+        rda   b3 + 1201, ksal
+        rda   b5 + 2203, ksal
+        rda   b6 + 4001, -ksal
+        rdax  cola, ksal
+        mulx  gan
+        wrax  wet, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  wet, 1.0
+        wrax  dacl, 0
+        rda   b2 + 1607, ksal
+        rda   b4 + 3001, ksal
+        rda   b6 + 2909, -ksal
+        rdax  cola, -ksal
+        mulx  gan
+        wrax  wet, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  wet, 1.0
+        wrax  dacr, 0

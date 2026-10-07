@@ -1,0 +1,16 @@
+; SPDX-License-Identifier: MIT
+;
+; comun/duracion.sasm — kpaso para la cuenta atrás de comun/compuerta.sasm, desde
+; pot3. La cuenta tarda 1/(kpaso·fs) segundos en llegar a 0. Una recta en kpaso
+; dejaría casi todo el mando en tiempos cortos; con (1 − pot3)² el recorrido es
+; más parejo:
+;   kpaso = kmin + (kmax − kmin)·(1 − pot3)²,  kmax = 1/(tmin·fs), kmin = 1/(tmax·fs)
+; Quien lo incluye define antes `equ tmin` y `equ tmax` (segundos). Deja ACC = 0.
+
+        rdax  pot3, 1.0
+        sof   -1.0, 0.99997             ; d = 1 − pot3
+        wrax  kpaso, 1.0
+        mulx  kpaso                     ; d²
+        sof   64*(1/(tmin*48828.125) - 1/(tmax*48828.125)), 64/(tmax*48828.125)
+        sof   1/64, 0                   ; ×64 y ÷64: kmin cabe con precisión en D (S2.15)
+        wrax  kpaso, 0

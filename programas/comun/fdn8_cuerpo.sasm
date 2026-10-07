@@ -1,0 +1,125 @@
+; SPDX-License-Identifier: MIT
+;
+; comun/fdn8_cuerpo.sasm — una muestra de la red de 8 retardos de hall.sasm:
+; entrada y difusión, damping, matriz de Householder, decay y salida estéreo.
+; Necesita comun/fdn8_decl.sasm y los registros kdecay, kdamp, kwet y kdry ya
+; calculados.
+
+; ── entrada y difusión ───────────────────────────────────────────────
+include  comun/entrada.sasm
+        rda   ai1#, kap
+        wrap  ai1, -kap
+        rda   ai2#, kap
+        wrap  ai2, -kap
+        rda   ai3#, kap
+        wrap  ai3, -kap
+        rda   ai4#, kap
+        wrap  ai4, -kap
+        wrax  entrada, 0
+; ── 1. final de cada línea con damping: x = x + kdamp·(final − x) ────
+        cho   d0 + l0 - ex, 1.0, lfo0
+        rdax  x0, -1.0
+        mulx  kdamp
+        rdax  x0, 1.0
+        wrax  x0, 0
+        rda   d1#, 1.0
+        rdax  x1, -1.0
+        mulx  kdamp
+        rdax  x1, 1.0
+        wrax  x1, 0
+        rda   d2#, 1.0
+        rdax  x2, -1.0
+        mulx  kdamp
+        rdax  x2, 1.0
+        wrax  x2, 0
+        rda   d3#, 1.0
+        rdax  x3, -1.0
+        mulx  kdamp
+        rdax  x3, 1.0
+        wrax  x3, 0
+        cho   d4 + l4 - ex, 1.0, lfo1
+        rdax  x4, -1.0
+        mulx  kdamp
+        rdax  x4, 1.0
+        wrax  x4, 0
+        rda   d5#, 1.0
+        rdax  x5, -1.0
+        mulx  kdamp
+        rdax  x5, 1.0
+        wrax  x5, 0
+        rda   d6#, 1.0
+        rdax  x6, -1.0
+        mulx  kdamp
+        rdax  x6, 1.0
+        wrax  x6, 0
+        rda   d7#, 1.0
+        rdax  x7, -1.0
+        mulx  kdamp
+        rdax  x7, 1.0
+        wrax  x7, 0
+; ── 2. Householder: suma = −(2/8)·Σx ─────────────────────────────────
+        rdax  x0, -0.25
+        rdax  x1, -0.25
+        rdax  x2, -0.25
+        rdax  x3, -0.25
+        rdax  x4, -0.25
+        rdax  x5, -0.25
+        rdax  x6, -0.25
+        rdax  x7, -0.25
+        wrax  suma, 0
+; ── 3. inicio de cada línea: kdecay·(x + suma) ± entrada ─────────────
+        rdax  suma, 1.0
+        rdax  x0, 1.0
+        mulx  kdecay
+        rdax  entrada, kin
+        wra   d0, 0
+        rdax  suma, 1.0
+        rdax  x1, 1.0
+        mulx  kdecay
+        rdax  entrada, -kin
+        wra   d1, 0
+        rdax  suma, 1.0
+        rdax  x2, 1.0
+        mulx  kdecay
+        rdax  entrada, kin
+        wra   d2, 0
+        rdax  suma, 1.0
+        rdax  x3, 1.0
+        mulx  kdecay
+        rdax  entrada, -kin
+        wra   d3, 0
+        rdax  suma, 1.0
+        rdax  x4, 1.0
+        mulx  kdecay
+        rdax  entrada, kin
+        wra   d4, 0
+        rdax  suma, 1.0
+        rdax  x5, 1.0
+        mulx  kdecay
+        rdax  entrada, -kin
+        wra   d5, 0
+        rdax  suma, 1.0
+        rdax  x6, 1.0
+        mulx  kdecay
+        rdax  entrada, kin
+        wra   d6, 0
+        rdax  suma, 1.0
+        rdax  x7, 1.0
+        mulx  kdecay
+        rdax  entrada, -kin
+        wra   d7, 0
+; ── salida: cuatro líneas por lado, con signos alternos ──────────────
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  x0, ksal
+        rdax  x2, -ksal
+        rdax  x4, ksal
+        rdax  x6, -ksal
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  x1, ksal
+        rdax  x3, -ksal
+        rdax  x5, ksal
+        rdax  x7, -ksal
+        wrax  dacr, 0
