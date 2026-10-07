@@ -2,7 +2,7 @@
 
 Vacío en la versión 0.0. Aquí irán los testbenches cocotb (Python) sobre Verilator
 o Icarus. Cada uno alimenta el RTL con un estímulo y compara **muestra a muestra**
-contra el modelo de `model/ambient/` (ADR 0003).
+contra el modelo de `model/sofifi/` (ADR 0003).
 
 ## Reglas
 

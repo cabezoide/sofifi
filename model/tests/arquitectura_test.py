@@ -14,10 +14,10 @@ from pathlib import Path
 
 import pytest
 
-PAQUETE = Path(__file__).resolve().parent.parent / "ambient"
-RAIZ = "ambient"
+PAQUETE = Path(__file__).resolve().parent.parent / "sofifi"
+RAIZ = "sofifi"
 
-# Capa → capas de ambient que NO puede importar.
+# Capa → capas de sofifi que NO puede importar.
 PROHIBIDO: dict[str, set[str]] = {
     "domain": {"ports", "adapters", "services", "cli"},
     "ports": {"adapters", "services", "cli"},
@@ -143,13 +143,13 @@ def test_existen_todas_las_capas_y_se_importan() -> None:
 
 def test_el_detector_ve_imports_absolutos_relativos_y_de_io(tmp_path: Path) -> None:
     """El contrato no puede ser un verde que miente: debe ver una violación sembrada."""
-    malo = tmp_path / "ambient" / "domain" / "malo.py"
+    malo = tmp_path / "sofifi" / "domain" / "malo.py"
     malo.parent.mkdir(parents=True)
     malo.write_text(
-        "import os\nfrom ambient.adapters import wav\nfrom ..services import render\n",
+        "import os\nfrom sofifi.adapters import wav\nfrom ..services import render\n",
         encoding="utf-8",
     )
-    cabecera = _imports_cabecera(malo, "ambient.domain.malo")
-    assert "ambient.adapters" in cabecera
-    assert "ambient.services" in cabecera
+    cabecera = _imports_cabecera(malo, "sofifi.domain.malo")
+    assert "sofifi.adapters" in cabecera
+    assert "sofifi.services" in cabecera
     assert "os" in _todos_los_imports(malo)

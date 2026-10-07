@@ -1,9 +1,11 @@
-<!-- i18n: fuente=README.md sha=9872a825da1b estado=al_dia -->
-# ambient_guitar_pedal_fpga
+<!-- i18n: fuente=README.md sha=31ed346ae1e3 estado=al_dia -->
+# SOFIFI — 集成 FPGA 上的沉浸式波形与滤波合成器
+
+*英文名：Soundscapes On FPGA: Integrated Filters & Impulses；西班牙文名：Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada。*
 
 **语言：** [Español](README.md)（源文本） · [English](README.en.md) · 简体中文
 
-一款氛围（ambient）吉他效果器（混响、shimmer、磁带延迟、冻结、颗粒合成），
+SOFIFI 是一款氛围（ambient）吉他效果器（混响、shimmer、磁带延迟、冻结、颗粒合成），
 基于 **Sipeed Tang Primer 25K** FPGA（高云 GW5A-LV25）实现。
 
 **版本：** `0.0`（版本号即最后一个已关闭的阶段；见 `docs/fases/estado_fases.csv`）。

@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MIT
 [project]
-name = "ambient-model"
+name = "sofifi-model"
 version = "0.0.0"
-description = "Modelo de referencia bit-exact del pedal ambient FPGA (golden model del RTL)"
+description = "Modelo de referencia bit-exact de SOFIFI (golden model del RTL)"
 license = "MIT"
 requires-python = ">=3.12"
 dependencies = ["numpy>=2.0"]
@@ -16,14 +16,14 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["model"]
-include = ["ambient*"]
+include = ["sofifi*"]
 
 [tool.pytest.ini_options]
 # Recolección acotada: un solo directorio y sufijo propio (SPEC_RAIZ §4.1).
 testpaths = ["model/tests"]
 python_files = ["*_test.py"]
 pythonpath = ["model"]
-addopts = "-q --cov=ambient --cov-report=term --cov-report=json:.coverage.json"
+addopts = "-q --cov=sofifi --cov-report=term --cov-report=json:.coverage.json"
 
 [tool.coverage.run]
 data_file = ".coverage"
@@ -36,7 +36,7 @@ target-version = "py312"
 select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
 
 [tool.mypy]
-files = ["model/ambient", "model/tests", "scripts"]
+files = ["model/sofifi", "model/tests", "scripts"]
 mypy_path = "model"
 strict = true
 explicit_package_bases = true

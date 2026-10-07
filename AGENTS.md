@@ -5,7 +5,7 @@ comprueba que toda ruta, objetivo de `make` y ADR citados aquí existen.
 
 ## Qué es esto
 
-Un pedal de guitarra ambient sobre una FPGA Sipeed Tang Primer 25K. El DSP corre
+SOFIFI es un pedal de guitarra ambient sobre una FPGA Sipeed Tang Primer 25K. El DSP corre
 en un núcleo microcodificado tipo FV-1 (ADR 0006). Un modelo Python bit-exact es
 el oráculo del RTL (ADR 0003). Todo el audio vive en BSRAM, porque no hay SDRAM
 (ADR 0004). Se trabaja a fs = 48 828 Hz (ADR 0005).
@@ -25,7 +25,7 @@ el oráculo del RTL (ADR 0003). Todo el audio vive en BSRAM, porque no hay SDRAM
 | `docs/fases/` | spec por fase + control `docs/fases/estado_fases.csv` |
 | `docs/terceros.yaml` | origen y licencia de todo código ajeno estudiado o portado |
 | `docs/EXTENDING.md` | cómo añadir un efecto, un módulo RTL o una compuerta |
-| `model/ambient/` | modelo de referencia, por capas (ver `model/AGENTS.md`) |
+| `model/sofifi/` | modelo de referencia, por capas (ver `model/AGENTS.md`) |
 | `rtl/` | Verilog sintetizable (ver `rtl/AGENTS.md`) |
 | `sim/` | testbenches cocotb que comparan RTL con modelo (ver `sim/AGENTS.md`) |
 | `scripts/ci_local.sh` | LA compuerta; el hook `scripts/hooks/pre-push` delega en ella |

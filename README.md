@@ -1,8 +1,10 @@
-# ambient_guitar_pedal_fpga
+# SOFIFI — Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada
+
+*En inglés: Soundscapes On FPGA: Integrated Filters & Impulses.*
 
 **Idiomas:** Español (fuente) · [English](README.en.md) · [简体中文](README.zh-CN.md)
 
-Pedal de guitarra ambient (reverbs, shimmer, delays de cinta, freeze, granular)
+SOFIFI es un pedal de guitarra ambient (reverbs, shimmer, delays de cinta, freeze, granular)
 implementado en una FPGA **Sipeed Tang Primer 25K** (Gowin GW5A-LV25).
 
 **Versión:** `0.0` (la versión es la última fase cerrada; ver `docs/fases/estado_fases.csv`).

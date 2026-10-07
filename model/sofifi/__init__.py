@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-"""Modelo de referencia bit-exact del pedal ambient (ADR 0003).
+"""Modelo de referencia bit-exact de SOFIFI (ADR 0003).
 
 Capas (las dependencias apuntan hacia adentro; lo comprueba
 ``model/tests/arquitectura_test.py``):

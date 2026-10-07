@@ -29,3 +29,7 @@ El modelo sigue arquitectura hexagonal: dominio, puertos, adaptadores, servicios
 
 - **Float con tolerancia:** no detecta los errores de redondeo realimentados.
 - **A oído:** no es reproducible y no sirve como compuerta.
+
+## Actualización 2026-10-07 (nombre del proyecto)
+
+El proyecto pasa a llamarse **SOFIFI** y el paquete del modelo se renombra de `ambient` a `sofifi` (`model/sofifi/`). La decisión no cambia; solo el nombre. Se hizo con el paquete aún vacío para que el cambio fuera barato.

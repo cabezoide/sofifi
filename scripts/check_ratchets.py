@@ -50,7 +50,7 @@ def cobertura_modelo() -> float:
 
 
 def lineas_max_modelo() -> float:
-    return _max_lineas("model/ambient/*.py")
+    return _max_lineas("model/sofifi/*.py")
 
 
 def lineas_max_rtl() -> float:

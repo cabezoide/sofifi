@@ -17,7 +17,7 @@ ADR 0003 (el modelo es el oráculo), ADR 0004 (presupuesto de BSRAM), ADR 0005 (
 ## Diagnóstico
 
 - **Se reutiliza:**
-  - las capas vacías de `model/ambient/` y sus contratos;
+  - las capas vacías de `model/sofifi/` y sus contratos;
   - las referencias de `docs/terceros.yaml` (T-003 Dattorro, T-004 FV-1, T-005 asfv1).
 - **Falta:**
   - tipos de punto fijo;
@@ -43,7 +43,7 @@ Un modelo en coma flotante no sirve de oráculo. En una reverb, el error de un L
 2. **`ports`:** `FuenteAudio`, `SumideroAudio` y `FuenteParametros`.
 3. **`adapters`:** WAV de 24 bit y volcado hex del microcódigo para el RTL.
 4. **`services`:** procesar un fichero con un programa.
-5. **`cli`:** `ambient render --programa plate.asm entrada.wav salida.wav`.
+5. **`cli`:** `sofifi render --programa plate.asm entrada.wav salida.wav`.
 6. **Ensamblador** con sintaxis compatible con `.spn` donde sea posible.
 
 ## Plan de PRs

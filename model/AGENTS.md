@@ -5,14 +5,14 @@ modelo discrepan, el que se corrige es el RTL, salvo que se demuestre que el
 modelo no reproduce la aritmética del hardware. En ese caso se arregla el modelo
 y se dice en el PR.
 
-## Capas (`model/ambient/`)
+## Capas (`model/sofifi/`)
 
 | Capa | Puede importar | No puede |
 |---|---|---|
-| `ambient/domain/` | stdlib pura, numpy | I/O (`os`, `pathlib`, `wave`…), cualquier otra capa |
-| `ambient/ports/` | `domain` | adaptadores, servicios, cli |
-| `ambient/adapters/` | `domain`, `ports` | servicios, cli |
-| `ambient/services/` | `domain`, `ports` | adaptadores, cli (los recibe inyectados) |
+| `sofifi/domain/` | stdlib pura, numpy | I/O (`os`, `pathlib`, `wave`…), cualquier otra capa |
+| `sofifi/ports/` | `domain` | adaptadores, servicios, cli |
+| `sofifi/adapters/` | `domain`, `ports` | servicios, cli |
+| `sofifi/services/` | `domain`, `ports` | adaptadores, cli (los recibe inyectados) |
 | `cli` | todo | — es la raíz de composición |
 
 Lo comprueba `model/tests/arquitectura_test.py`.

@@ -7,7 +7,7 @@ no está en esta lista, la lista está incompleta: se corrige en el mismo PR.
 
 1. Si viene de un tercero, se añade la entrada en `docs/terceros.yaml`. `uso: portado`
    solo vale con licencia permisiva (ADR 0002).
-2. Se escribe el modelo bit-exact en `model/ambient/domain/`, con pruebas en
+2. Se escribe el modelo bit-exact en `model/sofifi/domain/`, con pruebas en
    `model/tests/`.
 3. Mientras no exista el núcleo microcodificado (ADR 0006), el efecto se queda
    en el modelo. Cuando exista, el efecto será un programa del núcleo con su
@@ -15,7 +15,7 @@ no está en esta lista, la lista está incompleta: se corrige en el mismo PR.
 
 ## Un módulo RTL
 
-1. Primero el modelo, en `model/ambient/domain/`.
+1. Primero el modelo, en `model/sofifi/domain/`.
 2. El RTL va en `rtl/`, con cabecera SPDX.
 3. El testbench va en `sim/` y compara muestra a muestra.
 4. Si fija pines, relojes o el mapa de memoria, va con su ADR: esos ficheros son
