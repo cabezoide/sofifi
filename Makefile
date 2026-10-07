@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Puntos de entrada del proyecto. La compuerta es scripts/ci_local.sh (ADR 0001).
-.PHONY: help install hooks ci ci-dura test sim docs synth prog uart release-check
+.PHONY: help install hooks ci ci-dura test sim docs synth optimizacion prog uart release-check
 
 VENV := .venv
 PY := $(VENV)/bin/python
@@ -14,6 +14,7 @@ help:
 	@echo "make sim            solo los testbenches cocotb del RTL"
 	@echo "make docs           solo la coherencia de mapas, ADRs y registros"
 	@echo "make synth          sintetiza TOP (por defecto hola_uart) en build/"
+	@echo "make optimizacion   segunda vuelta: recursos, timing y pistas de cada top"
 	@echo "make prog           carga build/TOP.fs en la SRAM de la placa"
 	@echo "make uart           lee la UART de la placa y exige \"SOFIFI\""
 	@echo "make release-check  compuerta de release: síntesis de los tops"
@@ -40,12 +41,15 @@ sim:
 docs:
 	scripts/ci_local.sh docs
 
-# Tops sintetizables y sus fuentes (la primera es el top).
+# Tops sintetizables y sus fuentes: lista única en rtl/top/tops.txt.
 TOP ?= hola_uart
-FUENTES_hola_uart := rtl/top/hola_uart.v rtl/comun/uart_tx.v
+FUENTES = $(shell awk '$$1 == "$(TOP)" { $$1 = ""; print }' rtl/top/tops.txt)
 
 synth:
-	scripts/fpga.sh synth $(FUENTES_$(TOP))
+	scripts/fpga.sh synth $(FUENTES)
+
+optimizacion:
+	scripts/ci_local.sh optimizacion ratchets
 
 prog: synth
 	scripts/fpga.sh prog build/$(TOP).fs

@@ -13,6 +13,7 @@ por capa y el detalle que un agente necesita para trabajar sin releer todo.
 | Documentación | `make docs` |
 | RTL | `scripts/ci_local.sh rtl-lint` · `make sim` (cocotb sobre verilator, del `.venv`) |
 | Placa | `make synth` · `make prog` (SRAM) · `make uart` (lee `/dev/ttyUSB1`) |
+| Optimización | `make optimizacion` (recursos, timing y pistas de cada top; ADR 0010) |
 | Release | `make release-check` (síntesis de los tops con informe de recursos) |
 
 ## Reglas para el agente
@@ -21,6 +22,12 @@ por capa y el detalle que un agente necesita para trabajar sin releer todo.
   español, pero coherentes dentro de cada fichero.
 - **Antes de cerrar un cambio:** `make ci` en verde. Si una compuerta blanda dice
   `NO CORRIÓ`, decirlo en el resumen; no presentarlo como verde (P2, P3).
+- **Antes de abrir cada PR: segunda vuelta de optimización** (ADR 0010).
+  Ejecutar `make optimizacion`; cada `PISTA` se optimiza o se justifica en la
+  sección «Segunda vuelta» del PR. Si algo mejora, se baja el listón en
+  `docs/ratchets.yaml`. Revisar también lo que ninguna pista ve: aritmética
+  repetida, registros más anchos de lo necesario y, en el modelo, tiempos
+  (MED-01/02) y código duplicado.
 - **Un ADR no se reescribe:** se le añade al pie «Actualización AAAA-MM-DD».
 - **Al portar un algoritmo de un tercero:** entrada en `docs/terceros.yaml` con
   `uso: portado`, cabecera SPDX del origen en el fichero y cita al origen en el
@@ -55,3 +62,4 @@ Ver `docs/EXTENDING.md`.
 | ADR 0007 | El español es la fuente; las traducciones llevan sello (es · en · zh-CN) |
 | ADR 0008 | La aritmética es parte del contrato con el RTL |
 | ADR 0009 | Una instrucción cabe en tres columnas de BSRAM (ISA de 54 bit) |
+| ADR 0010 | Cada PR pasa una segunda vuelta de optimización |

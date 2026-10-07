@@ -30,9 +30,10 @@ JOBS=(
   "docs:dura"
   "i18n:dura"
   "model:dura"
-  "ratchets:dura"
   "rtl-lint:dura"
   "sim:dura"
+  "optimizacion:dura"
+  "ratchets:dura"
   "shell-lint:blanda"
   "synth:release"
 )
@@ -86,8 +87,15 @@ run_job() {
     sim)
       (ulimit -u "$TOPE_PROCESOS"; "$PY" -m pytest sim --no-cov -p no:cacheprovider)
       ;;
+    optimizacion)
+      (ulimit -u "$TOPE_PROCESOS"; "$PY" scripts/check_optimizacion.py)
+      ;;
     synth)
-      (ulimit -u "$TOPE_PROCESOS"; scripts/fpga.sh synth rtl/top/hola_uart.v rtl/comun/uart_tx.v)
+      local linea
+      while read -r -a linea; do
+        [[ ${#linea[@]} -eq 0 || "${linea[0]}" == \#* ]] && continue
+        (ulimit -u "$TOPE_PROCESOS"; scripts/fpga.sh synth "${linea[@]:1}") || return 1
+      done < rtl/top/tops.txt
       ;;
     shell-lint)
       if ! command -v shellcheck >/dev/null; then

@@ -8,6 +8,10 @@ regalar lo ganado a la siguiente entrega.
 
 Siempre imprime la foto de todas las medidas disponibles (P9: primero la
 medición, después el objetivo), aunque no tengan listón.
+
+Además de las de ``MEDIDAS``, hay una medida por top y celda,
+``recursos:<top>:<celda>`` (por ejemplo ``recursos:hola_uart:LUT4``), que lee
+``build/<top>_recursos.json``: lo deja el trabajo ``optimizacion`` (ADR 0010).
 """
 
 from __future__ import annotations
@@ -63,6 +67,34 @@ MEDIDAS: dict[str, Callable[[], float]] = {
     "lineas_max_rtl": lineas_max_rtl,
 }
 
+CELDAS_FOTO = ("LUT4", "ALU", "DFF", "BSRAM", "MULT12X12")
+
+
+def _recursos(top: str, celda: str) -> Callable[[], float]:
+    def medir() -> float:
+        informe = ROOT / "build" / f"{top}_recursos.json"
+        if not informe.is_file():
+            raise RuntimeError(f"falta {informe.name}: corre antes el trabajo 'optimizacion'")
+        recursos = json.loads(informe.read_text(encoding="utf-8"))["recursos"]
+        return float(recursos.get(celda, {}).get("usado", 0))
+
+    return medir
+
+
+def medidas(entradas: list[dict[str, str]]) -> dict[str, Callable[[], float]]:
+    """``MEDIDAS`` más las de recursos: las de los listones y la foto de cada top."""
+    todas = dict(MEDIDAS)
+    tops = ROOT / "rtl" / "top" / "tops.txt"
+    nombres = [n.split("#", 1)[0].split()[:1] for n in tops.read_text("utf-8").splitlines()]
+    for top in (n[0] for n in nombres if n):
+        for celda in CELDAS_FOTO:
+            todas[f"recursos:{top}:{celda}"] = _recursos(top, celda)
+    for e in entradas:
+        partes = str(e["medida"]).split(":")
+        if len(partes) == 3 and partes[0] == "recursos":
+            todas[e["medida"]] = _recursos(partes[1], partes[2])
+    return todas
+
 
 def main() -> int:
     datos = yaml.safe_load((ROOT / "docs" / "ratchets.yaml").read_text(encoding="utf-8")) or {}
@@ -71,16 +103,17 @@ def main() -> int:
 
     print("Foto de medidas:")
     valores: dict[str, float] = {}
-    for nombre, fn in MEDIDAS.items():
+    disponibles = medidas(entradas)
+    for nombre, fn in disponibles.items():
         try:
             valores[nombre] = fn()
-            print(f"  {nombre:<22} {valores[nombre]:.2f}")
+            print(f"  {nombre:<26} {valores[nombre]:.2f}")
         except RuntimeError as exc:
-            print(f"  {nombre:<22} sin dato ({exc})")
+            print(f"  {nombre:<26} sin dato ({exc})")
 
     for e in entradas:
         medida = e["medida"]
-        if medida not in MEDIDAS:
+        if medida not in disponibles:
             errores.append(f"{e['id']}: medida desconocida '{medida}'")
             continue
         if medida not in valores:

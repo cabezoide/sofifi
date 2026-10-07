@@ -1,5 +1,6 @@
 # Ratchets (SPEC_RAIZ §9.1). El listón se pone donde se está (P9).
-# Las medidas disponibles están en scripts/check_ratchets.py (MEDIDAS).
+# Las medidas disponibles están en scripts/check_ratchets.py (MEDIDAS), más
+# recursos:<top>:<celda> para cada top de rtl/top/tops.txt (ADR 0010).
 # Campos: id · nombre · medida · liston · direccion (menor_mejor|mayor_mejor)
 #         · motivo (se amplía, no se reescribe) · aviso_holgura (opcional)
 ratchets:
@@ -22,3 +23,22 @@ ratchets:
       2026-10-07, cierre de la Fase 01: el mayor es domain/ensamblador.py (346
       líneas). Si crece, hay que partir el análisis de expresiones o el de
       operandos antes de mover el listón.
+  - id: RAT-03
+    nombre: LUT4 del top hola_uart
+    medida: recursos:hola_uart:LUT4
+    liston: 207
+    direccion: menor_mejor
+    aviso_holgura: 0
+    motivo: >-
+      2026-10-07, segunda vuelta de la Fase 02: de 353 a 207 al convertir a
+      hexadecimal un solo nibble en lugar de los ocho (ADR 0010). La síntesis es
+      determinista, así que cualquier mejora se registra bajando el listón.
+  - id: RAT-04
+    nombre: ALU del top hola_uart
+    medida: recursos:hola_uart:ALU
+    liston: 82
+    direccion: menor_mejor
+    aviso_holgura: 0
+    motivo: >-
+      2026-10-07, segunda vuelta de la Fase 02: de 146 a 82 por el mismo cambio
+      que RAT-03.
