@@ -73,6 +73,11 @@ Además, la directiva `include` en el ensamblador.
 - La mezcla deja pasar un −0,1 % de señal seca con pot2 = 1 (`comun/mezcla.sasm`, D = 0,999). La prueba del lo-fi mete la señal por la derecha y mide la izquierda.
 - Las demos están en PCM de 16 bit (15,2 MB). La compuerta `secrets` ya no limita su total, solo 4 MiB por demo (ADR 0001, actualización).
 
+**Ampliación (2026-10-07): catálogo de familias.** La persona propietaria pide todos los efectos posibles del estado del arte. Son unos 35-40 algoritmos distintos (investigación §4.3 y hoja de ruta de la Fase 03); los cientos de variantes salen de presets. Se hace en lotes de unos 5 programas por PR, y después un banco de presets.
+
+- **Lote 1, modulación:** chorus (3 voces), flanger, phaser (4 etapas), trémolo con autopan y vibrato. Trémolo y phaser usan un LFO triangular por software (`comun/lfo_triangulo.sasm`): los LFO del núcleo no se pueden leer.
+- `docs/programas.md` se genera con `sofifi catalogo` desde la cabecera de cada programa (`; familia:`, `; resumen:`, `; potN =`).
+
 ## Criterios de aceptación
 
 - Cada programa cabe en el núcleo.

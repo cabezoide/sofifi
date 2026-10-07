@@ -1,0 +1,54 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: modulación
+; resumen: El volumen sube y baja; con pot2, de un lado a otro.
+;
+; tremolo.sasm — Trémolo y autopan. Diseño propio.
+;
+; Cada muestra:
+;   1. El LFO triangular por software (comun/lfo_triangulo.sasm) avanza.
+;   2. CLIP lo redondea: la curva suave da una forma casi senoidal, s.
+;   3. Ganancia izquierda: 1 − prof·(1 − s)/2. A la derecha, s se multiplica
+;      por kpan: con pot2 = 0 las dos van juntas; con pot2 = 1, opuestas (autopan).
+;
+; pot0 = velocidad     (0 → 0,5 Hz · 1 → 12 Hz)
+; pot1 = profundidad   (0 → nada · 1 → hasta el silencio)
+; pot2 = panorama      (0 → trémolo · 1 → autopan)
+
+equ  tri      reg0
+equ  dir      reg1
+equ  vel      reg2
+equ  s        reg3
+equ  kpan     reg4
+equ  gl       reg5
+equ  gr       reg6
+
+; ── controles ────────────────────────────────────────────────────────
+        rdax  pot0, 4*11.5/48828.125    ; vel = 4f/fs, de 0,5 a 12 Hz
+        sof   1.0, 4*0.5/48828.125
+        wrax  vel, 0
+        rdax  pot2, 1.0                 ; kpan = 1 − 2·pot2 (en SOF: rdax saturaría)
+        sof   -1.99998, 0.99997
+        wrax  kpan, 0
+; ── 1 y 2. LFO y forma ───────────────────────────────────────────────
+include  comun/lfo_triangulo.sasm
+        clip
+        wrax  s, 1.0
+; ── 3. ganancias ─────────────────────────────────────────────────────
+        sof   -0.5, 0.5                 ; (1 − s)/2
+        mulx  pot1
+        sof   -1.0, 0.99997
+        wrax  gl, 0
+        rdax  s, 1.0
+        mulx  kpan
+        sof   -0.5, 0.5
+        mulx  pot1
+        sof   -1.0, 0.99997
+        wrax  gr, 0
+; ── salida ───────────────────────────────────────────────────────────
+        rdax  adcl, 1.0
+        mulx  gl
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  gr
+        wrax  dacr, 0

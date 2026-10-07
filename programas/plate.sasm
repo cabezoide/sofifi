@@ -1,5 +1,8 @@
 ; SPDX-License-Identifier: MIT
 ;
+; familia: reverb
+; resumen: Plate de Dattorro con el tanque modulado.
+;
 ; plate.sasm — Plate de Dattorro (J. Dattorro, "Effect Design Part 1", JAES 1997),
 ; reescrito para el núcleo SOFIFI a partir del paper (ver docs/terceros.yaml T-003).
 ; Longitudes del paper a 29 761 Hz, reescaladas a fs = 48 828,125 Hz (ADR 0005).

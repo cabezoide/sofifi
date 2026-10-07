@@ -1,5 +1,8 @@
 ; SPDX-License-Identifier: MIT
 ;
+; familia: reverb
+; resumen: Plate que congela la cola con el pulsador.
+;
 ; freeze.sasm — Plate de Dattorro (ver plate.sasm) con congelación por footswitch.
 ; Con `sw` pulsado: decay ≈ 1, sin damping y la entrada deja de alimentar el
 ; tanque (freeze, no infinite). La modulación del tanque baja a 0 en rampa: con

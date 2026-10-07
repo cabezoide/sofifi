@@ -1,5 +1,8 @@
 ; SPDX-License-Identifier: MIT
 ;
+; familia: textura
+; resumen: Menos muestras por segundo y menos bits, con aliasing.
+;
 ; lofi.sasm — Lo-fi: menos muestras por segundo y menos bits, con aliasing.
 ; Diseño propio (docs/investigacion/INVESTIGACION.md §1.1).
 ;

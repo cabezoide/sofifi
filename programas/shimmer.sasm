@@ -1,5 +1,8 @@
 ; SPDX-License-Identifier: MIT
 ;
+; familia: reverb
+; resumen: Plate con un +12 en la realimentación: cada vuelta sube una octava.
+;
 ; shimmer.sasm — Plate de Dattorro (ver plate.sasm) con un pitch shifter de +12
 ; semitonos de doble tap (CHO con rampa y ventanas complementarias) en la
 ; realimentación: cada vuelta sube una octava y los filtros la amansan.

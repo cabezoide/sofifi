@@ -1,5 +1,8 @@
 ; SPDX-License-Identifier: MIT
 ;
+; familia: reverb
+; resumen: Difusores largos con modulación aleatoria: el ataque se disuelve.
+;
 ; cloud.sasm — Reverb «nube»: difusores largos en cascada con modulación
 ; aleatoria y un tanque en forma de ocho. Diseño propio con la idea de
 ; CloudSeed (docs/terceros.yaml T-002, estudiado): mucha difusión antes del

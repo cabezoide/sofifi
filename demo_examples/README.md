@@ -18,5 +18,10 @@
 | `demo_reverse.ogg` | `reverse.sasm` | 0,60 (tono/tone) | 0,40 (realimentación/feedback) | 0,50 | | |
 | `demo_lofi.ogg` | `lofi.sasm` | 0,60 (muestreo/sample rate) | 0,70 (8 bit) | 0,70 | 0,40 (tono/tone) | |
 | `demo_swell.ogg` | `swell.sasm` | 0,70 | 0,30 | 0,50 | 0,40 (subida/rise) | |
+| `demo_chorus.ogg` | `chorus.sasm` | 0,30 (velocidad/rate) | 0,60 (profundidad/depth) | 0,50 | | |
+| `demo_flanger.ogg` | `flanger.sasm` | 0,15 (velocidad/rate) | 0,80 (profundidad/depth) | 0,50 | 0,60 (realimentación/feedback) | |
+| `demo_phaser.ogg` | `phaser.sasm` | 0,20 (velocidad/rate) | 0,90 (profundidad/depth) | 0,50 | 0,50 (realimentación/feedback) | |
+| `demo_tremolo.ogg` | `tremolo.sasm` | 0,30 (velocidad/rate) | 0,70 (profundidad/depth) | 0,60 (panorama/pan) | | |
+| `demo_vibrato.ogg` | `vibrato.sasm` | 0,40 (velocidad/rate) | 0,50 (profundidad/depth) | 1 | | |
 
 Ogg Vorbis a 48 828 Hz (ADR 0005); el render es bit-exact en 24 bit. Ogg Vorbis at 48,828 Hz; the render is bit-exact at 24 bits. Ogg Vorbis，48,828 Hz；渲染在 24 位下逐位精确。

@@ -1,0 +1,101 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: modulación
+; resumen: Cuatro allpass con coeficiente móvil: muescas que barren.
+;
+; phaser.sasm — Phaser de 4 etapas con realimentación. Diseño propio.
+;
+; Cuatro allpass de primer orden en cascada: y = a·(x − y[n−1]) + x[n−1]. El
+; coeficiente a sigue al LFO triangular por software (comun/lfo_triangulo.sasm)
+; redondeado con CLIP: a = −(0,55 + 0,4·prof·s). Al sumar la cadena a la señal
+; seca, dos muescas suben y bajan por el espectro.
+;
+; pot0 = velocidad        (0 → 0,05 Hz · 1 → 4 Hz)
+; pot1 = profundidad      (0 → muescas quietas · 1 → barrido completo)
+; pot2 = mezcla           (0,5 → muescas más profundas)
+; pot3 = realimentación   (0 → nada · 1 → 0,7)
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  tri      reg2
+equ  dir      reg3
+equ  vel      reg4
+equ  a        reg5
+equ  x        reg6
+equ  y        reg7
+equ  yw       reg8
+equ  xp1      reg9
+equ  yp1      reg10
+equ  xp2      reg11
+equ  yp2      reg12
+equ  xp3      reg13
+equ  yp3      reg14
+equ  xp4      reg15
+equ  yp4      reg16
+
+; ── controles ────────────────────────────────────────────────────────
+include  comun/mezcla.sasm
+        rdax  pot0, 4*3.95/48828.125    ; vel = 4f/fs, de 0,05 a 4 Hz
+        sof   1.0, 4*0.05/48828.125
+        wrax  vel, 0
+; ── coeficiente: a = −(0,55 + 0,4·prof·s) ────────────────────────────
+include  comun/lfo_triangulo.sasm
+        clip
+        mulx  pot1
+        sof   -0.4, -0.55
+        wrax  a, 0
+; ── entrada con realimentación ───────────────────────────────────────
+        rdax  y, 1.0
+        mulx  pot3
+        sof   0.7, 0
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+; ── etapa 1 ──────────────────────────────────────────────────────────
+        wrax  x, 1.0
+        rdax  yp1, -1.0
+        mulx  a
+        rdax  xp1, 1.0
+        wrax  yp1, 0
+        rdax  x, 1.0
+        wrax  xp1, 0
+        rdax  yp1, 1.0
+; ── etapa 2 ──────────────────────────────────────────────────────────
+        wrax  x, 1.0
+        rdax  yp2, -1.0
+        mulx  a
+        rdax  xp2, 1.0
+        wrax  yp2, 0
+        rdax  x, 1.0
+        wrax  xp2, 0
+        rdax  yp2, 1.0
+; ── etapa 3 ──────────────────────────────────────────────────────────
+        wrax  x, 1.0
+        rdax  yp3, -1.0
+        mulx  a
+        rdax  xp3, 1.0
+        wrax  yp3, 0
+        rdax  x, 1.0
+        wrax  xp3, 0
+        rdax  yp3, 1.0
+; ── etapa 4 ──────────────────────────────────────────────────────────
+        wrax  x, 1.0
+        rdax  yp4, -1.0
+        mulx  a
+        rdax  xp4, 1.0
+        wrax  yp4, 0
+        rdax  x, 1.0
+        wrax  xp4, 0
+        rdax  yp4, 1.0
+        wrax  y, 0
+; ── salida ───────────────────────────────────────────────────────────
+        rdax  y, 1.0
+        mulx  kwet
+        wrax  yw, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  yw, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  yw, 1.0
+        wrax  dacr, 0
