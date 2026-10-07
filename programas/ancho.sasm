@@ -1,0 +1,50 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: filtro
+; resumen: Ensancha el estéreo de una guitarra mono y ajusta el tono graves-agudos.
+;
+; ancho.sasm — Herramienta de mezcla con dos partes:
+;   1. Ancho (efecto Haas): la señal lateral S es la entrada retrasada 13 ms;
+;      izquierda = M + S y derecha = M − S. Con pot0 = 0 es mono.
+;   2. Tilt: un paso bajo de ~800 Hz parte la señal en graves y agudos;
+;      pot1 inclina la balanza hacia unos u otros.
+; Diseño propio (docs/investigacion/INVESTIGACION.md §4.3: tilt EQ y ancho estéreo).
+;
+; pot0 = ancho   (0 → mono · 1 → ancho)
+; pot1 = tilt    (0 → oscuro · 0,5 → plano · 1 → brillante)
+
+equ  m        reg0
+equ  lp       reg1
+equ  ktilt    reg2
+equ  lado     reg3
+
+mem  haas  635                ; 13 ms
+
+        rdax  pot1, 1.0                 ; ktilt = 2·pot1 − 1 (en SOF: rdax saturaría)
+        sof   1.999, -1.0
+        wrax  ktilt, 0
+; ── tilt: m = x + ktilt·(agudos − graves) = x + ktilt·(x − 2·lp) ─────
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        rdfx  lp, 0.1
+        wrax  lp, -1.999
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        mulx  ktilt
+        wrax  m, 0
+        rdax  m, 1.0
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wrax  m, 1.0
+; ── ancho ────────────────────────────────────────────────────────────
+        wra   haas, 0
+        rda   haas#, 1.0
+        mulx  pot0
+        sof   0.7, 0
+        wrax  lado, 0
+        rdax  m, 1.0
+        rdax  lado, 1.0
+        wrax  dacl, 0
+        rdax  m, 1.0
+        rdax  lado, -1.0
+        wrax  dacr, 0

@@ -1,0 +1,55 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: textura
+; resumen: Modulador en anillo: multiplica la guitarra por un seno; suena metálico.
+;
+; ringmod.sasm — Un oscilador senoidal por software (forma acoplada, «magic
+; circle»: s = s + k·c; c = c − k·s) multiplica la entrada. Una nota de f Hz
+; sale como f − fp y f + fp, sin f. Diseño propio
+; (docs/investigacion/INVESTIGACION.md §4.3).
+;
+; pot0 = frecuencia   (0 → 50 Hz · 1 → 2 kHz)
+; pot2 = mezcla       (0 → seco · 1 → solo anillo)
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  k        reg2
+equ  s        reg3
+equ  c        reg4
+equ  sal      reg5
+equ  tmp_ks   reg6
+
+; ── inicialización: el oscilador arranca en (0, 0,9) ─────────────────
+        skp   run, inicio
+        sof   0, 0.9
+        wrax  c, 0
+inicio:
+include  comun/mezcla.sasm
+        rdax  pot0, 2*3.14159265*1950/48828.125   ; k ≈ 2π·f/fs
+        sof   1.0, 2*3.14159265*50/48828.125
+        wrax  k, 0
+; ── oscilador: s = s + k·c; c = c − k·s ──────────────────────────────
+        rdax  c, 1.0
+        mulx  k
+        rdax  s, 1.0
+        wrax  s, 1.0
+        mulx  k
+        wrax  tmp_ks, 0
+        rdax  c, 1.0
+        rdax  tmp_ks, -1.0
+        wrax  c, 0
+; ── anillo ───────────────────────────────────────────────────────────
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        mulx  s
+        sof   1.1, 0                    ; compensa la amplitud 0,9 del oscilador
+        mulx  kwet
+        wrax  sal, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  sal, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  sal, 1.0
+        wrax  dacr, 0
