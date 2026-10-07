@@ -85,3 +85,12 @@ A petición de la persona propietaria, `secrets` ya no limita el total de `demo_
 - Se mantiene el límite de 4 MiB por demo: evita subir un WAV enorme por error.
 - Las demos están en PCM de 16 bit.
 - Cada regeneración de las demos aumenta el historial de git. Si el repositorio crece demasiado, la alternativa es MP3. Para eso hace falta un codificador (LAME es LGPL) y un ADR propio.
+
+## Actualización 2026-10-07 (demos en Ogg Vorbis, Fase 06)
+
+La persona propietaria elige comprimir las demos. Pasan de WAV a **Ogg Vorbis**: 1,7 MB en lugar de 15,2 MB.
+
+- Opus no sirve: solo admite 8, 12, 16, 24 y 48 kHz, y SOFIFI trabaja a 48 828 Hz (ADR 0005). Vorbis admite cualquier frecuencia.
+- El codificador es `soundfile` (BSD) sobre libsndfile (LGPL-2.1), libvorbis y libogg (BSD). Se usan como bibliotecas desde un script y no se copian (ADR 0002). Van en el grupo opcional `demos` de `pyproject.toml`.
+- Dos codificaciones dan el mismo audio, pero el fichero cambia en el número de serie de Ogg. `scripts/generar_demos.py` solo reescribe un `.ogg` si su audio cambia.
+- `secrets` admite `.ogg` de hasta 4 MiB en `demo_examples/`.

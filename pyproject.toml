@@ -12,6 +12,9 @@ sofifi = "sofifi.cli:main"
 
 [project.optional-dependencies]
 dev = ["pytest", "pytest-cov", "hypothesis", "ruff", "mypy", "pyyaml", "types-PyYAML"]
+# Demos en Ogg Vorbis (scripts/generar_demos.py). soundfile es BSD; libsndfile,
+# LGPL-2.1, se usa como biblioteca y no se copia (ADR 0002).
+demos = ["soundfile>=0.12"]
 # Cadena EDA abierta (Fase 02), toda instalable por pip. Las versiones mínimas son
 # las verificadas con la Tang Primer 25K.
 eda = [

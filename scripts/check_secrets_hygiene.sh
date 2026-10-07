@@ -43,12 +43,12 @@ fi
 
 # 3. Binarios grandes (bitstreams, WAV de pruebas) no se versionan: van a releases.
 #    Excepción acotada (ADR 0001, actualización 2026-10-07): las demos de
-#    demo_examples/, regenerables con scripts/generar_demos.py, hasta 4 MiB por
-#    fichero. Sin límite total desde la Fase 06 (ADR 0001, actualización).
+#    demo_examples/ (Ogg Vorbis), regenerables con scripts/generar_demos.py,
+#    hasta 4 MiB por fichero. Sin límite total desde la Fase 06 (ADR 0001).
 DEMO_MAX=$((4 * 1048576))
 for f in "${FILES[@]}"; do
   size=$(stat -c %s "$f")
-  if [[ "$f" == demo_examples/*.wav ]]; then
+  if [[ "$f" == demo_examples/*.ogg ]]; then
     if (( size > DEMO_MAX )); then
       echo "secrets: demo de más de 4 MiB: $f ($size bytes)"; RC=1
     fi

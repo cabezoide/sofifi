@@ -1,24 +1,32 @@
 # SPDX-License-Identifier: MIT
 """Regenera ``demo_examples/``: una guitarra sintética y su paso por cada programa.
 
-La guitarra es un arpegio de Em9 con cuerdas Karplus-Strong y semilla fija, así
-que todo es determinista: el núcleo es bit-exact y no hay remuestreo (la
-señal ya está a 48 828 Hz). Volver a correrlo debe dar los mismos bytes.
+La guitarra es un arpegio de Em9 con cuerdas Karplus-Strong y semilla fija. El
+núcleo es bit-exact y no hay remuestreo (la señal ya está a 48 828 Hz), así que
+el audio es determinista.
 
-Uso: ``.venv/bin/python scripts/generar_demos.py``  (unos 4 min)
+Las demos se guardan en Ogg Vorbis (ADR 0001, actualización): unas 10 veces
+menos que un WAV. El códec da el mismo audio cada vez, pero el fichero cambia
+en su número de serie. Por eso un ``.ogg`` solo se reescribe si su audio cambia:
+regenerar sin cambios no toca git.
+
+Uso: ``.venv/bin/python scripts/generar_demos.py``  (unos 4 min; necesita
+``pip install -e '.[demos]'``)
 """
 
 from __future__ import annotations
 
 import sys
+import tempfile
 from pathlib import Path
 
 import numpy as np
-from sofifi.adapters.archivos import FuenteProgramaArchivo
-from sofifi.adapters.wav import FuenteWav, SumideroWav
+import soundfile  # type: ignore[import-untyped]
+from sofifi.adapters.archivos import ensamblar_archivo
+from sofifi.adapters.wav import a_pcm16
 from sofifi.domain.aritmetica import DATO_MAX, DATO_MIN, FS_WAV, dato
 from sofifi.domain.senal import Controles, Senal
-from sofifi.services.render import renderizar
+from sofifi.services.render import procesar
 
 ROOT = Path(__file__).resolve().parent.parent
 DESTINO = ROOT / "demo_examples"
@@ -39,9 +47,8 @@ DEMOS: tuple[tuple[str, dict[int, str], tuple[tuple[float, float], ...], float],
     ("lofi", {0: "0.6", 1: "0.7", 2: "0.7", 3: "0.4"}, (), 1.0),
     ("swell", {0: "0.7", 1: "0.3", 2: "0.5", 3: "0.4"}, (), 4.0),
 )
-# PCM de 16 bit: para escuchar no se pierde nada y ocupan un tercio menos.
-# El render es bit-exact en 24 bit.
-BITS_DEMO = 16
+# Calidad de Vorbis: 0 es la mejor. Con 0,3, una demo de 8 s ocupa unos 190 kB.
+COMPRESION = 0.3
 
 
 def guitarra() -> Senal:
@@ -63,24 +70,44 @@ def guitarra() -> Senal:
     return Senal(FS_WAV, (tuple(int(v) for v in muestras),))
 
 
+def escribir_ogg(ruta: Path, senal: Senal) -> bool:
+    """Escribe ``ruta`` si su audio cambia. Devuelve True si la ha escrito."""
+    with tempfile.TemporaryDirectory() as tmp:
+        nuevo = Path(tmp) / ruta.name
+        soundfile.write(
+            nuevo,
+            a_pcm16(senal),
+            senal.fs_hz,
+            format="OGG",
+            subtype="VORBIS",
+            compression_level=COMPRESION,
+        )
+        if ruta.exists():
+            antes = soundfile.read(ruta, dtype="int16")[0]
+            despues = soundfile.read(nuevo, dtype="int16")[0]
+            if antes.shape == despues.shape and np.array_equal(antes, despues):
+                return False
+        ruta.parent.mkdir(parents=True, exist_ok=True)
+        ruta.write_bytes(nuevo.read_bytes())
+    return True
+
+
 def main() -> int:
-    seca = DESTINO / "demo_guitarra.wav"
-    SumideroWav(seca, BITS_DEMO).escribir(guitarra())
-    print(f"seca → {seca.relative_to(ROOT)}")
+    seca = guitarra()
+    destino = DESTINO / "demo_guitarra.ogg"
+    print(
+        f"seca → {destino.relative_to(ROOT)}" + ("" if escribir_ogg(destino, seca) else " (igual)")
+    )
     for nombre, pots, tramos, cola in DEMOS:
         controles = Controles(
             tuple(dato(pots.get(i, "0")) for i in range(6)),
             tuple((round(a * FS_WAV), round(b * FS_WAV)) for a, b in tramos),
         )
-        salida = DESTINO / f"demo_{nombre}.wav"
-        renderizar(
-            FuenteProgramaArchivo(ROOT / "programas" / f"{nombre}.sasm"),
-            FuenteWav(seca),
-            SumideroWav(salida, BITS_DEMO),
-            controles,
-            round(cola * FS_WAV),
-        )
-        print(f"{nombre} → {salida.relative_to(ROOT)}")
+        programa = ensamblar_archivo(ROOT / "programas" / f"{nombre}.sasm")
+        salida = procesar(programa, seca, controles, round(cola * FS_WAV))
+        destino = DESTINO / f"demo_{nombre}.ogg"
+        escrita = escribir_ogg(destino, salida)
+        print(f"{nombre} → {destino.relative_to(ROOT)}" + ("" if escrita else " (igual)"))
     return 0
 
 

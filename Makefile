@@ -21,7 +21,7 @@ help:
 
 install:
 	python3 -m venv $(VENV)
-	$(PY) -m pip install -q -e '.[dev,eda]'
+	$(PY) -m pip install -q -e '.[dev,eda,demos]'
 
 hooks:
 	scripts/install_hooks.sh
