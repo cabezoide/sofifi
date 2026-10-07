@@ -3,7 +3,7 @@
 
 # Programas del núcleo
 
-30 programas. Cada uno es un fichero de texto en `programas/`.
+35 programas. Cada uno es un fichero de texto en `programas/`.
 Los ciclos son la cota del RTL, de 2 048 por muestra
 (`model/sofifi/domain/coste.py`). La memoria es de 43 008 palabras.
 
@@ -59,6 +59,8 @@ Los ciclos son la cota del RTL, de 2 048 por muestra
 
 | Programa | Qué hace | Mandos | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|
+| `compresor` | Compresor: baja lo fuerte y deja lo suave; sostiene las notas. | 0: umbral<br>1: compresión<br>2: mezcla<br>3: ganancia | 57 | 596 | 1 |
+| `puerta` | Puerta de ruido: calla el zumbido entre notas y deja pasar lo que se toca. | 0: umbral<br>1: cierre | 29 | 317 | 1 |
 | `swell` | Cada nota empieza en silencio y sube, antes de un plate. | 0: decay<br>1: damping<br>2: mezcla<br>3: subida | 116 | 1 490 | 37 439 |
 
 ## Textura
@@ -66,3 +68,11 @@ Los ciclos son la cota del RTL, de 2 048 por muestra
 | Programa | Qué hace | Mandos | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|
 | `lofi` | Menos muestras por segundo y menos bits, con aliasing. | 0: muestreo<br>1: bits<br>2: mezcla<br>3: tono | 81 | 800 | 1 |
+| `saturacion` | Saturación tipo overdrive: de un brillo cálido a una distorsión espesa. | 0: ganancia<br>1: tono<br>2: mezcla<br>3: nivel | 42 | 462 | 1 |
+
+## Filtro
+
+| Programa | Qué hace | Mandos | Instrucciones | Ciclos | Memoria |
+|---|---|---|---|---|---|
+| `autowah` | Wah automático: cuanto más fuerte se toca, más sube el filtro. | 0: sensibilidad<br>1: resonancia<br>2: mezcla | 43 | 464 | 1 |
+| `filtro` | Filtro paso bajo resonante que sube y baja solo, con un LFO. | 0: velocidad<br>1: resonancia<br>2: mezcla<br>3: profundidad | 60 | 608 | 1 |

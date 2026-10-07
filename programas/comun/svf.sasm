@@ -1,0 +1,25 @@
+; SPDX-License-Identifier: MIT
+;
+; comun/svf.sasm — filtro de variable de estado de Chamberlin (H. Chamberlin,
+; «Musical Applications of Microprocessors», 1985), una muestra:
+;   lp = lp + f·bp
+;   hp = x − lp − q·bp
+;   bp = bp + f·hp
+; f = 2·sen(π·fc/fs) fija la frecuencia; q = 1/Q, la resonancia. Estable con
+; f < 1 y q > 0. Necesita los registros x (entrada), f, q, lp, bp, hp y qbp.
+; Deja ACC = 0; las salidas quedan en lp, bp y hp.
+
+        rdax  bp, 1.0
+        mulx  f
+        rdax  lp, 1.0
+        wrax  lp, 0
+        rdax  bp, 1.0
+        mulx  q
+        wrax  qbp, 0
+        rdax  x, 1.0
+        rdax  lp, -1.0
+        rdax  qbp, -1.0
+        wrax  hp, 1.0
+        mulx  f
+        rdax  bp, 1.0
+        wrax  bp, 0

@@ -227,6 +227,11 @@ HUELLAS = {
     "ducking": "5d88112b3b9612ee",
     "lluvia": "789293f5934ee1b4",
     "pingpong": "628f30ffda3cd500",
+    "autowah": "411f7e3d60c07677",
+    "compresor": "2e17d632f953623c",
+    "filtro": "ff8a6846cc9478cf",
+    "puerta": "62aed0a4198303de",
+    "saturacion": "afe17ca65691cfc1",
 }
 
 
@@ -240,7 +245,16 @@ SEGUNDOS_HUELLA = {
     "bbd": 0.3,
     "ducking": 0.5,
 }
-CON_TONO = {"lofi", "swell", "tremolo", "gated", "reverb_inversa"}
+CON_TONO = {
+    "lofi",
+    "swell",
+    "tremolo",
+    "gated",
+    "reverb_inversa",
+    "compresor",
+    "puerta",
+    "saturacion",
+}
 
 
 def test_todo_programa_tiene_huella() -> None:

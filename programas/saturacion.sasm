@@ -1,0 +1,66 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: textura
+; resumen: Saturación tipo overdrive: de un brillo cálido a una distorsión espesa.
+;
+; saturacion.sasm — Ganancia de 1 a 16 y dos etapas de CLIP (curva cúbica
+; suave), con un paso bajo de tono entre ellas y otro a la salida. Dos etapas
+; redondean mejor el recorte que una. Diseño propio
+; (docs/investigacion/INVESTIGACION.md §4.3: saturación).
+;
+; pot0 = ganancia   (0 → ×1 · 1 → ×16)
+; pot1 = tono       (0 → oscuro · 1 → brillante)
+; pot2 = mezcla     (0 → seco · 1 → solo saturado)
+; pot3 = nivel      (volumen de la saturación)
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  x        reg2
+equ  px       reg3
+equ  ktono    reg4
+equ  lp1      reg5
+equ  lp2      reg6
+equ  sal      reg7
+
+include  comun/mezcla.sasm
+        rdax  pot1, 0.9
+        sof   1.0, 0.1
+        wrax  ktono, 0
+; ── ganancia: x·(1 + 15·pot0), en el ACC ancho (no satura hasta CLIP) ─
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wrax  x, 1.0
+        mulx  pot0
+        wrax  px, 0
+        rdax  x, 1.0
+        rdax  px, 1.875
+        rdax  px, 1.875
+        rdax  px, 1.875
+        rdax  px, 1.875
+        rdax  px, 1.875
+        rdax  px, 1.875
+        rdax  px, 1.875
+        rdax  px, 1.875
+; ── dos etapas de CLIP con tono entre ellas ──────────────────────────
+        clip
+        rdax  lp1, -1.0
+        mulx  ktono
+        rdax  lp1, 1.0
+        wrax  lp1, 1.999
+        clip
+        rdax  lp2, -1.0
+        mulx  ktono
+        rdax  lp2, 1.0
+        wrax  lp2, 1.0
+        mulx  pot3
+        mulx  kwet
+        wrax  sal, 0
+; ── salida ───────────────────────────────────────────────────────────
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  sal, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  sal, 1.0
+        wrax  dacr, 0
