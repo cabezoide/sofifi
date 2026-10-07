@@ -120,11 +120,34 @@ tr:last-child td{border-bottom:0}
 .leyenda .s{border:2px solid var(--laton)}
 .leyenda .f{background:var(--led);border-color:var(--led)}
 
+/* Por qué escoger SOFIFI */
+#porque .cabeza{max-width:none}
+#porque .cabeza h2{max-width:22ch}
+#porque .cabeza p{max-width:60ch}
+.frente th{white-space:nowrap}
+.frente td:first-child{width:23%}
+.razones{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin-bottom:34px;border:1px solid var(--linea)}
+.razon{padding:18px 18px 20px;display:grid;gap:8px;align-content:start}
+.razon+.razon{border-left:1px solid var(--linea)}
+.razon .num{font-family:var(--f-titulo);font-size:58px;font-weight:900;line-height:.9;color:var(--laton)}
+.razon h3{font-size:26px;font-weight:800}
+.razon p{margin:0;font-size:15px;color:var(--hueso-2);line-height:1.45}
+.razon.fuerte{background:var(--hueso);color:var(--caja)}
+.razon.fuerte .num{color:#7a1d26}
+.razon.fuerte p{color:#4b2a2e}
+.frente td:first-child{font-family:var(--f-texto);font-size:15px;font-weight:600;text-transform:none}
+.frente td{font-size:14.5px;vertical-align:top}
+.gana{color:var(--laton);font-weight:600}
+.gana::before{content:"▲ ";font-size:10px;vertical-align:1px}
+.aviso{margin:22px 0 0;padding:14px 16px;border-left:3px solid var(--led);background:#22090d;font-size:15.5px}
+.aviso b{font-family:var(--f-titulo);font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;color:var(--led)}
+
 footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;color:var(--hueso-2)}
 
 @media (max-width:760px){
   .portada,.pruebas{grid-template-columns:minmax(0,1fr)}
-  .reglas{grid-template-columns:minmax(0,1fr)}
+  .reglas,.razones{grid-template-columns:minmax(0,1fr)}
+  .razon+.razon{border-left:0;border-top:1px solid var(--linea)}
   .eslabon+.eslabon{border-left:1px solid var(--linea);border-top:0}
   .cadena{flex-direction:column}
 }
@@ -164,6 +187,46 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
     </div>
   </div>
 </header>
+
+<section id="porque">
+  <div class="cabeza">
+    <div class="etiqueta">¿Por qué escoger SOFIFI?</div>
+    <h2>Un pedal que se puede leer, cambiar y comprobar</h2>
+    <p>Un pedal comercial es una caja cerrada. En SOFIFI, cada bit del sonido tiene una fuente legible y una prueba que lo compara.</p>
+  </div>
+  <div class="razones">
+    <div class="razon fuerte">
+      <span class="num">0</span>
+      <h3>Bits de diferencia</h3>
+      <p>En simulación, el RTL da la misma salida que el modelo, bit a bit, en los <span class="dato">7</span> programas. En la placa, el plate coincide en 9 de 9 capturas (MED-13).</p>
+    </div>
+    <div class="razon">
+      <span class="num">7</span>
+      <h3>Efectos en texto</h3>
+      <p>Plate, shimmer, freeze, hall, cloud, cinta y reverse. Cada uno es un fichero <span class="dato">.sasm</span> de <span class="dato">34</span> a <span class="dato">137</span> instrucciones. Un efecto nuevo no toca el hardware.</p>
+    </div>
+    <div class="razon">
+      <span class="num">MIT</span>
+      <h3>Abierto de punta a punta</h3>
+      <p>Modelo, RTL, programas y pruebas. Se sintetiza con herramientas libres: Yosys, nextpnr y apicula. Ninguna licencia de fabricante.</p>
+    </div>
+  </div>
+
+  <div class="tabla-caja">
+    <table class="frente">
+      <thead><tr><th>Frente al Spin FV-1</th><th>SOFIFI</th><th>FV-1 (referencia DIY)</th></tr></thead>
+      <tbody>
+        <tr><td>Instrucciones por muestra</td><td class="gana">hasta 2 048 en el microcódigo; el hall usa 137 en 1 578 de 2 048 ciclos</td><td>128</td></tr>
+        <tr><td>Frecuencia de muestreo</td><td class="gana">48 828 Hz</td><td>unos 32 kHz</td></tr>
+        <tr><td>Memoria de retardo</td><td>43 008 palabras, 0,88 s</td><td class="gana">32 768 palabras, unos 1 s</td></tr>
+        <tr><td>Se puede leer por dentro</td><td class="gana">sí: modelo, RTL y pruebas</td><td>no: chip cerrado; los programas, sí</td></tr>
+        <tr><td>Biblioteca de programas</td><td>7 propios</td><td class="gana">la de Spin y la de la comunidad, con editor visual (SpinCAD)</td></tr>
+        <tr><td>Listo para tocar</td><td>todavía no</td><td class="gana">sí, en muchos pedales</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="aviso"><b>Hoy, aún no suena con guitarra.</b> El audio I2S llega en la Fase 11 y los mandos en la Fase 09: falta el hardware. Hasta entonces, los efectos se escuchan en las demos, que salen del modelo bit-exact.</p>
+</section>
 
 <section>
   <div class="cabeza">
@@ -242,7 +305,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 </section>
 
 <footer>
-  Cifras contadas sobre el repositorio el 2026-10-07: tamaños de programa con <span class="dato">sofifi asm</span>; recursos y frecuencia de <span class="dato">build/hola_uart_recursos.json</span> (MED-04, MED-05); salida de la placa con <span class="dato">scripts/leer_uart.py</span> (MED-03) y <span class="dato">scripts/verificar_primitivas.py</span> (MED-06 a MED-08); fases de <span class="dato">docs/fases/</span>. Documentación en español, inglés y chino simplificado; la interfaz de la OLED lo será en la Fase 10 (ADR 0007). Licencia MIT.
+  Cifras contadas sobre el repositorio el 2026-10-07: tamaños de programa con <span class="dato">sofifi asm</span>; recursos y frecuencia de <span class="dato">build/hola_uart_recursos.json</span> (MED-04, MED-05); salida de la placa con <span class="dato">scripts/leer_uart.py</span> (MED-03) y <span class="dato">scripts/verificar_primitivas.py</span> (MED-06 a MED-08); fases de <span class="dato">docs/fases/</span>. «¿Por qué escoger SOFIFI?»: igualdad RTL-modelo de <span class="dato">sim/nucleo/nucleo_test.py</span> y MED-13; datos del FV-1 de <span class="dato">docs/investigacion/INVESTIGACION.md</span> [V]. Documentación en español, inglés y chino simplificado; la interfaz de la OLED lo será en la Fase 10 (ADR 0007). Licencia MIT.
 </footer>
 
 </div>
