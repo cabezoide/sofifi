@@ -13,7 +13,4 @@
         rdax  pot1, -0.7
         sof   1.0, 0.999
         wrax  kdamp, 0
-        rdax  pot2, 1.0
-        wrax  kwet, -1.0
-        sof   1.0, 0.999
-        wrax  kdry, 0
+include  comun/mezcla.sasm

@@ -11,6 +11,10 @@ ejecutan aparte (MED-09):
 
     SOFIFI_MUESTRAS=4883 pytest sim/nucleo/nucleo_test.py                 # 0,1 s, los tres
     SOFIFI_MUESTRAS=48828 SOFIFI_PROGRAMAS=plate pytest sim/nucleo/nucleo_test.py   # 1 s
+    SOFIFI_MUESTRAS=12000 SOFIFI_PROGRAMAS=cinta pytest sim/nucleo/nucleo_test.py   # eco
+
+Las 1 000 muestras de la compuerta no llegan al primer eco de la cinta (0,18 s):
+en ella solo se compara la señal seca. El eco se compara en la aceptación.
 """
 
 from __future__ import annotations
@@ -32,7 +36,12 @@ from sofifi.domain.isa import Programa, codificar
 from sofifi.domain.lfo import TipoLfo
 from sofifi.domain.nucleo import Nucleo
 
-PROGRAMAS = ("plate", "shimmer", "freeze", "hall", "cloud")
+PROGRAMAS = ("plate", "shimmer", "freeze", "hall", "cloud", "cinta", "reverse")
+# La cinta, con pot0 = 0: el primer eco llega a las ~8 800 muestras y no a las ~31 700.
+POTS_PRUEBA = {
+    "plate": ("0.7", "0.5", "0.3", "0.6", "0.4", "0.2"),
+    "cinta": ("0", "0.5", "0.3", "0.6", "0.4", "0.2"),
+}
 CODIGO_LFO = {TipoLfo.SIN: 0, TipoLfo.RND: 1, TipoLfo.RAMP: 2}
 FUENTES = [
     RTL / "nucleo" / f
@@ -68,7 +77,7 @@ async def igual_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
     n = int(os.environ.get("SOFIFI_MUESTRAS", "1000"))
     programa = ensamblar_archivo(RAIZ / "programas" / f"{nombre}.sasm")
     modelo = Nucleo(programa)
-    pots = tuple(dato(v) for v in ("0.7", "0.5", "0.3", "0.6", "0.4", "0.2"))
+    pots = tuple(dato(v) for v in POTS_PRUEBA.get(nombre, POTS_PRUEBA["plate"]))
 
     cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
     dut.rst.value, dut.tick.value, dut.prog_we.value = 1, 0, 0

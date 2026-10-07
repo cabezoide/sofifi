@@ -54,17 +54,23 @@ class FuenteWav:
 
 
 class SumideroWav:
-    """Escribe PCM de 24 bit, con los canales de la señal."""
+    """Escribe PCM de 24 bit (exacto) o de 16 bit (redondeado), con los canales de la señal."""
 
-    def __init__(self, ruta: Path) -> None:
+    def __init__(self, ruta: Path, bits: int = 24) -> None:
+        if bits not in (16, 24):
+            raise ValueError(f"{ruta}: solo PCM de 16 o 24 bit (pide {bits})")
         self.ruta = ruta
+        self.bits = bits
 
     def escribir(self, senal: Senal) -> None:
-        datos = np.array(senal.canales, dtype=np.int64).T.astype("<i4")
-        crudo = datos.reshape(-1, 1).view(np.uint8).reshape(-1, 4)[:, :3].tobytes()
+        datos = np.array(senal.canales, dtype=np.int64).T
+        if self.bits == 16:
+            datos = np.clip((datos + 128) >> 8, -(1 << 15), (1 << 15) - 1)
+        ancho = self.bits // 8
+        crudo = datos.astype("<i4").reshape(-1, 1).view(np.uint8).reshape(-1, 4)[:, :ancho]
         self.ruta.parent.mkdir(parents=True, exist_ok=True)
         with wave.open(str(self.ruta), "wb") as w:
             w.setnchannels(len(senal.canales))
-            w.setsampwidth(3)
+            w.setsampwidth(ancho)
             w.setframerate(senal.fs_hz)
-            w.writeframes(crudo)
+            w.writeframes(crudo.tobytes())

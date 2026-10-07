@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: MIT
-"""Programas del núcleo: plate, shimmer y freeze (Fase 01); hall y cloud (Fase 06).
+"""Programas del núcleo: plate, shimmer y freeze (Fase 01); hall, cloud, cinta y reverse (Fase 06).
 
 Comprueban propiedades acústicas medibles (decae, se sostiene, sube una octava,
-el decay sigue al potenciómetro, la modulación cambia la respuesta)
+el decay sigue al potenciómetro, la modulación cambia la respuesta, el eco
+llega cuando dice pot0, la señal sale al revés)
 y una **huella bit-exact** por programa: cambiar la aritmética, la ISA o un
 programa cambia la huella, y actualizarla es una decisión que se ve en el diff.
 No comprueban que suene bonito: eso se escucha (ver `sofifi render`).
@@ -38,6 +39,13 @@ def impulso(segundos: float, en: int = 0) -> Senal:
     return Senal(FS, (tuple(x),))
 
 
+def maximos(v: tuple[int, ...], umbral: float, signo: int = 1) -> list[int]:
+    """Posiciones de los máximos locales de signo·v por encima del umbral."""
+    u = dato(str(umbral))
+    w = [signo * s for s in v]
+    return [k for k in range(1, len(w) - 1) if w[k] > u and w[k] >= w[k - 1] and w[k] >= w[k + 1]]
+
+
 def rms(v: tuple[int, ...], a: float, b: float) -> float:
     seg = v[int(a * FS) : int(b * FS)]
     return math.sqrt(sum((s / UNO) ** 2 for s in seg) / len(seg))
@@ -55,7 +63,9 @@ def pots(*valores: str) -> tuple[int, ...]:
     return tuple(dato(v) for v in valores)
 
 
-@pytest.mark.parametrize("nombre", ["plate", "shimmer", "freeze", "hall", "cloud"])
+@pytest.mark.parametrize(
+    "nombre", ["plate", "shimmer", "freeze", "hall", "cloud", "cinta", "reverse"]
+)
 def test_cabe_en_el_nucleo(nombre: str) -> None:
     p = programa(nombre)
     assert cabe_en_el_rtl(p), f"{ciclos_rtl(p)} ciclos del RTL > 2 048"
@@ -120,13 +130,13 @@ def test_hall_el_t60_sigue_a_pot0_y_es_estereo() -> None:
 
 def test_cloud_la_modulacion_cambia_la_respuesta() -> None:
     """Sin modulación (pot3 = 0) el cloud es invariante: un impulso retrasado da la misma cola."""
-    retraso = int(0.2 * FS)
-    a, b = int(0.05 * FS), int(0.55 * FS)
+    retraso = int(0.1 * FS)
+    a, b = int(0.05 * FS), int(0.3 * FS)
 
     def colas(mod: str) -> tuple[tuple[int, ...], tuple[int, ...]]:
         c = Controles(pots("0.5", "0.3", "1", mod))
-        y0 = procesar(programa("cloud"), impulso(0.8), c).canales[0]
-        y1 = procesar(programa("cloud"), impulso(0.8, retraso), c).canales[0]
+        y0 = procesar(programa("cloud"), impulso(0.4), c).canales[0]
+        y1 = procesar(programa("cloud"), impulso(0.4, retraso), c).canales[0]
         return y0[a:b], y1[retraso + a : retraso + b]
 
     quieta, otra = colas("0")
@@ -134,10 +144,54 @@ def test_cloud_la_modulacion_cambia_la_respuesta() -> None:
     modulada, otra = colas("1")
     diferencia = math.sqrt(sum((p - q) ** 2 for p, q in zip(modulada, otra, strict=True)))
     energia = math.sqrt(sum(p * p for p in modulada))
-    assert diferencia > 0.3 * energia  # medido: 1,07
+    assert diferencia > 0.3 * energia  # medido: 0,98
 
 
-# Huellas bit-exact (sha256 de la salida estéreo de 0,1 s de impulso).
+def test_cinta_el_eco_llega_cuando_dice_pot0() -> None:
+    """El LFO del tiempo se desliza ~40 ms; el impulso llega a los 0,6 s, ya quieto."""
+    entrada = int(0.6 * FS)
+    largo = procesar(
+        programa("cinta"), impulso(1.5, entrada), Controles(pots("1", "0.5", "1", "0"))
+    ).canales[0]
+    (eco,) = maximos(largo, 0.1)
+    assert abs((eco - entrada) / FS - 0.8505) < 0.002
+    corto = procesar(
+        programa("cinta"), impulso(1.2, entrada), Controles(pots("0", "0.5", "1", "0"))
+    ).canales[0]
+    ecos = maximos(corto, 0.01)
+    niveles = [corto[k] for k in ecos]
+    # La realimentación repite el eco cada 0,18 s, y cada vez más bajo.
+    tiempos = [(k - entrada) / FS for k in ecos]
+    assert len(tiempos) == 3
+    assert all(abs(t - 0.1799 * n) < 0.002 for n, t in enumerate(tiempos, start=1))
+    assert niveles[0] > 2 * niveles[1] > 4 * niveles[2] > 0
+
+
+def test_cinta_satura_sin_desbocarse() -> None:
+    """Con realimentación 1 y entrada fuerte, CLIP sostiene el eco sin pasar del tope."""
+    n = int(0.3 * FS)
+    tono = tuple(dato(str(round(0.9 * math.sin(2 * math.pi * 220 * k / FS), 6))) for k in range(n))
+    x = Senal(FS, (tono + (0,) * int(0.9 * FS),))
+    y = procesar(programa("cinta"), x, Controles(pots("0", "1", "1", "0"))).canales[0]
+    assert max(abs(v) for v in y) <= DATO_MAX
+    assert 0.05 < rms(y, 0.8, 1.2) < 1.0
+
+
+def test_reverse_saca_la_senal_al_reves() -> None:
+    """Dos impulsos, A y después B: en la salida, B llega antes que A y a la misma distancia."""
+    distancia = 1000
+    x = [0] * FS
+    t0 = int(0.3 * FS)
+    x[t0], x[t0 + distancia] = dato("0.5"), dato("-0.25")
+    y = procesar(programa("reverse"), Senal(FS, (tuple(x),)), Controles(pots("1", "0", "1")))
+    a, b = maximos(y.canales[0], 0.01), maximos(y.canales[0], 0.005, -1)
+    invertidos = sum(1 for p in a for q in b if abs(p - q - distancia) <= 2)
+    directos = sum(1 for p in a for q in b if abs(q - p - distancia) <= 2)
+    assert invertidos >= 1 and directos == 0  # medido: 2 granos, los dos invertidos
+
+
+# Huellas bit-exact (sha256 de la salida estéreo de 0,1 s de impulso; más en
+# los ecos, que tardan más de 0,1 s en sonar).
 # Cambian si cambia la aritmética (ADR 0008), la ISA (ADR 0009) o el programa.
 HUELLAS = {
     "plate": "7967b952e0f3b48a",
@@ -145,11 +199,17 @@ HUELLAS = {
     "freeze": "8aaff05950123adf",
     "hall": "415e559bb7dd5042",
     "cloud": "496767ac991fd49c",
+    "cinta": "1b1f06252a1762ad",
+    "reverse": "2f113ede645767d1",
 }
+
+
+SEGUNDOS_HUELLA = {"cinta": 0.6, "reverse": 0.4}
 
 
 @pytest.mark.parametrize("nombre", sorted(HUELLAS))
 def test_huella_bit_exact(nombre: str) -> None:
-    y = procesar(programa(nombre), impulso(0.1), Controles(pots("0.5", "0.3", "0.5", "0.5")))
+    x = impulso(SEGUNDOS_HUELLA.get(nombre, 0.1))
+    y = procesar(programa(nombre), x, Controles(pots("0.5", "0.3", "0.5", "0.5")))
     datos = b"".join(v.to_bytes(3, "little", signed=True) for c in y.canales for v in c)
     assert hashlib.sha256(datos).hexdigest()[:16] == HUELLAS[nombre]

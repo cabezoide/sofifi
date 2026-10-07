@@ -1,0 +1,9 @@
+; SPDX-License-Identifier: MIT
+;
+; comun/mezcla.sasm — mezcla desde pot2: kwet = pot2 y kdry = 1 − pot2.
+; Necesita los registros kwet y kdry.
+
+        rdax  pot2, 1.0
+        wrax  kwet, -1.0
+        sof   1.0, 0.999
+        wrax  kdry, 0

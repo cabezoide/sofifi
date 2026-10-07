@@ -1,0 +1,67 @@
+; SPDX-License-Identifier: MIT
+;
+; reverse.sasm — Eco invertido: la señal sale al revés, en granos de 0,17 s
+; fundidos con ventanas complementarias. Diseño propio
+; (docs/investigacion/INVESTIGACION.md §1.1).
+;
+; Un LFO RAMP aleja el punto de lectura 2 muestras por muestra: la lectura
+; retrocede 1 muestra por muestra, así que la señal sale invertida y con su
+; tono. Dos lecturas desfasadas media vuelta (CHO con `na` y `na|media`) se
+; funden con ventanas triangulares que suman 1: cuando una salta, la otra suena.
+; Cada grano dura W/2 muestras. W no puede pasar de 16 384 (ConfigLfo), así que
+; los granos duran 0,17 s.
+;
+; pot0 = tono            (0 → oscuro · 1 → brillante)
+; pot1 = realimentación  (0 → una pasada · 1 → casi infinita)
+; pot2 = mezcla          (0 → seco · 1 → solo eco invertido)
+
+equ  w     16384              ; ventana del LFO RAMP, en muestras
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  ktono    reg2
+equ  lp       reg3
+equ  inv      reg4
+equ  invw     reg5
+
+mem  rev   w + 3
+
+lfo  0  ramp w
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 4/w                    ; rate = 2^25/W: el desplazamiento crece 2 muestras por muestra
+        wrax  lfo0_rate, 0
+inicio:
+; ── controles ────────────────────────────────────────────────────────
+include  comun/mezcla.sasm
+        rdax  pot0, 0.9
+        sof   1.0, 0.05
+        wrax  ktono, 0
+; ── lectura invertida: dos granos fundidos ───────────────────────────
+        cho   rev + 1, 1.0, lfo0, na
+        cho   rev + 1, 1.0, lfo0, na|media
+        rdax  lp, -1.0                  ; paso bajo: lp = lp + ktono·(x − lp)
+        mulx  ktono
+        rdax  lp, 1.0
+        wrax  lp, 1.0
+        wrax  inv, 1.0
+; ── realimentación y escritura ───────────────────────────────────────
+        mulx  pot1
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        sof   2/3, 0                    ; curva_suave(2x/3): pendiente 1, techo ±1
+        clip
+        wra   rev, 0
+; ── salida ───────────────────────────────────────────────────────────
+        rdax  inv, 1.0
+        mulx  kwet
+        wrax  invw, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  invw, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  invw, 1.0
+        wrax  dacr, 0
