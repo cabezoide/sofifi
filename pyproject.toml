@@ -8,7 +8,7 @@ requires-python = ">=3.12"
 dependencies = ["numpy>=2.0"]
 
 [project.optional-dependencies]
-dev = ["pytest", "pytest-cov", "ruff", "mypy", "pyyaml", "types-PyYAML"]
+dev = ["pytest", "pytest-cov", "hypothesis", "ruff", "mypy", "pyyaml", "types-PyYAML"]
 
 [build-system]
 requires = ["setuptools>=69"]
@@ -34,6 +34,9 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+# RUF001-003 (Unicode ambiguo): la prosa técnica en español usa ×, ², ³ y ·
+# a propósito; en la Fase 01 produjo 100 % falsos positivos (8 de 8).
+ignore = ["RUF001", "RUF002", "RUF003"]
 
 [tool.mypy]
 files = ["model/sofifi", "model/tests", "scripts"]

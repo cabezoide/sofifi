@@ -30,3 +30,7 @@ Opción 2.
 
 - **SD como delay:** latencia no determinista.
 - **Esperar:** bloquea todo lo que sí cabe.
+
+## Actualización 2026-10-07 (Fase 01, ADR 0008)
+
+La reserva sube de unos 12 a **14 bloques**: el microcódigo de 54 bit para 2 048 instrucciones ocupa 6 bloques (2 048 × 54 bit), no 4. La memoria de retardo queda en **42 bloques = 43 008 palabras** de 18 bit, unos 0,88 s a 48 828 Hz. La decisión no cambia.

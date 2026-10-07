@@ -11,3 +11,4 @@ Se lee antes de proponer un cambio estructural. Un ADR no se reescribe: se le a�
 | [0005](0005-2048-ciclos-exactos-valen-mas-que-48-khz-exactos.md) | 2 048 ciclos exactos valen más que 48 kHz exactos (fs = 48 828 Hz) | Aceptado |
 | [0006](0006-los-efectos-son-programas-no-modulos-rtl.md) | Los efectos son programas, no módulos RTL (núcleo tipo FV-1) | Aceptado |
 | [0007](0007-el-espanol-es-la-fuente-y-las-traducciones-llevan-sello.md) | El español es la fuente; las traducciones llevan sello | Aceptado |
+| [0008](0008-la-aritmetica-es-parte-del-contrato-con-el-rtl.md) | La aritmética es parte del contrato con el RTL (formatos Q, redondeo, tablas exactas) | Aceptado |

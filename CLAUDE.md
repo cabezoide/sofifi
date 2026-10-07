@@ -44,3 +44,4 @@ Ver `docs/EXTENDING.md`.
 | ADR 0005 | 2 048 ciclos exactos valen más que 48 kHz exactos |
 | ADR 0006 | Los efectos son programas, no módulos RTL |
 | ADR 0007 | El español es la fuente; las traducciones llevan sello (es · en · zh-CN) |
+| ADR 0008 | La aritmética es parte del contrato con el RTL |
