@@ -5,7 +5,7 @@ La guitarra es un arpegio de Em9 con cuerdas Karplus-Strong y semilla fija, así
 que todo es determinista: el núcleo es bit-exact y no hay remuestreo (la
 señal ya está a 48 828 Hz). Volver a correrlo debe dar los mismos bytes.
 
-Uso: ``.venv/bin/python scripts/generar_demos.py``  (unos 2 min)
+Uso: ``.venv/bin/python scripts/generar_demos.py``  (unos 3 min)
 """
 
 from __future__ import annotations
@@ -29,12 +29,17 @@ SEMILLA = 7
 
 # (programa, pots, tramos de freeze en segundos, cola en segundos)
 DEMOS: tuple[tuple[str, dict[int, str], tuple[tuple[float, float], ...], float], ...] = (
-    ("plate", {0: "0.7", 1: "0.3", 2: "0.45"}, (), 5.0),
-    ("shimmer", {0: "0.75", 1: "0.25", 2: "0.55", 3: "0.6"}, (), 8.0),
-    ("freeze", {0: "0.6", 1: "0.3", 2: "0.5"}, ((2.5, 10.0),), 8.0),
-    ("hall", {0: "0.75", 1: "0.35", 2: "0.45"}, (), 6.0),
-    ("cloud", {0: "0.7", 1: "0.3", 2: "0.55", 3: "0.6"}, (), 8.0),
+    ("plate", {0: "0.7", 1: "0.3", 2: "0.45"}, (), 4.0),
+    ("shimmer", {0: "0.75", 1: "0.25", 2: "0.55", 3: "0.6"}, (), 6.0),
+    ("freeze", {0: "0.6", 1: "0.3", 2: "0.5"}, ((2.5, 8.0),), 6.0),
+    ("hall", {0: "0.75", 1: "0.35", 2: "0.45"}, (), 5.0),
+    ("cloud", {0: "0.7", 1: "0.3", 2: "0.55", 3: "0.6"}, (), 6.0),
+    ("cinta", {0: "0.45", 1: "0.55", 2: "0.4", 3: "0.5"}, (), 5.0),
+    ("reverse", {0: "0.6", 1: "0.4", 2: "0.5"}, (), 3.0),
 )
+# PCM de 16 bit: para escuchar no se pierde nada, y las demos caben en los
+# 16 MiB que admite la compuerta secrets. El render es bit-exact en 24 bit.
+BITS_DEMO = 16
 
 
 def guitarra() -> Senal:
@@ -58,7 +63,7 @@ def guitarra() -> Senal:
 
 def main() -> int:
     seca = DESTINO / "demo_guitarra.wav"
-    SumideroWav(seca).escribir(guitarra())
+    SumideroWav(seca, BITS_DEMO).escribir(guitarra())
     print(f"seca → {seca.relative_to(ROOT)}")
     for nombre, pots, tramos, cola in DEMOS:
         controles = Controles(
@@ -69,7 +74,7 @@ def main() -> int:
         renderizar(
             FuenteProgramaArchivo(ROOT / "programas" / f"{nombre}.sasm"),
             FuenteWav(seca),
-            SumideroWav(salida),
+            SumideroWav(salida, BITS_DEMO),
             controles,
             round(cola * FS_WAV),
         )

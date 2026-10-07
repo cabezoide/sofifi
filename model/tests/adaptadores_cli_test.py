@@ -33,6 +33,18 @@ def test_wav_24_bit_ida_y_vuelta(tmp_path: Path) -> None:
     assert FuenteWav(ruta).leer() == s
 
 
+def test_wav_se_escribe_en_16_bit_redondeado(tmp_path: Path) -> None:
+    s = Senal(FS_WAV, ((DATO_MAX, DATO_MIN, 384, -129, 256 * 1000),))
+    ruta = tmp_path / "x.wav"
+    SumideroWav(ruta, 16).escribir(s)
+    with wave.open(str(ruta), "rb") as w:
+        assert w.getsampwidth() == 2
+    # DATO_MAX satura a 32 767; −129 redondea a −1 y 384 a 2 (·256 al volver a S.23).
+    assert FuenteWav(ruta).leer().canales == ((DATO_MAX - 255, DATO_MIN, 512, -256, 256000),)
+    with pytest.raises(ValueError, match="16 o 24"):
+        SumideroWav(ruta, 8)
+
+
 def test_wav_16_bit_se_alinea_a_s23(tmp_path: Path) -> None:
     ruta = tmp_path / "x.wav"
     _wav16(ruta, [16384, -32768])

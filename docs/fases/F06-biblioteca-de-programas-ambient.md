@@ -57,6 +57,14 @@ Además, la directiva `include` en el ensamblador.
 - **Prueba del cloud:** mide la modulación como pérdida de invariancia. Con pot3 = 0, un impulso retrasado da la misma cola, bit a bit; con pot3 = 1, no.
 - **El cloud no cabe en `hil_nucleo`** (38 bloques de retardo). Los programas nuevos están probados en simulación, no en la placa.
 
+**Estado del PR 2 del plan (2026-10-07):** hecho, con estas diferencias.
+
+- **Cinta:** eco de 0,18 a 0,85 s, 658 ciclos y 41 600 palabras. La ISA no tiene un puntero de lectura variable. El tiempo sale de un LFO senoidal parado en un cuarto de vuelta: el retardo del `CHO` sigue a `lfo0_depth`. Al girar pot0, el tono del eco se desliza, como en una cinta.
+- **Wow y flutter con dos LFO senoidales**, no con SIN + RND. El LFO RND salta de tono (ver el cloud) y en una cinta se oye como un defecto.
+- **Reverse:** granos de 0,17 s, 431 ciclos y 16 388 palabras. El grano dura W/2 y la ventana W del LFO RAMP no pasa de 16 384 muestras. Para granos más largos hay que ampliar W en `ConfigLfo` (ADR 0009).
+- **La compuerta no ve el eco de la cinta:** compara 1 000 muestras y el primer eco llega a las 8 782. La aceptación usa 12 000 muestras con pot0 = 0.
+- Las huellas de cinta y reverse duran 0,6 s y 0,4 s: en 0,1 s solo suena la señal seca.
+
 ## Criterios de aceptación
 
 - Cada programa cabe en el núcleo.

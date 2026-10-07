@@ -11,8 +11,10 @@
 | `demo_guitarra.wav` | — (seca / dry / 干声) | | | | | |
 | `demo_plate.wav` | `plate.sasm` | 0,70 | 0,30 | 0,45 | | |
 | `demo_shimmer.wav` | `shimmer.sasm` | 0,75 | 0,25 | 0,55 | 0,60 | |
-| `demo_freeze.wav` | `freeze.sasm` | 0,60 | 0,30 | 0,50 | | 2,5 s → 10 s |
+| `demo_freeze.wav` | `freeze.sasm` | 0,60 | 0,30 | 0,50 | | 2,5 s → 8 s |
 | `demo_hall.wav` | `hall.sasm` | 0,75 | 0,35 | 0,45 | | |
 | `demo_cloud.wav` | `cloud.sasm` | 0,70 | 0,30 | 0,55 | 0,60 | |
+| `demo_cinta.wav` | `cinta.sasm` | 0,45 (tiempo/time) | 0,55 (realimentación/feedback) | 0,40 | 0,50 (wow) | |
+| `demo_reverse.wav` | `reverse.sasm` | 0,60 (tono/tone) | 0,40 (realimentación/feedback) | 0,50 | | |
 
-PCM de 24 bit a 48 828 Hz (ADR 0005). 24-bit PCM at 48,828 Hz. 24 位 PCM，48,828 Hz。
+PCM de 16 bit a 48 828 Hz (ADR 0005); el render es bit-exact en 24 bit. 16-bit PCM at 48,828 Hz; the render is bit-exact at 24 bits. 16 位 PCM，48,828 Hz；渲染在 24 位下逐位精确。
