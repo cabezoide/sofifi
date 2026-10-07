@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=a21c266fcab1 estado=al_dia -->
+<!-- i18n: fuente=README.md sha=cb5f114b0c98 estado=al_dia -->
 # SOFIFI — Soundscapes On FPGA: Integrated Filters & Impulses
 
 *In Spanish: Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada.*
@@ -88,9 +88,14 @@ If a tool is missing, the gate says so (`WARN … NO CORRIÓ`); it does not fake
 |---|---|
 | Tang Primer 25K + Dock | available |
 | 64 GB microSD (PMOD TF) | available |
-| I2S codec (PCM1808 + PCM5102A or Digilent Pmod I2S2) | **missing** |
+| I2S codec (PCM1808 + PCM5102A or Digilent Pmod I2S2) | **missing** (Phase 10) |
+| MCP3208 + potentiometers | missing (Phase 08; the Dock buttons act as footswitches) |
+| 128×64 SSD1306 OLED | missing (Phase 09) |
 | Guitar input buffer | missing (temporary: any buffered pedal) |
 | Sipeed SDRAM module | future (enables long looper and granular) |
+
+Phases that need missing hardware are at the end of the plan (08 to 11), so up
+to Phase 07 the board and the microSD are enough.
 
 ## Languages
 
