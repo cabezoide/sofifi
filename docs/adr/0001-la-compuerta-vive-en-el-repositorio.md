@@ -33,3 +33,20 @@ Trabajos del día 0:
 ## Alternativas descartadas
 
 - **Solo Actions:** sin protección de rama no bloquea nada, y la síntesis no cabe en el plan gratuito.
+
+## Actualización 2026-10-07 (demos de audio versionadas)
+
+La persona propietaria pide versionar las demos de audio en `demo_examples/`. La regla de `scripts/check_secrets_hygiene.sh` («ningún fichero de más de 1 MiB: los binarios van a releases») se mueve, con motivo, solo para esa carpeta: hasta 4 MiB por WAV y 16 MiB en total.
+
+Las demos no son binarios huérfanos: `scripts/generar_demos.py` las regenera byte a byte, porque el núcleo es bit-exact y la guitarra sintética tiene semilla fija.
+
+Si `demo_examples/` necesita superar los 16 MiB, las demos pasan a assets de release en lugar de subir el techo.
+
+## Actualización 2026-10-07 (PRs apilados)
+
+Con PRs apilados, GitHub solo reapunta la base del siguiente si se borra la rama base al fusionar. En la Fase 01, los PRs #2, #3 y #4 se fusionaron en sus ramas base y no en `main`, y hubo que llevarlos con el #5.
+
+Desde ahora se cumplen tres reglas:
+- se fusiona con `--delete-branch`;
+- antes de fusionar se comprueba que la base sea `main`;
+- `gh pr edit --base` falla por la deprecación de Projects classic, así que la base se cambia con `gh api -X PATCH repos/<dueño>/<repo>/pulls/N -f base=main`.

@@ -23,6 +23,7 @@ results.xml
 out/
 *.wav
 !model/tests/data/*.wav
+!demo_examples/*.wav
 
 # Entorno local
 .env

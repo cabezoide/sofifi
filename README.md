@@ -27,6 +27,9 @@ implementado en una FPGA **Sipeed Tang Primer 25K** (Gowin GW5A-LV25).
 | `programas/shimmer.sasm` | decay | damping | mezcla | shimmer | — |
 | `programas/freeze.sasm` | decay | damping | mezcla | — | `--freeze INICIO:FIN` (segundos) |
 
+En `demo_examples/` hay demos ya procesadas: una guitarra sintética (arpegio
+de Em9) pasada por los tres programas. Se regeneran con `scripts/generar_demos.py`.
+
 El WAV de entrada puede ser de 16, 24 o 32 bit y de cualquier frecuencia; se
 remuestrea a 48 828 Hz. `sofifi asm` genera el microcódigo (`.hex` + `.json`).
 

@@ -42,12 +42,26 @@ if [[ ${#TEXT_FILES[@]} -gt 0 ]]; then
 fi
 
 # 3. Binarios grandes (bitstreams, WAV de pruebas) no se versionan: van a releases.
+#    Excepción acotada (ADR 0001, actualización 2026-10-07): las demos de
+#    demo_examples/, regenerables con scripts/generar_demos.py, hasta 4 MiB por
+#    fichero y 16 MiB en total.
+DEMO_MAX=$((4 * 1048576))
+DEMO_TOTAL_MAX=$((16 * 1048576))
+demo_total=0
 for f in "${FILES[@]}"; do
   size=$(stat -c %s "$f")
-  if (( size > 1048576 )); then
+  if [[ "$f" == demo_examples/*.wav ]]; then
+    demo_total=$((demo_total + size))
+    if (( size > DEMO_MAX )); then
+      echo "secrets: demo de más de 4 MiB: $f ($size bytes)"; RC=1
+    fi
+  elif (( size > 1048576 )); then
     echo "secrets: fichero de más de 1 MiB versionado: $f ($size bytes)"; RC=1
   fi
 done
+if (( demo_total > DEMO_TOTAL_MAX )); then
+  echo "secrets: demo_examples/ suma $demo_total bytes (> 16 MiB); acórtalas o pásalas a una release"; RC=1
+fi
 
 [[ $RC -eq 0 ]] && echo "secrets: ${#FILES[@]} ficheros limpios."
 exit $RC

@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=63a83d792245 estado=al_dia -->
+<!-- i18n: fuente=README.md sha=60b9652e1d30 estado=al_dia -->
 # SOFIFI — 集成 FPGA 上的沉浸式波形与滤波合成器
 
 *英文名：Soundscapes On FPGA: Integrated Filters & Impulses；西班牙文名：Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada。*
@@ -27,6 +27,9 @@ SOFIFI 是一款氛围（ambient）吉他效果器（混响、shimmer、磁带�
 | `programas/plate.sasm` | 衰减 | 阻尼 | 干湿比 | — | — |
 | `programas/shimmer.sasm` | 衰减 | 阻尼 | 干湿比 | shimmer 量 | — |
 | `programas/freeze.sasm` | 衰减 | 阻尼 | 干湿比 | — | `--freeze 开始:结束`（秒） |
+
+`demo_examples/` 中有预先渲染好的演示：一段合成吉他（Em9 琶音）分别经过
+三个程序处理。可用 `scripts/generar_demos.py` 重新生成。
 
 输入 WAV 可以是 16、24 或 32 位、任意采样率，会被重采样到 48,828 Hz。
 `sofifi asm` 生成微码（`.hex` + `.json`）。（`--cola` 为尾音时长，单位秒。）

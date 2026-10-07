@@ -36,6 +36,7 @@ MAPAS = [
     "CLAUDE.md",
     "SECURITY.md",
     "docs/EXTENDING.md",
+    "demo_examples/README.md",
     "docs/security/CUMPLIMIENTO.md",
     "model/AGENTS.md",
     "rtl/AGENTS.md",
