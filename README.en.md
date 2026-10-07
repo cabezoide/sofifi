@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=63a83d792245 estado=al_dia -->
+<!-- i18n: fuente=README.md sha=60b9652e1d30 estado=al_dia -->
 # SOFIFI — Soundscapes On FPGA: Integrated Filters & Impulses
 
 *In Spanish: Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada.*
@@ -27,6 +27,10 @@ implemented on a **Sipeed Tang Primer 25K** FPGA (Gowin GW5A-LV25).
 | `programas/plate.sasm` | decay | damping | mix | — | — |
 | `programas/shimmer.sasm` | decay | damping | mix | shimmer | — |
 | `programas/freeze.sasm` | decay | damping | mix | — | `--freeze START:END` (seconds) |
+
+`demo_examples/` contains pre-rendered demos: a synthetic guitar (an Em9
+arpeggio) run through the three programs. They are regenerated with
+`scripts/generar_demos.py`.
 
 The input WAV may be 16, 24 or 32-bit at any sample rate; it is resampled to
 48,828 Hz. `sofifi asm` generates the microcode (`.hex` + `.json`). (`--cola` is
