@@ -1,4 +1,4 @@
-# Fase 11 — Integración del pedal y limitador de seguridad
+# Fase 12 — Integración del pedal y limitador de seguridad
 
 > Planificada: no está en el control hasta cerrarse.
 >
@@ -18,7 +18,7 @@ SECURITY.md (limitador de salida fuera del microcódigo) y todas las fases anter
 
 ## Diagnóstico
 
-- **Se reutiliza:** todos los bloques de las fases 02 a 10.
+- **Se reutiliza:** todos los bloques de las fases 02 a 11.
 - **Falta:**
   - top integrado;
   - limitador fijo;
@@ -51,6 +51,20 @@ El microcódigo lo escribe cualquiera que tenga la SD (SECURITY.md), así que **
 - Timing a 100 MHz.
 - El limitador no supera su techo con ningún programa.
 - `make release-check` existe y pasa con la placa conectada.
+
+## Ampliaciones de la Fase 03
+
+Punto 22 de la hoja de ruta (`docs/investigacion/ESTADO_DEL_ARTE_2026.md`, hoja de ruta): banco de 24 bandas (blur y vocoder) y muelle dispersivo, si queda presupuesto.
+
+Después de esta fase quedan los saltos de hardware. Cada uno necesita su ADR:
+
+| Punto | Cambio | Hardware | ADR |
+|---|---|---|---|
+| 23 | Segundo núcleo o VLIW: dos programas en paralelo y cambio de preset sin cortes | Ninguno | ADR 0009 |
+| 24 | SDRAM con lecturas anticipadas: looper largo y granular de 5-30 s | Módulo SDRAM | ADR 0004 (revisión prevista) |
+| 25 | Coprocesador STFT de 1 024 puntos: shimmer por vocoder de fase y freeze espectral | Ninguno | ADR 0006 y ADR 0009 |
+| 26 | USB-MIDI de clase | Microcontrolador puente | — |
+| 27 | Drive neuronal pequeño (S4D o LSTM-8), baja prioridad | Ninguno | ADR 0006 |
 
 ## Lo que NO entra
 

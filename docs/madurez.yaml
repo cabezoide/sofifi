@@ -21,7 +21,7 @@ capacidades:
     evidencia: model/tests/nucleo_test.py
     scope: "aritmética, ISA de 16 instrucciones, intérprete, ensamblador y CLI; pruebas en la compuerta dura"
     no_cubre: "la equivalencia con el RTL, que aún no existe"
-    brecha: "Fase 03: RTL del núcleo y testbench que lo compare muestra a muestra con el modelo"
+    brecha: "Fase 04: RTL del núcleo y testbench que lo compare muestra a muestra con el modelo"
   - id: M-04
     capacidad: Documentación trilingüe (es, en, zh-CN)
     nivel: 4
@@ -42,4 +42,4 @@ capacidades:
     evidencia: sim/comun/uart_tx_test.py
     scope: "UART TX con testbench cocotb y lint verilator en la compuerta dura; síntesis de hola_uart en la de release; mensaje recibido de la placa (MED-03)"
     no_cubre: "la prueba en placa es manual: ninguna compuerta programa la FPGA; tampoco hay UART RX ni programación de la flash"
-    brecha: "Fase 04: banco de pruebas en placa por UART, con RX"
+    brecha: "Fase 05: banco de pruebas en placa por UART, con RX"

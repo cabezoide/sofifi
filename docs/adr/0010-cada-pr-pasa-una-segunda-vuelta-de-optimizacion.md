@@ -41,3 +41,7 @@ Opción 3.
 ## Alternativas descartadas
 
 - **Exigir un porcentaje de área fijo por top:** no hay referencia hasta que exista el núcleo, y un listón inventado contradice P9.
+
+## Actualización 2026-10-07 (renumeración de fases)
+
+Entra una fase de investigación como nueva Fase 03, «Estado del arte y hoja de ruta». El núcleo DSP en RTL, citado arriba como Fase 03, pasa a ser la Fase 04. La decisión no cambia.

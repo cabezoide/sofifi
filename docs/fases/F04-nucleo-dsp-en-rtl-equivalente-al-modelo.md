@@ -1,4 +1,4 @@
-# Fase 03 — Núcleo DSP en RTL equivalente al modelo
+# Fase 04 — Núcleo DSP en RTL equivalente al modelo
 
 > Planificada: no está en el control hasta cerrarse.
 
@@ -43,6 +43,14 @@ El modelo ejecuta las instrucciones una detrás de otra, con efectos inmediatos.
 
 - Igualdad exacta con el modelo en 0,1 s de impulso para los tres programas, y en 1 s para el plate.
 - La síntesis cabe y cierra timing a 100 MHz. Si no cierra, se declara la frecuencia real y se revisa el ADR 0005.
+
+## Ampliaciones de la Fase 03
+
+Hoja de ruta (`docs/investigacion/ESTADO_DEL_ARTE_2026.md`, hoja de ruta). El núcleo no las implementa, pero **reserva su sitio** para no rehacer la ISA después:
+
+- códigos de operación para `RDAA` y `WRAA`, el direccionamiento absoluto (punto 11, Fase 07);
+- un flag de acceso para la línea de retardo en coma flotante de 12 bit (punto 14, Fase 07);
+- un LFO que entregue seno y coseno a la vez, para la matriz de Givens (punto 3, Fase 06).
 
 ## Lo que NO entra
 

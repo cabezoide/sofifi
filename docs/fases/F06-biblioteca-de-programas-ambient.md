@@ -1,4 +1,4 @@
-# Fase 05 — Biblioteca de programas ambient
+# Fase 06 — Biblioteca de programas ambient
 
 > Planificada: no está en el control hasta cerrarse.
 
@@ -44,6 +44,24 @@ Además, la directiva `include` en el ensamblador.
 - Cada programa tiene una prueba acústica que mide su propiedad característica: decay, modulación, inversión temporal o envolvente.
 - Huellas y demos regeneradas.
 
+## Ampliaciones de la Fase 03
+
+Puntos de la hoja de ruta (`docs/investigacion/ESTADO_DEL_ARTE_2026.md`, hoja de ruta). Ninguno cambia la ISA.
+
+| Punto | Programa o herramienta | Coste estimado [INF] |
+|---|---|---|
+| 2 | Modulación aleatoria filtrada (LFSR) en el plate | 3-4 instrucciones por línea |
+| 3 | Matriz de Givens con LFO en el freeze: modula sin perder energía | +10-20 instrucciones |
+| 4 | Detección de ataque con swell, ducking y auto-freeze | < 50 instrucciones |
+| 5 | FDN incolora de 4-8 líneas y difusor de velvet noise | 100-220 instrucciones |
+| 6 | Ajuste DDSP en el PC con cuantización simulada | 0 en el pedal |
+| 7 | Shimmer con criterio energético | 20-60 instrucciones |
+| 8 | Cinta: wow/flutter, saturación y «stretch» por pasos armónicos | 40-70 instrucciones |
+| 9 | Ensemble de 3 voces | 25-30 instrucciones |
+| 10 | Traductor de SpinASM a SOFIFI | 0 en el pedal |
+
+La matriz de Givens se verifica primero en el modelo bit-exact: la cuantización a 18 bit puede romper su ortogonalidad (ADR 0008).
+
 ## Lo que NO entra
 
-Granular y looper (Fase 06).
+Granular y looper (Fase 07).
