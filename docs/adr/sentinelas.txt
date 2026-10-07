@@ -12,3 +12,4 @@ rtl/top/*.cst
 rtl/top/*.sdc
 rtl/core/isa*
 model/sofifi/domain/aritmetica.py
+model/sofifi/domain/isa.py
