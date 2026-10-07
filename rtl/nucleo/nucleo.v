@@ -8,10 +8,17 @@
 //   3. ACC = 0, LR = 0 y ejecuta el programa de principio a fin.
 //   4. La memoria avanza; dacl y dacr salen por `dac_l`/`dac_r` y `fin` da un pulso.
 //
+// Al salir del reset, el núcleo borra la memoria de retardo (cfg_palabras
+// ciclos) para empezar como el modelo, con todo a cero; mientras tanto,
+// `ocupado` vale 1 y no atiende ticks. El reset no borra la BSRAM por sí solo.
+//
 // Primera versión: multiciclo sin solapamiento (spec de la Fase 04). Cada
 // instrucción espera a su resultado antes de la siguiente. El multiplicador y la
 // memoria tienen la misma latencia: se presentan operandos en un ciclo y el
-// resultado está 3 ciclos después (LAT). `ciclos` da los de la última muestra.
+// resultado está 5 ciclos después (LAT). Las dos salidas van registradas: la
+// BSRAM en modo bypass y la lógica detrás de ella fallaban en el silicio por
+// encima de 100 MHz aunque nextpnr diera más (fails.md, F-11).
+// `ciclos` da los de la última muestra.
 //
 // El programa se carga por `prog_*` (palabras de 54 bit) y `cfg_*` (lo que el
 // ensamblador deja en el .json). Se cargan con el núcleo parado.
@@ -52,21 +59,24 @@ module nucleo #(
                      MULX = 6'd8, SOF = 6'd9,  CLIP = 6'd10, SKP = 6'd11,
                      CHO = 6'd12;
     localparam [1:0] T_SIN = 2'd0, T_RAMP = 2'd2;   // RND (1): rama por defecto de CHO
-    localparam [1:0] LAT = 2'd3;
+    localparam [2:0] LAT = 3'd5;
 
     // ── Estado ────────────────────────────────────────────────────────────
     localparam [2:0] E_PARADO = 3'd0, E_LFO = 3'd1, E_LEER = 3'd2, E_DECO = 3'd3,
-                     E_EJEC = 3'd4, E_FIN = 3'd5;
+                     E_EJEC = 3'd4, E_FIN = 3'd5, E_BORRAR = 3'd6, E_ESCR = 3'd7;
     reg [2:0]  estado;
     reg [11:0] pc;
     reg [4:0]  paso;
-    reg [1:0]  espera;
+    reg [2:0]  espera;
     reg        primera;
     reg signed [47:0] acc;
     reg signed [23:0] lr;
     reg signed [23:0] regs [0:63];
     reg [53:0] ins;
     reg [15:0] cuenta;
+    reg [15:0] borrar;
+    reg [1:0]  lee;
+    reg        escr;
 
     assign ocupado = (estado != E_PARADO);
 
@@ -84,11 +94,11 @@ module nucleo #(
     reg         [1:0]  tipo_d;
     reg         [14:0] exc_d;
 
-    // ── Microcódigo: 2 048 × 54 en BSRAM, lectura registrada ──────────────
-    // Con bsram_dp, Yosys lo mapea a DPX9B. Escrito aquí como array, una parte
-    // salía en SPX9, que da violaciones de hold en el GW5A (Fase 04).
+    // ── Microcódigo: 2 048 × 54 en BSRAM, lectura en 3 ciclos ─────────────
+    // bsram_pipe: bloques con registro de salida (F-11). E_LEER espera a la
+    // palabra. Escrito como array, una parte salía en SPX9 (hold, Fase 04).
     wire [53:0] ins_leida;
-    bsram_dp #(.PALABRAS(2048), .ANCHO(54)) u_microcodigo (
+    bsram_pipe #(.PALABRAS(2048), .ANCHO(54)) u_microcodigo (
         .clk(clk), .we(prog_we), .dir_w(prog_dir), .dato_w(prog_dato),
         .dir_r(pc[10:0]), .dato_r(ins_leida)
     );
@@ -104,8 +114,13 @@ module nucleo #(
     // ── Multiplicador (LAT ciclos) ────────────────────────────────────────
     reg  signed [26:0] ma;
     reg  signed [35:0] mb;
-    wire signed [62:0] p;
-    mult_27x36 u_mult (.clk(clk), .a(ma), .b(mb), .p(p));
+    wire signed [62:0] p_mult;
+    reg  signed [62:0] p_1, p;     // salida registrada dos veces: LAT igual a la memoria
+    mult_27x36 u_mult (.clk(clk), .a(ma), .b(mb), .p(p_mult));
+    always @(posedge clk) begin
+        p_1 <= p_mult;
+        p   <= p_1;
+    end
     function automatic signed [26:0] a27(input signed [24:0] v);
         a27 = {{2{v[24]}}, v};
     endfunction
@@ -148,14 +163,26 @@ module nucleo #(
     // ── ALU y curva suave ─────────────────────────────────────────────────
     reg  signed [23:0] x;          // operando guardado (CLIP, SIN)
     reg  signed [25:0] tres_x;     // 3·x, calculado al fijar x
-    reg  signed [23:0] y_clip;     // curva suave registrada (CLIP)
+    reg  signed [23:0] y_clip;     // curva suave registrada (CLIP y LFO SIN)
+    reg  signed [24:0] dif;        // a24 − R (RDFX), registrado
+    reg  signed [23:0] v_r;        // valor Hermite convertido a dato, registrado
+    // Todas las entradas del multiplicador salen de registros: con aritmética
+    // delante, el multiplexor de `ma` era el camino crítico (fails.md, F-11).
+    always @(posedge clk) dif <= {a24[23], a24} - {r_d[23], r_d};
     wire signed [47:0] acc_alu;
-    alu u_alu (.op(op), .acc(acc), .p(p), .lr(lr), .r(r_d), .addr(ad), .acc_sig(acc_alu));
+    // Salida de la ALU registrada: E_ESCR la escribe en el ACC un ciclo después
+    // (la ALU entera en el mismo ciclo que el ACC era camino crítico, F-11).
+    reg  signed [47:0] alu_r;
+    always @(posedge clk) alu_r <= acc_alu;
+    alu #(.REGISTRADA(1)) u_alu (
+        .clk(clk), .op(op), .acc(acc), .p(p), .lr(lr), .r(r_d), .addr(ad), .acc_sig(acc_alu)
+    );
     wire signed [23:0] curva;
     curva_fin u_curva (.tres_x(tres_x), .p(p), .y(curva));
 
     // ── CHO: desplazamiento, lecturas y suma Hermite ──────────────────────
     reg  signed [16:0] base;       // dirección entera de la lectura modulada
+    reg         [23:0] q8;         // desplazamiento de la lectura, en 1/256 de muestra
     reg  signed [47:0] suma;
     wire signed [23:0] v_hermite;
     acc_a_dato u_v (.acc(suma), .dato(v_hermite));
@@ -177,13 +204,19 @@ module nucleo #(
         mavanzar    <= 1'b0;
         lfo_avanzar <= 1'b0;
         if (rst) begin
-            estado <= E_PARADO; pc <= 12'd0; paso <= 5'd0; espera <= 2'd0;
+            estado <= E_BORRAR; borrar <= 16'd0; lee <= 2'd0; escr <= 1'b0;
+            pc <= 12'd0; paso <= 5'd0; espera <= 3'd0;
             primera <= 1'b1; acc <= 48'sd0; lr <= 24'sd0; ins <= 54'd0;
             dac_l <= 24'sd0; dac_r <= 24'sd0; ciclos <= 16'd0; cuenta <= 16'd0;
             for (i = 0; i < 64; i = i + 1) regs[i] <= 24'sd0;
         end else begin
-            if (estado != E_PARADO) cuenta <= cuenta + 1'b1;
+            if (estado != E_PARADO && estado != E_BORRAR) cuenta <= cuenta + 1'b1;
             case (estado)
+            E_BORRAR: begin
+                mwe <= 1'b1; mdir_w <= {1'b0, borrar}; mdato_w <= 24'sd0;
+                if (borrar == cfg_palabras - 1'b1) estado <= E_PARADO;
+                else borrar <= borrar + 1'b1;
+            end
             E_PARADO: if (tick) begin
                 regs[ADCL] <= adc_l;
                 regs[ADCR] <= adc_r;
@@ -194,7 +227,14 @@ module nucleo #(
                 estado <= E_LFO;
             end
             E_LFO: if (lfo_listo) estado <= E_LEER;
-            E_LEER: estado <= (pc == cfg_instrucciones) ? E_FIN : E_DECO;
+            E_LEER: begin   // la palabra de pc tarda 3 ciclos en salir del microcódigo
+                if (lee == 2'd2) begin
+                    lee <= 2'd0;
+                    estado <= (pc == cfg_instrucciones) ? E_FIN : E_DECO;
+                end else begin
+                    lee <= lee + 1'b1;
+                end
+            end
             E_DECO: begin
                 ins <= ins_leida;
                 r_d      <= regs[ins_leida[47:42]];
@@ -205,18 +245,20 @@ module nucleo #(
                 actual_d <= lfo_actual;
                 tipo_d   <= cfg_lfo_tipos[2*sel_leida +: 2];
                 exc_d    <= cfg_lfo_excursiones[15*sel_leida +: 15];
-                paso <= 5'd0; espera <= 2'd0;
+                paso <= 5'd0; espera <= 3'd0;
                 estado <= E_EJEC;
             end
-            E_EJEC: if (espera != 2'd0) begin
+            E_EJEC: if (espera != 3'd0) begin
                 espera <= espera - 1'b1;
             end else begin
                 // Por defecto, la instrucción termina en este ciclo.
                 case (op)
                 RDAX, MAXX, WRA, WRAX, WRAP, RDFX, MULX, SOF:
-                    if (paso == 5'd0) begin
+                    if (paso == 5'd0 && op == RDFX) begin
+                        paso <= 5'd2;   // dif = a24 − R se registra en este ciclo
+                    end else if (paso == 5'd0 || paso == 5'd2) begin
                         case (op)
-                            RDFX:    ma <= a27({a24[23], a24} - {r_d[23], r_d});
+                            RDFX:    ma <= a27(dif);
                             RDAX, MAXX: ma <= a27({r_d[23], r_d});
                             default: ma <= a27({a24[23], a24});
                         endcase
@@ -227,8 +269,7 @@ module nucleo #(
                         if (op == WRAX) regs[rg] <= a24;
                         paso <= 5'd1; espera <= LAT - 1'b1;
                     end else begin
-                        acc <= acc_alu;
-                        pc <= pc + 1'b1; estado <= E_LEER;
+                        estado <= E_ESCR;
                     end
                 RDA:
                     case (paso)
@@ -238,7 +279,7 @@ module nucleo #(
                         ma <= a27({mdato_r[23], mdato_r}); mb <= b36({{7{cf[17]}}, cf});
                         paso <= 5'd2; espera <= LAT - 1'b1;
                     end
-                    default: begin acc <= acc_alu; pc <= pc + 1'b1; estado <= E_LEER; end
+                    default: begin estado <= E_ESCR; end
                     endcase
                 CLIP:
                     case (paso)
@@ -285,71 +326,76 @@ module nucleo #(
                         ma <= a27(p_23); mb <= b36({x[23], x});
                         paso <= 5'd2; espera <= LAT - 1'b1;
                     end
-                    5'd2: begin   // SIN: forma = curva_suave(tri); forma · depth
-                        ma <= a27({curva[23], curva}); mb <= b36({dep_d[23], dep_d});
+                    5'd2: begin y_clip <= curva; paso <= 5'd23; end   // forma = curva_suave(tri)
+                    5'd23: begin   // SIN: forma · depth
+                        ma <= a27({y_clip[23], y_clip}); mb <= b36({dep_d[23], dep_d});
                         paso <= 5'd3; espera <= LAT - 1'b1;
                     end
                     5'd3: begin   // amplitud = (forma·depth) >> 23; amplitud · E
                         ma <= a27(p_23); mb <= b36({10'd0, exc_d});
                         paso <= 5'd4; espera <= LAT - 1'b1;
                     end
-                    5'd4, 5'd5: begin   // q8 listo: base = addr + q8 >> 8; frac = q8 & 0xFF
-                        if (paso == 5'd4) begin
-                            base <= $signed({1'b0, ad[15:0]}) + $signed({1'b0, q8_sin[23:8]});
-                            frac <= q8_sin[7:0];
-                            mdir_r <= $signed({1'b0, ad[15:0]}) + $signed({1'b0, q8_sin[23:8]}) - 17'sd1;
-                        end else begin
-                            base <= $signed({1'b0, ad[15:0]}) + $signed({1'b0, q8_ramp[23:8]});
-                            frac <= q8_ramp[7:0];
-                            mdir_r <= $signed({1'b0, ad[15:0]}) + $signed({1'b0, q8_ramp[23:8]}) - 17'sd1;
-                        end
-                        paso <= 5'd6;
+                    // q8 listo: se registra, y la base y la primera lectura van en pasos
+                    // aparte (tres sumas seguidas eran el camino crítico, fails.md F-11).
+                    5'd4: begin q8 <= q8_sin[23:0]; paso <= 5'd20; end
+                    5'd5: begin q8 <= q8_ramp;      paso <= 5'd20; end
+                    5'd20: begin   // base = addr + q8 >> 8; frac = q8 & 0xFF
+                        base <= $signed({1'b0, ad[15:0]}) + $signed({1'b0, q8[23:8]});
+                        frac <= q8[7:0];
+                        paso <= 5'd21;
                     end
+                    5'd21: begin mdir_r <= base - 17'sd1; paso <= 5'd6; end
                     5'd6: begin mdir_r <= base;          paso <= 5'd7; end
                     5'd7: begin mdir_r <= base + 17'sd1; paso <= 5'd8; end
-                    5'd8: begin   // llega M[base−1]
-                        mdir_r <= base + 17'sd2;
-                        ma <= a27({mdato_r[23], mdato_r}); mb <= b36({{7{c0[17]}}, c0});
-                        paso <= 5'd9;
-                    end
-                    5'd9:  begin ma <= a27({mdato_r[23], mdato_r}); mb <= b36({{7{c1[17]}}, c1}); paso <= 5'd10; end
-                    5'd10: begin ma <= a27({mdato_r[23], mdato_r}); mb <= b36({{7{c2[17]}}, c2}); paso <= 5'd11; end
-                    // Los productos llegan LAT ciclos después de presentarlos: c0·M[base−1]
-                    // en el paso 11, y los otros tres en los pasos 12, 13 y 14.
-                    5'd11: begin
-                        ma <= a27({mdato_r[23], mdato_r}); mb <= b36({{7{c3[17]}}, c3});
-                        suma <= p[47:0];
-                        paso <= 5'd12;
-                    end
-                    5'd12: begin suma <= suma + p[47:0]; paso <= 5'd13; end
-                    5'd13: begin suma <= suma + p[47:0]; paso <= 5'd14; end
+                    5'd8: begin mdir_r <= base + 17'sd2; paso <= 5'd24; end
+                    5'd24: paso <= 5'd9;   // la primera lectura llega LAT ciclos después
+                    // Llegan M[base−1], M[base], M[base+1] y M[base+2] (LAT ciclos
+                    // después de pedirlas) y entran al multiplicador con c0..c3.
+                    5'd9:  begin ma <= a27({mdato_r[23], mdato_r}); mb <= b36({{7{c0[17]}}, c0}); paso <= 5'd10; end
+                    5'd10: begin ma <= a27({mdato_r[23], mdato_r}); mb <= b36({{7{c1[17]}}, c1}); paso <= 5'd11; end
+                    5'd11: begin ma <= a27({mdato_r[23], mdato_r}); mb <= b36({{7{c2[17]}}, c2}); paso <= 5'd12; end
+                    5'd12: begin ma <= a27({mdato_r[23], mdato_r}); mb <= b36({{7{c3[17]}}, c3}); paso <= 5'd25; end
+                    5'd25: paso <= 5'd13;   // el primer producto llega LAT ciclos después
+                    // Los productos llegan en los pasos 13 a 16.
+                    5'd13: begin suma <= p[47:0];        paso <= 5'd14; end
                     5'd14: begin suma <= suma + p[47:0]; paso <= 5'd15; end
-                    5'd15: begin   // v = acc_a_dato(suma); con NA, por la ventana
+                    5'd15: begin suma <= suma + p[47:0]; paso <= 5'd16; end
+                    5'd16: begin suma <= suma + p[47:0]; paso <= 5'd17; end
+                    5'd17: begin v_r <= v_hermite; paso <= 5'd22; end   // v = acc_a_dato(suma)
+                    5'd22: begin   // con NA, v pasa por la ventana
                         if (fl[0]) begin
-                            ma <= a27({v_hermite[23], v_hermite}); mb <= b36({ven_d[23], ven_d});
-                            paso <= 5'd16; espera <= LAT - 1'b1;
+                            ma <= a27({v_r[23], v_r}); mb <= b36({ven_d[23], ven_d});
+                            paso <= 5'd18; espera <= LAT - 1'b1;
                         end else begin
-                            lr <= v_hermite;
-                            ma <= a27({v_hermite[23], v_hermite}); mb <= b36({{7{cf[17]}}, cf});
-                            paso <= 5'd17; espera <= LAT - 1'b1;
+                            lr <= v_r;
+                            ma <= a27({v_r[23], v_r}); mb <= b36({{7{cf[17]}}, cf});
+                            paso <= 5'd19; espera <= LAT - 1'b1;
                         end
                     end
-                    5'd16: begin   // v = (v · ventana) >> 23
+                    5'd18: begin   // v = (v · ventana) >> 23
                         lr <= p50[46:23];
                         ma <= a27(p_23); mb <= b36({{7{cf[17]}}, cf});
-                        paso <= 5'd17; espera <= LAT - 1'b1;
+                        paso <= 5'd19; espera <= LAT - 1'b1;
                     end
-                    default: begin acc <= acc_alu; pc <= pc + 1'b1; estado <= E_LEER; end
+                    default: begin estado <= E_ESCR; end
                     endcase
                 SKP: begin
                     pc <= pc + 12'd1 + (saltar ? ad[11:0] : 12'd0);
                     estado <= E_LEER;
                 end
                 default: begin   // NOP, LDAX, CLR, ABSA
-                    acc <= acc_alu;
-                    pc <= pc + 1'b1; estado <= E_LEER;
+                    estado <= E_ESCR;
                 end
                 endcase
+            end
+            E_ESCR: begin   // la ALU tiene dos etapas y alu_r una más: 2 ciclos
+                if (escr) begin
+                    escr <= 1'b0;
+                    acc <= alu_r;
+                    pc <= pc + 1'b1; estado <= E_LEER;
+                end else begin
+                    escr <= 1'b1;
+                end
             end
             E_FIN: begin
                 mavanzar <= 1'b1;

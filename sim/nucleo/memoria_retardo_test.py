@@ -45,7 +45,7 @@ async def igual_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
                 a = azar.randrange(-1, palabras)
                 dut.dir_r.value = a
                 await ciclo(dut)
-                await RisingEdge(dut.clk)
+                await ClockCycles(dut.clk, 3)
                 await ReadOnly()
                 assert dut.dato_r.value.to_signed() == modelo.leer(a), f"P={palabras} a={a}"
                 await FallingEdge(dut.clk)
@@ -60,7 +60,8 @@ def test_memoria_retardo(tmp_path: Path) -> None:
         [
             RTL / "nucleo" / "memoria_retardo.v",
             RTL / "nucleo" / "dato_a_memoria.v",
-            RTL / "primitivas" / "bsram_dp.v",
+            RTL / "primitivas" / "bsram_pipe.v",
+            RTL / "primitivas" / "bsram_bloque.v",
         ],
         "memoria_retardo",
         "memoria_retardo_test",

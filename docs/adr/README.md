@@ -14,3 +14,4 @@ Se lee antes de proponer un cambio estructural. Un ADR no se reescribe: se le a�
 | [0008](0008-la-aritmetica-es-parte-del-contrato-con-el-rtl.md) | La aritmética es parte del contrato con el RTL (formatos Q, redondeo, tablas exactas) | Aceptado |
 | [0009](0009-una-instruccion-cabe-en-tres-columnas-de-bsram.md) | Una instrucción cabe en tres columnas de BSRAM (ISA de 54 bit, 16 instrucciones) | Aceptado |
 | [0010](0010-cada-pr-pasa-una-segunda-vuelta-de-optimizacion.md) | Cada PR pasa una segunda vuelta de optimización (timing, listones de recursos y pistas) | Aceptado |
+| [0011](0011-el-timing-se-mide-en-la-placa.md) | El timing se mide en la placa, no se cree a nextpnr (margen con el mismo rutado) | Aceptado |

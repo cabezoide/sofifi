@@ -49,6 +49,13 @@ Vacío en la versión 0.0. Las reglas se escriben antes que el código.
   son sin signo**, y `>>>` sobre ellas es lógico. Pasar por un cable `signed` antes
   de desplazar. Dos fallos de este tipo los encontraron las pruebas unitarias,
   no las de los programas.
+- **La BSRAM en modo bypass es mucho más lenta de lo que dice nextpnr** (fails.md,
+  F-11). Ninguna salida de BSRAM va a lógica en el mismo ciclo: usar
+  `rtl/primitivas/bsram_pipe.v`, con el registro de salida del bloque. `bsram_dp`
+  queda para pruebas.
+- **apicula 0.32 no empaqueta si ninguna BSRAM declara `INIT_RAM_xx`** (F-14):
+  `rtl/primitivas/bsram_bloque.v` las declara a cero.
+- **El timing se mide en la placa** (ADR 0011): `scripts/margen_reloj.py`.
 - **Reset de arranque en cada dominio de reloj.** Verilator arranca los registros a
   0, y con el PLL simulado `bloqueado` vale 1 desde el principio: sin un contador de
   arranque, el reset no llega nunca en simulación.

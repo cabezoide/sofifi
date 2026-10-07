@@ -10,9 +10,10 @@
 // La dirección relativa `a` está en [-1, P-1]: el programa lo garantiza para
 // CHO (alcance_cho en isa.py, ADR 0009). Así basta una corrección de ±P.
 //
-// Tiempos: la dirección se registra (1 ciclo) y la BSRAM lee en el siguiente.
-// Una lectura presentada en el ciclo t da `dato_r` en t+2. Una escritura
-// presentada en t se hace en t+1; una lectura presentada en t+1 ya la ve.
+// Tiempos: la dirección se registra (1 ciclo) y bsram_pipe tarda 3 (bloques con
+// registro de salida interno y multiplexor registrado; fails.md, F-11). Una
+// lectura presentada en el ciclo t da `dato_r` en t+4. Una escritura presentada
+// en t se hace en t+1; una lectura presentada en t+1 ya la ve.
 `default_nettype none
 
 module memoria_retardo #(
@@ -61,7 +62,7 @@ module memoria_retardo #(
     end
 
     wire [17:0] palabra_r;
-    bsram_dp #(.PALABRAS(PALABRAS_MAX), .ANCHO(18)) u_mem (
+    bsram_pipe #(.PALABRAS(PALABRAS_MAX), .ANCHO(18)) u_mem (
         .clk(clk), .we(we_r), .dir_w(fis_w), .dato_w(palabra_w),
         .dir_r(fis_r), .dato_r(palabra_r)
     );

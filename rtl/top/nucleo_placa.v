@@ -37,32 +37,22 @@ module nucleo_placa #(
     wire [15:0] palabras;
     wire [7:0]  lfo_tipos;
     wire [59:0] lfo_excursiones;
-    reg  [11:0] dir;
-    reg         cargado;
+    wire [10:0] dir, prog_dir;
+    wire [53:0] prog_dato;
+    wire        prog_we, cargado;
     programa_plate u_prog (
-        .dir(dir[10:0]), .palabra(palabra), .instrucciones(instrucciones),
+        .dir(dir), .palabra(palabra), .instrucciones(instrucciones),
         .palabras(palabras), .lfo_tipos(lfo_tipos), .lfo_excursiones(lfo_excursiones)
     );
-    always @(posedge clk_100) begin
-        if (rst) begin
-            dir <= 12'd0; cargado <= 1'b0;
-        end else if (!cargado) begin
-            if (dir == instrucciones - 1'b1) cargado <= 1'b1;
-            else dir <= dir + 1'b1;
-        end
-    end
+    carga_programa u_carga (
+        .clk(clk_100), .rst(rst), .instrucciones(instrucciones),
+        .dir(dir), .palabra(palabra), .prog_we(prog_we), .prog_dir(prog_dir),
+        .prog_dato(prog_dato), .cargado(cargado)
+    );
 
     // ── Una muestra cada 2 048 ciclos ─────────────────────────────────────
-    reg [10:0] fase_muestra;
-    reg        tick;
-    always @(posedge clk_100) begin
-        tick <= 1'b0;
-        if (!cargado) fase_muestra <= 11'd0;
-        else begin
-            fase_muestra <= fase_muestra + 1'b1;
-            tick <= (fase_muestra == 11'd2047);
-        end
-    end
+    wire tick;
+    generador_muestra u_gen (.clk(clk_100), .activo(cargado), .tick(tick));
 
     // Ruido de un LFSR de 32 bit (el del modelo), a -24 dB.
     reg [31:0] ruido;
@@ -80,7 +70,7 @@ module nucleo_placa #(
     /* verilator lint_on UNUSEDSIGNAL */
     nucleo u_nucleo (
         .clk(clk_100), .rst(rst | ~cargado),
-        .prog_we(~cargado & ~rst), .prog_dir(dir[10:0]), .prog_dato(palabra),
+        .prog_we(prog_we), .prog_dir(prog_dir), .prog_dato(prog_dato),
         .cfg_instrucciones(instrucciones), .cfg_palabras(palabras),
         .cfg_lfo_tipos(lfo_tipos), .cfg_lfo_excursiones(lfo_excursiones),
         .tick(tick), .adc_l(entrada), .adc_r(-entrada),

@@ -9,12 +9,12 @@
 SOFIFI es un pedal de guitarra ambient (reverbs, shimmer, delays de cinta, freeze, granular)
 implementado en una FPGA **Sipeed Tang Primer 25K** (Gowin GW5A-LV25).
 
-**Versión:** `0.4` (la versión es la última fase cerrada; ver `docs/fases/estado_fases.csv`).
+**Versión:** `0.5` (la versión es la última fase cerrada; ver `docs/fases/estado_fases.csv`).
 
-> Estado: **núcleo DSP en RTL, idéntico al modelo** (Fase 04). En simulación
-> coincide bit a bit con el modelo en plate, shimmer y freeze; sintetizado cierra a
-> 140 MHz y ya corre en la placa. El modelo bit-exact deja escuchar en el PC los
-> tres programas. Falta comprobar la igualdad bit a bit en el silicio (Fase 05).
+> Estado: **núcleo DSP verificado en el silicio** (Fase 05). En la placa, a
+> 100 MHz, el plate da muestra a muestra la misma salida que el modelo bit-exact.
+> En simulación coinciden también shimmer y freeze. El modelo deja escuchar en el
+> PC los tres programas. Sigue la biblioteca de programas (Fase 06).
 > La investigación está en `docs/investigacion/INVESTIGACION.md` y
 > `docs/investigacion/ESTADO_DEL_ARTE_2026.md`.
 
@@ -104,6 +104,13 @@ Las fases que necesitan hardware que falta van al final del plan (09 a 12), de
 modo que hasta la Fase 08 basta con la placa y la microSD.
 
 ![Las 13 fases: 4 cerradas, la siguiente y las que esperan hardware](docs/img/ruta.png)
+
+## Documentación del hardware
+
+- `BOM.md`: lista de compra del hardware, con enlaces.
+- `SBOM.md`: qué hace cada componente del FPGA y con qué herramientas se construye.
+- `docs/arquitectura_fpga.md`: la arquitectura del FPGA y cómo cambia fase a fase.
+- `fails.md`: los fallos encontrados y cómo se resolvieron.
 
 ## Idiomas
 

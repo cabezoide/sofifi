@@ -1,6 +1,6 @@
 # Fase 05 — Núcleo verificado en la FPGA por UART
 
-> Planificada: no está en el control hasta cerrarse.
+> Cerrada el 2026-10-07. Enmiendas respecto de esta spec: ver la fila 05 de `docs/fases/estado_fases.csv`.
 
 ## Objetivo
 

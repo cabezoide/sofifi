@@ -23,6 +23,9 @@ el oráculo del RTL (ADR 0003). Todo el audio vive en BSRAM, porque no hay SDRAM
 | `docs/investigacion/INVESTIGACION.md` | investigación de partida: pedales, algoritmos, open source, placa |
 | `docs/investigacion/ESTADO_DEL_ARTE_2026.md` | estado del arte 2026 (mercado, arXiv, plataformas) y hoja de ruta de 27 puntos (Fase 03) |
 | `docs/infografias/` | infografías del proyecto (HTML autocontenido); publicadas como artefactos privados |
+| `docs/arquitectura_fpga.md` | arquitectura del FPGA, presupuesto y historia por fase |
+| `fails.md` | fallos encontrados: síntoma, causa, resolución y lección |
+| `BOM.md`, `SBOM.md` | hardware (con enlaces de compra) y componentes del FPGA explicados |
 | `docs/adr/README.md` | índice de decisiones. Leerlo antes de proponer un cambio estructural |
 | `docs/fases/` | spec por fase + control `docs/fases/estado_fases.csv` |
 | `docs/terceros.yaml` | origen y licencia de todo código ajeno estudiado o portado |

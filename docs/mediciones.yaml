@@ -113,8 +113,8 @@ mediciones:
   - id: MED-10
     caracteristica: M-08
     nombre: Frecuencia máxima del núcleo completo según nextpnr
-    valor: 140.57
-    unidad: MHz
+    valor: 154.92
+    unidad: MHz (según nextpnr; en la placa, entre 106 y 114 MHz, MED-14)
     umbral: 100
     direccion: mayor_mejor
     fecha: 2026-10-07
@@ -125,15 +125,15 @@ mediciones:
   - id: MED-11
     caracteristica: M-08
     nombre: Ciclos por muestra del núcleo RTL con el programa más largo (shimmer)
-    valor: 840
-    unidad: ciclos de 2 048 (plate 661, freeze 730)
+    valor: 1601
+    unidad: ciclos de 2 048 (plate 1 258, freeze 1 393)
     umbral: 2048
     direccion: menor_mejor
     fecha: 2026-10-07
     caduca_en_dias: 180
     como: "sim/nucleo/nucleo_test.py (registra el máximo de la salida `ciclos`)"
     entorno: "núcleo multiciclo sin solapamiento: unas 6 por instrucción y unas 30 por CHO"
-    no_dice: "El ADR 0009 cuenta 1 ciclo por instrucción: un programa de 2 048 instrucciones no cabría en esta primera versión. Se optimiza cuando un programa lo necesite."
+    no_dice: "Con la segmentación de la Fase 05 (F-11), unos 13 ciclos por instrucción; en la Fase 04 eran 840. El ADR 0009 cuenta 1 ciclo por instrucción. Antes de la Fase 06 hay que solapar lectura y ejecución."
   - id: MED-12
     caracteristica: M-06
     nombre: Muestras por segundo medidas en la placa
@@ -146,3 +146,27 @@ mediciones:
     como: "make prog TOP=prueba_fs && .venv/bin/python scripts/verificar_primitivas.py fs --segundos 9 (el umbral es la desviación admitida, ± 1 muestra/s)"
     entorno: "Tang Primer 25K; generador_muestra a 100 MHz desde el PLL; ventana de 10^8 ciclos del PLL"
     no_dice: "La ventana es del propio PLL; la relación con el cristal la da MED-08 y la precisión del cristal, MED-03 (~100 ppm)."
+  - id: MED-13
+    caracteristica: M-08
+    nombre: Capturas del plate en la placa idénticas al modelo a 100 MHz
+    valor: 9
+    unidad: capturas de 4 096 muestras (9 de 9), con CRC correcto
+    umbral: 3
+    direccion: mayor_mejor
+    fecha: 2026-10-07
+    caduca_en_dias: 90
+    como: "make prog TOP=hil_nucleo && .venv/bin/python scripts/hil_nucleo.py; y scripts/margen_reloj.py"
+    entorno: "Tang Primer 25K a 100 MHz; plate; estímulo de impulso y triángulo; pots a 0,5"
+    no_dice: "Solo el plate y solo estos estímulos. El shimmer y el freeze no se han capturado en la placa (sí en simulación)."
+  - id: MED-14
+    caracteristica: M-08
+    nombre: Frecuencia máxima real del núcleo en la placa, con el mismo rutado
+    valor: 106.25
+    unidad: MHz con todas las capturas correctas (3 de 3); a 114,3 MHz, 2 de 5
+    umbral: 120
+    direccion: mayor_mejor
+    fecha: 2026-10-07
+    caduca_en_dias: 90
+    como: ".venv/bin/python scripts/margen_reloj.py --divisores 8 7 (y MDIV 17 para 106,25 MHz)"
+    entorno: "mismo JSON rutado que da 154,9 MHz en nextpnr; temperatura ambiente sin medir"
+    no_dice: "No cumple el umbral (ADR 0011): el margen es de al menos un 6 % y el objetivo es un 20 %. No se midió con la placa caliente."

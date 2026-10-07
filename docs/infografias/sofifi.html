@@ -139,7 +139,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 
 <header class="portada">
   <div>
-    <div class="etiqueta">Pedal ambient abierto · FPGA Tang Primer 25K · versión 0.4</div>
+    <div class="etiqueta">Pedal ambient abierto · FPGA Tang Primer 25K · versión 0.5</div>
     <h1 class="marca">SOFI<span>FI</span></h1>
     <div class="subtitulo">Soundscapes On FPGA · Integrated Filters &amp; Impulses</div>
     <p class="tesis">Cada efecto es un <strong>programa</strong>. Cada programa se comprueba <strong>bit a bit</strong> contra un modelo antes de tocar el hardware. Y la placa ya responde.</p>
@@ -211,7 +211,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
     </div>
   </div>
   <div class="reglas">
-    <div class="regla"><h3>11 compuertas duras</h3><p>Corren antes de cada push. Si una falla, el push no sale (ADR 0001).</p></div>
+    <div class="regla"><h3>10 compuertas duras</h3><p>Corren antes de cada push. Si una falla, el push no sale (ADR 0001).</p></div>
     <div class="regla"><h3>Segunda vuelta</h3><p>Cada PR pasa una revisión de optimización con listones de recursos (ADR 0010).</p></div>
     <div class="regla"><h3>Primitivas probadas</h3><p>DSP 27×18, 42 bloques de BSRAM y PLL de 100 MHz, verificados en la placa con Yosys, nextpnr y apicula (MED-06 a MED-08).</p></div>
   </div>
@@ -220,7 +220,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 <section>
   <div class="cabeza">
     <div class="etiqueta">La gira</div>
-    <h2>13 fases. 5 cerradas. Lo que falta, al final.</h2>
+    <h2>13 fases. 6 cerradas. Lo que falta, al final.</h2>
     <p>Hasta la Fase 08 basta con la placa y la microSD. El hardware que no se puede conseguir hoy queda para las fases 09 a 12.</p>
   </div>
   <ol class="ruta">
@@ -229,8 +229,8 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
     <li class="fase cerrada"><span class="n">02</span><span class="t">Cadena EDA y primer bitstream</span><span class="h">cerrada</span></li>
     <li class="fase cerrada"><span class="n">03</span><span class="t">Estado del arte y prueba de primitivas</span><span class="h">cerrada</span></li>
     <li class="fase cerrada"><span class="n">04</span><span class="t">Núcleo DSP en RTL</span><span class="h">cerrada</span></li>
-    <li class="fase siguiente"><span class="n">05</span><span class="t">Núcleo verificado por UART</span><span class="h">siguiente</span></li>
-    <li class="fase"><span class="n">06</span><span class="t">Biblioteca de programas</span><span class="h">modelo</span></li>
+    <li class="fase cerrada"><span class="n">05</span><span class="t">Núcleo verificado por UART</span><span class="h">cerrada</span></li>
+    <li class="fase siguiente"><span class="n">06</span><span class="t">Biblioteca de programas</span><span class="h">siguiente</span></li>
     <li class="fase"><span class="n">07</span><span class="t">Micro-looper y granular</span><span class="h">BSRAM</span></li>
     <li class="fase"><span class="n">08</span><span class="t">Carga desde la microSD</span><span class="h">PMOD TF</span></li>
     <li class="fase falta"><span class="n">09</span><span class="t">Controles físicos</span><span class="h">falta MCP3208</span></li>
