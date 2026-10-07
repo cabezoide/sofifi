@@ -86,6 +86,15 @@ run_job() {
          verilator_real --lint-only -Wall -DSIMULACION --top-module "${linea[0]}" "${linea[@]:1}") \
           || fallos=1
       done < rtl/top/tops.txt
+      # Además, cada módulo por separado: los del núcleo aún no están en ningún top.
+      local modulos f
+      modulos="$(git ls-files 'rtl/comun/*.v' 'rtl/primitivas/*.v' 'rtl/nucleo/*.v')"
+      for f in $modulos; do
+        # shellcheck disable=SC2086
+        (ulimit -u "$TOPE_PROCESOS"
+         verilator_real --lint-only -Wall -DSIMULACION --top-module "$(basename "$f" .v)" $modulos) \
+          || fallos=1
+      done
       return "$fallos"
       ;;
     sim)
