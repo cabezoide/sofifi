@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from enum import IntEnum, IntFlag
 
 from sofifi.domain.aritmetica import CICLOS_POR_MUESTRA
-from sofifi.domain.lfo import NUM_LFOS, ConfigLfo
+from sofifi.domain.lfo import NUM_LFOS, ConfigLfo, TipoLfo
 from sofifi.domain.memoria import PALABRAS_MAX
 
 
@@ -115,6 +115,19 @@ def decodificar(palabra: int) -> Instruccion:
     return Instruccion(Op(valores["op"]), valores["reg"], valores["flags"], coef, valores["addr"])
 
 
+def alcance_cho(config: ConfigLfo | None, addr: int) -> int:
+    """Última dirección que puede leer un ``CHO`` sobre ``addr`` (Hermite: +2).
+
+    SIN y RND desplazan hasta 2·E muestras; RAMP, hasta W. El programa debe
+    declarar memoria para todo el tramo: así el RTL reduce la dirección con una
+    sola corrección de ±P en lugar de un módulo general (ADR 0009).
+    """
+    if config is None:
+        return addr
+    extra = config.excursion if config.tipo is TipoLfo.RAMP else 2 * config.excursion
+    return addr + extra + 1
+
+
 def addr_con_signo(addr: int) -> int:
     """Interpreta el campo ``addr`` como S2.15 (operando D de ``SOF``)."""
     addr &= (1 << 18) - 1
@@ -155,6 +168,13 @@ class Programa:
                 e.append(f"[{pc}] SKP salta fuera del programa")
             if ins.op is Op.CHO and (ins.reg >= NUM_LFOS or self.lfos[ins.reg] is None):
                 e.append(f"[{pc}] CHO usa el LFO {ins.reg}, que no está declarado")
+            elif ins.op is Op.CHO:
+                fin = alcance_cho(self.lfos[ins.reg], ins.addr)
+                if fin >= self.palabras_memoria:
+                    e.append(
+                        f"[{pc}] CHO lee hasta la dirección {fin}, fuera de la memoria"
+                        f" declarada ({self.palabras_memoria} palabras)"
+                    )
             if ins.op in (Op.RDA, Op.WRA, Op.WRAP, Op.CHO) and ins.addr >= self.palabras_memoria:
                 e.append(f"[{pc}] dirección {ins.addr} fuera de la memoria declarada")
         return e
