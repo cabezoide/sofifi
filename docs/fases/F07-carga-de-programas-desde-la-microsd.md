@@ -25,9 +25,14 @@ Un sistema de ficheros FAT en RTL es caro y su parser es superficie de ataque (C
 
 ## Diseño
 
-- **Formato:**
-  - bloque 0: cabecera `SOFIFI` + versión + número de programas;
-  - bloques siguientes: 1 por programa, con palabras de 54 bit empaquetadas, memoria, LFOs y CRC32.
+- **Formato:** bloques crudos de 512 bytes, con **ranuras de tamaño fijo**.
+  - Bloque 0: cabecera `SOFIFI` + versión + número de programas.
+  - El programa *k* ocupa la ranura que empieza en el bloque `1 + 28·k`. Son 28 bloques:
+    - 1 bloque de metadatos: nombre, número de instrucciones (≤ 2 048), memoria, LFOs y CRC32 de metadatos y microcódigo;
+    - 27 bloques de microcódigo: 2 048 × 54 bit = 13 824 bytes, exactamente 27 bloques, con las palabras empaquetadas.
+  - El cargador solo lee los bloques que ocupa el programa: el plate, de unas 100 instrucciones, cabe en 2 bloques de microcódigo.
+  - La posición se deduce del índice y nunca se lee de la tarjeta. El cargador no sigue punteros escritos por terceros; solo comprueba `k < número de programas ≤ máximo` y la longitud declarada.
+  - Capacidad: unos 4 millones de ranuras en 64 GB. El límite de la biblioteca no es la tarjeta.
 - **Herramienta:** `sofifi banco programas/*.sasm salida.img`, y una guía para escribir la imagen con `dd`.
 - **RTL:** `rtl/sd/sd_spi.v` y `rtl/sd/cargador.v`, que verifica antes de escribir.
 
