@@ -11,6 +11,7 @@ import wave
 from pathlib import Path
 
 import numpy as np
+from numpy.typing import NDArray
 
 from sofifi.domain.aritmetica import DATO_FRAC, DATO_MAX, DATO_MIN, FS_WAV
 from sofifi.domain.senal import Senal
@@ -53,6 +54,13 @@ class FuenteWav:
         )
 
 
+def a_pcm16(senal: Senal) -> NDArray[np.int16]:
+    """S.23 → PCM de 16 bit redondeado, una columna por canal."""
+    datos = np.array(senal.canales, dtype=np.int64).T
+    pcm: NDArray[np.int16] = np.clip((datos + 128) >> 8, -(1 << 15), (1 << 15) - 1).astype(np.int16)
+    return pcm
+
+
 class SumideroWav:
     """Escribe PCM de 24 bit (exacto) o de 16 bit (redondeado), con los canales de la señal."""
 
@@ -63,9 +71,7 @@ class SumideroWav:
         self.bits = bits
 
     def escribir(self, senal: Senal) -> None:
-        datos = np.array(senal.canales, dtype=np.int64).T
-        if self.bits == 16:
-            datos = np.clip((datos + 128) >> 8, -(1 << 15), (1 << 15) - 1)
+        datos = a_pcm16(senal) if self.bits == 16 else np.array(senal.canales, dtype=np.int64).T
         ancho = self.bits // 8
         crudo = datos.astype("<i4").reshape(-1, 1).view(np.uint8).reshape(-1, 4)[:, :ancho]
         self.ruta.parent.mkdir(parents=True, exist_ok=True)

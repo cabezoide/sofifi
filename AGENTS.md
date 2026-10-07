@@ -31,7 +31,7 @@ el oráculo del RTL (ADR 0003). Todo el audio vive en BSRAM, porque no hay SDRAM
 | `docs/terceros.yaml` | origen y licencia de todo código ajeno estudiado o portado |
 | `docs/EXTENDING.md` | cómo añadir un efecto, un módulo RTL o una compuerta |
 | `model/sofifi/` | modelo de referencia, por capas (ver `model/AGENTS.md`) |
-| `demo_examples/` | WAV de demostración (guitarra sintética + un WAV por programa); se regeneran con `scripts/generar_demos.py` |
+| `demo_examples/` | demos en Ogg Vorbis (guitarra sintética + una por programa); se regeneran con `scripts/generar_demos.py` |
 | `programas/` | programas del núcleo en ensamblador (`.sasm`): plate, shimmer, freeze, hall, cloud, cinta, reverse, lofi, swell. Los bloques comunes van en `programas/comun/` y entran con `include` |
 | `rtl/` | Verilog sintetizable (ver `rtl/AGENTS.md`) |
 | `sim/` | testbenches cocotb que comparan RTL con modelo (ver `sim/AGENTS.md`) |
@@ -69,6 +69,6 @@ el oráculo del RTL (ADR 0003). Todo el audio vive en BSRAM, porque no hay SDRAM
 - **La microSD tiene picos de escritura de hasta 250 ms.** No sirve de memoria de
   audio en tiempo real (ADR 0004).
 - **Los PRs apilados no llegan solos a `main`.** GitHub solo reapunta la base si se borra la rama al fusionar. Hay que fusionar con `--delete-branch` y comprobar con `gh pr view N --json baseRefName` que la base es `main`. `gh pr edit --base` falla (Projects classic); se usa `gh api -X PATCH repos/cabezoide/sofifi/pulls/N -f base=main` (ADR 0001).
-- **Las demos se regeneran, no se editan.** Si cambia un programa, cambia su huella en `model/tests/programas_test.py` y hay que volver a correr `scripts/generar_demos.py`.
+- **Las demos se regeneran, no se editan.** Un `.ogg` solo se reescribe si su audio cambia. Si cambia un programa, cambia su huella en `model/tests/programas_test.py` y hay que volver a correr `scripts/generar_demos.py`.
 - **El ADC interno del GW5A acepta 0–1 V**, no 0–3,3 V, y no está confirmado qué
   pines llegan al Dock.
