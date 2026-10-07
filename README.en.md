@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=da42d6e401a3 estado=al_dia -->
+<!-- i18n: fuente=README.md sha=b581423fa49d estado=al_dia -->
 # SOFIFI — Soundscapes On FPGA: Integrated Filters & Impulses
 
 *In Spanish: Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada.*
@@ -12,35 +12,45 @@
 SOFIFI is an ambient guitar pedal (reverbs, shimmer, tape delays, freeze, granular)
 implemented on a **Sipeed Tang Primer 25K** FPGA (Gowin GW5A-LV25).
 
-**Version:** `0.5` (the version is the last closed phase; see `docs/fases/estado_fases.csv`).
+**Version:** `0.6` (the version is the last closed phase; see `docs/fases/estado_fases.csv`).
 
-> Status: **DSP core verified on silicon** (Phase 05). On the board, at 100 MHz,
-> the plate gives sample by sample the same output as the bit-exact model. In
-> simulation, shimmer and freeze also match. The model lets you hear the three
-> programs on a PC. Next: the program library (Phase 06).
-> The initial research is in `docs/investigacion/INVESTIGACION.md` (Spanish).
+> Status: **a library of 43 programs and 344 presets** (Phase 06): reverbs,
+> delays, modulation, pitch, dynamics, filters and texture. All 43 give in the
+> RTL the same output as the bit-exact model (simulation). On the board, at
+> 100 MHz, the plate is verified (Phase 05). Next: the micro-looper and the
+> granular engine (Phase 07). It does not play with a guitar yet: the audio
+> codec is missing (Phase 11).
 
 ## Listening to the effects (no hardware needed)
 
+1. Listen to the demos in `demo_examples/`: a synthetic guitar (an Em9
+   arpeggio) through each program, in Ogg Vorbis.
+2. Process your own WAV with a preset:
+
 ```bash
-.venv/bin/sofifi render programas/plate.sasm guitar.wav out/plate.wav --pot pot0=0.6 --pot pot2=0.4 --cola 4
-.venv/bin/sofifi render programas/shimmer.sasm guitar.wav out/shimmer.wav --pot pot0=0.7 --pot pot2=0.5 --pot pot3=0.6 --cola 6
-.venv/bin/sofifi render programas/freeze.sasm guitar.wav out/freeze.wav --pot pot2=0.5 --freeze 1.5:8 --cola 8
+.venv/bin/sofifi presets hall                      # the presets of one program
+.venv/bin/sofifi render programas/hall.sasm guitar.wav out/hall.wav --preset "Catedral" --cola 6
+.venv/bin/sofifi render programas/shimmer.sasm guitar.wav out/sh.wav --pot pot0=0.7 --pot pot3=0.6 --cola 6
+.venv/bin/sofifi render programas/freeze.sasm guitar.wav out/fz.wav --preset "Congelar suave" --freeze 1.5:8 --cola 8
 ```
 
-| Program | pot0 | pot1 | pot2 | pot3 | footswitch |
-|---|---|---|---|---|---|
-| `programas/plate.sasm` | decay | damping | mix | — | — |
-| `programas/shimmer.sasm` | decay | damping | mix | shimmer | — |
-| `programas/freeze.sasm` | decay | damping | mix | — | `--freeze START:END` (seconds) |
+| Family | Programs |
+|---|---|
+| Reverb | plate, plate_vivo, hall, blackhole, cloud, bloom, spring, chorale, resonador, gated, reverb_inversa, infinite, freeze, freeze_givens, shimmer, shimmer_quinta, shimmer_energia |
+| Delay | delay, cinta, bbd, pingpong, lluvia, ducking, reverse |
+| Modulation | chorus, flanger, phaser, tremolo, vibrato, slicer |
+| Pitch | octava, armonizador, doblador, escalera |
+| Dynamics | compresor, puerta, swell |
+| Filter | autowah, filtro, ancho |
+| Texture | saturacion, lofi, ringmod |
 
-`demo_examples/` contains pre-rendered demos: a synthetic guitar (an Em9
-arpeggio) run through the three programs. They are regenerated with
-`scripts/generar_demos.py`.
+What each program does, its knobs and its cost: `docs/programas.md` (Spanish;
+`sofifi catalogo` generates it). The presets are in `presets/banco.toml`; their
+names are in Spanish.
 
 The input WAV may be 16, 24 or 32-bit at any sample rate; it is resampled to
-48,828 Hz. `sofifi asm` generates the microcode (`.hex` + `.json`). (`--cola` is
-the tail length in seconds.)
+48,828 Hz. `sofifi asm` generates the microcode (`.hex` + `.json`) and gives the
+cycles it uses in the RTL. (`--cola` is the tail length in seconds.)
 
 ## What will be built
 
@@ -107,7 +117,7 @@ If a tool is missing, the gate says so (`WARN … NO CORRIÓ`); it does not fake
 Phases that need missing hardware are at the end of the plan (09 to 12), so up
 to Phase 08 the board and the microSD are enough.
 
-![The 13 phases: 4 closed, the next one and the ones that wait for hardware](docs/img/ruta.png)
+![The 13 phases: 7 closed, the next one and the ones that wait for hardware](docs/img/ruta.png)
 
 ## Hardware documentation (Spanish)
 
@@ -115,6 +125,7 @@ to Phase 08 the board and the microSD are enough.
 - `SBOM.md`: what each FPGA component does and the tools used to build it.
 - `docs/arquitectura_fpga.md`: the FPGA architecture and how it changes phase by phase.
 - `fails.md`: the failures found and how they were solved.
+- `schematics/`: a PDF schematic of each RTL module, generated from the Verilog.
 
 ## Languages
 
