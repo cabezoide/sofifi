@@ -1,4 +1,4 @@
-<!-- i18n: fuente=BOM.md sha=af28f64819c7 estado=al_dia -->
+<!-- i18n: fuente=BOM.md sha=38e7dbe6cc99 estado=al_dia -->
 # BOM · SOFIFI hardware
 
 This is the shopping list for the pedal. We checked the links on **7 October 2026**: [V] = the page loaded and the item was for sale; [?] = the page did not load. The prices are from that date, without shipping, and they change.
@@ -22,7 +22,7 @@ This is the shopping list for the pedal. We checked the links on **7 October 202
 | 7 | **Microchip MCP3208-CI/P** (12-bit, 8-channel SPI ADC) | Reads the 6 potentiometers. | 09 | 3 USD | [V] [DigiKey](https://www.digikey.com/en/products/detail/microchip-technology/MCP3208-CI-P/305928) |
 | 8 | **B10K linear potentiometer** ×6 | The knobs of the pedal. | 09 | 0.39 USD each | [V] [Tayda A-5523](https://www.taydaelectronics.com/tayda-b10k-ohm-linear-taper-potentiometer-round-shaft-pc-mount.html) |
 | 9 | **SPST momentary soft-touch footswitch** ×2 | Bypass and freeze. Until then, use the buttons on the Dock. | 09 | 3 USD each | [V] [Tayda](https://www.taydaelectronics.com/spst-momentary-soft-touch-push-button-stomp-foots-pedal-switch-on-off.html) |
-| 10 | **128×64 SSD1306 OLED** | Shows the preset and the function of each knob, in three languages. | 10 | 20 USD | [V] [Adafruit #938](https://www.adafruit.com/product/938) (sold out on 7 October) |
+| 10 | **128×64 SSD1306 OLED** | Shows the preset and the function of each knob, in four languages. | 10 | 20 USD | [V] [Adafruit #938](https://www.adafruit.com/product/938) (sold out on 7 October) |
 | 11 | **Input buffer** (JFET or operational amplifier) | Adapts the guitar (high impedance) to the ADC input. Any pedal with a buffer is satisfactory. | 11 | 0.50 USD (PCB only) | [V] [PedalPCB Simple JFET Buffer](https://www.pedalpcb.com/product/jfetbuffer/) · [?] [PedalPCB MicroBuffer](https://www.pedalpcb.com/product/pcb678/) |
 
 ## For later

@@ -23,10 +23,10 @@ capacidades:
     no_cubre: "nada del RTL: eso es M-08"
     brecha: "Fase 05: la equivalencia en la placa (M-08 la cubre en simulación)"
   - id: M-04
-    capacidad: Documentación trilingüe (es, en, zh-CN)
+    capacidad: Documentación cuatrilingüe (es, en, zh-CN, ja)
     nivel: 4
     evidencia: scripts/check_i18n.py
-    scope: README y sus traducciones selladas
+    scope: documentación pública y técnica (README, infografías, catálogo, guías, arquitectura, EXTENDING, BOM, SBOM, fails) y sus traducciones selladas
     no_cubre: "la calidad de la traducción; ADRs y specs solo en español"
     brecha: "revisión de las traducciones por hablantes nativos"
   - id: M-05

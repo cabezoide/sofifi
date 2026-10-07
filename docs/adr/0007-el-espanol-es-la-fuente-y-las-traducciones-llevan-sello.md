@@ -48,7 +48,7 @@ Opción 3.
 La persona propietaria pide el proyecto en cuatro idiomas: se añade el **japonés** (`ja`), y el alcance pasa de la portada a la documentación pública y técnica.
 
 **Alcance nuevo** (`TRADUCIDOS` en `scripts/check_i18n.py`):
-- Pública: `README.md`, las infografías de `docs/infografias/` (y sus capturas en `docs/img/<idioma>/`), `demo_examples/README.md`, `schematics/README.md` y `docs/programas.md`.
+- Pública: `README.md`, las infografías de `docs/infografias/` (sus capturas: las españolas en `docs/img/` y las demás en `docs/img/<idioma>/`), `demo_examples/README.md`, `schematics/README.md` y `docs/programas.md`.
 - Técnica: `docs/arquitectura_fpga.md`, `docs/EXTENDING.md`, `BOM.md`, `SBOM.md` y `fails.md`.
 - Siguen solo en español: los ADR, las specs de fase, la investigación y los mapas para agentes (`AGENTS.md`, `CLAUDE.md`).
 

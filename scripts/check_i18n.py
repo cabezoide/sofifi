@@ -42,6 +42,8 @@ TRADUCIDOS = (
     "BOM.md",
     "SBOM.md",
     "fails.md",
+    "docs/infografias/sofifi.html",
+    "docs/infografias/estado-del-arte.html",
 )
 ESTADOS = ("al_dia", "desactualizada")
 RE_SELLO = re.compile(

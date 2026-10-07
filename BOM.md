@@ -21,7 +21,7 @@ Lista de compra del pedal. Los enlaces se comprobaron el **7 de octubre de 2026*
 | 7 | **Microchip MCP3208-CI/P** (ADC SPI de 12 bit y 8 canales) | Lee los 6 potenciómetros. | 09 | 3 USD | [V] [DigiKey](https://www.digikey.com/en/products/detail/microchip-technology/MCP3208-CI-P/305928) |
 | 8 | **Potenciómetro lineal B10K** ×6 | Las perillas del pedal. | 09 | 0,39 USD c/u | [V] [Tayda A-5523](https://www.taydaelectronics.com/tayda-b10k-ohm-linear-taper-potentiometer-round-shaft-pc-mount.html) |
 | 9 | **Footswitch SPST momentáneo**, de pulsación suave ×2 | Bypass y freeze. Hasta entonces sirven los botones de la Dock. | 09 | 3 USD c/u | [V] [Tayda](https://www.taydaelectronics.com/spst-momentary-soft-touch-push-button-stomp-foots-pedal-switch-on-off.html) |
-| 10 | **OLED SSD1306 de 128×64** | Muestra el preset y la función de cada perilla, en tres idiomas. | 10 | 20 USD | [V] [Adafruit #938](https://www.adafruit.com/product/938) (agotado el 7 de octubre) |
+| 10 | **OLED SSD1306 de 128×64** | Muestra el preset y la función de cada perilla, en cuatro idiomas. | 10 | 20 USD | [V] [Adafruit #938](https://www.adafruit.com/product/938) (agotado el 7 de octubre) |
 | 11 | **Buffer de entrada** (JFET o amplificador operacional) | Adapta la guitarra (alta impedancia) a la entrada del ADC. Sirve cualquier pedal con buffer. | 11 | 0,50 USD (solo PCB) | [V] [PedalPCB Simple JFET Buffer](https://www.pedalpcb.com/product/jfetbuffer/) · [?] [PedalPCB MicroBuffer](https://www.pedalpcb.com/product/pcb678/) |
 
 ## Para más adelante

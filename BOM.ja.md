@@ -1,4 +1,4 @@
-<!-- i18n: fuente=BOM.md sha=af28f64819c7 estado=al_dia -->
+<!-- i18n: fuente=BOM.md sha=38e7dbe6cc99 estado=al_dia -->
 # BOM · SOFIFI のハードウェア
 
 ペダルの購入リストです。リンクは **2026 年 10 月 7 日** に確認しました。[V] = ページが表示され、商品が販売中。[?] = ページを表示できなかった。価格はその日のもので、送料を含みません。価格は変わります。
@@ -22,7 +22,7 @@
 | 7 | **Microchip MCP3208-CI/P**（12 bit・8 チャンネルの SPI ADC） | 6 個のポテンショメーターを読み取ります。 | 09 | 3 USD | [V] [DigiKey](https://www.digikey.com/en/products/detail/microchip-technology/MCP3208-CI-P/305928) |
 | 8 | **B10K リニアポテンショメーター** ×6 | ペダルのノブ。 | 09 | 1 個 0.39 USD | [V] [Tayda A-5523](https://www.taydaelectronics.com/tayda-b10k-ohm-linear-taper-potentiometer-round-shaft-pc-mount.html) |
 | 9 | **SPST モーメンタリー・ソフトタッチのフットスイッチ** ×2 | Bypass と freeze。それまでは Dock のボタンを使えます。 | 09 | 1 個 3 USD | [V] [Tayda](https://www.taydaelectronics.com/spst-momentary-soft-touch-push-button-stomp-foots-pedal-switch-on-off.html) |
-| 10 | **128×64 の SSD1306 OLED** | プリセットと各ノブの機能を 3 言語で表示します。 | 10 | 20 USD | [V] [Adafruit #938](https://www.adafruit.com/product/938)（10 月 7 日に品切れ） |
+| 10 | **128×64 の SSD1306 OLED** | プリセットと各ノブの機能を 4 言語で表示します。 | 10 | 20 USD | [V] [Adafruit #938](https://www.adafruit.com/product/938)（10 月 7 日に品切れ） |
 | 11 | **入力バッファー**（JFET またはオペアンプ） | ギター（高インピーダンス）を ADC の入力に合わせます。バッファー付きのペダルならどれでも使えます。 | 11 | 0.50 USD（PCB のみ） | [V] [PedalPCB Simple JFET Buffer](https://www.pedalpcb.com/product/jfetbuffer/) · [?] [PedalPCB MicroBuffer](https://www.pedalpcb.com/product/pcb678/) |
 
 ## 将来必要なもの

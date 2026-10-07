@@ -1,3 +1,4 @@
+<!-- i18n: fuente=docs/infografias/sofifi.html sha=c57c04346d12 estado=al_dia -->
 <!-- SPDX-License-Identifier: MIT -->
 <title>SOFIFI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -157,21 +158,21 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 }
 </style>
 
-<div class="grano">
+<div class="grano" lang="en">
 <div class="envoltorio">
 
 <header class="portada" id="portada">
   <div>
-    <div class="etiqueta">Pedal ambient abierto · FPGA Tang Primer 25K · versión 0.6</div>
+    <div class="etiqueta">Open ambient pedal · FPGA Tang Primer 25K · version 0.6</div>
     <h1 class="marca">SOFI<span>FI</span></h1>
     <div class="subtitulo">Soundscapes On FPGA · Integrated Filters &amp; Impulses</div>
-    <p class="tesis">Cada efecto es un <strong>programa</strong>. Cada programa se comprueba <strong>bit a bit</strong> contra un modelo antes de tocar el hardware. Y la placa ya responde.</p>
+    <p class="tesis">Each effect is a <strong>program</strong>. We test each program <strong>bit by bit</strong> against a model before it touches the hardware. And the board already responds.</p>
   </div>
-  <div class="pedal" role="img" aria-label="Cara del pedal: pantalla OLED, seis mandos y dos pulsadores">
+  <div class="pedal" role="img" aria-label="Pedal face: OLED display, six knobs and two footswitches">
     <div class="oled">
       <b>HALL</b> · Catedral<br>
-      137 instr · 1 585 / 2 048 ciclos<br>
-      fs 48 828 Hz · freeze OFF
+      137 instr · 1,585 / 2,048 cycles<br>
+      fs 48,828 Hz · freeze OFF
     </div>
     <div class="mandos">
       <div class="mando"><div class="perilla"></div><span>POT0</span></div>
@@ -190,69 +191,69 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 
 <section id="porque">
   <div class="cabeza">
-    <div class="etiqueta">¿Por qué escoger SOFIFI?</div>
-    <h2>Un pedal que se puede leer, cambiar y comprobar</h2>
-    <p>Un pedal comercial es una caja cerrada. En SOFIFI, cada bit del sonido tiene una fuente legible y una prueba que lo compara.</p>
+    <div class="etiqueta">Why choose SOFIFI?</div>
+    <h2>A pedal you can read, change and test</h2>
+    <p>A commercial pedal is a closed box. In SOFIFI, each bit of the sound has a readable source and a test that compares it.</p>
   </div>
   <div class="razones">
     <div class="razon fuerte">
       <span class="num">0</span>
-      <h3>Bits de diferencia</h3>
-      <p>En simulación, el RTL da la misma salida que el modelo, bit a bit, en los <span class="dato">43</span> programas. En la placa, el plate coincide en 9 de 9 capturas (MED-13).</p>
+      <h3>Bits of difference</h3>
+      <p>In simulation, the RTL gives the same output as the model, bit by bit, in all <span class="dato">43</span> programs. On the board, the plate matches in 9 of 9 captures (MED-13).</p>
     </div>
     <div class="razon">
       <span class="num">43</span>
-      <h3>Efectos en texto</h3>
-      <p>Reverbs, delays, modulación, pitch, dinámica, filtros y textura, con <span class="dato">344</span> presets. Cada efecto es un fichero <span class="dato">.sasm</span> de <span class="dato">25</span> a <span class="dato">160</span> instrucciones. Un efecto nuevo no toca el hardware.</p>
+      <h3>Effects as text</h3>
+      <p>Reverbs, delays, modulation, pitch, dynamics, filters and texture, with <span class="dato">344</span> presets. Each effect is a <span class="dato">.sasm</span> file of <span class="dato">25</span> to <span class="dato">160</span> instructions. A new effect does not touch the hardware.</p>
     </div>
     <div class="razon">
       <span class="num">MIT</span>
-      <h3>Abierto de punta a punta</h3>
-      <p>Modelo, RTL, programas y pruebas. Se sintetiza con herramientas libres: Yosys, nextpnr y apicula. Ninguna licencia de fabricante.</p>
+      <h3>Open from end to end</h3>
+      <p>Model, RTL, programs and tests. Free tools do the synthesis: Yosys, nextpnr and apicula. No vendor license.</p>
     </div>
   </div>
 
   <div class="tabla-caja">
     <table class="frente">
-      <thead><tr><th>Frente al Spin FV-1</th><th>SOFIFI</th><th>FV-1 (referencia DIY)</th></tr></thead>
+      <thead><tr><th>Against the Spin FV-1</th><th>SOFIFI</th><th>FV-1 (DIY reference)</th></tr></thead>
       <tbody>
-        <tr><td>Instrucciones por muestra</td><td class="gana">hasta 2 048 en el microcódigo; el hall usa 137 en 1 585 de 2 048 ciclos</td><td>128</td></tr>
-        <tr><td>Frecuencia de muestreo</td><td class="gana">48 828 Hz</td><td>unos 32 kHz</td></tr>
-        <tr><td>Memoria de retardo</td><td>43 008 palabras, 0,88 s</td><td class="gana">32 768 palabras, unos 1 s</td></tr>
-        <tr><td>Se puede leer por dentro</td><td class="gana">sí: modelo, RTL y pruebas</td><td>no: chip cerrado; los programas, sí</td></tr>
-        <tr><td>Biblioteca de programas</td><td>43 propios y 344 presets</td><td class="gana">la de Spin y la de la comunidad, con editor visual (SpinCAD)</td></tr>
-        <tr><td>Listo para tocar</td><td>todavía no</td><td class="gana">sí, en muchos pedales</td></tr>
+        <tr><td>Instructions per sample</td><td class="gana">up to 2,048 in the microcode; the hall uses 137 in 1,585 of 2,048 cycles</td><td>128</td></tr>
+        <tr><td>Sample rate</td><td class="gana">48,828 Hz</td><td>approximately 32 kHz</td></tr>
+        <tr><td>Delay memory</td><td>43,008 words, 0.88 s</td><td class="gana">32,768 words, approximately 1 s</td></tr>
+        <tr><td>You can read the inside</td><td class="gana">yes: model, RTL and tests</td><td>no: closed chip; the programs, yes</td></tr>
+        <tr><td>Program library</td><td>43 own programs and 344 presets</td><td class="gana">the Spin library and the community library, with a visual editor (SpinCAD)</td></tr>
+        <tr><td>Ready to play</td><td>not yet</td><td class="gana">yes, in many pedals</td></tr>
       </tbody>
     </table>
   </div>
-  <p class="aviso"><b>Hoy, aún no suena con guitarra.</b> El audio I2S llega en la Fase 11 y los mandos en la Fase 09: falta el hardware. Hasta entonces, los efectos se escuchan en las demos, que salen del modelo bit-exact.</p>
+  <p class="aviso"><b>Today, it does not play with a guitar yet.</b> I2S audio comes in Phase 11 and the knobs in Phase 09: the hardware is missing. Until then, you hear the effects in the demos. The demos come from the bit-exact model.</p>
 </section>
 
 <section>
   <div class="cabeza">
-    <div class="etiqueta">Cómo suena</div>
-    <h2>Un efecto es un programa, no un circuito</h2>
-    <p>El núcleo es fijo. Lo que cambia es el microcódigo que ejecuta. Un preset nuevo no exige tocar el RTL (ADR 0006).</p>
+    <div class="etiqueta">How it sounds</div>
+    <h2>An effect is a program, not a circuit</h2>
+    <p>The core is fixed. Only the microcode that it runs changes. A new preset does not need a change to the RTL (ADR 0006).</p>
   </div>
   <div class="cadena">
-    <div class="eslabon"><h3>Entrada</h3><p>Guitarra al ADC I2S (PCM1808)</p></div>
-    <div class="eslabon nucleo"><h3>Núcleo</h3><p><span class="dato">2 048</span> instrucciones por muestra, acumulador de <span class="dato">48</span> bit</p></div>
-    <div class="eslabon"><h3>Limitador</h3><p>Fijo en RTL. Ningún programa lo salta.</p></div>
-    <div class="eslabon"><h3>Salida</h3><p>DAC I2S (PCM5102A)</p></div>
+    <div class="eslabon"><h3>Input</h3><p>Guitar to the I2S ADC (PCM1808)</p></div>
+    <div class="eslabon nucleo"><h3>Core</h3><p><span class="dato">2,048</span> instructions per sample, <span class="dato">48</span>-bit accumulator</p></div>
+    <div class="eslabon"><h3>Limiter</h3><p>Fixed in RTL. No program can bypass it.</p></div>
+    <div class="eslabon"><h3>Output</h3><p>I2S DAC (PCM5102A)</p></div>
   </div>
-  <p class="cola">La microSD guarda los programas. No sirve de memoria de retardo, porque tiene picos de escritura de 250 ms (ADR 0004). El audio vive en la BSRAM de la FPGA: <span class="dato laton">43 008</span> palabras, unos <span class="dato laton">0,88 s</span>.</p>
+  <p class="cola">The microSD keeps the programs. It is not the delay memory, because it has write peaks of 250 ms (ADR 0004). The audio lives in the FPGA BSRAM: <span class="dato laton">43,008</span> words, approximately <span class="dato laton">0.88 s</span>.</p>
 
   <div class="tabla-caja">
     <table>
-      <thead><tr><th>Familia</th><th>Programas</th><th>Ejemplo</th><th>Ciclos de 2 048</th><th>Uso de ciclos</th></tr></thead>
+      <thead><tr><th>Family</th><th>Programs</th><th>Example</th><th>Cycles of 2,048</th><th>Cycle use</th></tr></thead>
       <tbody>
-        <tr><td>Reverb</td><td>17</td><td>hall · FDN de 8 líneas</td><td>1 585</td><td><div class="barra" aria-label="77 %"><i style="width:77%"></i></div></td></tr>
-        <tr><td>Delay</td><td>7</td><td>cinta · 0,18 a 0,85 s</td><td>665</td><td><div class="barra" aria-label="32 %"><i style="width:32%"></i></div></td></tr>
-        <tr><td>Modulación</td><td>6</td><td>phaser · 4 etapas</td><td>802</td><td><div class="barra" aria-label="39 %"><i style="width:39%"></i></div></td></tr>
-        <tr><td>Pitch</td><td>4</td><td>escalera · eco que sube</td><td>799</td><td><div class="barra" aria-label="39 %"><i style="width:39%"></i></div></td></tr>
-        <tr><td>Dinámica</td><td>3</td><td>compresor</td><td>596</td><td><div class="barra" aria-label="29 %"><i style="width:29%"></i></div></td></tr>
-        <tr><td>Filtro</td><td>3</td><td>autowah</td><td>464</td><td><div class="barra" aria-label="23 %"><i style="width:23%"></i></div></td></tr>
-        <tr><td>Textura</td><td>3</td><td>lofi · 7 a 24 bit</td><td>800</td><td><div class="barra" aria-label="39 %"><i style="width:39%"></i></div></td></tr>
+        <tr><td>Reverb</td><td>17</td><td>hall · 8-line FDN</td><td>1,585</td><td><div class="barra" aria-label="77 %"><i style="width:77%"></i></div></td></tr>
+        <tr><td>Delay</td><td>7</td><td>cinta · 0.18 to 0.85 s</td><td>665</td><td><div class="barra" aria-label="32 %"><i style="width:32%"></i></div></td></tr>
+        <tr><td>Modulation</td><td>6</td><td>phaser · 4 stages</td><td>802</td><td><div class="barra" aria-label="39 %"><i style="width:39%"></i></div></td></tr>
+        <tr><td>Pitch</td><td>4</td><td>escalera · rising echo</td><td>799</td><td><div class="barra" aria-label="39 %"><i style="width:39%"></i></div></td></tr>
+        <tr><td>Dynamics</td><td>3</td><td>compresor</td><td>596</td><td><div class="barra" aria-label="29 %"><i style="width:29%"></i></div></td></tr>
+        <tr><td>Filter</td><td>3</td><td>autowah</td><td>464</td><td><div class="barra" aria-label="23 %"><i style="width:23%"></i></div></td></tr>
+        <tr><td>Texture</td><td>3</td><td>lofi · 7 to 24 bit</td><td>800</td><td><div class="barra" aria-label="39 %"><i style="width:39%"></i></div></td></tr>
       </tbody>
     </table>
   </div>
@@ -260,56 +261,56 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 
 <section>
   <div class="cabeza">
-    <div class="etiqueta">Por qué fiarse</div>
-    <h2>El modelo manda. El RTL obedece.</h2>
-    <p>Un modelo en Python define cada bit de la salida. El RTL tiene que coincidir muestra a muestra, con tolerancia cero (ADR 0003).</p>
+    <div class="etiqueta">Why trust it</div>
+    <h2>The model commands. The RTL obeys.</h2>
+    <p>A Python model defines each bit of the output. The RTL must match it sample by sample, with zero tolerance (ADR 0003).</p>
   </div>
   <div class="pruebas">
-    <div class="terminal" aria-label="Salida real de la placa por la UART">
+    <div class="terminal" aria-label="Real board output through the UART">
       <span class="p">$ make prog &amp;&amp; make uart</span><br>
       SOFIFI 0000003F<br>
       SOFIFI 00000040<br>
       SOFIFI 00000041<br>
-      <span class="ok"># periodo medio: 1.0001 s por mensaje</span>
+      <span class="ok"># mean period: 1.0001 s per message</span>
     </div>
     <div class="cifras">
-      <div class="cifra"><b>9 de 9</b><span>capturas del plate iguales al modelo, bit a bit, en el silicio a 100 MHz (MED-13).</span></div>
-      <div class="cifra"><b>120 MHz</b><span>sin errores en la placa (4 de 4): un 20 % de margen sobre los 100 MHz de trabajo (MED-14).</span></div>
+      <div class="cifra"><b>9 of 9</b><span>plate captures equal to the model, bit by bit, on the silicon at 100 MHz (MED-13).</span></div>
+      <div class="cifra"><b>120 MHz</b><span>with no errors on the board (4 of 4): a 20 % margin above the 100 MHz working clock (MED-14).</span></div>
     </div>
   </div>
   <div class="reglas">
-    <div class="regla"><h3>10 compuertas duras</h3><p>Corren antes de cada push. Si una falla, el push no sale (ADR 0001).</p></div>
-    <div class="regla"><h3>Segunda vuelta</h3><p>Cada PR pasa una revisión de optimización con listones de recursos (ADR 0010).</p></div>
-    <div class="regla"><h3>Primitivas probadas</h3><p>DSP 27×18, 42 bloques de BSRAM y PLL de 100 MHz, verificados en la placa con Yosys, nextpnr y apicula (MED-06 a MED-08).</p></div>
+    <div class="regla"><h3>10 hard gates</h3><p>They run before each push. If one fails, the push does not go out (ADR 0001).</p></div>
+    <div class="regla"><h3>Second pass</h3><p>Each PR gets an optimization review with resource ratchets (ADR 0010).</p></div>
+    <div class="regla"><h3>Tested primitives</h3><p>DSP 27×18, 42 BSRAM blocks and a 100 MHz PLL, verified on the board with Yosys, nextpnr and apicula (MED-06 to MED-08).</p></div>
   </div>
 </section>
 
 <section id="ruta">
   <div class="cabeza">
-    <div class="etiqueta">La gira</div>
-    <h2>13 fases. 7 cerradas. Lo que falta, al final.</h2>
-    <p>Hasta la Fase 08 basta con la placa y la microSD. El hardware que no se puede conseguir hoy queda para las fases 09 a 12.</p>
+    <div class="etiqueta">The tour</div>
+    <h2>13 phases. 7 closed. The missing parts come last.</h2>
+    <p>Up to Phase 08, the board and the microSD are sufficient. The hardware that is not available today waits for phases 09 to 12.</p>
   </div>
   <ol class="ruta">
-    <li class="fase cerrada"><span class="n">00</span><span class="t">Kit de arranque y compuerta</span><span class="h">cerrada</span></li>
-    <li class="fase cerrada"><span class="n">01</span><span class="t">Modelo bit-exact del núcleo</span><span class="h">cerrada</span></li>
-    <li class="fase cerrada"><span class="n">02</span><span class="t">Cadena EDA y primer bitstream</span><span class="h">cerrada</span></li>
-    <li class="fase cerrada"><span class="n">03</span><span class="t">Estado del arte y prueba de primitivas</span><span class="h">cerrada</span></li>
-    <li class="fase cerrada"><span class="n">04</span><span class="t">Núcleo DSP en RTL</span><span class="h">cerrada</span></li>
-    <li class="fase cerrada"><span class="n">05</span><span class="t">Núcleo verificado por UART</span><span class="h">cerrada</span></li>
-    <li class="fase cerrada"><span class="n">06</span><span class="t">Biblioteca de programas</span><span class="h">cerrada</span></li>
-    <li class="fase siguiente"><span class="n">07</span><span class="t">Micro-looper y granular</span><span class="h">siguiente</span></li>
-    <li class="fase"><span class="n">08</span><span class="t">Carga desde la microSD</span><span class="h">PMOD TF</span></li>
-    <li class="fase falta"><span class="n">09</span><span class="t">Controles físicos</span><span class="h">falta MCP3208</span></li>
-    <li class="fase falta"><span class="n">10</span><span class="t">Interfaz cuatrilingüe en OLED</span><span class="h">falta OLED</span></li>
-    <li class="fase falta"><span class="n">11</span><span class="t">Audio I2S</span><span class="h">falta códec</span></li>
-    <li class="fase falta"><span class="n">12</span><span class="t">Integración y limitador</span><span class="h">falta todo lo anterior</span></li>
+    <li class="fase cerrada"><span class="n">00</span><span class="t">Starter kit and gate</span><span class="h">closed</span></li>
+    <li class="fase cerrada"><span class="n">01</span><span class="t">Bit-exact model of the core</span><span class="h">closed</span></li>
+    <li class="fase cerrada"><span class="n">02</span><span class="t">EDA chain and first bitstream</span><span class="h">closed</span></li>
+    <li class="fase cerrada"><span class="n">03</span><span class="t">State of the art and primitive tests</span><span class="h">closed</span></li>
+    <li class="fase cerrada"><span class="n">04</span><span class="t">DSP core in RTL</span><span class="h">closed</span></li>
+    <li class="fase cerrada"><span class="n">05</span><span class="t">Core verified through UART</span><span class="h">closed</span></li>
+    <li class="fase cerrada"><span class="n">06</span><span class="t">Program library</span><span class="h">closed</span></li>
+    <li class="fase siguiente"><span class="n">07</span><span class="t">Micro-looper and granular</span><span class="h">next</span></li>
+    <li class="fase"><span class="n">08</span><span class="t">Load from the microSD</span><span class="h">PMOD TF</span></li>
+    <li class="fase falta"><span class="n">09</span><span class="t">Physical controls</span><span class="h">needs MCP3208</span></li>
+    <li class="fase falta"><span class="n">10</span><span class="t">Four-language OLED interface</span><span class="h">needs OLED</span></li>
+    <li class="fase falta"><span class="n">11</span><span class="t">I2S audio</span><span class="h">needs codec</span></li>
+    <li class="fase falta"><span class="n">12</span><span class="t">Integration and limiter</span><span class="h">needs all of the above</span></li>
   </ol>
-  <div class="leyenda"><span><i class="c"></i>Cerrada</span><span><i class="s"></i>Siguiente</span><span><i class="f"></i>Falta hardware</span></div>
+  <div class="leyenda"><span><i class="c"></i>Closed</span><span><i class="s"></i>Next</span><span><i class="f"></i>Hardware missing</span></div>
 </section>
 
 <footer>
-  Cifras contadas sobre el repositorio el 2026-10-07: programas, presets, instrucciones y ciclos con <span class="dato">sofifi catalogo</span> (<span class="dato">docs/programas.md</span>); capturas y margen en la placa, MED-13 y MED-14 (<span class="dato">docs/mediciones.yaml</span>); salida de la UART con <span class="dato">scripts/leer_uart.py</span> (MED-03); primitivas con <span class="dato">scripts/verificar_primitivas.py</span> (MED-06 a MED-08); fases de <span class="dato">docs/fases/</span>. «¿Por qué escoger SOFIFI?»: igualdad RTL-modelo de <span class="dato">sim/nucleo/nucleo_test.py</span> y MED-13; datos del FV-1 de <span class="dato">docs/investigacion/INVESTIGACION.md</span> [V]. Documentación pública y técnica en español, inglés, chino simplificado y japonés; la interfaz de la OLED lo será en la Fase 10 (ADR 0007). Licencia MIT.
+  Figures counted on the repository on 2026-10-07: programs, presets, instructions and cycles with <span class="dato">sofifi catalogo</span> (<span class="dato">docs/programas.en.md</span>); captures and margin on the board, MED-13 and MED-14 (<span class="dato">docs/mediciones.yaml</span>); UART output with <span class="dato">scripts/leer_uart.py</span> (MED-03); primitives with <span class="dato">scripts/verificar_primitivas.py</span> (MED-06 to MED-08); phases from <span class="dato">docs/fases/</span>. "Why choose SOFIFI?": RTL-model equality from <span class="dato">sim/nucleo/nucleo_test.py</span> and MED-13; FV-1 data from <span class="dato">docs/investigacion/INVESTIGACION.md</span> [V]. Public and technical documentation in Spanish, English, Simplified Chinese and Japanese; the OLED interface will have the same four languages in Phase 10 (ADR 0007). MIT license.
 </footer>
 
 </div>

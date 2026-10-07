@@ -1,4 +1,4 @@
-<!-- i18n: fuente=BOM.md sha=af28f64819c7 estado=al_dia -->
+<!-- i18n: fuente=BOM.md sha=38e7dbe6cc99 estado=al_dia -->
 # BOM · SOFIFI 硬件
 
 这是效果器的采购清单。链接检查日期为 **2026 年 10 月 7 日**：[V] = 页面已加载，商品在售；[?] = 页面无法加载。价格为该日期的价格，不含运费，价格会变动。
@@ -22,7 +22,7 @@
 | 7 | **Microchip MCP3208-CI/P**（12 bit、8 通道 SPI ADC） | 读取 6 个电位器。 | 09 | 3 USD | [V] [DigiKey](https://www.digikey.com/en/products/detail/microchip-technology/MCP3208-CI-P/305928) |
 | 8 | **B10K 线性电位器** ×6 | 效果器的旋钮。 | 09 | 每个 0.39 USD | [V] [Tayda A-5523](https://www.taydaelectronics.com/tayda-b10k-ohm-linear-taper-potentiometer-round-shaft-pc-mount.html) |
 | 9 | **SPST 瞬时软触脚踏开关** ×2 | Bypass 和 freeze。在此之前，可以使用 Dock 上的按键。 | 09 | 每个 3 USD | [V] [Tayda](https://www.taydaelectronics.com/spst-momentary-soft-touch-push-button-stomp-foots-pedal-switch-on-off.html) |
-| 10 | **128×64 SSD1306 OLED** | 用三种语言显示预设和每个旋钮的功能。 | 10 | 20 USD | [V] [Adafruit #938](https://www.adafruit.com/product/938)（10 月 7 日缺货） |
+| 10 | **128×64 SSD1306 OLED** | 用四种语言显示预设和每个旋钮的功能。 | 10 | 20 USD | [V] [Adafruit #938](https://www.adafruit.com/product/938)（10 月 7 日缺货） |
 | 11 | **输入缓冲器**（JFET 或运算放大器） | 将吉他（高阻抗）适配到 ADC 输入。任何带缓冲器的效果器都可以。 | 11 | 0.50 USD（仅 PCB） | [V] [PedalPCB Simple JFET Buffer](https://www.pedalpcb.com/product/jfetbuffer/) · [?] [PedalPCB MicroBuffer](https://www.pedalpcb.com/product/pcb678/) |
 
 ## 以后需要的物品
