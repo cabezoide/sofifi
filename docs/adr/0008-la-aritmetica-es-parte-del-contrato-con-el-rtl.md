@@ -48,3 +48,7 @@ Opción 2, implementada en `model/sofifi/domain/aritmetica.py`.
 
 - **ACC de 24 bit del FV-1:** desperdicia la ALU de 48 bit y obliga a escalar a mano cada suma de taps.
 - **`tanh` y `sin` de libm para las tablas:** no es portable bit a bit.
+
+## Actualización 2026-10-07 (intérprete más rápido, Fase 06)
+
+`saturar`, `saturar_acc` y `acc_a_dato` se escriben con comparaciones y constantes ya calculadas, no con `min`/`max` y llamadas encadenadas. El intérprete tarda la mitad: la biblioteca pasa de 30 programas y sus pruebas corren en cada push. **El contrato no cambia:** una prueba de propiedades (`model/tests/aritmetica_test.py`) exige que las versiones rápidas den lo mismo que la definición general, y las huellas de los 30 programas no cambian.
