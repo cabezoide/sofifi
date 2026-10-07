@@ -10,6 +10,10 @@ Ampliar la biblioteca más allá de plate, shimmer y freeze, con los algoritmos 
 
 Investigación §1.1 (catálogo de algoritmos) y §4.3 (lista de efectos).
 
+## Requisito previo (de la Fase 05)
+
+El núcleo segmentado gasta unos 13 ciclos por instrucción: el shimmer usa 1 601 de 2 048 (MED-11). Los programas de esta fase no caben así. Primer PR de la fase: **leer la instrucción siguiente mientras se ejecuta la actual** y solapar la escritura del ACC con esa lectura, con el margen de reloj medido en la placa por encima del 20 % (ADR 0011, MED-14).
+
 ## Diagnóstico
 
 - **Se reutiliza:** núcleo, ensamblador y el patrón de pruebas de `model/tests/programas_test.py`.

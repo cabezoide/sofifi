@@ -60,3 +60,13 @@ promesas:
     not_checked: "el silicio (Fase 05)"
     motivo: Cierre de la Fase 04.
     flag: null
+  - id: P-007
+    claim: "El núcleo da en la placa, muestra a muestra, la misma salida que el modelo bit-exact"
+    source: docs/fases/F05-nucleo-verificado-en-la-fpga-por-uart.md
+    verifier: scripts/hil_nucleo.py
+    kind: funcionalidad
+    status: verificada
+    scope: "plate a 100 MHz, 4 096 muestras con CRC-32, 9 de 9 capturas (MED-13)"
+    not_checked: "shimmer y freeze en la placa; margen de reloj por debajo del objetivo del ADR 0011 (MED-14)"
+    motivo: Cierre de la Fase 05.
+    flag: null

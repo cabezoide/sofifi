@@ -51,6 +51,7 @@ def producto(op: Op, a24: int, r: int, v: int, c: int) -> int:
 @cocotb.test()
 async def acc_igual_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
     azar = random.Random(9)
+    anterior = None
     for _ in range(40_000):
         op = azar.choice(OPS)
         acc, lr, r = con_signo(azar, 48), con_signo(azar, 24), con_signo(azar, 24)
@@ -63,12 +64,15 @@ async def acc_igual_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
         p = producto(op, a24, r, v, c)
         MANEJADORES[op](n, Instruccion(op, reg=0, coef=c, addr=addr))
 
+        dut.clk.value = 0
         dut.op.value, dut.acc.value, dut.p.value = int(op), acc, p
         dut.lr.value, dut.r.value, dut.addr.value = lr, r, addr
         await Timer(1, unit="ns")
         assert dut.acc_sig.value.to_signed() == n.acc, (
+            f"dut={dut.acc_sig.value.to_signed()} modelo={n.acc} anterior={anterior} "
             f"{op.name}: acc={acc} lr={lr} r={r} c={c} addr={addr_con_signo(addr)} p={p}"
         )
+        anterior = op.name
 
 
 def test_alu(tmp_path: Path) -> None:
@@ -77,4 +81,5 @@ def test_alu(tmp_path: Path) -> None:
         [RTL / "nucleo" / m for m in ("alu.v", "saturar_acc.v")],
         "alu",
         "alu_test",
+        {"REGISTRADA": 0},
     )

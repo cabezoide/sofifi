@@ -54,6 +54,6 @@ capacidades:
     capacidad: Núcleo DSP en RTL equivalente al modelo
     nivel: 5
     evidencia: sim/nucleo/nucleo_test.py
-    scope: "plate, shimmer y freeze muestra a muestra contra el modelo en la compuerta dura; cada bloque contra su función del modelo; síntesis a 140 MHz (MED-09 a MED-11)"
-    no_cubre: "el silicio: el núcleo corre en la placa (prueba de humo por UART) pero la igualdad bit a bit en hardware es la Fase 05"
-    brecha: "Fase 05: capturar en la placa y comparar con el modelo"
+    scope: "plate, shimmer y freeze contra el modelo en la compuerta dura; cada bloque contra su función del modelo; el plate, igual al modelo en la placa a 100 MHz (MED-09 a MED-14)"
+    no_cubre: "shimmer y freeze en la placa; el margen de reloj real es de al menos un 6 % (MED-14), por debajo del 20 % del ADR 0011"
+    brecha: "antes de la Fase 06: secuenciador con lectura y ejecución solapadas, y margen de reloj de más del 20 %"

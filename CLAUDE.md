@@ -14,6 +14,7 @@ por capa y el detalle que un agente necesita para trabajar sin releer todo.
 | RTL | `scripts/ci_local.sh rtl-lint` · `make sim` (cocotb sobre verilator, del `.venv`) |
 | Núcleo | `SOFIFI_MUESTRAS=4883 pytest sim/nucleo/nucleo_test.py` (aceptación; la compuerta usa 1 000) · `sofifi tablas` regenera ROM y programas |
 | Placa | `make synth` · `make prog` (SRAM) · `make uart` (lee `/dev/ttyUSB1`) |
+| Núcleo en placa | `make prog TOP=hil_nucleo` · `.venv/bin/python scripts/hil_nucleo.py` · margen: `scripts/margen_reloj.py` (ADR 0011) |
 | Primitivas | `make prog TOP=prueba_dsp` y `.venv/bin/python scripts/verificar_primitivas.py dsp` (también `bsram` y `pll`) |
 | Optimización | `make optimizacion` (síntesis de todos los tops, ~3 min; release, ADR 0010) |
 | Release | `make release-check` (síntesis de los tops con informe de recursos) |
@@ -30,6 +31,10 @@ por capa y el detalle que un agente necesita para trabajar sin releer todo.
   `docs/ratchets.yaml`. Revisar también lo que ninguna pista ve: aritmética
   repetida, registros más anchos de lo necesario y, en el modelo, tiempos
   (MED-01/02) y código duplicado.
+- **Fallos y arquitectura:** cada fallo diagnosticado va a `fails.md` (síntoma,
+  causa, resolución, lección). `docs/arquitectura_fpga.md` se actualiza en cada PR
+  que cambie bloques del FPGA. `BOM.md` y `SBOM.md`, cuando cambie el hardware o
+  un componente.
 - **Al cerrar una fase**, actualizar la versión y la ruta en
   `docs/infografias/sofifi.html` y regenerar `docs/img/portada.png` y
   `docs/img/ruta.png`: el README las muestra. Se capturan con
@@ -93,3 +98,4 @@ Ver `docs/EXTENDING.md`.
 | ADR 0008 | La aritmética es parte del contrato con el RTL |
 | ADR 0009 | Una instrucción cabe en tres columnas de BSRAM (ISA de 54 bit) |
 | ADR 0010 | Cada PR pasa una segunda vuelta de optimización |
+| ADR 0011 | El timing se mide en la placa, no se cree a nextpnr |

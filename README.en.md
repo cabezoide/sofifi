@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=4acfec37619a estado=al_dia -->
+<!-- i18n: fuente=README.md sha=98ddad6e42bf estado=al_dia -->
 # SOFIFI — Soundscapes On FPGA: Integrated Filters & Impulses
 
 *In Spanish: Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada.*
@@ -12,13 +12,12 @@
 SOFIFI is an ambient guitar pedal (reverbs, shimmer, tape delays, freeze, granular)
 implemented on a **Sipeed Tang Primer 25K** FPGA (Gowin GW5A-LV25).
 
-**Version:** `0.4` (the version is the last closed phase; see `docs/fases/estado_fases.csv`).
+**Version:** `0.5` (the version is the last closed phase; see `docs/fases/estado_fases.csv`).
 
-> Status: **DSP core in RTL, identical to the model** (Phase 04). In simulation
-> it matches the model bit for bit on plate, shimmer and freeze; synthesized it
-> closes timing at 140 MHz and already runs on the board. The bit-exact model
-> lets you hear the three programs on a PC. Bit-exact equality on silicon is
-> Phase 05.
+> Status: **DSP core verified on silicon** (Phase 05). On the board, at 100 MHz,
+> the plate gives sample by sample the same output as the bit-exact model. In
+> simulation, shimmer and freeze also match. The model lets you hear the three
+> programs on a PC. Next: the program library (Phase 06).
 > The initial research is in `docs/investigacion/INVESTIGACION.md` (Spanish).
 
 ## Listening to the effects (no hardware needed)
@@ -109,6 +108,13 @@ Phases that need missing hardware are at the end of the plan (09 to 12), so up
 to Phase 08 the board and the microSD are enough.
 
 ![The 13 phases: 4 closed, the next one and the ones that wait for hardware](docs/img/ruta.png)
+
+## Hardware documentation (Spanish)
+
+- `BOM.md`: hardware shopping list, with links.
+- `SBOM.md`: what each FPGA component does and the tools used to build it.
+- `docs/arquitectura_fpga.md`: the FPGA architecture and how it changes phase by phase.
+- `fails.md`: the failures found and how they were solved.
 
 ## Languages
 
