@@ -48,6 +48,15 @@ Además, la directiva `include` en el ensamblador.
 2. Cinta + reverse.
 3. Lo-fi + swell + demos regeneradas.
 
+**Estado del PR 1 del plan (2026-10-07):** hecho, con estas diferencias.
+
+- **`include`:** `include ruta` inserta otro fichero, con la ruta relativa a la carpeta del programa. El ensamblador sigue puro: recibe una función que lee el fichero. Plate, shimmer y freeze comparten seis bloques de `programas/comun/` y sus huellas no cambian.
+- **Coste en el RTL (no estaba en el plan):** `model/sofifi/domain/coste.py` da los ciclos de cada instrucción en el RTL, medidos en simulación. Sin él, «cabe en el núcleo» comprobaba 1 ciclo por instrucción y no servía.
+- **Hall:** FDN de 8 líneas (55-103 ms) con Householder, 1 578 ciclos y 34 522 palabras. T60 de 0,6 s (pot0 = 0,2), 2,1 s (pot0 = 0,8) y 8,1 s (pot0 = 1, sin damping). Todas las líneas usan el mismo kdecay: la ISA no tiene `exp` para dar a cada línea su ganancia.
+- **Cloud:** seis difusores largos (13-56 ms) y un tanque en ocho, 1 356 ciclos y 42 814 palabras. El LFO RND sigue a su objetivo en unos 1,3 ms: con una excursión grande, el tono salta. Por eso los difusores usan una excursión de 4 muestras y el tanque, un LFO senoidal.
+- **Prueba del cloud:** mide la modulación como pérdida de invariancia. Con pot3 = 0, un impulso retrasado da la misma cola, bit a bit; con pot3 = 1, no.
+- **El cloud no cabe en `hil_nucleo`** (38 bloques de retardo). Los programas nuevos están probados en simulación, no en la placa.
+
 ## Criterios de aceptación
 
 - Cada programa cabe en el núcleo.

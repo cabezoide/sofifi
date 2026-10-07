@@ -70,7 +70,7 @@ Todo corre en **un solo dominio de reloj de 100 MHz** (ADR 0005). La única exce
 | BSRAM | 56 de 56 | 38 de retardo + 6 de microcódigo + 12 de captura. En el pedal final, la captura no existe: 42 + 6 = 48. |
 | DSP | 2 de 28 | |
 | Frecuencia | 154 MHz según nextpnr; **120 MHz en la placa sin errores (4 de 4)**; 125 MHz, 3 de 4 | margen real de al menos un 20 % sobre 100 MHz (F-15, ADR 0011) |
-| Ciclos por muestra | plate 1 195, freeze 1 313, shimmer 1 514 de 2 048 | unos 14 ciclos por instrucción: caben unas 145 |
+| Ciclos por muestra | plate 1 195, freeze 1 313, cloud 1 356, shimmer 1 514, hall 1 578 de 2 048 | coste de cada instrucción en `model/sofifi/domain/coste.py` |
 
 ## Reglas de diseño que salen de los fallos
 
@@ -122,6 +122,25 @@ Se añaden los envoltorios del PLL (`pll_100`), del DSP (`mult_27x18`) y de la B
 - **Traza del núcleo en la placa:** el top HIL graba (pc, ACC) y el PC dice qué instrucción falla primero.
 - Margen medido: **120 MHz sin errores**, frente a 106 MHz en la Fase 05.
 - Ciclos por muestra: shimmer 1 514 (antes 1 601). La lectura adelantada ahorra unos 150 ciclos y la memoria segmentada gasta unos 65.
+
+### Fase 06 · Hall y cloud (el RTL no cambia)
+
+- Dos programas nuevos, `hall.sasm` y `cloud.sasm`, iguales al modelo en la simulación (4 883 muestras cada uno).
+- **Coste de cada instrucción en el RTL**, medido en simulación y copiado al modelo (`coste.py`):
+
+| Instrucción | Ciclos |
+|---|---|
+| `NOP`, `LDAX`, `CLR`, `ABSA`; `SKP` que no salta | 6 |
+| `SKP` que salta | 8 |
+| `RDAX`, `WRAX`, `WRA`, `WRAP`, `MAXX`, `MULX`, `SOF` | 10 |
+| `RDFX` | 11 |
+| `CLIP` | 14 |
+| `RDA` | 19 |
+| `CHO` (con `na`: 57) | 52 |
+| Fijos por muestra (cota) | 34 |
+
+- Un programa cabe si la suma es de 2 048 o menos. `sofifi asm` la da y `programas_test.py` la exige.
+- **El cloud usa 42 814 palabras: no cabe en `hil_nucleo`**, que tiene 38 bloques de retardo para dejar sitio a la captura. Para probarlo en la placa hace falta reducir la captura.
 
 ### Próximo cambio previsto
 

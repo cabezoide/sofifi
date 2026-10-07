@@ -12,10 +12,11 @@ import sys
 from fractions import Fraction
 from pathlib import Path
 
-from sofifi.adapters.archivos import FuenteProgramaArchivo, SumideroHex
+from sofifi.adapters.archivos import FuenteProgramaArchivo, SumideroHex, ensamblar_archivo
 from sofifi.adapters.wav import FuenteWav, SumideroWav
-from sofifi.domain.aritmetica import FS_WAV, dato
-from sofifi.domain.ensamblador import ErrorEnsamblado, ensamblar
+from sofifi.domain.aritmetica import CICLOS_POR_MUESTRA, FS_WAV, dato
+from sofifi.domain.coste import ciclos_rtl
+from sofifi.domain.ensamblador import ErrorEnsamblado
 from sofifi.domain.isa import NUM_POTS
 from sofifi.domain.senal import Controles
 from sofifi.services.render import exportar_microcodigo, renderizar
@@ -70,8 +71,7 @@ def main(argv: list[str] | None = None) -> int:
             Path(RUTA_TABLA_HERMITE).write_text(verilog_tabla_hermite(), encoding="utf-8")
             print(f"tabla Hermite → {RUTA_TABLA_HERMITE}")
             for nombre in PROGRAMAS_EN_ROM:
-                fuente = Path("programas") / f"{nombre}.sasm"
-                programa = ensamblar(fuente.read_text(encoding="utf-8"), nombre)
+                programa = ensamblar_archivo(Path("programas") / f"{nombre}.sasm")
                 Path(ruta_programa(nombre)).write_text(verilog_programa(programa), encoding="utf-8")
                 print(f"{nombre} → {ruta_programa(nombre)}")
         elif args.orden == "asm":
@@ -79,7 +79,8 @@ def main(argv: list[str] | None = None) -> int:
                 FuenteProgramaArchivo(args.programa), SumideroHex(args.salida)
             )
             print(
-                f"{prog.nombre}: {len(prog.instrucciones)} instrucciones, {prog.ciclos} ciclos, "
+                f"{prog.nombre}: {len(prog.instrucciones)} instrucciones, "
+                f"{ciclos_rtl(prog)} de {CICLOS_POR_MUESTRA} ciclos del RTL, "
                 f"{prog.palabras_memoria} palabras de memoria"
             )
         else:

@@ -25,7 +25,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import serial
-from sofifi.domain.ensamblador import ensamblar
+from sofifi.adapters.archivos import ensamblar_archivo
 from sofifi.domain.nucleo import Nucleo
 
 RAIZ = Path(__file__).resolve().parent.parent
@@ -77,8 +77,7 @@ def comprobar(lineas: list[str], n: int, programa: str = "plate") -> Resultado:
     )
     crc_ok = crc_placa is not None and zlib.crc32(datos) == crc_placa
 
-    fuente = (RAIZ / "programas" / f"{programa}.sasm").read_text(encoding="utf-8")
-    modelo = Nucleo(ensamblar(fuente, programa))
+    modelo = Nucleo(ensamblar_archivo(RAIZ / "programas" / f"{programa}.sasm"))
     iguales, primera, primera_k = 0, None, None
     for k in range(n):
         esperado = modelo.procesar(*estimulo(k), (POT,) * 6, 0)
@@ -97,8 +96,7 @@ def traza_esperada(k0: int, n: int, programa: str = "plate") -> list[tuple[int, 
     El núcleo pone ACC = 0 y pc = 0 al empezar cada muestra; cada instrucción deja
     el pc de la siguiente junto al ACC nuevo.
     """
-    fuente = (RAIZ / "programas" / f"{programa}.sasm").read_text(encoding="utf-8")
-    modelo = Nucleo(ensamblar(fuente, programa))
+    modelo = Nucleo(ensamblar_archivo(RAIZ / "programas" / f"{programa}.sasm"))
     for k in range(k0):
         modelo.procesar(*estimulo(k), (POT,) * 6, 0)
     salida: list[tuple[int, int]] = []

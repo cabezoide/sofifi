@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-"""nucleo.v: plate, shimmer y freeze dan la misma salida que el modelo, muestra a muestra.
+"""nucleo.v: los programas de programas/ dan la misma salida que el modelo, muestra a muestra.
 
 Es el criterio de la Fase 04 (ADR 0003): igualdad exacta, tolerancia cero. El
 estímulo es un impulso y después ruido del LFSR del modelo; los potenciómetros
@@ -24,13 +24,15 @@ from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles, RisingEdge
 from cocotb_tools.runner import get_runner
 from comun import AQUI, RAIZ, RTL
-from sofifi.domain.aritmetica import dato
+from sofifi.adapters.archivos import ensamblar_archivo
+from sofifi.domain.aritmetica import CICLOS_POR_MUESTRA, dato
+from sofifi.domain.coste import CICLOS_SKP_SIN_SALTO, ciclos_instruccion_rtl, ciclos_rtl
 from sofifi.domain.ensamblador import ensamblar
 from sofifi.domain.isa import Programa, codificar
 from sofifi.domain.lfo import TipoLfo
 from sofifi.domain.nucleo import Nucleo
 
-PROGRAMAS = ("plate", "shimmer", "freeze")
+PROGRAMAS = ("plate", "shimmer", "freeze", "hall", "cloud")
 CODIGO_LFO = {TipoLfo.SIN: 0, TipoLfo.RND: 1, TipoLfo.RAMP: 2}
 FUENTES = [
     RTL / "nucleo" / f
@@ -64,7 +66,7 @@ def estimulo(n: int) -> list[tuple[int, int]]:
 async def igual_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
     nombre = os.environ["PROGRAMA"]
     n = int(os.environ.get("SOFIFI_MUESTRAS", "1000"))
-    programa = ensamblar((RAIZ / "programas" / f"{nombre}.sasm").read_text(), nombre)
+    programa = ensamblar_archivo(RAIZ / "programas" / f"{nombre}.sasm")
     modelo = Nucleo(programa)
     pots = tuple(dato(v) for v in ("0.7", "0.5", "0.3", "0.6", "0.4", "0.2"))
 
@@ -103,7 +105,15 @@ async def igual_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
         obtenido = (dut.dac_l.value.to_signed(), dut.dac_r.value.to_signed())
         assert obtenido == esperado, f"{nombre}, muestra {k}: RTL {obtenido}, modelo {esperado}"
         maximo = max(maximo, int(dut.ciclos.value))
-    dut._log.info("%s: %d muestras iguales; máximo %d ciclos por muestra", nombre, n, maximo)
+    cota = ciclos_rtl(programa)
+    dut._log.info(
+        "%s: %d muestras iguales; máximo %d ciclos por muestra (cota del modelo %d)",
+        nombre,
+        n,
+        maximo,
+        cota,
+    )
+    assert maximo <= cota <= CICLOS_POR_MUESTRA, f"{nombre}: {maximo} ciclos, cota {cota}"
 
 
 RETARDO_8 = """
@@ -197,6 +207,56 @@ async def saltos_iguales_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
         esperado = modelo.procesar(izq, der)
         obtenido = (dut.dac_l.value.to_signed(), dut.dac_r.value.to_signed())
         assert obtenido == esperado, f"muestra {k}: RTL {obtenido}, modelo {esperado}"
+
+
+CABECERA_COSTE = "mem d 64\nlfo 0 sin 8\nlfo 1 rnd 8\nlfo 2 ramp 32\n"
+MUESTRA_COSTE = {
+    "rdax": "rdax adcl, 0.5",
+    "wrax": "wrax reg0, 1.0",
+    "rda": "rda d + 5, 0.5",
+    "wra": "wra d + 5, 1.0",
+    "wrap": "wrap d + 5, 0.5",
+    "rdfx": "rdfx reg1, 0.5",
+    "maxx": "maxx reg1, 0.5",
+    "mulx": "mulx reg1",
+    "sof": "sof 0.5, 0.1",
+    "clip": "clip",
+    "ldax": "ldax reg1",
+    "clr": "clr",
+    "absa": "absa",
+    "nop": "nop",
+    "cho_sin": "cho d + 10, 0.5, lfo0",
+    "cho_rnd": "cho d + 10, 0.5, lfo1",
+    "cho_ramp": "cho d + 10, 0.5, lfo2",
+    "cho_ramp_na": "cho d + 10, 0.5, lfo2, na",
+    "skp_no": "skp neg, 0",
+    "skp_si": "skp gez, 1\nnop",  # salta: el nop no se ejecuta
+}
+
+
+async def ciclos_de(dut: cocotb.handle.HierarchyObject, texto: str) -> int:
+    await cargar(dut, ensamblar(CABECERA_COSTE + texto, "coste"))
+    await muestra(dut, 0)
+    await muestra(dut, 0)
+    return int(dut.ciclos.value)
+
+
+@cocotb.test()
+async def coste_de_cada_instruccion(dut: cocotb.handle.HierarchyObject) -> None:
+    """Ciclos de cada instrucción en el RTL: los que cuenta el modelo (coste.py)."""
+    cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
+    dut.pots.value = 0
+    # Con 10 y 20 copias de cada instrucción: la diferencia es el coste de 10.
+    for nombre, linea in MUESTRA_COSTE.items():
+        diez = await ciclos_de(dut, "\n".join([linea] * 10))
+        veinte = await ciclos_de(dut, "\n".join([linea] * 20))
+        modelo = ciclos_instruccion_rtl(ensamblar(CABECERA_COSTE + linea, "coste").instrucciones[0])
+        if nombre == "skp_no":
+            modelo = CICLOS_SKP_SIN_SALTO
+        assert veinte - diez == 10 * modelo, (
+            f"{nombre}: RTL {(veinte - diez) / 10}, modelo {modelo}"
+        )
+        assert diez <= ciclos_rtl(ensamblar(CABECERA_COSTE + "\n".join([linea] * 10), "coste"))
 
 
 def test_nucleo(tmp_path: Path) -> None:

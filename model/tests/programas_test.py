@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: MIT
-"""Programas de la Fase 01: plate, shimmer y freeze.
+"""Programas del núcleo: plate, shimmer y freeze (Fase 01); hall y cloud (Fase 06).
 
-Comprueban propiedades acústicas medibles (decae, se sostiene, sube una octava)
+Comprueban propiedades acústicas medibles (decae, se sostiene, sube una octava,
+el decay sigue al potenciómetro, la modulación cambia la respuesta)
 y una **huella bit-exact** por programa: cambiar la aritmética, la ISA o un
 programa cambia la huella, y actualizarla es una decisión que se ve en el diff.
 No comprueban que suene bonito: eso se escucha (ver `sofifi render`).
@@ -15,8 +16,9 @@ from functools import cache
 from pathlib import Path
 
 import pytest
+from sofifi.adapters.archivos import ensamblar_archivo
 from sofifi.domain.aritmetica import DATO_MAX, UNO, dato
-from sofifi.domain.ensamblador import ensamblar
+from sofifi.domain.coste import cabe_en_el_rtl, ciclos_rtl
 from sofifi.domain.isa import Programa
 from sofifi.domain.senal import Controles, Senal
 from sofifi.services.render import procesar
@@ -27,12 +29,12 @@ FS = 48828
 
 @cache
 def programa(nombre: str) -> Programa:
-    return ensamblar((PROGRAMAS / f"{nombre}.sasm").read_text(encoding="utf-8"), nombre)
+    return ensamblar_archivo(PROGRAMAS / f"{nombre}.sasm")
 
 
-def impulso(segundos: float) -> Senal:
+def impulso(segundos: float, en: int = 0) -> Senal:
     x = [0] * int(segundos * FS)
-    x[0] = dato("0.5")
+    x[en] = dato("0.5")
     return Senal(FS, (tuple(x),))
 
 
@@ -53,10 +55,10 @@ def pots(*valores: str) -> tuple[int, ...]:
     return tuple(dato(v) for v in valores)
 
 
-@pytest.mark.parametrize("nombre", ["plate", "shimmer", "freeze"])
+@pytest.mark.parametrize("nombre", ["plate", "shimmer", "freeze", "hall", "cloud"])
 def test_cabe_en_el_nucleo(nombre: str) -> None:
     p = programa(nombre)
-    assert p.ciclos <= 2048
+    assert cabe_en_el_rtl(p), f"{ciclos_rtl(p)} ciclos del RTL > 2 048"
     assert p.palabras_memoria <= 43008
 
 
@@ -101,12 +103,48 @@ def test_shimmer_anade_la_octava_superior() -> None:
     assert ratio_con > 5 * ratio_sin
 
 
+def t60(v: tuple[int, ...]) -> float:
+    """T60 en segundos, por la caída de nivel entre 0,2-0,4 s y 0,6-0,8 s."""
+    caida_db = 20 * math.log10(rms(v, 0.2, 0.4) / rms(v, 0.6, 0.8))
+    return 60 * 0.4 / caida_db
+
+
+def test_hall_el_t60_sigue_a_pot0_y_es_estereo() -> None:
+    corto = procesar(programa("hall"), impulso(1.0), Controles(pots("0.2", "0.3", "1")))
+    largo = procesar(programa("hall"), impulso(1.0), Controles(pots("0.8", "0.3", "1")))
+    izq, der = corto.canales
+    assert 0.3 < t60(izq) < 1.0  # medido: 0,60 s
+    assert t60(largo.canales[0]) > 2.5 * t60(izq)  # medido: 2,08 s
+    assert izq[1000:20000] != der[1000:20000]
+
+
+def test_cloud_la_modulacion_cambia_la_respuesta() -> None:
+    """Sin modulación (pot3 = 0) el cloud es invariante: un impulso retrasado da la misma cola."""
+    retraso = int(0.2 * FS)
+    a, b = int(0.05 * FS), int(0.55 * FS)
+
+    def colas(mod: str) -> tuple[tuple[int, ...], tuple[int, ...]]:
+        c = Controles(pots("0.5", "0.3", "1", mod))
+        y0 = procesar(programa("cloud"), impulso(0.8), c).canales[0]
+        y1 = procesar(programa("cloud"), impulso(0.8, retraso), c).canales[0]
+        return y0[a:b], y1[retraso + a : retraso + b]
+
+    quieta, otra = colas("0")
+    assert quieta == otra and rms(quieta, 0, 0.1) > 0
+    modulada, otra = colas("1")
+    diferencia = math.sqrt(sum((p - q) ** 2 for p, q in zip(modulada, otra, strict=True)))
+    energia = math.sqrt(sum(p * p for p in modulada))
+    assert diferencia > 0.3 * energia  # medido: 1,07
+
+
 # Huellas bit-exact (sha256 de la salida estéreo de 0,1 s de impulso).
 # Cambian si cambia la aritmética (ADR 0008), la ISA (ADR 0009) o el programa.
 HUELLAS = {
     "plate": "7967b952e0f3b48a",
     "shimmer": "85d032aacbdeb748",
     "freeze": "8aaff05950123adf",
+    "hall": "415e559bb7dd5042",
+    "cloud": "496767ac991fd49c",
 }
 
 

@@ -4,67 +4,19 @@
 ; Con `sw` pulsado: decay ≈ 1, sin damping y la entrada deja de alimentar el
 ; tanque (freeze, no infinite). La modulación del tanque baja a 0 en rampa: con
 ; fracción de lectura distinta de 0, la interpolación es un paso bajo suave que,
-; dentro de un bucle sin pérdidas, apagaría la cola poco a poco. Un limitador CLIP en cada rama del tanque impide
-; que el bucle crezca sin control (SECURITY.md: el volumen es superficie de daño).
+; dentro de un bucle sin pérdidas, apagaría la cola poco a poco. Un limitador
+; CLIP en cada rama del tanque impide que el bucle crezca sin control
+; (SECURITY.md: el volumen es superficie de daño).
 ;
 ; pot0 = decay · pot1 = damping · pot2 = mezcla (cuando sw está suelto)
 
-equ  s     48828.125/29761
-equ  ex    13                 ; excursión de la modulación del tanque (≈ 8 muestras del paper)
-equ  kap1  0.75               ; difusión de entrada 1
-equ  kap2  0.625              ; difusión de entrada 2
-equ  kdd1  0.70               ; difusión de decay 1 (modulada, signo invertido)
-equ  kdd2  0.50               ; difusión de decay 2
-equ  kbw   0.9995             ; ancho de banda de entrada
-equ  ksal  0.6                ; ganancia de los taps de salida
-
-equ  kdecay   reg0
-equ  kdamp    reg1
-equ  kwet     reg2
-equ  kdry     reg3
-equ  bw       reg4
-equ  lpl      reg5
-equ  lpr      reg6
-equ  tmp      reg7
-equ  entrada  reg8
-
-mem  pre   488                ; predelay de 10 ms
-mem  ai1   142*s
-mem  ai2   107*s
-mem  ai3   379*s
-mem  ai4   277*s
-mem  tl1   672*s + ex + 3
-mem  dl1   4453*s
-mem  tl2   1800*s
-mem  dl2   3720*s
-mem  tr1   908*s + ex + 3
-mem  dr1   4217*s
-mem  tr2   2656*s
-mem  dr2   3163*s
-
-lfo  0  sin  ex
-lfo  1  sin  ex
+include  comun/dattorro_decl.sasm
 
 ; ── inicialización (solo la primera muestra) ─────────────────────────
         skp   run, inicio
-        sof   0, 1/512                  ; tmp = 2^-9 para fijar frecuencias finas
-        wrax  tmp, 0
-        rdax  tmp, 1024*1.0/48828.125   ; LFO0 a 1,0 Hz  (rate = 2f/fs)
-        wrax  lfo0_rate, 0
-        rdax  tmp, 1024*0.77/48828.125  ; LFO1 a 0,77 Hz
-        wrax  lfo1_rate, 0
+include  comun/dattorro_lfo.sasm
 inicio:
-; ── controles ─────────────────────────────────────────────────────────
-        rdax  pot0, 0.7
-        sof   1.0, 0.25
-        wrax  kdecay, 0
-        rdax  pot1, -0.7
-        sof   1.0, 0.999
-        wrax  kdamp, 0
-        rdax  pot2, 1.0
-        wrax  kwet, -1.0
-        sof   1.0, 0.999
-        wrax  kdry, 0
+include  comun/controles.sasm
 ; ── freeze: con el footswitch, decay ≈ 1, sin damping y sin entrada nueva ──
         rdax  sw, 1.0
         skp   zro, sin_freeze
@@ -86,23 +38,10 @@ profundidad:
         rdfx  lfo1_depth, 0.0005
         wrax  lfo1_depth, 0
 ; ── entrada: mono, escalada por la mezcla, predelay y ancho de banda ─
-        rdax  adcl, 0.5
-        rdax  adcr, 0.5
-        mulx  kwet
-        wra   pre, 0
-        rda   pre#, 1.0
+include  comun/entrada.sasm
         rdfx  bw, kbw
         wrax  bw, 1.0
-; ── difusión de entrada ──────────────────────────────────────────────
-        rda   ai1#, kap1
-        wrap  ai1, -kap1
-        rda   ai2#, kap1
-        wrap  ai2, -kap1
-        rda   ai3#, kap2
-        wrap  ai3, -kap2
-        rda   ai4#, kap2
-        wrap  ai4, -kap2
-        wrax  entrada, 0
+include  comun/dattorro_difusion.sasm
 ; ── tanque, rama izquierda ───────────────────────────────────────────
         rda   dr2#, 1.0
         mulx  kdecay
@@ -139,25 +78,4 @@ profundidad:
         rda   tr2#, kdd2
         wrap  tr2, -kdd2
         wra   dr2, 0
-; ── salida izquierda ─────────────────────────────────────────────────
-        rdax  adcl, 1.0
-        mulx  kdry
-        rda   dr1 + 266*s, ksal
-        rda   dr1 + 2974*s, ksal
-        rda   tr2 + 1913*s, -ksal
-        rda   dr2 + 1996*s, ksal
-        rda   dl1 + 1990*s, -ksal
-        rda   tl2 + 187*s, -ksal
-        rda   dl2 + 1066*s, -ksal
-        wrax  dacl, 0
-; ── salida derecha ───────────────────────────────────────────────────
-        rdax  adcr, 1.0
-        mulx  kdry
-        rda   dl1 + 353*s, ksal
-        rda   dl1 + 3627*s, ksal
-        rda   tl2 + 1228*s, -ksal
-        rda   dl2 + 2673*s, ksal
-        rda   dr1 + 2111*s, -ksal
-        rda   tr2 + 335*s, -ksal
-        rda   dr2 + 121*s, -ksal
-        wrax  dacr, 0
+include  comun/dattorro_salida.sasm

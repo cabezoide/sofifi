@@ -1,0 +1,149 @@
+; SPDX-License-Identifier: MIT
+;
+; cloud.sasm — Reverb «nube»: difusores largos en cascada con modulación
+; aleatoria y un tanque en forma de ocho. Diseño propio con la idea de
+; CloudSeed (docs/terceros.yaml T-002, estudiado): mucha difusión antes del
+; tanque, para que el ataque se disuelva. No porta código.
+;
+; Cada muestra:
+;   1. Seis allpass largos (de 13 a 56 ms) difuminan la entrada. Dos de ellos
+;      cambian de longitud al azar (LFO RND): la nube no se repite.
+;   2. El tanque tiene dos ramas que se alimentan una a otra. Cada rama tiene
+;      tres allpass (uno modulado con un LFO senoidal lento), dos retardos y un
+;      paso bajo (damping).
+;   3. La salida suma seis taps de dentro del tanque por lado.
+;
+; pot0 = decay       (0 → 0,25 · 1 → 0,95)
+; pot1 = damping     (0 → brillante · 1 → oscuro)
+; pot2 = mezcla      (0 → seco · 1 → solo reverb)
+; pot3 = modulación  (0 → sin modulación · 1 → máxima)
+
+equ  exd   4                  ; excursión aleatoria de los difusores, en muestras
+equ  ext   16                 ; excursión de la modulación del tanque
+equ  kd    0.7                ; difusión de entrada
+equ  ka    0.6                ; allpass modulado del tanque (signo invertido)
+equ  kb    0.6                ; segundo allpass del tanque
+equ  kc    0.5                ; tercer allpass del tanque
+equ  ksal  0.45               ; ganancia de los taps de salida
+
+equ  kdecay   reg0
+equ  kdamp    reg1
+equ  kwet     reg2
+equ  kdry     reg3
+equ  tmp      reg4
+equ  entrada  reg5
+equ  lpl      reg6
+equ  lpr      reg7
+
+mem  pre   733                ; predelay de 15 ms
+mem  ap1   641
+mem  ap2   937
+mem  ap3   1327 + exd + 3     ; modulado (RND)
+mem  ap4   1801
+mem  ap5   2347 + exd + 3     ; modulado (RND)
+mem  ap6   2753
+mem  tla   1999 + ext + 3     ; modulado (SIN)
+mem  tlb   2729
+mem  dl1   4603
+mem  tlc   2711
+mem  dl2   3907
+mem  tra   2203 + ext + 3     ; modulado (SIN)
+mem  trb   2909
+mem  dr1   4999
+mem  trc   2539
+mem  dr2   3607
+
+lfo  0  rnd  exd
+lfo  1  rnd  exd
+lfo  2  sin  ext
+lfo  3  sin  ext
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 1/512                  ; tmp = 2^-9 para fijar frecuencias finas
+        wrax  tmp, 0
+        rdax  tmp, 1024*1.3/48828.125   ; LFO0: un objetivo nuevo 1,3 veces por segundo
+        wrax  lfo0_rate, 0
+        rdax  tmp, 1024*0.9/48828.125   ; LFO1: 0,9 veces por segundo
+        wrax  lfo1_rate, 0
+        rdax  tmp, 1024*0.37/48828.125  ; LFO2 a 0,37 Hz
+        wrax  lfo2_rate, 0
+        rdax  tmp, 1024*0.29/48828.125  ; LFO3 a 0,29 Hz
+        wrax  lfo3_rate, 0
+inicio:
+include  comun/controles.sasm
+        rdax  pot3, 1.0                 ; la modulación sigue a pot3
+        wrax  lfo0_depth, 1.0
+        wrax  lfo1_depth, 1.0
+        wrax  lfo2_depth, 1.0
+        wrax  lfo3_depth, 0
+; ── 1. entrada y difusores largos ────────────────────────────────────
+include  comun/entrada.sasm
+        rda   ap1#, kd
+        wrap  ap1, -kd
+        rda   ap2#, kd
+        wrap  ap2, -kd
+        cho   ap3 + 1327 - exd, kd, lfo0
+        wrap  ap3, -kd
+        rda   ap4#, kd
+        wrap  ap4, -kd
+        cho   ap5 + 2347 - exd, kd, lfo1
+        wrap  ap5, -kd
+        rda   ap6#, kd
+        wrap  ap6, -kd
+        wrax  entrada, 0
+; ── 2. tanque, rama izquierda ────────────────────────────────────────
+        rda   dr2#, 1.0
+        mulx  kdecay
+        rdax  entrada, 1.0
+        cho   tla + 1999 - ext, -ka, lfo2
+        wrap  tla, ka
+        rda   tlb#, kb
+        wrap  tlb, -kb
+        wra   dl1, 0
+        rda   dl1#, 1.0
+        rdax  lpl, -1.0
+        mulx  kdamp
+        rdax  lpl, 1.0
+        wrax  lpl, 1.0
+        mulx  kdecay
+        rda   tlc#, kc
+        wrap  tlc, -kc
+        wra   dl2, 0
+; ── 2. tanque, rama derecha ──────────────────────────────────────────
+        rda   dl2#, 1.0
+        mulx  kdecay
+        rdax  entrada, 1.0
+        cho   tra + 2203 - ext, -ka, lfo3
+        wrap  tra, ka
+        rda   trb#, kb
+        wrap  trb, -kb
+        wra   dr1, 0
+        rda   dr1#, 1.0
+        rdax  lpr, -1.0
+        mulx  kdamp
+        rdax  lpr, 1.0
+        wrax  lpr, 1.0
+        mulx  kdecay
+        rda   trc#, kc
+        wrap  trc, -kc
+        wra   dr2, 0
+; ── 3. salida: seis taps por lado y la señal seca ────────────────────
+        rdax  adcl, 1.0
+        mulx  kdry
+        rda   dr1 + 1847, ksal
+        rda   dr1 + 4049, ksal
+        rda   trc + 1013, -ksal
+        rda   dr2 + 1987, ksal
+        rda   dl1 + 2767, -ksal
+        rda   tlb + 811, -ksal
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rda   dl1 + 1693, ksal
+        rda   dl1 + 3803, ksal
+        rda   tlc + 1129, -ksal
+        rda   dl2 + 2203, ksal
+        rda   dr1 + 2909, -ksal
+        rda   trb + 887, -ksal
+        wrax  dacr, 0

@@ -31,8 +31,8 @@ el oráculo del RTL (ADR 0003). Todo el audio vive en BSRAM, porque no hay SDRAM
 | `docs/terceros.yaml` | origen y licencia de todo código ajeno estudiado o portado |
 | `docs/EXTENDING.md` | cómo añadir un efecto, un módulo RTL o una compuerta |
 | `model/sofifi/` | modelo de referencia, por capas (ver `model/AGENTS.md`) |
-| `demo_examples/` | WAV de demostración (guitarra sintética + plate, shimmer, freeze); se regeneran con `scripts/generar_demos.py` |
-| `programas/` | programas del núcleo en ensamblador (`.sasm`): plate, shimmer, freeze |
+| `demo_examples/` | WAV de demostración (guitarra sintética + un WAV por programa); se regeneran con `scripts/generar_demos.py` |
+| `programas/` | programas del núcleo en ensamblador (`.sasm`): plate, shimmer, freeze, hall, cloud. Los bloques comunes van en `programas/comun/` y entran con `include` |
 | `rtl/` | Verilog sintetizable (ver `rtl/AGENTS.md`) |
 | `sim/` | testbenches cocotb que comparan RTL con modelo (ver `sim/AGENTS.md`) |
 | `scripts/ci_local.sh` | LA compuerta; el hook `scripts/hooks/pre-push` delega en ella |

@@ -1,0 +1,41 @@
+; SPDX-License-Identifier: MIT
+;
+; comun/dattorro_decl.sasm — constantes, registros, memoria y LFOs del plate de
+; Dattorro (ver plate.sasm). Lo incluyen plate, shimmer y freeze. Va antes de
+; cualquier otro `mem`: las direcciones de la memoria salen del orden.
+
+equ  s     48828.125/29761
+equ  ex    13                 ; excursión de la modulación del tanque (≈ 8 muestras del paper)
+equ  kap1  0.75               ; difusión de entrada 1
+equ  kap2  0.625              ; difusión de entrada 2
+equ  kdd1  0.70               ; difusión de decay 1 (modulada, signo invertido)
+equ  kdd2  0.50               ; difusión de decay 2
+equ  kbw   0.9995             ; ancho de banda de entrada
+equ  ksal  0.6                ; ganancia de los taps de salida
+
+equ  kdecay   reg0
+equ  kdamp    reg1
+equ  kwet     reg2
+equ  kdry     reg3
+equ  bw       reg4
+equ  lpl      reg5
+equ  lpr      reg6
+equ  tmp      reg7
+equ  entrada  reg8
+
+mem  pre   488                ; predelay de 10 ms
+mem  ai1   142*s
+mem  ai2   107*s
+mem  ai3   379*s
+mem  ai4   277*s
+mem  tl1   672*s + ex + 3
+mem  dl1   4453*s
+mem  tl2   1800*s
+mem  dl2   3720*s
+mem  tr1   908*s + ex + 3
+mem  dr1   4217*s
+mem  tr2   2656*s
+mem  dr2   3163*s
+
+lfo  0  sin  ex
+lfo  1  sin  ex

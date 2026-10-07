@@ -22,6 +22,10 @@ class FuentePrograma(Protocol):
         """Devuelve ``(nombre, texto)`` del programa."""
         ...
 
+    def incluir(self, nombre: str) -> str:
+        """Devuelve el texto del fichero que pide un ``include`` del programa."""
+        ...
+
 
 class SumideroMicrocodigo(Protocol):
     def escribir(self, programa: Programa, palabras: list[int]) -> None: ...

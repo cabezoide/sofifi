@@ -1,0 +1,11 @@
+; SPDX-License-Identifier: MIT
+;
+; comun/dattorro_lfo.sasm — frecuencias de los LFO del tanque. Va en la
+; inicialización (detrás de `skp run`): los registros conservan el valor.
+
+        sof   0, 1/512                  ; tmp = 2^-9 para fijar frecuencias finas
+        wrax  tmp, 0
+        rdax  tmp, 1024*1.0/48828.125   ; LFO0 a 1,0 Hz  (rate = 2f/fs)
+        wrax  lfo0_rate, 0
+        rdax  tmp, 1024*0.77/48828.125  ; LFO1 a 0,77 Hz
+        wrax  lfo1_rate, 0

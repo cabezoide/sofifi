@@ -124,16 +124,16 @@ mediciones:
     no_dice: "La primera síntesis daba 70 MHz y 104 violaciones de hold. Se llegó aquí registrando operandos, partiendo CLIP y sacando las ROM de la BSRAM."
   - id: MED-11
     caracteristica: M-08
-    nombre: Ciclos por muestra del núcleo RTL con el programa más largo (shimmer)
-    valor: 1514
-    unidad: ciclos de 2 048 (plate 1 195, freeze 1 313)
+    nombre: Ciclos por muestra del núcleo RTL con el programa más largo (hall)
+    valor: 1578
+    unidad: ciclos de 2 048 (plate 1 195, shimmer 1 514, freeze 1 313, cloud 1 356)
     umbral: 2048
     direccion: menor_mejor
     fecha: 2026-10-07
     caduca_en_dias: 180
     como: "sim/nucleo/nucleo_test.py (registra el máximo de la salida `ciclos`)"
     entorno: "núcleo multiciclo con lectura adelantada y memoria segmentada (F-15): unos 14 ciclos por instrucción"
-    no_dice: "Fase 05: 1 601 (unos 13 ciclos por instrucción); Fase 04: 840. El ADR 0009 cuenta 1 ciclo por instrucción. La espera al resultado de cada instrucción es lo que más cuesta."
+    no_dice: "Fase 05: 1 601 (unos 13 ciclos por instrucción); Fase 04: 840. El ADR 0009 cuenta 1 ciclo por instrucción; el coste real de cada instrucción está en model/sofifi/domain/coste.py (RDAX 10, RDA 19, CHO 52), y la simulación lo comprueba. La espera al resultado de cada instrucción es lo que más cuesta."
   - id: MED-12
     caracteristica: M-06
     nombre: Muestras por segundo medidas en la placa

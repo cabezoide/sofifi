@@ -3,15 +3,22 @@
 Paso a paso para cada tipo de pieza. Si añadir algo obliga a tocar un sitio que
 no está en esta lista, la lista está incompleta: se corrige en el mismo PR.
 
-## Un algoritmo DSP (efecto)
+## Un efecto (programa del núcleo)
+
+Un efecto es un programa, no un módulo RTL (ADR 0006).
 
 1. Si viene de un tercero, se añade la entrada en `docs/terceros.yaml`. `uso: portado`
    solo vale con licencia permisiva (ADR 0002).
-2. Se escribe el modelo bit-exact en `model/sofifi/domain/`, con pruebas en
-   `model/tests/`.
-3. Mientras no exista el núcleo microcodificado (ADR 0006), el efecto se queda
-   en el modelo. Cuando exista, el efecto será un programa del núcleo con su
-   prueba de equivalencia.
+2. Se escribe `programas/<nombre>.sasm`. Los bloques que ya existen se toman de
+   `programas/comun/` con `include`.
+3. Se comprueba que cabe: `sofifi asm` da los ciclos del RTL, que deben ser
+   2 048 o menos (`model/sofifi/domain/coste.py`).
+4. En `model/tests/programas_test.py` se añade el nombre a `test_cabe_en_el_nucleo`,
+   una prueba de su propiedad acústica y su huella en `HUELLAS`.
+5. Se añade a `PROGRAMAS` en `sim/nucleo/nucleo_test.py`: el RTL debe dar la
+   misma salida que el modelo.
+6. Se añade la demo en `DEMOS` (`scripts/generar_demos.py`) y en
+   `demo_examples/README.md`.
 
 ## Una instrucción del núcleo
 
@@ -21,6 +28,7 @@ Es una decisión estructural: `model/sofifi/domain/isa.py` es sentinela, así qu
 2. Se escribe el manejador en `model/sofifi/domain/nucleo.py` y se registra en `MANEJADORES`.
 3. Se añade el mnemónico y sus operandos en `model/sofifi/domain/ensamblador.py`.
 4. Los contratos de `model/tests/nucleo_test.py` y `model/tests/ensamblador_test.py` fallan si falta cualquiera de los tres pasos.
+5. Se añade su coste en ciclos del RTL en `CICLOS_RTL` (`model/sofifi/domain/coste.py`) y una línea en `MUESTRA_COSTE` (`sim/nucleo/nucleo_test.py`). La simulación mide el coste y lo compara con la tabla.
 
 ## Un módulo RTL
 

@@ -1,0 +1,14 @@
+; SPDX-License-Identifier: MIT
+;
+; comun/dattorro_difusion.sasm — los cuatro allpass de difusión de entrada del
+; plate. Toman el ACC y lo dejan en el registro `entrada`, con ACC = 0.
+
+        rda   ai1#, kap1
+        wrap  ai1, -kap1
+        rda   ai2#, kap1
+        wrap  ai2, -kap1
+        rda   ai3#, kap2
+        wrap  ai3, -kap2
+        rda   ai4#, kap2
+        wrap  ai4, -kap2
+        wrax  entrada, 0

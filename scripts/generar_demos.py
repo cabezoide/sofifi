@@ -5,7 +5,7 @@ La guitarra es un arpegio de Em9 con cuerdas Karplus-Strong y semilla fija, así
 que todo es determinista: el núcleo es bit-exact y no hay remuestreo (la
 señal ya está a 48 828 Hz). Volver a correrlo debe dar los mismos bytes.
 
-Uso: ``.venv/bin/python scripts/generar_demos.py``  (unos 30 s)
+Uso: ``.venv/bin/python scripts/generar_demos.py``  (unos 2 min)
 """
 
 from __future__ import annotations
@@ -32,6 +32,8 @@ DEMOS: tuple[tuple[str, dict[int, str], tuple[tuple[float, float], ...], float],
     ("plate", {0: "0.7", 1: "0.3", 2: "0.45"}, (), 5.0),
     ("shimmer", {0: "0.75", 1: "0.25", 2: "0.55", 3: "0.6"}, (), 8.0),
     ("freeze", {0: "0.6", 1: "0.3", 2: "0.5"}, ((2.5, 10.0),), 8.0),
+    ("hall", {0: "0.75", 1: "0.35", 2: "0.45"}, (), 6.0),
+    ("cloud", {0: "0.7", 1: "0.3", 2: "0.55", 3: "0.6"}, (), 8.0),
 )
 
 

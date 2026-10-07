@@ -6,6 +6,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from sofifi.domain.ensamblador import ensamblar
 from sofifi.domain.isa import BITS_PALABRA, Programa
 
 DIGITOS_HEX = (BITS_PALABRA + 3) // 4
@@ -17,6 +18,17 @@ class FuenteProgramaArchivo:
 
     def leer(self) -> tuple[str, str]:
         return self.ruta.stem, self.ruta.read_text(encoding="utf-8")
+
+    def incluir(self, nombre: str) -> str:
+        """Los ``include`` se resuelven desde la carpeta del programa."""
+        return (self.ruta.parent / nombre).read_text(encoding="utf-8")
+
+
+def ensamblar_archivo(ruta: Path) -> Programa:
+    """Ensambla un ``.sasm`` del disco, con sus ``include``."""
+    fuente = FuenteProgramaArchivo(ruta)
+    nombre, texto = fuente.leer()
+    return ensamblar(texto, nombre, fuente.incluir)
 
 
 class SumideroHex:

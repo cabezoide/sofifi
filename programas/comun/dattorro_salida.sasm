@@ -1,0 +1,27 @@
+; SPDX-License-Identifier: MIT
+;
+; comun/dattorro_salida.sasm — taps de salida del tanque (tabla 2 del paper) más
+; la señal seca escalada por kdry. Escribe dacl y dacr, y deja ACC = 0.
+
+; ── salida izquierda ─────────────────────────────────────────────────
+        rdax  adcl, 1.0
+        mulx  kdry
+        rda   dr1 + 266*s, ksal
+        rda   dr1 + 2974*s, ksal
+        rda   tr2 + 1913*s, -ksal
+        rda   dr2 + 1996*s, ksal
+        rda   dl1 + 1990*s, -ksal
+        rda   tl2 + 187*s, -ksal
+        rda   dl2 + 1066*s, -ksal
+        wrax  dacl, 0
+; ── salida derecha ───────────────────────────────────────────────────
+        rdax  adcr, 1.0
+        mulx  kdry
+        rda   dl1 + 353*s, ksal
+        rda   dl1 + 3627*s, ksal
+        rda   tl2 + 1228*s, -ksal
+        rda   dl2 + 2673*s, ksal
+        rda   dr1 + 2111*s, -ksal
+        rda   tr2 + 335*s, -ksal
+        rda   dr2 + 121*s, -ksal
+        wrax  dacr, 0

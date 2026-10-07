@@ -17,12 +17,14 @@ ratchets:
   - id: RAT-02
     nombre: Líneas del fichero más largo del modelo
     medida: lineas_max_modelo
-    liston: 346
+    liston: 302
     direccion: menor_mejor
     motivo: >-
       2026-10-07, cierre de la Fase 01: el mayor es domain/ensamblador.py (346
       líneas). Si crece, hay que partir el análisis de expresiones o el de
       operandos antes de mover el listón.
+      2026-10-07, Fase 06 (include): el análisis de expresiones pasa a
+      domain/expresion.py y el ensamblador queda en 302 líneas.
   - id: RAT-03
     nombre: LUT4 del top hola_uart
     medida: recursos:hola_uart:LUT4
