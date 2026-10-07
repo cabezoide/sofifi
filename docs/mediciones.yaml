@@ -98,3 +98,39 @@ mediciones:
     como: "make prog TOP=prueba_pll && .venv/bin/python scripts/verificar_primitivas.py pll --segundos 4 (el umbral es la desviación máxima admitida, ± 100 ciclos)"
     entorno: "PLLA con VCO de 800 MHz y ODIV0 = 8, bloqueado"
     no_dice: "Mide la relación con el cristal, no la precisión absoluta del cristal (eso acota MED-03, unas 100 ppm). No mide el jitter."
+  - id: MED-09
+    caracteristica: M-08
+    nombre: Muestras del núcleo RTL idénticas al modelo
+    valor: 63477
+    unidad: muestras sin diferencia (0,1 s de plate, shimmer y freeze, y 1 s de plate)
+    umbral: 63477
+    direccion: mayor_mejor
+    fecha: 2026-10-07
+    caduca_en_dias: 180
+    como: "SOFIFI_MUESTRAS=4883 pytest sim/nucleo/nucleo_test.py; SOFIFI_MUESTRAS=48828 SOFIFI_PROGRAMAS=plate pytest sim/nucleo/nucleo_test.py"
+    entorno: "verilator 5.48 con cocotb 2.1; estímulo: impulso y ruido; potenciómetros fijos; freeze con el footswitch a mitad"
+    no_dice: "Es simulación: no prueba el silicio (Fase 05). La compuerta ejecuta 1 000 muestras por programa, no estas longitudes."
+  - id: MED-10
+    caracteristica: M-08
+    nombre: Frecuencia máxima del núcleo completo según nextpnr
+    valor: 140.57
+    unidad: MHz
+    umbral: 100
+    direccion: mayor_mejor
+    fecha: 2026-10-07
+    caduca_en_dias: 180
+    como: "make optimizacion; build/nucleo_placa_recursos.json"
+    entorno: "yosys 0.69, nextpnr-himbaechel-gowin 0.11.1, apicula 0.32; sin violaciones de hold"
+    no_dice: "La primera síntesis daba 70 MHz y 104 violaciones de hold. Se llegó aquí registrando operandos, partiendo CLIP y sacando las ROM de la BSRAM."
+  - id: MED-11
+    caracteristica: M-08
+    nombre: Ciclos por muestra del núcleo RTL con el programa más largo (shimmer)
+    valor: 840
+    unidad: ciclos de 2 048 (plate 661, freeze 730)
+    umbral: 2048
+    direccion: menor_mejor
+    fecha: 2026-10-07
+    caduca_en_dias: 180
+    como: "sim/nucleo/nucleo_test.py (registra el máximo de la salida `ciclos`)"
+    entorno: "núcleo multiciclo sin solapamiento: unas 6 por instrucción y unas 30 por CHO"
+    no_dice: "El ADR 0009 cuenta 1 ciclo por instrucción: un programa de 2 048 instrucciones no cabría en esta primera versión. Se optimiza cuando un programa lo necesite."

@@ -60,4 +60,4 @@ uart:
 # La síntesis es compuerta de release, no del pre-push: tarda y no cambia con
 # cada commit del modelo (Fase 02).
 release-check:
-	scripts/ci_local.sh synth
+	scripts/ci_local.sh optimizacion ratchets

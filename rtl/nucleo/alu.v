@@ -10,7 +10,9 @@
 //   RDFX            p = (a24 − R)·C
 //   MULX            p = a24·R
 //   SOF             p = a24·C
-//   CLIP            p = x2·x, con x = a24 y x2 = (x·x) >> 23
+//
+// CLIP no pasa por aquí: el núcleo calcula la curva suave con curva_fin y la
+// registra antes de escribirla en el ACC (camino crítico a 100 MHz).
 //
 // Los desplazamientos a la derecha son aritméticos: el floor del modelo.
 `default_nettype none
@@ -23,13 +25,12 @@ module alu (
     /* verilator lint_on UNUSEDSIGNAL */
     input  wire signed [23:0] lr,
     input  wire signed [23:0] r,
-    input  wire signed [23:0] x,      // a24 de la instrucción (CLIP)
     input  wire        [17:0] addr,   // D de SOF en S2.15
     output wire signed [47:0] acc_sig
 );
     localparam [5:0] NOP = 6'd0, RDA = 6'd1,  WRA = 6'd2,   WRAP = 6'd3,
                      RDAX = 6'd4, WRAX = 6'd5, RDFX = 6'd6,  MAXX = 6'd7,
-                     MULX = 6'd8, SOF = 6'd9,  CLIP = 6'd10, SKP = 6'd11, CHO = 6'd12,
+                     MULX = 6'd8, SOF = 6'd9,  SKP = 6'd11, CHO = 6'd12,
                      LDAX = 6'd13, ABSA = 6'd15;   // CLR (14): rama por defecto, 0 + 0
 
     // Todos los productos útiles caben en 49 bit (24 × 24 con signo).
@@ -40,13 +41,6 @@ module alu (
     wire signed [49:0] lr16  = {{10{lr[23]}}, lr, 16'd0};
     wire signed [49:0] r16   = {{10{r[23]}}, r, 16'd0};
     wire signed [49:0] d24   = {{8{addr[17]}}, addr, 24'd0};
-
-    // CLIP: y = sat24((3x − x3) >> 1), con x3 = (x2·x) >> 23.
-    wire signed [49:0] x3     = p50 >>> 23;
-    wire signed [49:0] tres_x = {{26{x[23]}}, x} * 50'sd3;
-    wire signed [49:0] medio  = (tres_x - x3) >>> 1;
-    wire signed [23:0] y = (medio > 50'sd8388607)  ? 24'sh7FFFFF :
-                           (medio < -50'sd8388608) ? 24'sh800000 : medio[23:0];
 
     // Un solo sumador: se eligen primero los sumandos y se suma una vez
     // (segunda vuelta, ADR 0010). MAXX, ABSA y CLIP usan sus propias rutas.
@@ -67,7 +61,6 @@ module alu (
         case (op)
             MAXX:    s = (abs_acc > abs_p) ? abs_acc : abs_p;
             ABSA:    s = abs_acc;
-            CLIP:    s = {{10{y[23]}}, y, 16'd0};
             NOP, SKP: s = acc50;
             default: s = sum_a + sum_b;   // CLR: 0 + 0
         endcase

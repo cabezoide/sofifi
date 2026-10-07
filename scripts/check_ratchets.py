@@ -117,6 +117,11 @@ def main() -> int:
             errores.append(f"{e['id']}: medida desconocida '{medida}'")
             continue
         if medida not in valores:
+            if medida.startswith("recursos:"):
+                # Sin síntesis no hay dato. La síntesis es compuerta de release
+                # (ADR 0010): se dice, no se finge un verde.
+                print(f"NO CORRIÓ {e['id']}: falta la síntesis (make optimizacion)")
+                continue
             errores.append(f"{e['id']}: no se pudo medir '{medida}'")
             continue
         v, liston = valores[medida], float(e["liston"])

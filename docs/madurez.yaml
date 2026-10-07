@@ -20,8 +20,8 @@ capacidades:
     nivel: 4
     evidencia: model/tests/nucleo_test.py
     scope: "aritmética, ISA de 16 instrucciones, intérprete, ensamblador y CLI; pruebas en la compuerta dura"
-    no_cubre: "la equivalencia con el RTL, que aún no existe"
-    brecha: "Fase 04: RTL del núcleo y testbench que lo compare muestra a muestra con el modelo"
+    no_cubre: "nada del RTL: eso es M-08"
+    brecha: "Fase 05: la equivalencia en la placa (M-08 la cubre en simulación)"
   - id: M-04
     capacidad: Documentación trilingüe (es, en, zh-CN)
     nivel: 4
@@ -50,3 +50,10 @@ capacidades:
     scope: "envoltorios en rtl/primitivas/ con modelo de simulación; tops de prueba con testbench en la compuerta dura; MED-06 a MED-08 en la placa"
     no_cubre: "los modos de MULTALU27X18 y la BSRAM con dos escrituras; las pruebas en placa son manuales"
     brecha: "Fase 04: usar las primitivas en el núcleo y medir su timing a 100 MHz"
+  - id: M-08
+    capacidad: Núcleo DSP en RTL equivalente al modelo
+    nivel: 5
+    evidencia: sim/nucleo/nucleo_test.py
+    scope: "plate, shimmer y freeze muestra a muestra contra el modelo en la compuerta dura; cada bloque contra su función del modelo; síntesis a 140 MHz (MED-09 a MED-11)"
+    no_cubre: "el silicio: el núcleo corre en la placa (prueba de humo por UART) pero la igualdad bit a bit en hardware es la Fase 05"
+    brecha: "Fase 05: capturar en la placa y comparar con el modelo"

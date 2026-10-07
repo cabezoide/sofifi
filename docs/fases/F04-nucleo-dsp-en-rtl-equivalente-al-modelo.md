@@ -1,6 +1,6 @@
 # Fase 04 — Núcleo DSP en RTL equivalente al modelo
 
-> Planificada: no está en el control hasta cerrarse.
+> Cerrada el 2026-10-07. Enmiendas respecto de esta spec: ver la fila 04 de `docs/fases/estado_fases.csv`.
 
 ## Objetivo
 

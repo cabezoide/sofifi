@@ -12,9 +12,10 @@ por capa y el detalle que un agente necesita para trabajar sin releer todo.
 | Lint del modelo | `.venv/bin/python -m ruff check model scripts` · `.venv/bin/python -m mypy` |
 | Documentación | `make docs` |
 | RTL | `scripts/ci_local.sh rtl-lint` · `make sim` (cocotb sobre verilator, del `.venv`) |
+| Núcleo | `SOFIFI_MUESTRAS=4883 pytest sim/nucleo/nucleo_test.py` (aceptación; la compuerta usa 1 000) · `sofifi tablas` regenera ROM y programas |
 | Placa | `make synth` · `make prog` (SRAM) · `make uart` (lee `/dev/ttyUSB1`) |
 | Primitivas | `make prog TOP=prueba_dsp` y `.venv/bin/python scripts/verificar_primitivas.py dsp` (también `bsram` y `pll`) |
-| Optimización | `make optimizacion` (recursos, timing y pistas de cada top; ADR 0010) |
+| Optimización | `make optimizacion` (síntesis de todos los tops, ~3 min; release, ADR 0010) |
 | Release | `make release-check` (síntesis de los tops con informe de recursos) |
 
 ## Reglas para el agente

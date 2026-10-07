@@ -9,7 +9,7 @@
 #   scripts/ci_local.sh --no-soft       # solo los duros (lo que corre el hook)
 #   scripts/ci_local.sh model docs      # solo los trabajos nombrados
 #   scripts/ci_local.sh --list          # lista trabajos y su clase
-#   scripts/ci_local.sh synth           # los de clase release solo corren si se nombran
+#   scripts/ci_local.sh optimizacion    # los de clase release solo corren si se nombran
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -32,10 +32,9 @@ JOBS=(
   "model:dura"
   "rtl-lint:dura"
   "sim:dura"
-  "optimizacion:dura"
   "ratchets:dura"
   "shell-lint:blanda"
-  "synth:release"
+  "optimizacion:release"
 )
 
 # Tope de procesos para lo que lanza herramientas EDA: el 2026-10-07 un enlace
@@ -102,13 +101,6 @@ run_job() {
       ;;
     optimizacion)
       (ulimit -u "$TOPE_PROCESOS"; "$PY" scripts/check_optimizacion.py)
-      ;;
-    synth)
-      local linea
-      while read -r -a linea; do
-        [[ ${#linea[@]} -eq 0 || "${linea[0]}" == \#* ]] && continue
-        (ulimit -u "$TOPE_PROCESOS"; scripts/fpga.sh synth "${linea[@]:1}") || return 1
-      done < rtl/top/tops.txt
       ;;
     shell-lint)
       if ! command -v shellcheck >/dev/null; then
