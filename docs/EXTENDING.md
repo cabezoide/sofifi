@@ -13,6 +13,15 @@ no está en esta lista, la lista está incompleta: se corrige en el mismo PR.
    en el modelo. Cuando exista, el efecto será un programa del núcleo con su
    prueba de equivalencia.
 
+## Una instrucción del núcleo
+
+Es una decisión estructural: `model/sofifi/domain/isa.py` es sentinela, así que va con su ADR o con una actualización del ADR 0009.
+
+1. Se añade el valor en `Op` y, si cuesta más de un ciclo, en `CICLOS` (`model/sofifi/domain/isa.py`).
+2. Se escribe el manejador en `model/sofifi/domain/nucleo.py` y se registra en `MANEJADORES`.
+3. Se añade el mnemónico y sus operandos en `model/sofifi/domain/ensamblador.py`.
+4. Los contratos de `model/tests/nucleo_test.py` y `model/tests/ensamblador_test.py` fallan si falta cualquiera de los tres pasos.
+
 ## Un módulo RTL
 
 1. Primero el modelo, en `model/sofifi/domain/`.

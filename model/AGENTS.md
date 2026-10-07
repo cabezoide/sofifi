@@ -13,9 +13,13 @@ y se dice en el PR.
 | `sofifi/ports/` | `domain` | adaptadores, servicios, cli |
 | `sofifi/adapters/` | `domain`, `ports` | servicios, cli |
 | `sofifi/services/` | `domain`, `ports` | adaptadores, cli (los recibe inyectados) |
-| `cli` | todo | — es la raíz de composición |
+| `sofifi/cli.py` | todo | — es la raíz de composición |
 
 Lo comprueba `model/tests/arquitectura_test.py`.
+
+## Uso
+
+`.venv/bin/sofifi asm PROG.sasm out/prog` genera el microcódigo. `.venv/bin/sofifi render PROG.sasm in.wav out/x.wav --pot pot0=0.5 --freeze 2:6 --cola 4` procesa audio.
 
 ## Reglas de esta capa
 
