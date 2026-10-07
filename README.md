@@ -7,11 +7,28 @@
 SOFIFI es un pedal de guitarra ambient (reverbs, shimmer, delays de cinta, freeze, granular)
 implementado en una FPGA **Sipeed Tang Primer 25K** (Gowin GW5A-LV25).
 
-**Versión:** `0.0` (la versión es la última fase cerrada; ver `docs/fases/estado_fases.csv`).
+**Versión:** `0.1` (la versión es la última fase cerrada; ver `docs/fases/estado_fases.csv`).
 
-> Estado: kit de arranque. Todavía no hay DSP ni RTL. La investigación de partida
-> (pedales de referencia, algoritmos, recursos open source y presupuesto de la
-> placa) está en `docs/investigacion/INVESTIGACION.md`.
+> Estado: **modelo de referencia bit-exact listo** (Fase 01). Ya se pueden
+> escuchar en el PC los programas plate, shimmer y freeze. Todavía no hay RTL.
+> La investigación de partida está en `docs/investigacion/INVESTIGACION.md`.
+
+## Escuchar los efectos (sin hardware)
+
+```bash
+.venv/bin/sofifi render programas/plate.sasm guitarra.wav out/plate.wav --pot pot0=0.6 --pot pot2=0.4 --cola 4
+.venv/bin/sofifi render programas/shimmer.sasm guitarra.wav out/shimmer.wav --pot pot0=0.7 --pot pot2=0.5 --pot pot3=0.6 --cola 6
+.venv/bin/sofifi render programas/freeze.sasm guitarra.wav out/freeze.wav --pot pot2=0.5 --freeze 1.5:8 --cola 8
+```
+
+| Programa | pot0 | pot1 | pot2 | pot3 | footswitch |
+|---|---|---|---|---|---|
+| `programas/plate.sasm` | decay | damping | mezcla | — | — |
+| `programas/shimmer.sasm` | decay | damping | mezcla | shimmer | — |
+| `programas/freeze.sasm` | decay | damping | mezcla | — | `--freeze INICIO:FIN` (segundos) |
+
+El WAV de entrada puede ser de 16, 24 o 32 bit y de cualquier frecuencia; se
+remuestrea a 48 828 Hz. `sofifi asm` genera el microcódigo (`.hex` + `.json`).
 
 ## Qué se va a construir
 

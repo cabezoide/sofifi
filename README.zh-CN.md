@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=31ed346ae1e3 estado=al_dia -->
+<!-- i18n: fuente=README.md sha=63a83d792245 estado=al_dia -->
 # SOFIFI — 集成 FPGA 上的沉浸式波形与滤波合成器
 
 *英文名：Soundscapes On FPGA: Integrated Filters & Impulses；西班牙文名：Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada。*
@@ -8,10 +8,28 @@
 SOFIFI 是一款氛围（ambient）吉他效果器（混响、shimmer、磁带延迟、冻结、颗粒合成），
 基于 **Sipeed Tang Primer 25K** FPGA（高云 GW5A-LV25）实现。
 
-**版本：** `0.0`（版本号即最后一个已关闭的阶段；见 `docs/fases/estado_fases.csv`）。
+**版本：** `0.1`（版本号即最后一个已关闭的阶段；见 `docs/fases/estado_fases.csv`）。
 
-> 状态：启动套件。目前尚无 DSP 和 RTL。初始调研（参考效果器、算法、开源资源和
-> 开发板资源预算）见 `docs/investigacion/INVESTIGACION.md`（西班牙语）。
+> 状态：**逐位精确参考模型已完成**（阶段 01）。现在已可在电脑上试听 plate、
+> shimmer 和 freeze 程序。尚无 RTL。初始调研见
+> `docs/investigacion/INVESTIGACION.md`（西班牙语）。
+
+## 试听效果（无需硬件）
+
+```bash
+.venv/bin/sofifi render programas/plate.sasm guitar.wav out/plate.wav --pot pot0=0.6 --pot pot2=0.4 --cola 4
+.venv/bin/sofifi render programas/shimmer.sasm guitar.wav out/shimmer.wav --pot pot0=0.7 --pot pot2=0.5 --pot pot3=0.6 --cola 6
+.venv/bin/sofifi render programas/freeze.sasm guitar.wav out/freeze.wav --pot pot2=0.5 --freeze 1.5:8 --cola 8
+```
+
+| 程序 | pot0 | pot1 | pot2 | pot3 | 脚踏开关 |
+|---|---|---|---|---|---|
+| `programas/plate.sasm` | 衰减 | 阻尼 | 干湿比 | — | — |
+| `programas/shimmer.sasm` | 衰减 | 阻尼 | 干湿比 | shimmer 量 | — |
+| `programas/freeze.sasm` | 衰减 | 阻尼 | 干湿比 | — | `--freeze 开始:结束`（秒） |
+
+输入 WAV 可以是 16、24 或 32 位、任意采样率，会被重采样到 48,828 Hz。
+`sofifi asm` 生成微码（`.hex` + `.json`）。（`--cola` 为尾音时长，单位秒。）
 
 ## 将要构建的内容
 

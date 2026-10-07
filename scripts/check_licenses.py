@@ -40,7 +40,7 @@ PERMISIVAS = {
 }
 USOS = {"estudiado", "portado"}
 CAMPOS = {"id", "nombre", "url", "licencia", "uso", "motivo"}
-EXTENSIONES = {".py", ".sh", ".v", ".sv", ".vh", ".svh"}
+EXTENSIONES = {".py", ".sh", ".v", ".sv", ".vh", ".svh", ".sasm"}
 LINEAS_CABECERA = 5
 
 

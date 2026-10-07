@@ -1,0 +1,170 @@
+; SPDX-License-Identifier: MIT
+;
+; shimmer.sasm — Plate de Dattorro (ver plate.sasm) con un pitch shifter de +12
+; semitonos de doble tap (CHO con rampa y ventanas complementarias) en la
+; realimentación: cada vuelta sube una octava y los filtros la amansan.
+; Idea de Eno y Lanois; arquitectura tipo Eventide/BigSky (docs/investigacion).
+;
+; pot0 = decay · pot1 = damping · pot2 = mezcla · pot3 = cantidad de shimmer
+
+equ  s     48828.125/29761
+equ  ex    13                 ; excursión de la modulación del tanque (≈ 8 muestras del paper)
+equ  kap1  0.75               ; difusión de entrada 1
+equ  kap2  0.625              ; difusión de entrada 2
+equ  kdd1  0.70               ; difusión de decay 1 (modulada, signo invertido)
+equ  kdd2  0.50               ; difusión de decay 2
+equ  kbw   0.9995             ; ancho de banda de entrada
+equ  ksal  0.6                ; ganancia de los taps de salida
+
+equ  kdecay   reg0
+equ  kdamp    reg1
+equ  kwet     reg2
+equ  kdry     reg3
+equ  bw       reg4
+equ  lpl      reg5
+equ  lpr      reg6
+equ  tmp      reg7
+equ  entrada  reg8
+equ  kshim    reg9
+equ  shlp     reg10
+equ  shhp     reg11
+equ  shout    reg12
+equ  wetl     reg13
+
+mem  pre   488                ; predelay de 10 ms
+mem  ai1   142*s
+mem  ai2   107*s
+mem  ai3   379*s
+mem  ai4   277*s
+mem  tl1   672*s + ex + 3
+mem  dl1   4453*s
+mem  tl2   1800*s
+mem  dl2   3720*s
+mem  tr1   908*s + ex + 3
+mem  dr1   4217*s
+mem  tr2   2656*s
+mem  dr2   3163*s
+mem  pit   4096 + 3               ; buffer del pitch shifter
+
+lfo  0  sin  ex
+lfo  1  sin  ex
+lfo  2  ramp 4096                 ; ventana del pitch shifter
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 1/512                  ; tmp = 2^-9 para fijar frecuencias finas
+        wrax  tmp, 0
+        rdax  tmp, 1024*1.0/48828.125   ; LFO0 a 1,0 Hz  (rate = 2f/fs)
+        wrax  lfo0_rate, 0
+        rdax  tmp, 1024*0.77/48828.125  ; LFO1 a 0,77 Hz
+        wrax  lfo1_rate, 0
+        sof   0, 0.99
+        wrax  lfo0_depth, 1.0
+        wrax  lfo1_depth, 0
+        sof   0, -1/2048                ; rate = -2^24/4096: el retardo baja 1 muestra por muestra → +12
+        wrax  lfo2_rate, 0
+inicio:
+; ── controles ─────────────────────────────────────────────────────────
+        rdax  pot0, 0.7
+        sof   1.0, 0.25
+        wrax  kdecay, 0
+        rdax  pot1, -0.7
+        sof   1.0, 0.999
+        wrax  kdamp, 0
+        rdax  pot2, 1.0
+        wrax  kwet, -1.0
+        sof   1.0, 0.999
+        wrax  kdry, 0
+        rdax  pot3, 0.6
+        wrax  kshim, 0
+; ── entrada: mono, escalada por la mezcla, predelay y ancho de banda ─
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        mulx  kwet
+        wra   pre, 0
+        rda   pre#, 1.0
+        rdfx  bw, kbw
+        wrax  bw, 1.0
+        rdax  shout, 1.0                ; realimentación del shimmer
+; ── difusión de entrada ──────────────────────────────────────────────
+        rda   ai1#, kap1
+        wrap  ai1, -kap1
+        rda   ai2#, kap1
+        wrap  ai2, -kap1
+        rda   ai3#, kap2
+        wrap  ai3, -kap2
+        rda   ai4#, kap2
+        wrap  ai4, -kap2
+        wrax  entrada, 0
+; ── tanque, rama izquierda ───────────────────────────────────────────
+        rda   dr2#, 1.0
+        mulx  kdecay
+        rdax  entrada, 1.0
+        cho   tl1 + 672*s - ex, -kdd1, lfo0
+        wrap  tl1, kdd1
+        wra   dl1, 0
+        rda   dl1#, 1.0
+        rdax  lpl, -1.0
+        mulx  kdamp
+        rdax  lpl, 1.0
+        wrax  lpl, 1.0
+        mulx  kdecay
+        sof   2/3, 0                    ; curva_suave(2x/3): pendiente 1, techo ±1
+        clip
+        rda   tl2#, kdd2
+        wrap  tl2, -kdd2
+        wra   dl2, 0
+; ── tanque, rama derecha ─────────────────────────────────────────────
+        rda   dl2#, 1.0
+        mulx  kdecay
+        rdax  entrada, 1.0
+        cho   tr1 + 908*s - ex, -kdd1, lfo1
+        wrap  tr1, kdd1
+        wra   dr1, 0
+        rda   dr1#, 1.0
+        rdax  lpr, -1.0
+        mulx  kdamp
+        rdax  lpr, 1.0
+        wrax  lpr, 1.0
+        mulx  kdecay
+        sof   2/3, 0
+        clip
+        rda   tr2#, kdd2
+        wrap  tr2, -kdd2
+        wra   dr2, 0
+; ── salida izquierda ─────────────────────────────────────────────────
+        rdax  adcl, 1.0
+        mulx  kdry
+        rda   dr1 + 266*s, ksal
+        rda   dr1 + 2974*s, ksal
+        rda   tr2 + 1913*s, -ksal
+        rda   dr2 + 1996*s, ksal
+        rda   dl1 + 1990*s, -ksal
+        rda   tl2 + 187*s, -ksal
+        rda   dl2 + 1066*s, -ksal
+        wrax  dacl, 0
+; ── shimmer: +12 de doble tap sobre la cola izquierda, filtrado, de vuelta a la entrada ──
+        rda   dr1 + 266*s, ksal
+        rda   dr1 + 2974*s, ksal
+        rda   dl1 + 1990*s, -ksal
+        wra   pit, 0
+        cho   pit + 1, 1.0, lfo2, na
+        cho   pit + 1, 1.0, lfo2, na|media
+        rdfx  shlp, 0.35                ; paso bajo: quita el brillo áspero de cada vuelta
+        wrax  shlp, 1.0
+        rdfx  shhp, 0.02                ; paso alto = x − paso bajo lento
+        wrax  shhp, -1.0
+        rdax  shlp, 1.0
+        mulx  kshim
+        wrax  shout, 0
+; ── salida derecha ───────────────────────────────────────────────────
+        rdax  adcr, 1.0
+        mulx  kdry
+        rda   dl1 + 353*s, ksal
+        rda   dl1 + 3627*s, ksal
+        rda   tl2 + 1228*s, -ksal
+        rda   dl2 + 2673*s, ksal
+        rda   dr1 + 2111*s, -ksal
+        rda   tr2 + 335*s, -ksal
+        rda   dr2 + 121*s, -ksal
+        wrax  dacr, 0
