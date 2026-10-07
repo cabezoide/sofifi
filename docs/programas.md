@@ -3,7 +3,7 @@
 
 # Programas del núcleo
 
-40 programas. Cada uno es un fichero de texto en `programas/`.
+43 programas. Cada uno es un fichero de texto en `programas/`.
 Los ciclos son la cota del RTL, de 2 048 por muestra
 (`model/sofifi/domain/coste.py`). La memoria es de 43 008 palabras.
 
@@ -16,13 +16,16 @@ Los ciclos son la cota del RTL, de 2 048 por muestra
 | `chorale` | La cola del plate canta una vocal, de «a» a «i». | 0: decay<br>1: damping<br>2: mezcla<br>3: vocal | 160 | 1 942 | 37 439 |
 | `cloud` | Difusores largos con modulación aleatoria: el ataque se disuelve. | 0: decay<br>1: damping<br>2: mezcla<br>3: modulación | 96 | 1 385 | 42 814 |
 | `freeze` | Plate que congela la cola con el pulsador. | 0: decay<br>1: damping<br>2: mezcla | 103 | 1 378 | 37 439 |
+| `freeze_givens` | Freeze que se mueve sin perder energía: la cola congelada gira entre las ramas. | 0: decay<br>1: damping<br>2: mezcla<br>3: giro | 136 | 1 708 | 37 439 |
 | `gated` | Reverb que se corta de golpe tras cada ataque, como en los años 80. | 0: decay<br>1: damping<br>2: mezcla<br>3: duración | 133 | 1 657 | 37 439 |
 | `hall` | Red de 8 retardos con matriz de Householder: sala grande. | 0: decay<br>1: damping<br>2: mezcla | 137 | 1 585 | 34 522 |
 | `infinite` | Plate que no decae: cada nota se suma a una capa que no se apaga. | 0: vaciado<br>1: damping<br>2: mezcla | 95 | 1 300 | 37 439 |
 | `plate` | Plate de Dattorro con el tanque modulado. | 0: decay<br>1: damping<br>2: mezcla | 86 | 1 202 | 37 439 |
+| `plate_vivo` | Plate cuya modulación deriva al azar: la cola nunca se repite igual. | 0: decay<br>1: damping<br>2: mezcla<br>3: vida | 127 | 1 599 | 37 439 |
 | `resonador` | Cuatro cuerdas afinadas en mi mayor que vibran por simpatía con lo que se toca. | 0: sustain<br>1: excitación<br>2: mezcla<br>3: afinación | 89 | 924 | 1 |
 | `reverb_inversa` | Reverb al revés: tras cada ataque, la cola crece y se corta de golpe. | 0: decay<br>1: damping<br>2: mezcla<br>3: duración | 133 | 1 657 | 37 439 |
 | `shimmer` | Plate con un +12 en la realimentación: cada vuelta sube una octava. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 108 | 1 553 | 41 539 |
+| `shimmer_energia` | Shimmer que se regula solo: cuanta más octava acumula, menos añade. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 117 | 1 643 | 41 539 |
 | `shimmer_quinta` | Shimmer de quinta: cada vuelta sube 7 semitonos, como un acorde que se abre. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 108 | 1 553 | 41 539 |
 | `spring` | Reverb de muelle: el sonido gotea, con los agudos antes que los graves. | 0: decay<br>1: damping<br>2: mezcla | 95 | 1 273 | 1 850 |
 

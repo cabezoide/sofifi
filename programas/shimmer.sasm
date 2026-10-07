@@ -13,3 +13,4 @@
 equ  rate_pit  -1/2048            ; +12: razón 2
 
 include  comun/shimmer_cuerpo.sasm
+include  comun/shimmer_cola.sasm

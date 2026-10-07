@@ -164,3 +164,29 @@ Se añade una entrada nueva cuando un fallo está diagnosticado y resuelto. Las 
 - **Causa raíz:** el `verilated.mk` del paquete deja vacía la variable `CFG_CXXFLAGS_PCH_I`, que debería valer `-include`. Cuando verilator parte un diseño grande en varios ficheros, usa una cabecera precompilada, y g++ la recibe como si fuera un fichero de entrada.
 - **Resolución:** `sim/conftest.py` añade `CFG_CXXFLAGS_PCH_I=-include` a `MAKEFLAGS`.
 - **Lección:** un fallo de compilación que solo sale al crecer el diseño suele estar en la configuración de la herramienta, no en el código.
+
+## F-17 · El difusor de velvet noise no superó a los allpass
+
+- **Síntoma:** un hall con un difusor de velvet noise (24 taps en 50 ms) en lugar de sus 4 allpass de entrada dio una cola **menos** densa (10 % de muestras significativas frente a 28 %) y con más cresta (12,9 frente a 8,8). Con 4 líneas en lugar de 8, la cola era además la más coloreada del catálogo (6,4 entre bandas de octava, frente a 1,9 del plate).
+- **Causa raíz:** un allpass en cadena da una respuesta infinita y cada vez más densa. El velvet noise da tantos impulsos como taps. En SOFIFI cada tap es un `RDA` de 19 ciclos: los 100 taps que harían falta para igualar la densidad cuestan unos 1 900 ciclos, y no caben junto a la red.
+- **Resolución:** no se publica el programa. La hoja de ruta de la Fase 03 (punto 5) queda cubierta por el hall (red de 8 líneas con Householder).
+- **Lección:** medir la propiedad que se promete (densidad, color) antes de nombrar el programa. Un algoritmo que funciona en un PC puede no ser el mejor cuando cada lectura de memoria cuesta 19 ciclos.
+
+## F-18 · Cuatro fallos de programación del catálogo de la Fase 06
+
+- **Síntoma:** las pruebas acústicas detectaron, antes de publicar:
+  1. un autopan, un tilt y un ciclo de trabajo que no llegaban a su extremo;
+  2. un slicer que nunca cerraba con pot1 = 1;
+  3. un compresor cuya ganancia cruzaba 0 y se iba a −1;
+  4. cuatro delays con la misma huella.
+- **Causa raíz**, por orden:
+  1. `rdax potN, C` con C > 1 seguido de `sof`: `SOF` usa el ACC ya **saturado** a ±1 (a24), así que 2·pot nunca pasaba de 1.
+  2. `1 − pot` con pot = 0,99999988 y D = 0,99997 da −0,00003: un `skp gez` no saltaba.
+  3. El lazo restaba el exceso de forma lineal (un integrador) mientras la envolvente, que cae despacio, seguía alta.
+  4. En 0,1 s de impulso solo sonaba la señal seca: los ecos llegaban más tarde.
+- **Resolución:**
+  1. Multiplicar dentro del `SOF` (`rdax pot, 1.0` y `sof 1.999, −1.0`).
+  2. Saltos incondicionales (`skp gez|neg`) cuando la rama no depende del signo.
+  3. Bajada proporcional a la propia ganancia: exponencial, nunca cruza 0.
+  4. Huellas más largas y una prueba que exige huellas distintas entre programas.
+- **Lección:** en el núcleo, el ACC es ancho, pero cada instrucción que lee a24 (`SOF`, `WRAX`, `MULX`, `RDFX`) satura. Una prueba que mide el extremo del mando encuentra estos fallos; una que mide el centro, no.

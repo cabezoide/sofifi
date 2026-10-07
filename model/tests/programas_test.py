@@ -237,6 +237,9 @@ HUELLAS = {
     "resonador": "ef187741375a3185",
     "ringmod": "341b5c04807e4c42",
     "slicer": "6b8940ad32b691cd",
+    "freeze_givens": "6892e89b0742c85f",
+    "plate_vivo": "b01a538673d1475f",
+    "shimmer_energia": "3eb9961314f955ba",
 }
 
 
@@ -249,6 +252,7 @@ SEGUNDOS_HUELLA = {
     "pingpong": 0.5,
     "bbd": 0.3,
     "ducking": 0.5,
+    "freeze_givens": 0.5,
 }
 CON_TONO = {
     "lofi",

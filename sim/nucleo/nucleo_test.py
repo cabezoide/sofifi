@@ -38,6 +38,7 @@ from sofifi.domain.lfo import TipoLfo
 from sofifi.domain.nucleo import Nucleo
 
 PROGRAMAS = tuple(sorted(p.stem for p in (RAIZ / "programas").glob("*.sasm")))
+CON_PULSADOR = {"freeze", "freeze_givens"}  # el footswitch se pulsa a mitad de la prueba
 # La cinta, con pot0 = 0: el primer eco llega a las ~8 800 muestras y no a las ~31 700.
 POTS_PRUEBA = {
     "plate": ("0.7", "0.5", "0.3", "0.6", "0.4", "0.2"),
@@ -104,7 +105,7 @@ async def igual_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
 
     maximo = 0
     for k, (izq, der) in enumerate(estimulo(n)):
-        sw = 1 if nombre == "freeze" and n // 3 <= k < 2 * n // 3 else 0
+        sw = 1 if nombre in CON_PULSADOR and n // 3 <= k < 2 * n // 3 else 0
         dut.adc_l.value, dut.adc_r.value, dut.sw.value = izq, der, sw
         dut.tick.value = 1
         await RisingEdge(dut.clk)

@@ -1,0 +1,28 @@
+; SPDX-License-Identifier: MIT
+;
+; comun/shimmer_cola.sasm — segunda parte del shimmer: entrada, difusión,
+; tanque con CLIP, salida y el pitch shifter en la realimentación. Va detrás
+; de comun/shimmer_cuerpo.sasm.
+
+; ── entrada: mono, escalada por la mezcla, predelay y ancho de banda ─
+include  comun/entrada.sasm
+        rdfx  bw, kbw
+        wrax  bw, 1.0
+        rdax  shout, 1.0                ; realimentación del shimmer
+include  comun/dattorro_difusion.sasm
+include  comun/dattorro_tanque_clip.sasm
+include  comun/dattorro_salida.sasm
+; ── shimmer: +12 de doble tap sobre la cola izquierda, filtrado, de vuelta a la entrada ──
+        rda   dr1 + 266*s, ksal
+        rda   dr1 + 2974*s, ksal
+        rda   dl1 + 1990*s, -ksal
+        wra   pit, 0
+        cho   pit + 1, 1.0, lfo2, na
+        cho   pit + 1, 1.0, lfo2, na|media
+        rdfx  shlp, 0.35                ; paso bajo: quita el brillo áspero de cada vuelta
+        wrax  shlp, 1.0
+        rdfx  shhp, 0.02                ; paso alto = x − paso bajo lento
+        wrax  shhp, -1.0
+        rdax  shlp, 1.0
+        mulx  kshim
+        wrax  shout, 0
