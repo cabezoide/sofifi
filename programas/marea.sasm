@@ -1,0 +1,85 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: reverb
+; resumen: La cola del plate sube y baja en olas, de un lado a otro; la señal seca no cambia.
+; resumen.en: The plate tail rises and falls in waves, from side to side; the dry signal does not change.
+; resumen.zh-CN: plate 的尾音如波浪般起伏，左右交替；干声不变。
+; resumen.ja: plate の残響が波のように左右交互に上下します。ドライ音は変わりません。
+;
+; marea.sasm — Plate de Dattorro (ver plate.sasm) con un trémolo solo sobre la
+; cola. Un LFO triangular por software (comun/lfo_triangulo.sasm), redondeado
+; con CLIP, mueve la ganancia de la cola. El lado derecho va en contrafase: la
+; ola cruza el estéreo. Idea de las reverbs con trémolo de los multiefectos
+; (docs/investigacion/INVESTIGACION.md §1.1). Diseño propio.
+;
+; Cada muestra:
+;   1. El plate calcula la cola sin la señal seca (kdry = 0).
+;   2. gl = 1 − 0,9·(1 − s)/2 y gr = 1 − 0,9·(1 + s)/2, con s el LFO.
+;   3. dacl = cola·gl + seco y dacr = cola·gr + seco.
+;
+; pot0 = decay · pot1 = damping · pot2 = mezcla (como plate.sasm)
+; pot3 = velocidad   (0 → una ola cada 10 s · 1 → 3 olas por segundo)
+
+include  comun/dattorro_decl.sasm
+
+equ  prof     0.9             ; profundidad de las olas
+
+equ  tri      reg9
+equ  dir      reg10
+equ  vel      reg11
+equ  gl       reg12
+equ  gr       reg13
+equ  kdrys    reg14
+equ  fino     reg15
+equ  ola      reg16
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+include  comun/dattorro_lfo.sasm
+        sof   0, 0.99
+        wrax  lfo0_depth, 1.0
+        wrax  lfo1_depth, 0
+        sof   0, 1/512                  ; fino = 2^-9 para la velocidad lenta
+        wrax  fino, 0
+inicio:
+include  comun/controles.sasm
+        rdax  kdry, 1.0                 ; la señal seca se suma al final
+        wrax  kdrys, 0
+        wrax  kdry, 0
+; ── 2. olas: vel = 4f/fs, de 0,1 a 3 Hz ──────────────────────────────
+        rdax  pot3, 512*4*2.9/48828.125
+        sof   1.0, 512*4*0.1/48828.125
+        mulx  fino
+        wrax  vel, 0
+include  comun/lfo_triangulo.sasm
+        clip                            ; triángulo redondeado: casi un seno
+        wrax  ola, 1.0
+        sof   -0.5*prof, 0.5*prof       ; prof·(1 − s)/2
+        sof   -1.0, 0.99997
+        wrax  gl, 0
+        rdax  ola, 0.5*prof             ; prof·(1 + s)/2
+        sof   1.0, 0.5*prof
+        sof   -1.0, 0.99997
+        wrax  gr, 0
+; ── 1. plate ─────────────────────────────────────────────────────────
+include  comun/entrada.sasm
+        rdfx  bw, kbw
+        wrax  bw, 1.0
+include  comun/dattorro_difusion.sasm
+include  comun/dattorro_tanque.sasm
+include  comun/dattorro_salida.sasm
+; ── 3. salida: cola por la ola más la señal seca ─────────────────────
+        rdax  dacl, 1.0
+        mulx  gl
+        wrax  dacl, 0
+        rdax  adcl, 1.0
+        mulx  kdrys
+        rdax  dacl, 1.0
+        wrax  dacl, 0
+        rdax  dacr, 1.0
+        mulx  gr
+        wrax  dacr, 0
+        rdax  adcr, 1.0
+        mulx  kdrys
+        rdax  dacr, 1.0
+        wrax  dacr, 0

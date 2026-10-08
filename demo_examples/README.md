@@ -50,5 +50,11 @@ Una guitarra sintética (arpegio de Em9, cuerdas Karplus-Strong) procesada por c
 | `demo_freeze_givens.ogg` | `freeze_givens` | decay 0,60 · damping 0,30 · mezcla 0,50 · giro 0,60 | 2,50 → 8,00 s |
 | `demo_looper.ogg` | `looper` | nivel 0,80 · velocidad 0,50 · sentido 0,00 · realimentación 0,80 | 0,00 → 0,66 s, 1,32 → 1,98 s |
 | `demo_granular.ogg` | `granular` | duración 0,60 · difusión 0,50 · intervalo 1,00 · mezcla 0,60 | 1,60 → 7,00 s |
+| `demo_shimmer_grave.ogg` | `shimmer_grave` | decay 0,75 · damping 0,30 · mezcla 0,50 · cantidad de shimmer 0,60 | — |
+| `demo_marea.ogg` | `marea` | decay 0,80 · damping 0,30 · mezcla 0,50 · velocidad 0,20 | — |
+| `demo_ensemble.ogg` | `ensemble` | decay 0,75 · damping 0,30 · mezcla 0,50 · ensemble 0,70 | — |
+| `demo_sostenido.ogg` | `sostenido` | capas 0,20 · damping 0,30 · mezcla 0,50 · captura 0,30 | — |
+| `demo_shoegaze.ogg` | `shoegaze` | decay 0,85 · damping 0,30 · mezcla 0,55 · saturación 0,80 | — |
+| `demo_bruma.ogg` | `bruma` | difusión 0,70 · realimentación 0,55 · mezcla 0,50 · cabezas 1,00 | — |
 
 Ogg Vorbis a 48 828 Hz (ADR 0005); el render es bit-exact en 24 bit. Los mandos y los programas están en `docs/programas.md`.

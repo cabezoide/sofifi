@@ -1,0 +1,89 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: reverb
+; resumen: Freeze automático: cada acorde nuevo se captura y queda sonando como un pad.
+; resumen.en: Automatic freeze: each new chord is captured and keeps sounding as a pad.
+; resumen.zh-CN: 自动冻结：每个新和弦都被捕捉，并作为铺底持续发声。
+; resumen.ja: 自動フリーズ：新しいコードを捉え、パッドとして鳴らし続けます。
+;
+; sostenido.sasm — Plate con el tanque de CLIP (ver freeze.sasm) que se congela
+; solo, sin footswitch. Un detector de ataque (comun/compuerta.sasm) abre la
+; captura en cada nota nueva. Durante la captura, la entrada alimenta el tanque
+; y el decay baja para vaciar la capa anterior. Al acabar, el tanque se congela:
+; decay ≈ 1, sin damping, sin entrada y sin modulación. Hoja de ruta de la
+; Fase 03, punto 4, auto-freeze (docs/investigacion/ESTADO_DEL_ARTE_2026.md).
+; Diseño propio.
+;
+; Cada muestra:
+;   1. `abre` sigue con una rampa de ~10 ms a 1 (captura) o a 0 (congelado).
+;   2. kdecay = 1 − abre·(1 − kcap), con kcap el decay de la captura (pot0).
+;   3. kdamp = 1 − abre·(1 − kdamp) y kwet = kwet·abre.
+;   4. La modulación del tanque sigue a 0,99·abre con una rampa de ~40 ms.
+;
+; pot0 = capas     (0 → cada acorde reemplaza al anterior · 1 → los acordes se suman)
+; pot1 = damping   (durante la captura)
+; pot2 = mezcla    (0 → seco · 1 → solo pad)
+; pot3 = captura   (0 → 0,15 s · 1 → 1,5 s después de cada ataque)
+
+include  comun/dattorro_decl.sasm
+
+equ  tmin     0.15            ; captura con pot3 = 0 (s)
+equ  tmax     1.5             ; captura con pot3 = 1 (s)
+
+equ  envr     reg9
+equ  envl     reg10
+equ  cuenta   reg11
+equ  kpaso    reg12
+equ  abre     reg13
+equ  kcap     reg14
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+include  comun/dattorro_lfo.sasm
+inicio:
+include  comun/controles.sasm
+        rdax  pot0, 0.74                ; kcap de 0,25 a 0,99
+        sof   1.0, 0.25
+        wrax  kcap, 0
+include  comun/duracion.sasm
+; ── 1. captura tras cada ataque: abre → 1; si no, → 0 ────────────────
+include  comun/compuerta.sasm
+        skp   neg, congelar             ; cuenta < 0: la captura acabó
+        sof   0, 0.99997                ; objetivo 1
+        skp   gez, rampa
+congelar:
+        clr                             ; objetivo 0
+rampa:
+        rdfx  abre, 0.002
+        wrax  abre, 0
+; ── 2. kdecay = 1 − abre·(1 − kcap) ──────────────────────────────────
+        rdax  kcap, -1.0
+        sof   1.0, 0.99997
+        mulx  abre
+        sof   -1.0, 0.99997
+        wrax  kdecay, 0
+; ── 3. kdamp = 1 − abre·(1 − kdamp) y kwet = kwet·abre ──────────────
+        rdax  kdamp, -1.0
+        sof   1.0, 0.99997
+        mulx  abre
+        sof   -1.0, 0.99997
+        wrax  kdamp, 0
+        rdax  kwet, 1.0
+        mulx  abre
+        wrax  kwet, 0
+; ── 4. modulación: sigue a 0,99·abre con una rampa de ~40 ms ─────────
+        rdax  abre, 0.99
+        wrax  tmp, 0
+        rdax  tmp, 1.0
+        rdfx  lfo0_depth, 0.0005
+        wrax  lfo0_depth, 0
+        rdax  tmp, 1.0
+        rdfx  lfo1_depth, 0.0005
+        wrax  lfo1_depth, 0
+; ── plate con el tanque de CLIP ──────────────────────────────────────
+include  comun/entrada.sasm
+        rdfx  bw, kbw
+        wrax  bw, 1.0
+include  comun/dattorro_difusion.sasm
+include  comun/dattorro_tanque_clip.sasm
+include  comun/dattorro_salida.sasm

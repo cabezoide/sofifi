@@ -242,6 +242,12 @@ HUELLAS = {
     "freeze_givens": "6892e89b0742c85f",
     "plate_vivo": "b01a538673d1475f",
     "shimmer_energia": "3eb9961314f955ba",
+    "shimmer_grave": "da494595b375be4c",
+    "marea": "a4c4a5dc5757534a",
+    "ensemble": "fe6abfbc1db9e72e",
+    "sostenido": "763109b6d96e55af",
+    "shoegaze": "bb1e25cca088c986",
+    "bruma": "2e6661ec9122cde7",
 }
 
 
@@ -257,6 +263,7 @@ SEGUNDOS_HUELLA = {
     "freeze_givens": 0.5,
     "looper": 0.3,
     "granular": 0.5,
+    "bruma": 0.3,
 }
 # Sin footswitch, el looper solo deja pasar la señal seca: graba los primeros 0,1 s.
 TRAMOS_SW = {"looper": ((0, int(0.1 * FS)),)}
@@ -273,6 +280,7 @@ CON_TONO = {
     "slicer",
     "looper",
     "granular",
+    "sostenido",
 }
 
 

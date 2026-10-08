@@ -26,6 +26,8 @@ Se añade una entrada nueva cuando un fallo está diagnosticado y resuelto. Las 
 | F-18 | 06 | Cuatro fallos de programación del catálogo | resueltos antes de publicar |
 | F-19 | 07 | Con RDAA y WRAA, el silicio fallaba a 114 MHz en la primera muestra | resuelto; margen medido ≥ 25 % |
 | F-20 | 07 | El borrado de la región absoluta dejaba dos palabras sin borrar | resuelto |
+| F-21 | 07 | En marea, el LFO de software se quedaba pegado en +1 | resuelto antes de publicar |
+| F-22 | 07 | El shoegaze sonaba cinco veces más fuerte que el plate | resuelto antes de publicar |
 
 ---
 
@@ -232,3 +234,19 @@ Se añade una entrada nueva cuando un fallo está diagnosticado y resuelto. Las 
   - `mabs_borrar` se registra en el mismo flanco que `mdir_w`.
   - La prueba pasa a llamarse `absoluta_como_el_modelo` y ensucia antes los extremos de la región con `WRAA`. Con el fallo de antes, la prueba falla.
 - **Lección:** las señales que acompañan a una dirección registrada se registran con ella. Una prueba de borrado necesita memoria sucia: con la memoria a cero de la simulación, el borrado no se prueba (como en F-12).
+
+## F-21 · En marea, el LFO de software se quedaba pegado en +1
+
+- **Síntoma:** en la prueba de `marea`, la cola derecha sonaba unas diez veces más baja que la izquierda, y ninguna de las dos hacía olas.
+- **Diagnóstico:** la ganancia izquierda valía 1 y la derecha 0,1 en todas las muestras. Las dos salen del LFO: el LFO estaba siempre en +1.
+- **Causa raíz:** el programa redondeaba el triángulo con `CLIP` y escribía el resultado en `tri`. `tri` es el estado de `comun/lfo_triangulo.sasm`. `CLIP` tiene pendiente 1,5 en el origen: cada muestra empujaba el valor hacia 1, y allí se quedaba.
+- **Resolución:** el valor redondeado va a otro registro (`ola`). `tri` solo lo escribe el bloque común.
+- **Lección:** un registro de estado de un bloque común no se escribe fuera del bloque. Lo que se calcula a partir de él va a otro registro.
+
+## F-22 · El shoegaze sonaba cinco veces más fuerte que el plate
+
+- **Síntoma:** la demo de `shoegaze` tenía un nivel RMS de 0,13; la del plate, 0,027. La prueba acústica pasaba.
+- **Diagnóstico:** con la saturación, la cola se recorta cerca de ±1. El plate deja la cola cerca de ±0,1. La ganancia de ×16 sube la cola hasta el techo.
+- **Causa raíz:** la ganancia de salida era fija (0,5). La prueba medía la compresión, no el nivel frente al plate.
+- **Resolución:** la salida baja de 0,6 a 0,1 cuando sube pot3. Con la mezcla a la mitad, el nivel queda a ±25 % del plate en todo el recorrido del mando.
+- **Lección:** un salto de volumen al cambiar de programa es un riesgo (SECURITY.md). Cada programa nuevo se compara en nivel con el plate antes de publicarlo.

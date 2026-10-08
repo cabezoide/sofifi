@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=f9d5cc7f0c1e estado=al_dia -->
+<!-- i18n: fuente=README.md sha=316187411754 estado=al_dia -->
 # SOFIFI — FPGA 上のイマーシブな波形とフィルターのシンセサイザー
 
 *英語名: Soundscapes On FPGA: Integrated Filters & Impulses。スペイン語名: Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada。*
@@ -17,8 +17,8 @@ DSP コアが実行します。
 
 | 項目 | 状況 |
 |---|---|
-| ライブラリ | 8 つのファミリーに **45 のプログラムと 360 のプリセット**（フェーズ 07） |
-| モデルとの一致 | 45 のプログラムすべてが、RTL でモデルと同じビットを出力（シミュレーション） |
+| ライブラリ | 8 つのファミリーに **51 のプログラムと 408 のプリセット**（フェーズ 07） |
+| モデルとの一致 | 51 のプログラムすべてが、RTL でモデルと同じビットを出力（シミュレーション） |
 | ボード | plate と looper はシリコン上の 100〜125 MHz でモデルと同じビットを出力（フェーズ 07） |
 | 次の作業 | microSD からのプログラムの読み込み（フェーズ 08） |
 | ギターでの音出し | **まだできません**：I2S コーデックがありません（フェーズ 11） |
@@ -126,8 +126,8 @@ microSD カードだけで足ります。
 
 | ドキュメント | 内容 |
 |---|---|
-| `docs/programas.ja.md` | 45 のプログラム：働き、ノブ、プリセット、コスト |
-| `presets/banco.toml` | 360 のプリセット |
+| `docs/programas.ja.md` | 51 のプログラム：働き、ノブ、プリセット、コスト |
+| `presets/banco.toml` | 408 のプリセット |
 | `docs/arquitectura_fpga.ja.md` | FPGA のアーキテクチャと、フェーズごとの変化 |
 | `schematics/` | 各 RTL モジュールの PDF 回路図。Verilog から生成 |
 | `docs/EXTENDING.ja.md` | エフェクト、命令、RTL モジュール、ゲートの追加方法 |

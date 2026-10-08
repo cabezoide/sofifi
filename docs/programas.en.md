@@ -1,10 +1,10 @@
-<!-- i18n: fuente=docs/programas.md sha=0d277c41ec59 estado=al_dia -->
+<!-- i18n: fuente=docs/programas.md sha=c040bd4772a4 estado=al_dia -->
 <!-- GENERADO por `sofifi catalogo` desde programas/*.sasm. No se edita a mano:
      model/tests/catalogo_test.py lo compara con su generador. -->
 
 # Core programs
 
-45 programs and 360 presets. Each program is a text file in `programas/`; the presets are in `presets/banco.toml`. Program and preset names are in Spanish.
+51 programs and 408 presets. Each program is a text file in `programas/`; the presets are in `presets/banco.toml`. Program and preset names are in Spanish.
 The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/coste.py`). The memory has 43,008 words.
 
 ## Reverb
@@ -15,18 +15,23 @@ The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/co
 | `bloom` | The reverb grows slowly after each note, like a flower that opens. | 0: decay<br>1: damping<br>2: mix<br>3: bloom time | 8 | 84 | 979 | 23,520 |
 | `chorale` | The plate tail sings a vowel, from "a" to "i". | 0: decay<br>1: damping<br>2: mix<br>3: vowel | 8 | 160 | 1,942 | 37,439 |
 | `cloud` | Long diffusers with random modulation: the attack dissolves. | 0: decay<br>1: damping<br>2: mix<br>3: modulation | 8 | 96 | 1,385 | 42,814 |
+| `ensemble` | A three-voice chorus before the plate: the tail sounds like a string section. | 0: decay<br>1: damping<br>2: mix<br>3: ensemble | 8 | 99 | 1,425 | 38,540 |
 | `freeze` | A plate that freezes the tail with the footswitch. | 0: decay<br>1: damping<br>2: mix | 8 | 103 | 1,378 | 37,439 |
 | `freeze_givens` | A freeze that moves without losing energy: the frozen tail turns between the branches. | 0: decay<br>1: damping<br>2: mix<br>3: rotation | 8 | 136 | 1,708 | 37,439 |
 | `gated` | A reverb that stops suddenly after each attack, as in the 1980s. | 0: decay<br>1: damping<br>2: mix<br>3: length | 8 | 133 | 1,657 | 37,439 |
 | `hall` | A network of 8 delays with a Householder matrix: a large hall. | 0: decay<br>1: damping<br>2: mix | 8 | 137 | 1,585 | 34,522 |
 | `infinite` | A plate that does not decay: each note adds to a layer that does not stop. | 0: release<br>1: damping<br>2: mix | 8 | 95 | 1,300 | 37,439 |
+| `marea` | The plate tail rises and falls in waves, from side to side; the dry signal does not change. | 0: decay<br>1: damping<br>2: mix<br>3: rate | 8 | 137 | 1,690 | 37,439 |
 | `plate` | Dattorro plate with a modulated tank. | 0: decay<br>1: damping<br>2: mix | 8 | 86 | 1,202 | 37,439 |
 | `plate_vivo` | A plate whose modulation drifts at random: the tail never repeats. | 0: decay<br>1: damping<br>2: mix<br>3: life | 8 | 127 | 1,599 | 37,439 |
 | `resonador` | Four strings tuned to E major that vibrate in sympathy with the playing. | 0: sustain<br>1: excitation<br>2: mix<br>3: tuning | 8 | 89 | 924 | 1 |
 | `reverb_inversa` | Reverse reverb: after each attack, the tail grows and stops suddenly. | 0: decay<br>1: damping<br>2: mix<br>3: length | 8 | 133 | 1,657 | 37,439 |
 | `shimmer` | A plate with +12 in the feedback: each turn goes up one octave. | 0: decay<br>1: damping<br>2: mix<br>3: shimmer amount | 8 | 108 | 1,553 | 41,539 |
 | `shimmer_energia` | A shimmer that controls itself: the more octave it collects, the less it adds. | 0: decay<br>1: damping<br>2: mix<br>3: shimmer amount | 8 | 117 | 1,643 | 41,539 |
+| `shimmer_grave` | Downward shimmer: each turn goes down one octave and the tail becomes a deep organ. | 0: decay<br>1: damping<br>2: mix<br>3: shimmer amount | 8 | 108 | 1,553 | 41,539 |
 | `shimmer_quinta` | Fifth shimmer: each turn goes up 7 semitones, like a chord that opens. | 0: decay<br>1: damping<br>2: mix<br>3: shimmer amount | 8 | 108 | 1,553 | 41,539 |
+| `shoegaze` | A plate that saturates after the tail: a wall of warm noise behind the guitar. | 0: decay<br>1: damping<br>2: mix<br>3: saturation | 8 | 142 | 1,772 | 37,439 |
+| `sostenido` | Automatic freeze: each new chord is captured and keeps sounding as a pad. | 0: layers<br>1: damping<br>2: mix<br>3: capture | 8 | 141 | 1,747 | 37,439 |
 | `spring` | Spring reverb: the sound drips, with the treble before the bass. | 0: decay<br>1: damping<br>2: mix | 8 | 95 | 1,273 | 1,850 |
 
 ## Delay
@@ -34,6 +39,7 @@ The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/co
 | Program | What it does | Knobs | Presets | Instructions | Cycles | Memory |
 |---|---|---|---|---|---|---|
 | `bbd` | Dark analog echo: each repeat loses treble and saturates. | 0: time<br>1: feedback<br>2: mix<br>3: modulation | 8 | 44 | 563 | 14,674 |
+| `bruma` | A four-head echo that blurs on each turn until it becomes a reverb. | 0: diffusion<br>1: feedback<br>2: mix<br>3: heads | 8 | 53 | 758 | 41,553 |
 | `cinta` | Tape echo from 0.18 to 0.85 s with wow, flutter and saturation. | 0: time<br>1: feedback<br>2: mix<br>3: wow and flutter | 8 | 50 | 665 | 41,600 |
 | `delay` | Clean digital echo from 20 to 690 ms, with tone in the feedback. | 0: time<br>1: feedback<br>2: mix<br>3: tone | 8 | 38 | 455 | 33,749 |
 | `ducking` | An echo that moves back while you play and comes back in the silences. | 0: time<br>1: feedback<br>2: mix<br>3: ducking | 8 | 51 | 586 | 33,749 |

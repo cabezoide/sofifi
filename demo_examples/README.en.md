@@ -1,4 +1,4 @@
-<!-- i18n: fuente=demo_examples/README.md sha=f4b7e51f3061 estado=al_dia -->
+<!-- i18n: fuente=demo_examples/README.md sha=6916e123cdd2 estado=al_dia -->
 # demo_examples
 
 A synthetic guitar (an Em9 arpeggio, Karplus-Strong strings) through each core program, with the bit-exact model. Generate them again with `.venv/bin/python scripts/generar_demos.py`: the audio is the same each time.
@@ -51,5 +51,11 @@ A synthetic guitar (an Em9 arpeggio, Karplus-Strong strings) through each core p
 | `demo_freeze_givens.ogg` | `freeze_givens` | decay 0.60 · damping 0.30 · mix 0.50 · rotation 0.60 | 2.50 → 8.00 s |
 | `demo_looper.ogg` | `looper` | level 0.80 · rate 0.50 · direction 0.00 · feedback 0.80 | 0.00 → 0.66 s, 1.32 → 1.98 s |
 | `demo_granular.ogg` | `granular` | length 0.60 · diffusion 0.50 · interval 1.00 · mix 0.60 | 1.60 → 7.00 s |
+| `demo_shimmer_grave.ogg` | `shimmer_grave` | decay 0.75 · damping 0.30 · mix 0.50 · shimmer amount 0.60 | — |
+| `demo_marea.ogg` | `marea` | decay 0.80 · damping 0.30 · mix 0.50 · rate 0.20 | — |
+| `demo_ensemble.ogg` | `ensemble` | decay 0.75 · damping 0.30 · mix 0.50 · ensemble 0.70 | — |
+| `demo_sostenido.ogg` | `sostenido` | layers 0.20 · damping 0.30 · mix 0.50 · capture 0.30 | — |
+| `demo_shoegaze.ogg` | `shoegaze` | decay 0.85 · damping 0.30 · mix 0.55 · saturation 0.80 | — |
+| `demo_bruma.ogg` | `bruma` | diffusion 0.70 · feedback 0.55 · mix 0.50 · heads 1.00 | — |
 
 Ogg Vorbis at 48,828 Hz (ADR 0005, Spanish); the render is bit-exact at 24 bits. The knobs and the programs are in `docs/programas.en.md`.

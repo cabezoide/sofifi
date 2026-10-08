@@ -3,7 +3,7 @@
 
 # Programas del núcleo
 
-45 programas y 360 presets. Cada programa es un fichero de texto en `programas/`; los presets están en `presets/banco.toml`.
+51 programas y 408 presets. Cada programa es un fichero de texto en `programas/`; los presets están en `presets/banco.toml`.
 Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste.py`). La memoria es de 43 008 palabras.
 
 ## Reverb
@@ -14,18 +14,23 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 | `bloom` | La reverb crece despacio después de cada nota, como una flor que se abre. | 0: decay<br>1: damping<br>2: mezcla<br>3: apertura | 8 | 84 | 979 | 23 520 |
 | `chorale` | La cola del plate canta una vocal, de «a» a «i». | 0: decay<br>1: damping<br>2: mezcla<br>3: vocal | 8 | 160 | 1 942 | 37 439 |
 | `cloud` | Difusores largos con modulación aleatoria: el ataque se disuelve. | 0: decay<br>1: damping<br>2: mezcla<br>3: modulación | 8 | 96 | 1 385 | 42 814 |
+| `ensemble` | Un coro de tres voces antes del plate: la cola suena como una sección de cuerdas. | 0: decay<br>1: damping<br>2: mezcla<br>3: ensemble | 8 | 99 | 1 425 | 38 540 |
 | `freeze` | Plate que congela la cola con el pulsador. | 0: decay<br>1: damping<br>2: mezcla | 8 | 103 | 1 378 | 37 439 |
 | `freeze_givens` | Freeze que se mueve sin perder energía: la cola congelada gira entre las ramas. | 0: decay<br>1: damping<br>2: mezcla<br>3: giro | 8 | 136 | 1 708 | 37 439 |
 | `gated` | Reverb que se corta de golpe tras cada ataque, como en los años 80. | 0: decay<br>1: damping<br>2: mezcla<br>3: duración | 8 | 133 | 1 657 | 37 439 |
 | `hall` | Red de 8 retardos con matriz de Householder: sala grande. | 0: decay<br>1: damping<br>2: mezcla | 8 | 137 | 1 585 | 34 522 |
 | `infinite` | Plate que no decae: cada nota se suma a una capa que no se apaga. | 0: vaciado<br>1: damping<br>2: mezcla | 8 | 95 | 1 300 | 37 439 |
+| `marea` | La cola del plate sube y baja en olas, de un lado a otro; la señal seca no cambia. | 0: decay<br>1: damping<br>2: mezcla<br>3: velocidad | 8 | 137 | 1 690 | 37 439 |
 | `plate` | Plate de Dattorro con el tanque modulado. | 0: decay<br>1: damping<br>2: mezcla | 8 | 86 | 1 202 | 37 439 |
 | `plate_vivo` | Plate cuya modulación deriva al azar: la cola nunca se repite igual. | 0: decay<br>1: damping<br>2: mezcla<br>3: vida | 8 | 127 | 1 599 | 37 439 |
 | `resonador` | Cuatro cuerdas afinadas en mi mayor que vibran por simpatía con lo que se toca. | 0: sustain<br>1: excitación<br>2: mezcla<br>3: afinación | 8 | 89 | 924 | 1 |
 | `reverb_inversa` | Reverb al revés: tras cada ataque, la cola crece y se corta de golpe. | 0: decay<br>1: damping<br>2: mezcla<br>3: duración | 8 | 133 | 1 657 | 37 439 |
 | `shimmer` | Plate con un +12 en la realimentación: cada vuelta sube una octava. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 8 | 108 | 1 553 | 41 539 |
 | `shimmer_energia` | Shimmer que se regula solo: cuanta más octava acumula, menos añade. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 8 | 117 | 1 643 | 41 539 |
+| `shimmer_grave` | Shimmer hacia abajo: cada vuelta baja una octava y la cola se vuelve un órgano grave. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 8 | 108 | 1 553 | 41 539 |
 | `shimmer_quinta` | Shimmer de quinta: cada vuelta sube 7 semitonos, como un acorde que se abre. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 8 | 108 | 1 553 | 41 539 |
+| `shoegaze` | Plate que se satura después de la cola: un muro de ruido cálido detrás de la guitarra. | 0: decay<br>1: damping<br>2: mezcla<br>3: saturación | 8 | 142 | 1 772 | 37 439 |
+| `sostenido` | Freeze automático: cada acorde nuevo se captura y queda sonando como un pad. | 0: capas<br>1: damping<br>2: mezcla<br>3: captura | 8 | 141 | 1 747 | 37 439 |
 | `spring` | Reverb de muelle: el sonido gotea, con los agudos antes que los graves. | 0: decay<br>1: damping<br>2: mezcla | 8 | 95 | 1 273 | 1 850 |
 
 ## Delay
@@ -33,6 +38,7 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 | Programa | Qué hace | Mandos | Presets | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|---|
 | `bbd` | Eco analógico oscuro: cada repetición pierde agudos y se satura. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: modulación | 8 | 44 | 563 | 14 674 |
+| `bruma` | Eco de cuatro cabezas que se difumina en cada vuelta hasta volverse reverb. | 0: difusión<br>1: realimentación<br>2: mezcla<br>3: cabezas | 8 | 53 | 758 | 41 553 |
 | `cinta` | Eco de cinta de 0,18 a 0,85 s con wow, flutter y saturación. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: wow y flutter | 8 | 50 | 665 | 41 600 |
 | `delay` | Eco digital limpio de 20 a 690 ms, con tono en la realimentación. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: tono | 8 | 38 | 455 | 33 749 |
 | `ducking` | Eco que se aparta mientras se toca y aparece en los silencios. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: ducking | 8 | 51 | 586 | 33 749 |
