@@ -14,9 +14,10 @@ from fractions import Fraction
 import pytest
 from sofifi.domain.aritmetica import cuantizar, dato
 from sofifi.domain.cadena import Cadena, Eslabon, Modo, PotFisico
-from sofifi.domain.composicion import componer, recursos
-from sofifi.domain.ensamblador import ErrorEnsamblado, ensamblar
+from sofifi.domain.composicion import componer, recursos, registros_temporales
+from sofifi.domain.ensamblador import ErrorEnsamblado, ensamblar, expandir
 from sofifi.domain.isa import NUM_POTS
+from sofifi.domain.renombre import uso
 from sofifi.domain.senal import Controles, Senal
 from sofifi.services.render import procesar
 from tests.acustica import FS, PROGRAMAS, programa
@@ -48,7 +49,15 @@ FIJOS = (Fraction(3, 4), Fraction(1, 3), Fraction(1, 2), Fraction(3, 10))
 
 @pytest.mark.parametrize(
     ("primero", "segundo"),
-    [("tremolo", "plate"), ("delay", "spring"), ("saturacion", "hall"), ("tremolo", "tremolo")],
+    [
+        ("tremolo", "plate"),
+        ("delay", "spring"),
+        ("saturacion", "hall"),
+        ("tremolo", "tremolo"),
+        # Muchos registros temporales en los dos: comparten los mismos.
+        ("filtro", "resonador"),
+        ("compresor", "freeze_givens"),
+    ],
 )
 def test_serie_da_los_mismos_bits_que_dos_pasadas(primero: str, segundo: str) -> None:
     cadena = Cadena(
@@ -141,3 +150,36 @@ def test_un_cho_con_lfo_no_valido_falla() -> None:
     textos = {"malo": "mem d 10\nlfo 0 sin 2\ncho d, 1.0, rapido\n", "plate": TEXTOS["plate"]}
     with pytest.raises(ErrorEnsamblado, match="LFO no válido"):
         componer(Cadena("x", Modo.SERIE, (Eslabon("malo"), Eslabon("plate"))), textos, incluir)
+
+
+def test_registros_temporales_en_todos_los_caminos() -> None:
+    """Temporal: se escribe antes de leerse en todo camino. Un salto puede evitar la escritura."""
+    texto = """
+        wrax reg0, 0      ; reg0: se escribe y después se lee
+        rdax reg0, 1.0
+        rdax reg1, 1.0    ; reg1: se lee antes de escribirse
+        wrax reg1, 0
+        skp  run, fin
+        wrax reg2, 0      ; reg2: el salto puede evitar esta escritura
+    fin:
+        rdax reg2, 1.0
+        wrax reg3, 0      ; reg3: solo se escribe
+        wrax dacl, 0
+    """
+    assert registros_temporales(ensamblar(texto, "t").instrucciones) == {0, 3}
+
+
+def test_los_temporales_se_comparten_entre_programas() -> None:
+    """Cada programa tiene sus persistentes; los temporales son comunes a los dos."""
+    cadena = Cadena("x", Modo.SERIE, (Eslabon("filtro"), Eslabon("resonador")))
+    persistentes, temporales, pots = 0, [], 0
+    for nombre in ("filtro", "resonador"):
+        u = uso(expandir(TEXTOS[nombre], incluir))
+        t = registros_temporales(programa(nombre).instrucciones) & u.regs
+        persistentes += len(u.regs - t)
+        temporales.append(len(t))
+        pots += len(u.pots)  # sin mandos, cada pot es una constante en un registro
+    assert min(temporales) > 0
+    union = 2  # en serie, un par de registros une los dos programas
+    esperado = union + pots + persistentes + max(temporales)
+    assert recursos(cadena, TEXTOS, incluir).registros == esperado
