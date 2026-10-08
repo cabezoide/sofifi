@@ -1,4 +1,4 @@
-<!-- i18n: fuente=demo_examples/README.md sha=5fc2eee58a60 estado=al_dia -->
+<!-- i18n: fuente=demo_examples/README.md sha=f4b7e51f3061 estado=al_dia -->
 # demo_examples
 
 合成ギター（Em9 のアルペジオ、Karplus-Strong の弦）を、ビット精度のモデルでコアの各プログラムに通したものです。`.venv/bin/python scripts/generar_demos.py` で再生成でき、毎回同じ音声になります。
@@ -50,5 +50,6 @@
 | `demo_shimmer_energia.ogg` | `shimmer_energia` | ディケイ 0.80 · ダンピング 0.25 · ミックス 0.55 · シマー量 0.90 | — |
 | `demo_freeze_givens.ogg` | `freeze_givens` | ディケイ 0.60 · ダンピング 0.30 · ミックス 0.50 · 回転 0.60 | 2.50 → 8.00 s |
 | `demo_looper.ogg` | `looper` | レベル 0.80 · 速さ 0.50 · 方向 0.00 · フィードバック 0.80 | 0.00 → 0.66 s, 1.32 → 1.98 s |
+| `demo_granular.ogg` | `granular` | 長さ 0.60 · 拡散 0.50 · 音程 1.00 · ミックス 0.60 | 1.60 → 7.00 s |
 
 Ogg Vorbis、48,828 Hz（ADR 0005、スペイン語）。レンダリングは 24 ビットでビット精度です。ノブとプログラムは `docs/programas.ja.md` にあります。

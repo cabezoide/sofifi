@@ -86,6 +86,8 @@ DEMOS: tuple[tuple[str, dict[int, str], tuple[tuple[float, float], ...], float],
     ("freeze_givens", {0: "0.6", 1: "0.3", 2: "0.5", 3: "0.6"}, ((2.5, 8.0),), 6.0),
     # Graba las tres primeras notas, deja sonar el loop y hace un overdub.
     ("looper", {0: "0.8", 1: "0.5", 2: "0", 3: "0.8"}, ((0.0, 0.66), (1.32, 1.98)), 3.0),
+    # Nube una octava arriba; el búfer se congela con el arpegio dentro.
+    ("granular", {0: "0.6", 1: "0.5", 2: "1", 3: "0.6"}, ((1.6, 7.0),), 3.0),
 )
 # Calidad de Vorbis: 0 es la mejor. Con 0,3, una demo de 8 s ocupa unos 190 kB.
 COMPRESION = 0.3
