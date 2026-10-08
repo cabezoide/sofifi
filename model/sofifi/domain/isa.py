@@ -20,7 +20,7 @@ from enum import IntEnum, IntFlag
 
 from sofifi.domain.aritmetica import CICLOS_POR_MUESTRA
 from sofifi.domain.lfo import NUM_LFOS, ConfigLfo, TipoLfo
-from sofifi.domain.memoria import PALABRAS_MAX
+from sofifi.domain.memoria import PALABRAS_ABSOLUTAS, PALABRAS_MAX
 
 
 class Op(IntEnum):
@@ -40,6 +40,8 @@ class Op(IntEnum):
     LDAX = 13  # ACC = R
     CLR = 14  # ACC = 0
     ABSA = 15  # ACC = |ACC|
+    RDAA = 16  # v = lineal(M_abs[addr + R]) ; LR = v ; ACC += v·C   (región absoluta, Fase 07)
+    WRAA = 17  # M_abs[addr + R] = a24 ; ACC = a24·C
 
 
 class Skp(IntFlag):
@@ -147,6 +149,11 @@ class Programa:
             raise ValueError(f"programa '{self.nombre}' inválido: " + "; ".join(errores))
 
     @property
+    def usa_absoluta(self) -> bool:
+        """True si el programa usa la región absoluta (RDAA, WRAA; ADR 0009)."""
+        return any(i.op in (Op.RDAA, Op.WRAA) for i in self.instrucciones)
+
+    @property
     def ciclos(self) -> int:
         return sum(CICLOS[i.op] for i in self.instrucciones)
 
@@ -157,6 +164,11 @@ class Programa:
             e.append(f"{n} instrucciones > {MAX_INSTRUCCIONES}")
         if self.ciclos > CICLOS_POR_MUESTRA:
             e.append(f"{self.ciclos} ciclos > {CICLOS_POR_MUESTRA} por muestra")
+        if self.usa_absoluta and self.palabras_memoria + PALABRAS_ABSOLUTAS > PALABRAS_MAX:
+            e.append(
+                f"memoria {self.palabras_memoria} + región absoluta {PALABRAS_ABSOLUTAS}"
+                f" > {PALABRAS_MAX} palabras"
+            )
         if not 1 <= self.palabras_memoria <= PALABRAS_MAX:
             e.append(f"memoria {self.palabras_memoria} fuera de [1, {PALABRAS_MAX}]")
         if len(self.lfos) != NUM_LFOS:
@@ -175,6 +187,8 @@ class Programa:
                         f"[{pc}] CHO lee hasta la dirección {fin}, fuera de la memoria"
                         f" declarada ({self.palabras_memoria} palabras)"
                     )
+            if ins.op in (Op.RDAA, Op.WRAA) and ins.addr >= PALABRAS_ABSOLUTAS:
+                e.append(f"[{pc}] origen {ins.addr} fuera de la región absoluta")
             if ins.op in (Op.RDA, Op.WRA, Op.WRAP, Op.CHO) and ins.addr >= self.palabras_memoria:
                 e.append(f"[{pc}] dirección {ins.addr} fuera de la memoria declarada")
         return e

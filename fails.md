@@ -24,6 +24,8 @@ Se añade una entrada nueva cuando un fallo está diagnosticado y resuelto. Las 
 | F-16 | 06 | Las simulaciones grandes no compilaban con el verilator de pip | resuelto |
 | F-17 | 06 | El difusor de velvet noise no superó a los allpass | descartado: no se publica |
 | F-18 | 06 | Cuatro fallos de programación del catálogo | resueltos antes de publicar |
+| F-19 | 07 | Con RDAA y WRAA, el silicio fallaba a 114 MHz en la primera muestra | resuelto; margen medido ≥ 25 % |
+| F-20 | 07 | El borrado de la región absoluta dejaba dos palabras sin borrar | resuelto |
 
 ---
 
@@ -203,3 +205,30 @@ Se añade una entrada nueva cuando un fallo está diagnosticado y resuelto. Las 
   3. Bajada proporcional a la propia ganancia: exponencial, nunca cruza 0.
   4. Huellas más largas y una prueba que exige huellas distintas entre programas.
 - **Lección:** en el núcleo, el ACC es ancho, pero cada instrucción que lee a24 (`SOF`, `WRAX`, `MULX`, `RDFX`) satura. Una prueba que mide el extremo del mando encuentra estos fallos; una que mide el centro, no.
+
+## F-19 · Con RDAA y WRAA, el silicio fallaba a 114 MHz en la primera muestra
+
+- **Síntoma:** el núcleo con `RDAA` y `WRAA` coincidía con el modelo en la simulación y en la placa a 100 MHz. A 114,3 MHz fallaba siempre, desde la muestra 0. En la Fase 06, el mismo plate pasaba a 120 MHz. nextpnr daba 157 MHz.
+- **Diagnóstico:**
+  1. La traza (`margen_reloj.py --traza`) dio la entrada 2: placa pc = 8, modelo pc = 4.
+  2. El ACC de la placa en esa entrada era el del modelo en pc = 8. Entonces `rdax tmp` (pc 3 y pc 5) había dado 0 las dos veces.
+  3. `wrax tmp` (pc 2) no había escrito el registro, o la lectura había fallado. En la muestra 0 la memoria aún no da datos: era un camino de control.
+  4. En el rutado, los 24 bit de `reg7` (`tmp`) estaban repartidos por todo el chip (x de 12 a 53). El control (`estado`, `es_wrax`) estaba en x = 51 y `a24` en x de 12 a 21.
+- **Causa raíz:** la escritura de `WRAX` decodificaba `rg` y las condiciones de estado en el mismo ciclo en que escribía. Esa red llega a los 1 536 biestables del banco, repartidos por todo el chip. El diseño creció con la Fase 07, la colocación cambió y ese camino quedó como el más justo.
+- **Resolución:**
+  - Escritura del banco en dos etapas. `E_EJEC` registra una máscara de 64 bit y el dato; en el ciclo siguiente cada registro se escribe con su bit de la máscara. No cuesta ciclos: la siguiente lectura llega varios ciclos después.
+  - La resta `M[i+1] − M[i]` de `RDAA` se registra antes del multiplicador (regla de F-11). `RDAA` pasa de 26 a 27 ciclos.
+- **Resultado medido** (nextpnr da 144 MHz para este rutado): 100 MHz, 2 de 2; 114,3 MHz, 2 de 2; 120 MHz, 3 de 3; **125 MHz, 3 de 3**; 133,3 MHz, 1 de 1. En la Fase 06 eran 125 MHz, 3 de 4, y 133,3 MHz, 0 de 1.
+- **Lección:** un registro que escribe en el banco entero cruza el chip, igual que una dirección de memoria. La decodificación va en un ciclo y la escritura en el siguiente. nextpnr bajó de 157 a 144 MHz y la placa mejoró: su cifra no sirve para comparar dos rutados.
+
+## F-20 · El borrado de la región absoluta dejaba dos palabras sin borrar
+
+- **Síntoma:** la prueba `absoluta_igual_al_modelo` fallaba en la muestra 67 al correr detrás de otra prueba. Sola, pasaba.
+- **Diagnóstico:**
+  1. En la muestra 67, `rdaa pe, 0.5, 32700` lee el índice 32 767 de la región. El modelo lee 0 y el RTL leía un valor que había dejado la prueba anterior.
+  2. El filtro de cocotb es una expresión regular: `igual_al_modelo` elegía también `absoluta_igual_al_modelo`. Por eso la prueba corría detrás de cada programa, con la memoria sucia.
+- **Causa raíz:** en `E_BORRAR`, `mdir_w` sale de un registro, pero el modo absoluto salía de `borrar_abs` directamente. El modo iba un ciclo por delante de la dirección. La última palabra circular se escribía en la región, y la última palabra de la región, en la zona circular.
+- **Resolución:**
+  - `mabs_borrar` se registra en el mismo flanco que `mdir_w`.
+  - La prueba pasa a llamarse `absoluta_como_el_modelo` y ensucia antes los extremos de la región con `WRAA`. Con el fallo de antes, la prueba falla.
+- **Lección:** las señales que acompañan a una dirección registrada se registran con ella. Una prueba de borrado necesita memoria sucia: con la memoria a cero de la simulación, el borrado no se prueba (como en F-12).

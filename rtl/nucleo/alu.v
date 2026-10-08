@@ -38,7 +38,8 @@ module alu #(
     localparam [5:0] RDA = 6'd1,  WRA = 6'd2,   WRAP = 6'd3,
                      RDAX = 6'd4, WRAX = 6'd5, RDFX = 6'd6,  MAXX = 6'd7,
                      MULX = 6'd8, SOF = 6'd9,  CHO = 6'd12,
-                     LDAX = 6'd13, CLR = 6'd14, ABSA = 6'd15;   // NOP (0) y SKP (11): ACC igual
+                     LDAX = 6'd13, CLR = 6'd14, ABSA = 6'd15,
+                     RDAA = 6'd16, WRAA = 6'd17;   // NOP (0) y SKP (11): ACC igual
 
     // Todos los productos útiles caben en 49 bit (24 × 24 con signo).
     wire signed [49:0] p50   = p[49:0];
@@ -56,8 +57,8 @@ module alu #(
         x_b = 50'sd0;
         maximo = 1'b0;
         case (op)
-            RDA, RDAX, CHO: x_b = p50;
-            WRA, WRAX:      begin x_a = 50'sd0; x_b = p50; end
+            RDA, RDAX, CHO, RDAA: x_b = p50;
+            WRA, WRAX, WRAA:      begin x_a = 50'sd0; x_b = p50; end
             WRAP:           begin x_a = lr16;   x_b = p50; end
             RDFX:           begin x_a = r16;    x_b = p50; end
             SOF:            begin x_a = d24;    x_b = p50; end

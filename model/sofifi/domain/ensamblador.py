@@ -4,6 +4,7 @@
 Texto → ``Programa``. Es puro: no lee ficheros. El texto llega por un puerto, y
 los ficheros de ``include`` los lee la función ``incluir`` que pasa quien llama.
 Las expresiones se evalúan en ``expresion.py``: exactas y nunca con ``eval``.
+Los operandos de cada instrucción se analizan en ``operandos.py``.
 
 Sintaxis::
 
@@ -19,6 +20,7 @@ Sintaxis::
     clip | clr | absa | nop
     skp   run|zro|gez|neg, etiqueta|N
     cho   dir, C, lfoN [, na|media]
+    rdaa  reg, C [, origen]          wraa reg, C [, origen]    ; región absoluta (ADR 0009)
 
 En las direcciones, ``linea`` es el inicio (escritura), ``linea#`` el final
 (retardo completo) y ``linea^`` el punto medio, como en SpinASM. ``mem x N``
@@ -36,18 +38,12 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from fractions import Fraction
 
-from sofifi.domain.aritmetica import COEF_BITS, coef, cuantizar
 from sofifi.domain.expresion import ErrorEnsamblado as ErrorEnsamblado
 from sofifi.domain.expresion import Expresion, entero
-from sofifi.domain.isa import (
-    NOMBRES_REGISTRO,
-    Cho,
-    Instruccion,
-    Op,
-    Programa,
-    Skp,
-)
+from sofifi.domain.isa import NOMBRES_REGISTRO, Programa
 from sofifi.domain.lfo import NUM_LFOS, ConfigLfo, TipoLfo
+from sofifi.domain.operandos import MNEMONICOS as MNEMONICOS
+from sofifi.domain.operandos import instruccion
 
 Incluir = Callable[[str], str]
 PROFUNDIDAD_INCLUDE = 8
@@ -72,16 +68,6 @@ _FV1_NO_SOPORTADAS = {
     "wrlx",
     "wrhx",
 }
-
-_SIN_OPERANDOS = {"clip": Op.CLIP, "clr": Op.CLR, "absa": Op.ABSA, "nop": Op.NOP}
-_MEMORIA_COEF = {"rda": Op.RDA, "wra": Op.WRA, "wrap": Op.WRAP}
-_REGISTRO_COEF = {"rdax": Op.RDAX, "wrax": Op.WRAX, "rdfx": Op.RDFX, "maxx": Op.MAXX}
-_SOLO_REGISTRO = {"mulx": Op.MULX, "ldax": Op.LDAX}
-_OTRAS = {"sof": Op.SOF, "skp": Op.SKP, "cho": Op.CHO}
-
-MNEMONICOS: dict[str, Op] = (
-    _SIN_OPERANDOS | _MEMORIA_COEF | _REGISTRO_COEF | _SOLO_REGISTRO | _OTRAS
-)
 
 
 def _lineas(
@@ -145,7 +131,7 @@ def ensamblar(texto: str, nombre: str = "programa", incluir: Incluir | None = No
     instrucciones = []
     for origen, n, mnem, ops, pc in e.cuerpo:
         try:
-            instrucciones.append(_instruccion(n, mnem, ops, pc, e.simbolos, e.alias, e.etiquetas))
+            instrucciones.append(instruccion(n, mnem, ops, pc, e.simbolos, e.alias, e.etiquetas))
         except ErrorEnsamblado as exc:
             raise exc.en(origen) from None
     try:
@@ -207,96 +193,3 @@ def _pasada_1(e: _Estado, n: int, linea: str, origen: str | None) -> None:
         raise ErrorEnsamblado(n, f"'{mnem}' es del FV-1 y no está en la ISA SOFIFI (ADR 0009)")
     else:
         raise ErrorEnsamblado(n, f"instrucción o directiva desconocida '{mnem}'")
-
-
-def _instruccion(
-    n: int,
-    mnem: str,
-    ops: str,
-    pc: int,
-    simbolos: dict[str, Fraction],
-    alias: dict[str, int],
-    etiquetas: dict[str, int],
-) -> Instruccion:
-    args = [a.strip() for a in ops.split(",")] if ops.strip() else []
-    op = MNEMONICOS[mnem]
-
-    def esperar(k: int) -> None:
-        if len(args) != k:
-            raise ErrorEnsamblado(n, f"'{mnem}' espera {k} operandos, recibió {len(args)}")
-
-    def valor(texto: str) -> Fraction:
-        return Expresion(texto, simbolos, n).evaluar()
-
-    def c(texto: str) -> int:
-        try:
-            return coef(valor(texto))
-        except ValueError as exc:
-            if isinstance(exc, ErrorEnsamblado):
-                raise
-            raise ErrorEnsamblado(n, str(exc)) from exc
-
-    def reg(texto: str) -> int:
-        if texto not in alias:
-            raise ErrorEnsamblado(n, f"registro desconocido '{texto}'")
-        return alias[texto]
-
-    def direccion(texto: str) -> int:
-        d = entero(valor(texto))
-        if d < 0:
-            raise ErrorEnsamblado(n, f"dirección negativa {d}")
-        return d
-
-    if op in _SIN_OPERANDOS.values():
-        esperar(0)
-        return Instruccion(op)
-    if op in _MEMORIA_COEF.values():
-        esperar(2)
-        return Instruccion(op, coef=c(args[1]), addr=direccion(args[0]))
-    if op in _REGISTRO_COEF.values():
-        esperar(2)
-        return Instruccion(op, reg=reg(args[0]), coef=c(args[1]))
-    if op in _SOLO_REGISTRO.values():
-        esperar(1)
-        return Instruccion(op, reg=reg(args[0]))
-    if op is Op.SOF:
-        esperar(2)
-        try:
-            d = cuantizar(valor(args[1]), 15, COEF_BITS, "D de sof")
-        except ErrorEnsamblado:
-            raise
-        except ValueError as exc:
-            raise ErrorEnsamblado(n, str(exc)) from exc
-        return Instruccion(op, coef=c(args[0]), addr=d & ((1 << 18) - 1))
-    if op is Op.SKP:
-        esperar(2)
-        flags = Skp(0)
-        for f in args[0].split("|"):
-            try:
-                flags |= Skp[f.strip().upper()]
-            except KeyError as exc:
-                raise ErrorEnsamblado(n, f"condición de skp desconocida '{f}'") from exc
-        destino = args[1]
-        if destino in etiquetas:
-            salto = etiquetas[destino] - pc - 1
-            if salto < 0:
-                raise ErrorEnsamblado(n, f"skp solo salta hacia delante ('{destino}' está detrás)")
-        else:
-            salto = entero(valor(destino))
-        return Instruccion(op, flags=int(flags), addr=salto)
-    # CHO
-    if len(args) not in (3, 4):
-        raise ErrorEnsamblado(n, "uso: cho dir, C, lfoN [, na|media]")
-    m = re.fullmatch(r"(?:lfo)?([0-9])", args[2])
-    if not m:
-        raise ErrorEnsamblado(n, f"LFO no válido '{args[2]}'")
-    banderas = Cho(0)
-    if len(args) == 4:
-        for f in args[3].split("|"):
-            try:
-                banderas |= Cho[f.strip().upper()]
-            except KeyError as exc:
-                raise ErrorEnsamblado(n, f"modificador de cho desconocido '{f}'") from exc
-    return Instruccion(
-        op, reg=int(m.group(1)), flags=int(banderas), coef=c(args[1]), addr=direccion(args[0])
-    )

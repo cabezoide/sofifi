@@ -15,15 +15,37 @@ from sofifi.domain.aritmetica import acc_a_dato, dato_a_memoria
 BLOQUES_MEMORIA = 42
 PALABRAS_POR_BLOQUE = 1024
 PALABRAS_MAX = BLOQUES_MEMORIA * PALABRAS_POR_BLOQUE
+# Región absoluta (RDAA, WRAA; ADR 0009): detrás de la circular, sin puntero.
+PALABRAS_ABSOLUTAS = 1 << 15
+MASCARA_ABSOLUTA = PALABRAS_ABSOLUTAS - 1
 
 
 class MemoriaRetardo:
-    def __init__(self, palabras: int) -> None:
+    def __init__(self, palabras: int, absoluta: bool = False) -> None:
         if not 1 <= palabras <= PALABRAS_MAX:
             raise ValueError(f"memoria de {palabras} palabras fuera de [1, {PALABRAS_MAX}]")
         self.palabras = palabras
         self._celdas = [0] * palabras
         self._puntero = 0
+        self._absoluta = [0] * (PALABRAS_ABSOLUTAS if absoluta else 0)
+
+    def leer_absoluta(self, origen: int, posicion: int) -> int:
+        """Lectura lineal en la región absoluta (RDAA, ADR 0009).
+
+        ``posicion`` es el registro R: 15 bit de entero y 8 de fracción en sus 23
+        bit bajos. Las direcciones se enmascaran: la región es circular por sí sola.
+        """
+        pos = posicion & 0x7FFFFF
+        i = (origen + (pos >> 8)) & MASCARA_ABSOLUTA
+        f = pos & 0xFF
+        m0 = self._absoluta[i]
+        m1 = self._absoluta[(i + 1) & MASCARA_ABSOLUTA]
+        return m0 + (((m1 - m0) * f) >> 8)
+
+    def escribir_absoluta(self, origen: int, posicion: int, valor: int) -> None:
+        """Escritura en la región absoluta (WRAA): sin interpolar, en la parte entera."""
+        i = (origen + ((posicion & 0x7FFFFF) >> 8)) & MASCARA_ABSOLUTA
+        self._absoluta[i] = dato_a_memoria(valor)
 
     def _fisica(self, direccion: int) -> int:
         return (self._puntero + direccion) % self.palabras

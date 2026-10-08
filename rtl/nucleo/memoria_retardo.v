@@ -15,6 +15,10 @@
 // lectura presentada en el ciclo t da `dato_r` en t+4. Una escritura presentada
 // en t se hace en t+1; una lectura presentada en t+1 ya la ve.
 //
+// Región absoluta (RDAA y WRAA, ADR 0009): con `abs_r` o `abs_w`, la dirección
+// física es `palabras + dir[14:0]`, sin puntero. El programa la declara solo si
+// P + 32 768 cabe en PALABRAS_MAX.
+//
 // Con más de GRUPO bloques, bsram_pipe va segmentada por grupos (fails.md,
 // F-15) y la lectura tarda 4 ciclos más: `dato_r` en t+8. La escritura también
 // se retrasa, así que una lectura presentada en t+1 sigue viéndola.
@@ -29,9 +33,11 @@ module memoria_retardo #(
     input  wire [15:0]        palabras,   // P del programa, en [1, PALABRAS_MAX]
     input  wire               avanzar,    // pulso al final de cada muestra
     input  wire signed [16:0] dir_r,      // dirección relativa de lectura
+    input  wire               abs_r,      // 1: dir_r[14:0] es un índice de la región absoluta
     output wire signed [23:0] dato_r,
     input  wire               we,
     input  wire signed [16:0] dir_w,
+    input  wire               abs_w,
     input  wire signed [23:0] dato_w
 );
     localparam integer AD = $clog2(PALABRAS_MAX);
@@ -83,9 +89,15 @@ module memoria_retardo #(
     wire [17:0]  palabra_nueva;
     dato_a_memoria u_dm (.dato(dato_w), .palabra(palabra_nueva));
 
+    // Región absoluta: una suma, en paralelo con la circular; el modo elige.
+    /* verilator lint_off WIDTHTRUNC */
+    wire [AD-1:0] abs_fis_r = palabras + {1'b0, dir_r[14:0]};
+    wire [AD-1:0] abs_fis_w = palabras + {1'b0, dir_w[14:0]};
+    /* verilator lint_on WIDTHTRUNC */
+
     always @(posedge clk) begin
-        fis_r     <= fisica(puntero, mas_p, menos_p, dir_r);
-        fis_w     <= fisica(puntero, mas_p, menos_p, dir_w);
+        fis_r     <= abs_r ? abs_fis_r : fisica(puntero, mas_p, menos_p, dir_r);
+        fis_w     <= abs_w ? abs_fis_w : fisica(puntero, mas_p, menos_p, dir_w);
         we_r      <= we & ~rst;
         palabra_w <= palabra_nueva;
     end

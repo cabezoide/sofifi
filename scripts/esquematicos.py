@@ -43,6 +43,19 @@ DESTINO = RAIZ / "schematics"
 INDICE = DESTINO / "README.md"
 TRABAJO = RAIZ / "build" / "esquematicos"
 NETLISTSVG = RAIZ / "herramientas" / "esquematicos" / "node_modules" / ".bin" / "netlistsvg"
+NETLISTSVG_JS = NETLISTSVG.parent.parent / "netlistsvg" / "bin" / "netlistsvg.js"
+# netlistsvg recorre las redes con recursión: con las redes anchas del núcleo
+# (Fase 07) desborda la pila de node. Se le da más pila, y al proceso también.
+PILA_NODE_KB = 200_000
+
+
+def _pila_maxima() -> None:
+    import resource
+
+    _, duro = resource.getrlimit(resource.RLIMIT_STACK)
+    resource.setrlimit(resource.RLIMIT_STACK, (duro, duro))
+
+
 YOSYS = RAIZ / ".venv" / "bin" / "yowasp-yosys"
 CHROME = sorted(
     Path.home().glob(".cache/ms-playwright/chromium_headless_shell-*/*/chrome-headless-shell")
@@ -109,7 +122,12 @@ def _svg(m: Modulo) -> str:
         f"proc; opt; clean; write_json {json.relative_to(RAIZ)}"
     )
     subprocess.run([str(YOSYS), "-q", "-p", guion], cwd=RAIZ, check=True, timeout=600)
-    subprocess.run([str(NETLISTSVG), str(json), "-o", str(svg)], check=True, timeout=600)
+    subprocess.run(
+        ["node", f"--stack-size={PILA_NODE_KB}", str(NETLISTSVG_JS), str(json), "-o", str(svg)],
+        check=True,
+        timeout=600,
+        preexec_fn=_pila_maxima,
+    )
     return svg.read_text(encoding="utf-8")
 
 

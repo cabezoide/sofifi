@@ -37,12 +37,14 @@ module nucleo_placa #(
     wire [15:0] palabras;
     wire [7:0]  lfo_tipos;
     wire [59:0] lfo_excursiones;
+    wire        absoluta;
     wire [10:0] dir, prog_dir;
     wire [53:0] prog_dato;
     wire        prog_we, cargado;
     programa_plate u_prog (
         .dir(dir), .palabra(palabra), .instrucciones(instrucciones),
-        .palabras(palabras), .lfo_tipos(lfo_tipos), .lfo_excursiones(lfo_excursiones)
+        .palabras(palabras), .lfo_tipos(lfo_tipos), .lfo_excursiones(lfo_excursiones),
+        .absoluta(absoluta)
     );
     carga_programa u_carga (
         .clk(clk_100), .rst(rst), .instrucciones(instrucciones),
@@ -75,6 +77,7 @@ module nucleo_placa #(
         .prog_we(prog_we), .prog_dir(prog_dir), .prog_dato(prog_dato),
         .cfg_instrucciones(instrucciones), .cfg_palabras(palabras),
         .cfg_lfo_tipos(lfo_tipos), .cfg_lfo_excursiones(lfo_excursiones),
+        .cfg_absoluta(absoluta),
         .tick(tick), .adc_l(entrada), .adc_r(-entrada),
         .pots({6{24'sh400000}}), .sw(24'sd0),
         .dac_l(dac_l), .dac_r(dac_r), .fin(fin), .ocupado(ocupado), .ciclos(ciclos),

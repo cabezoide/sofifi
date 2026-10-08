@@ -51,7 +51,7 @@ DESPLAZAMIENTO_SOF_D = DATO_FRAC + 16 - 15  # D en S2.15 → f39
 class Nucleo:
     def __init__(self, programa: Programa) -> None:
         self.programa = programa
-        self.memoria = MemoriaRetardo(programa.palabras_memoria)
+        self.memoria = MemoriaRetardo(programa.palabras_memoria, programa.usa_absoluta)
         self.lfos = [Lfo(c) if c is not None else None for c in programa.lfos]
         self.regs = [0] * NUM_REGISTROS
         self.acc = 0
@@ -214,6 +214,20 @@ def _absa(n: Nucleo, i: Instruccion) -> int:
     return 0
 
 
+def _rdaa(n: Nucleo, i: Instruccion) -> int:
+    v = n.memoria.leer_absoluta(i.addr, n.regs[i.reg])
+    n.lr = v
+    n.acc = saturar_acc(n.acc + v * i.coef)
+    return 0
+
+
+def _wraa(n: Nucleo, i: Instruccion) -> int:
+    a = n.a24
+    n.memoria.escribir_absoluta(i.addr, n.regs[i.reg], a)
+    n.acc = saturar_acc(a * i.coef)
+    return 0
+
+
 MANEJADORES: dict[Op, Manejador] = {
     Op.NOP: _nop,
     Op.RDA: _rda,
@@ -231,4 +245,6 @@ MANEJADORES: dict[Op, Manejador] = {
     Op.LDAX: _ldax,
     Op.CLR: _clr,
     Op.ABSA: _absa,
+    Op.RDAA: _rdaa,
+    Op.WRAA: _wraa,
 }

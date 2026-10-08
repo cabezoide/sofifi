@@ -12,12 +12,14 @@ module programa_plate (
     output wire [11:0] instrucciones,
     output wire [15:0] palabras,
     output wire [7:0]  lfo_tipos,
-    output wire [59:0] lfo_excursiones
+    output wire [59:0] lfo_excursiones,
+    output wire        absoluta
 );
     assign instrucciones   = 12'd86;
     assign palabras        = 16'd37439;
     assign lfo_tipos       = 8'h00;
     assign lfo_excursiones = 60'h00000000006800d;
+    assign absoluta        = 1'b0;
     always @(*) begin
         // En lógica: en BSRAM (SPX9) daba violaciones de hold (Fase 04).
         (* rom_style = "logic" *)
