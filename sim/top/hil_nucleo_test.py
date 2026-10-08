@@ -23,7 +23,8 @@ RTL = RAIZ / "rtl"
 sys.path.insert(0, str(RAIZ / "scripts"))
 sys.path.insert(0, str(RAIZ / "sim" / "primitivas"))
 
-from hil_nucleo import comprobar, comprobar_traza  # noqa: E402
+from hil_nucleo import cargar, comprobar, comprobar_traza  # noqa: E402
+from sofifi.services.tablas import verilog_programa  # noqa: E402
 from uart_rx import recibir_linea  # noqa: E402
 
 DIVISOR = 16
@@ -71,14 +72,25 @@ async def traza_igual_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
     assert diferencia is None, diferencia
 
 
-@pytest.mark.parametrize("top, programa", [("hil_nucleo", "plate"), ("hil_looper", "looper")])
+@pytest.mark.parametrize(
+    "top, programa",
+    [("hil_nucleo", "plate"), ("hil_looper", "looper"), ("hil_programa", "Placa que tiembla")],
+)
 def test_hil_nucleo(tmp_path: Path, top: str, programa: str) -> None:
-    """hil_looper lleva RDAA y WRAA a la placa: graba en [N/4, N/2) y hace overdub."""
+    """hil_looper lleva RDAA y WRAA a la placa: graba en [N/4, N/2) y hace overdub.
+
+    hil_programa lleva la ROM de `sofifi rom` (la de `make hil`), aquí con una cadena.
+    """
     fuentes = []
     for linea in (RTL / "top" / "tops.txt").read_text().splitlines():
         campos = linea.split()
         if campos and campos[0] == "hil_nucleo":
             fuentes = [RAIZ / f for f in campos[1:]]
+    if top == "hil_programa":
+        rom = tmp_path / "programa_hil.v"
+        rom.write_text(verilog_programa(cargar(programa), "programa_hil"), encoding="utf-8")
+        fuentes.append(rom)
+    rama = "hil" if top == "hil_programa" else programa
     runner = get_runner("verilator")
     runner.build(
         sources=fuentes,
@@ -87,7 +99,7 @@ def test_hil_nucleo(tmp_path: Path, top: str, programa: str) -> None:
             "F_RELOJ": DIVISOR,
             "BAUDIOS": 1,
             "N_CAPTURA": N_CAPTURA,
-            "PROGRAMA": f'"{programa}"',
+            "PROGRAMA": f'"{rama}"',
         },
         defines={"SIMULACION": 1},
         build_dir=tmp_path,

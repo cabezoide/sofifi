@@ -29,8 +29,10 @@
 // graba y después hace overdub (Fase 07). El plate no lee `sw`. Con N = 4 096:
 // triángulo desde la 1 024; footswitch de 1 024 a 2 047 y de 3 072 a 3 327.
 //
-// PROGRAMA elige la ROM: "plate" (por defecto) o "looper" (top hil_looper).
-// Las dos ROM están en programa_<nombre>.v, generadas por `sofifi tablas`.
+// PROGRAMA elige la ROM: "plate" (por defecto), "looper" (top hil_looper) o
+// "hil" (top hil_programa). Las dos primeras están en programa_<nombre>.v,
+// generadas por `sofifi tablas`. La ROM programa_hil la escribe `sofifi rom` en
+// build/ con cualquier programa o cadena que quepa en PALABRAS_MAX (`make hil`).
 `default_nettype none
 
 module hil_nucleo #(
@@ -73,6 +75,12 @@ module hil_nucleo #(
     wire        prog_we, cargado;
     generate if (PROGRAMA == "looper") begin : g_looper
         programa_looper u_prog (
+            .dir(dir), .palabra(palabra), .instrucciones(instrucciones),
+            .palabras(palabras), .lfo_tipos(lfo_tipos), .lfo_excursiones(lfo_excursiones),
+            .absoluta(absoluta)
+        );
+    end else if (PROGRAMA == "hil") begin : g_hil
+        programa_hil u_prog (
             .dir(dir), .palabra(palabra), .instrucciones(instrucciones),
             .palabras(palabras), .lfo_tipos(lfo_tipos), .lfo_excursiones(lfo_excursiones),
             .absoluta(absoluta)

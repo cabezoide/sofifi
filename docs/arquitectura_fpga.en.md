@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/arquitectura_fpga.md sha=2a6ecce41c9b estado=al_dia -->
+<!-- i18n: fuente=docs/arquitectura_fpga.md sha=d6f65e2a2485 estado=al_dia -->
 # FPGA architecture
 
 This document tells what is inside the FPGA, how the parts connect and how the design changed in each phase. We update it when we close each phase and in each PR that changes FPGA blocks. `SBOM.en.md` gives a simple explanation of each component. `fails.en.md` gives the failures that made the design.
@@ -61,7 +61,7 @@ All the logic runs in **one clock domain of 100 MHz** (ADR 0005 (Spanish)). Ther
 | UART TX / RX | `rtl/comun/uart_tx.v`, `uart_rx.v` | ~50 LUT each | 115,200 baud |
 | Program loader | `rtl/comun/carga_programa.v` | ~30 LUT | instructions + 1 cycles |
 | Core trace (HIL only) | `rtl/top/hil_nucleo.v`, command `T` | ~150 flip-flops | records (pc, ACC) in the capture |
-| HIL program | `PROGRAMA` parameter of `hil_nucleo`; top `hil_looper` | one ROM in logic | plate by default; the looper tests `RDAA` and `WRAA` |
+| HIL program | `PROGRAMA` parameter of `hil_nucleo`; tops `hil_looper` and `hil_programa` | one ROM in logic | plate by default; the looper tests `RDAA` and `WRAA`; `hil_programa` has the ROM that `sofifi rom` writes (`make hil HIL=NAME`) |
 
 ## Budget (top `hil_nucleo`, Phase 07, RDAA and WRAA)
 
@@ -163,6 +163,7 @@ We add the wrappers for the PLL (`pll_100`), the DSP (`mult_27x18`) and the infe
 | `RDAA` (two reads, the difference multiplied by the fraction, and the product by C) | 27 |
 
 - **Looper on the board** (top `hil_looper`): the HIL stimulus pushes the footswitch to record and to do an overdub. The looper gives the same bits as the model from 100 to 125 MHz. This is the first test of `RDAA` and `WRAA` in the silicon.
+- **All the catalogue on the board** (top `hil_programa`, `make hil HIL=NAME`): 41 programs and 9 chains give the same bits as the model (MED-16). These are all the programs and chains that fit in the 38 blocks of `hil_nucleo`. The program that uses the most cycles is `chorale`: 1,935 cycles of 2,048.
 
 ### Next planned change
 

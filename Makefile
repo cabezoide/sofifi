@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Puntos de entrada del proyecto. La compuerta es scripts/ci_local.sh (ADR 0001).
-.PHONY: help install hooks ci ci-dura test sim docs synth optimizacion prog uart release-check esquematicos
+.PHONY: help install hooks ci ci-dura test sim docs synth optimizacion prog hil uart release-check esquematicos
 
 VENV := .venv
 PY := $(VENV)/bin/python
@@ -16,6 +16,7 @@ help:
 	@echo "make synth          sintetiza TOP (por defecto hola_uart) en build/"
 	@echo "make optimizacion   segunda vuelta: recursos, timing y pistas de cada top"
 	@echo "make prog           carga build/TOP.fs en la SRAM de la placa"
+	@echo "make hil HIL=NOMBRE programa o cadena en la placa y comparación con el modelo"
 	@echo "make uart           lee la UART de la placa y exige \"SOFIFI\""
 	@echo "make release-check  compuerta de release: síntesis de los tops"
 	@echo "make esquematicos   regenera schematics/ (PDF de cada módulo RTL, ADR 0012)"
@@ -54,6 +55,18 @@ optimizacion:
 
 prog: synth
 	scripts/fpga.sh prog build/$(TOP).fs
+
+# Un programa o una cadena en la placa (hil_programa): genera la ROM, sintetiza,
+# carga en SRAM y compara 4 096 muestras con el modelo. Las fuentes son las de
+# hil_nucleo más la ROM generada.
+HIL ?= plate
+hil:
+	@mkdir -p build
+	$(VENV)/bin/sofifi rom "$(HIL)" build/programa_hil.v
+	scripts/fpga.sh synth rtl/top/hil_programa.v build/programa_hil.v \
+	  $(shell awk '$$1 == "hil_nucleo" { $$1 = ""; print }' rtl/top/tops.txt)
+	scripts/fpga.sh prog build/hil_programa.fs
+	$(PY) scripts/hil_nucleo.py --programa "$(HIL)"
 
 uart:
 	$(PY) scripts/leer_uart.py

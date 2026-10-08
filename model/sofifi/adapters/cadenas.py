@@ -13,8 +13,10 @@ import tomllib
 from fractions import Fraction
 from pathlib import Path
 
+from sofifi.adapters.archivos import ensamblar_archivo
 from sofifi.domain.cadena import Cadena, Eslabon, Mando, Modo, PotFisico
-from sofifi.domain.composicion import componer
+from sofifi.domain.composicion import componer, ensamblar_cadena
+from sofifi.domain.isa import Programa
 
 
 def _mando(valor: object, donde: str) -> Mando:
@@ -68,3 +70,15 @@ class FuenteCadena:
 
     def incluir(self, nombre: str) -> str:
         return (self.carpeta / nombre).read_text(encoding="utf-8")
+
+
+def programa_o_cadena(nombre: str, carpeta: Path, ruta_cadenas: Path) -> Programa:
+    """El programa ``carpeta/NOMBRE.sasm`` o, si no existe, la cadena NOMBRE ensamblada."""
+    ruta = carpeta / f"{nombre}.sasm"
+    if ruta.exists():
+        return ensamblar_archivo(ruta)
+    for c in leer_cadenas(ruta_cadenas):
+        if c.nombre == nombre:
+            fuente = FuenteCadena(c, carpeta)
+            return ensamblar_cadena(c, textos_de_programas(carpeta), fuente.incluir)
+    raise ValueError(f"«{nombre}» no es un programa de {carpeta} ni una cadena de {ruta_cadenas}")
