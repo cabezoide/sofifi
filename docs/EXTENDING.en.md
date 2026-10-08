@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/EXTENDING.md sha=c1cf8814ec31 estado=al_dia -->
+<!-- i18n: fuente=docs/EXTENDING.md sha=a578f7b153a1 estado=al_dia -->
 # How to extend
 
 This guide gives the steps for each type of part. Sometimes an addition makes
@@ -77,3 +77,6 @@ Thus the change must have its own ADR or an update of ADR 0009 (Spanish).
 2. Do **not** add the phase to the control until you close it. When you close
    it, add a row in `docs/fases/estado_fases.csv` with the finding and the
    amendments. Then increase the README version to `0.<fase>`.
+3. In the same PR, update all the documentation and the infographics in the four
+   languages. Make the captures again with
+   `scripts/capturar_infografia.py --todas`. The `cierre` gate checks this.

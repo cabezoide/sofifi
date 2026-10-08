@@ -10,16 +10,16 @@ SOFIFI es un pedal de guitarra ambient de código abierto. Funciona en una FPGA
 **Sipeed Tang Primer 25K** (Gowin GW5A-LV25). Cada efecto es un programa de
 texto que ejecuta un núcleo DSP propio.
 
-**Versión:** `0.6` (la versión es la última fase cerrada; ver `docs/fases/estado_fases.csv`).
+**Versión:** `0.7` (la versión es la última fase cerrada; ver `docs/fases/estado_fases.csv`).
 
 ## Estado
 
 | Qué | Estado |
 |---|---|
-| Biblioteca | **43 programas y 344 presets** en 7 familias (Fase 06) |
-| Igualdad con el modelo | los 43 programas dan en el RTL los mismos bits que el modelo (simulación) |
-| Placa | el plate da en el silicio, a 100 MHz, los mismos bits que el modelo (Fase 05) |
-| Siguiente | micro-looper y granular (Fase 07) |
+| Biblioteca | **45 programas y 360 presets** en 8 familias (Fase 07) |
+| Igualdad con el modelo | los 45 programas dan en el RTL los mismos bits que el modelo (simulación) |
+| Placa | el plate y el looper dan en el silicio los mismos bits que el modelo, de 100 a 125 MHz (Fase 07) |
+| Siguiente | carga de programas desde la microSD (Fase 08) |
 | Audio con guitarra | **todavía no**: falta el códec I2S (Fase 11) |
 
 ## Escuchar los efectos sin hardware
@@ -49,7 +49,8 @@ texto que ejecuta un núcleo DSP propio.
 | Pitch | octava, armonizador, doblador, escalera |
 | Dinámica | compresor, puerta, swell |
 | Filtro | autowah, filtro, ancho |
-| Textura | saturacion, lofi, ringmod |
+| Textura | saturacion, lofi, ringmod, granular |
+| Looper | looper |
 
 `docs/programas.md` dice qué hace cada programa, qué mandos tiene y cuánto
 cuesta. Lo genera `sofifi catalogo`.
@@ -62,6 +63,9 @@ cuesta. Lo genera `sofifi catalogo`.
 - **Todo el audio en la BSRAM de la FPGA:** 43 008 palabras, unos 0,88 s. La
   microSD guarda presets y grabaciones, pero no sirve de memoria de retardo,
   porque tiene picos de escritura de 250 ms (ADR 0004).
+- **Looper y granular:** una región de 32 768 palabras (0,67 s) con direcciones
+  absolutas, que el puntero circular no mueve. La leen y escriben `RDAA` y
+  `WRAA` (ADR 0009). Con la SDRAM llegarán loops más largos.
 - **fs = 48 828 Hz:** un reloj de 100 MHz da 2 048 ciclos exactos por muestra (ADR 0005).
 - **Modelo de referencia bit-exact en Python.** El RTL debe dar los mismos bits
   que el modelo, muestra a muestra (ADR 0003).
@@ -123,14 +127,14 @@ Si falta una herramienta, la compuerta lo dice (`NO CORRIÓ`). No da un verde fa
 Las fases que necesitan el hardware que falta van al final (09 a 12). Hasta la
 Fase 08 bastan la placa y la microSD.
 
-![Las 13 fases: 7 cerradas, la siguiente y las que esperan hardware](docs/img/ruta.png)
+![Las 13 fases: 8 cerradas, la siguiente y las que esperan hardware](docs/img/ruta.png)
 
 ## Documentación
 
 | Documento | Qué contiene |
 |---|---|
-| `docs/programas.md` | los 43 programas: qué hacen, mandos, presets y coste |
-| `presets/banco.toml` | los 344 presets |
+| `docs/programas.md` | los 45 programas: qué hacen, mandos, presets y coste |
+| `presets/banco.toml` | los 360 presets |
 | `docs/arquitectura_fpga.md` | la arquitectura del FPGA y cómo cambia en cada fase |
 | `schematics/` | un esquemático PDF de cada módulo RTL, generado desde el Verilog |
 | `docs/EXTENDING.md` | cómo añadir un efecto, una instrucción, un módulo RTL o una compuerta |

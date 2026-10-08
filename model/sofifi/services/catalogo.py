@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from sofifi.domain.aritmetica import CICLOS_POR_MUESTRA
 from sofifi.domain.coste import ciclos_rtl
 from sofifi.domain.isa import Programa
-from sofifi.domain.memoria import PALABRAS_MAX
+from sofifi.domain.memoria import PALABRAS_ABSOLUTAS, PALABRAS_MAX
 from sofifi.services.catalogo_textos import FAMILIAS, IDIOMAS, MANDOS, TEXTOS
 
 RUTA_CATALOGO = "docs/programas.md"
@@ -62,7 +62,8 @@ def ficha(nombre: str, texto: str, programa: Programa) -> Ficha:
         tuple(f"{k}: {mandos[k]}" for k in sorted(mandos)),
         len(programa.instrucciones),
         ciclos_rtl(programa),
-        programa.palabras_memoria,
+        # La región absoluta (RDAA, WRAA) también es memoria del programa.
+        programa.palabras_memoria + (PALABRAS_ABSOLUTAS if programa.usa_absoluta else 0),
         tuple((i, campos[f"resumen.{i}"]) for i in IDIOMAS[1:] if f"resumen.{i}" in campos),
     )
 

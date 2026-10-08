@@ -29,6 +29,7 @@ JOBS=(
   "adr-gate:dura"
   "docs:dura"
   "i18n:dura"
+  "cierre:dura"
   "model:dura"
   "rtl-lint:dura"
   "sim:dura"
@@ -67,6 +68,7 @@ run_job() {
     adr-gate)   scripts/check_adr_gate.sh ;;
     docs)       "$PY" scripts/check_docs.py ;;
     i18n)       "$PY" scripts/check_i18n.py ;;
+    cierre)     "$PY" scripts/check_cierre.py ;;
     model)
       "$PY" -m ruff check model scripts \
         && "$PY" -m ruff format --check model scripts \

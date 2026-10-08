@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=f757a6b610fc estado=al_dia -->
+<!-- i18n: fuente=README.md sha=f9d5cc7f0c1e estado=al_dia -->
 # SOFIFI — 集成 FPGA 上的沉浸式波形与滤波合成器
 
 *英文名：Soundscapes On FPGA: Integrated Filters & Impulses；西班牙文名：Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada。*
@@ -10,16 +10,16 @@
 SOFIFI 是一款开源的氛围（ambient）吉他效果器，运行在 **Sipeed Tang Primer 25K**
 FPGA（高云 GW5A-LV25）上。每个效果都是一个文本程序，由自研的 DSP 核心执行。
 
-**版本：** `0.6`（版本号即最后一个已关闭的阶段；见 `docs/fases/estado_fases.csv`）。
+**版本：** `0.7`（版本号即最后一个已关闭的阶段；见 `docs/fases/estado_fases.csv`）。
 
 ## 状态
 
 | 项目 | 状态 |
 |---|---|
-| 程序库 | 7 个类别中共 **43 个程序与 344 个预设**（阶段 06） |
-| 与模型一致 | 43 个程序在 RTL 中的输出与模型逐位一致（仿真） |
-| 开发板 | plate 在芯片上以 100 MHz 运行，输出与模型逐位一致（阶段 05） |
-| 下一步 | 微型循环器与颗粒引擎（阶段 07） |
+| 程序库 | 8 个类别中共 **45 个程序与 360 个预设**（阶段 07） |
+| 与模型一致 | 45 个程序在 RTL 中的输出与模型逐位一致（仿真） |
+| 开发板 | plate 和循环器在芯片上以 100 至 125 MHz 运行，输出与模型逐位一致（阶段 07） |
+| 下一步 | 从 microSD 卡加载程序（阶段 08） |
 | 接吉他发声 | **尚未实现**：缺少 I2S 编解码器（阶段 11） |
 
 ## 无需硬件即可试听效果
@@ -47,7 +47,8 @@ FPGA（高云 GW5A-LV25）上。每个效果都是一个文本程序，由自研
 | 音高 | octava, armonizador, doblador, escalera |
 | 动态 | compresor, puerta, swell |
 | 滤波 | autowah, filtro, ancho |
-| 质感 | saturacion, lofi, ringmod |
+| 质感 | saturacion, lofi, ringmod, granular |
+| 循环器 | looper |
 
 `docs/programas.zh-CN.md` 说明每个程序的作用、旋钮和开销，由 `sofifi catalogo` 生成。
 程序名和预设名为西班牙语。
@@ -58,6 +59,8 @@ FPGA（高云 GW5A-LV25）上。每个效果都是一个文本程序，由自研
   48 位累加器和三次插值（ADR 0006）。新效果只是一个 `.sasm` 文件，RTL 无需改动。
 - **全部音频位于 FPGA 的 BSRAM 中**：43,008 个字，约 0.88 秒。microSD 卡保存预设和
   录音，但不能用作延迟存储器，因为其写入峰值可达 250 毫秒（ADR 0004）。
+- **循环器与颗粒引擎**：使用一个 32,768 字（0.67 秒）的绝对地址区域，循环指针不会移动它。
+  `RDAA` 和 `WRAA` 读写该区域（ADR 0009）。有了 SDRAM 之后，循环可以更长。
 - **fs = 48,828 Hz**：100 MHz 时钟正好为每个样本提供 2,048 个周期（ADR 0005）。
 - **Python 逐位精确参考模型**：RTL 必须逐样本给出与模型相同的位（ADR 0003）。
 - **实际开销**：每条指令在 RTL 中耗用 6 到 57 个周期。`sofifi asm` 会给出一个程序的周期数。
@@ -113,14 +116,14 @@ make esquematicos  # 重新生成 RTL 的 PDF 原理图
 
 需要缺失硬件的阶段放在最后（09 到 12）。到阶段 08 为止，开发板和 microSD 卡就够了。
 
-![13 个阶段：7 个已关闭、下一个阶段以及等待硬件的阶段](docs/img/zh-CN/ruta.png)
+![13 个阶段：8 个已关闭、下一个阶段以及等待硬件的阶段](docs/img/zh-CN/ruta.png)
 
 ## 文档
 
 | 文档 | 内容 |
 |---|---|
-| `docs/programas.zh-CN.md` | 43 个程序：作用、旋钮、预设与开销 |
-| `presets/banco.toml` | 344 个预设 |
+| `docs/programas.zh-CN.md` | 45 个程序：作用、旋钮、预设与开销 |
+| `presets/banco.toml` | 360 个预设 |
 | `docs/arquitectura_fpga.zh-CN.md` | FPGA 架构及其在各阶段的变化 |
 | `schematics/` | 每个 RTL 模块的 PDF 原理图，由 Verilog 生成 |
 | `docs/EXTENDING.zh-CN.md` | 如何添加效果、指令、RTL 模块或检查门 |

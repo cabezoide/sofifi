@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/programas.md sha=9b4d888846a3 estado=al_dia -->
+<!-- i18n: fuente=docs/programas.md sha=0d277c41ec59 estado=al_dia -->
 <!-- GENERADO por `sofifi catalogo` desde programas/*.sasm. No se edita a mano:
      model/tests/catalogo_test.py lo compara con su generador. -->
 
@@ -73,7 +73,7 @@
 
 | 程序 | 作用 | 旋钮 | 预设 | 指令数 | 周期 | 存储器 |
 |---|---|---|---|---|---|---|
-| `granular` | 4 声部颗粒云，Hann 窗、八度音高和冻结。 | 0: 时长<br>1: 扩散<br>2: 音程<br>3: 干湿比 | 8 | 188 | 1,896 | 1 |
+| `granular` | 4 声部颗粒云，Hann 窗、八度音高和冻结。 | 0: 时长<br>1: 扩散<br>2: 音程<br>3: 干湿比 | 8 | 188 | 1,896 | 32,769 |
 | `lofi` | 更少的每秒样本数和更少的位数，带混叠。 | 0: 采样率<br>1: 位数<br>2: 干湿比<br>3: 音色 | 8 | 81 | 800 | 1 |
 | `ringmod` | 环形调制器：将吉他与正弦波相乘，声音带金属感。 | 0: 频率<br>2: 干湿比 | 8 | 33 | 362 | 1 |
 | `saturacion` | 过载式饱和：从温暖的光泽到厚重的失真。 | 0: 增益<br>1: 音色<br>2: 干湿比<br>3: 电平 | 8 | 42 | 462 | 1 |
@@ -90,4 +90,4 @@
 
 | 程序 | 作用 | 旋钮 | 预设 | 指令数 | 周期 | 存储器 |
 |---|---|---|---|---|---|---|
-| `looper` | 0.67 秒微型循环器，带叠录、½×、2× 和反向。 | 0: 电平<br>1: 速度<br>2: 方向<br>3: 反馈 | 8 | 85 | 809 | 1 |
+| `looper` | 0.67 秒微型循环器，带叠录、½×、2× 和反向。 | 0: 电平<br>1: 速度<br>2: 方向<br>3: 反馈 | 8 | 85 | 809 | 32,769 |

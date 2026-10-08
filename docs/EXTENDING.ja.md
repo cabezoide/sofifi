@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/EXTENDING.md sha=c1cf8814ec31 estado=al_dia -->
+<!-- i18n: fuente=docs/EXTENDING.md sha=a578f7b153a1 estado=al_dia -->
 # 拡張の方法
 
 部品の種類ごとの手順です。何かを追加するときにこのリストにない箇所を変更する必要があれば、リストが不完全です。同じ PR で修正してください。
@@ -52,3 +52,4 @@
 
 1. `docs/fases/` に、固定のセクションを持つ仕様を書いてください（SPEC_RAIZ §2.5（スペイン語））。
 2. フェーズを閉じるまで、管理対象に追加**しない**でください。閉じるときは、`docs/fases/estado_fases.csv` に発見事項と修正を記した行を追加し、README のバージョンを `0.<fase>` に上げます。
+3. 同じ PR で、すべてのドキュメントとインフォグラフィックを 4 言語で更新します。`scripts/capturar_infografia.py --todas` でキャプチャを作り直します。`cierre` ゲートがこれを確認します。

@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/infografias/sofifi.html sha=c57c04346d12 estado=al_dia -->
+<!-- i18n: fuente=docs/infografias/sofifi.html sha=bedb5b700437 estado=al_dia -->
 <!-- SPDX-License-Identifier: MIT -->
 <title>SOFIFI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -163,7 +163,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 
 <header class="portada" id="portada">
   <div>
-    <div class="etiqueta">Open ambient pedal · FPGA Tang Primer 25K · version 0.6</div>
+    <div class="etiqueta">Open ambient pedal · FPGA Tang Primer 25K · version 0.7</div>
     <h1 class="marca">SOFI<span>FI</span></h1>
     <div class="subtitulo">Soundscapes On FPGA · Integrated Filters &amp; Impulses</div>
     <p class="tesis">Each effect is a <strong>program</strong>. We test each program <strong>bit by bit</strong> against a model before it touches the hardware. And the board already responds.</p>
@@ -199,12 +199,12 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
     <div class="razon fuerte">
       <span class="num">0</span>
       <h3>Bits of difference</h3>
-      <p>In simulation, the RTL gives the same output as the model, bit by bit, in all <span class="dato">43</span> programs. On the board, the plate matches in 9 of 9 captures (MED-13).</p>
+      <p>In simulation, the RTL gives the same output as the model, bit by bit, in all <span class="dato">45</span> programs. On the board, the plate (9 of 9 captures, MED-13) and the looper (MED-15) match.</p>
     </div>
     <div class="razon">
-      <span class="num">43</span>
+      <span class="num">45</span>
       <h3>Effects as text</h3>
-      <p>Reverbs, delays, modulation, pitch, dynamics, filters and texture, with <span class="dato">344</span> presets. Each effect is a <span class="dato">.sasm</span> file of <span class="dato">25</span> to <span class="dato">160</span> instructions. A new effect does not touch the hardware.</p>
+      <p>Reverbs, delays, modulation, pitch, dynamics, filters, texture and looper, with <span class="dato">360</span> presets. Each effect is a <span class="dato">.sasm</span> file of <span class="dato">25</span> to <span class="dato">188</span> instructions. A new effect does not touch the hardware.</p>
     </div>
     <div class="razon">
       <span class="num">MIT</span>
@@ -221,7 +221,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
         <tr><td>Sample rate</td><td class="gana">48,828 Hz</td><td>approximately 32 kHz</td></tr>
         <tr><td>Delay memory</td><td>43,008 words, 0.88 s</td><td class="gana">32,768 words, approximately 1 s</td></tr>
         <tr><td>You can read the inside</td><td class="gana">yes: model, RTL and tests</td><td>no: closed chip; the programs, yes</td></tr>
-        <tr><td>Program library</td><td>43 own programs and 344 presets</td><td class="gana">the Spin library and the community library, with a visual editor (SpinCAD)</td></tr>
+        <tr><td>Program library</td><td>45 own programs and 360 presets</td><td class="gana">the Spin library and the community library, with a visual editor (SpinCAD)</td></tr>
         <tr><td>Ready to play</td><td>not yet</td><td class="gana">yes, in many pedals</td></tr>
       </tbody>
     </table>
@@ -241,7 +241,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
     <div class="eslabon"><h3>Limiter</h3><p>Fixed in RTL. No program can bypass it.</p></div>
     <div class="eslabon"><h3>Output</h3><p>I2S DAC (PCM5102A)</p></div>
   </div>
-  <p class="cola">The microSD keeps the programs. It is not the delay memory, because it has write peaks of 250 ms (ADR 0004). The audio lives in the FPGA BSRAM: <span class="dato laton">43,008</span> words, approximately <span class="dato laton">0.88 s</span>.</p>
+  <p class="cola">The microSD keeps the programs. It is not the delay memory, because it has write peaks of 250 ms (ADR 0004). The audio lives in the FPGA BSRAM: <span class="dato laton">43,008</span> words, approximately <span class="dato laton">0.88 s</span>. The looper and the granular use <span class="dato laton">32,768</span> with absolute addresses: a loop does not move away (ADR 0009).</p>
 
   <div class="tabla-caja">
     <table>
@@ -253,7 +253,8 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
         <tr><td>Pitch</td><td>4</td><td>escalera · rising echo</td><td>799</td><td><div class="barra" aria-label="39 %"><i style="width:39%"></i></div></td></tr>
         <tr><td>Dynamics</td><td>3</td><td>compresor</td><td>596</td><td><div class="barra" aria-label="29 %"><i style="width:29%"></i></div></td></tr>
         <tr><td>Filter</td><td>3</td><td>autowah</td><td>464</td><td><div class="barra" aria-label="23 %"><i style="width:23%"></i></div></td></tr>
-        <tr><td>Texture</td><td>3</td><td>lofi · 7 to 24 bit</td><td>800</td><td><div class="barra" aria-label="39 %"><i style="width:39%"></i></div></td></tr>
+        <tr><td>Texture</td><td>4</td><td>granular · 4 grains</td><td>1,896</td><td><div class="barra" aria-label="93 %"><i style="width:93%"></i></div></td></tr>
+        <tr><td>Looper</td><td>1</td><td>looper · 0.67 s, overdub</td><td>809</td><td><div class="barra" aria-label="40 %"><i style="width:40%"></i></div></td></tr>
       </tbody>
     </table>
   </div>
@@ -275,11 +276,11 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
     </div>
     <div class="cifras">
       <div class="cifra"><b>9 of 9</b><span>plate captures equal to the model, bit by bit, on the silicon at 100 MHz (MED-13).</span></div>
-      <div class="cifra"><b>120 MHz</b><span>with no errors on the board (4 of 4): a 20 % margin above the 100 MHz working clock (MED-14).</span></div>
+      <div class="cifra"><b>125 MHz</b><span>with no errors on the board (3 of 3): a 25 % margin above the 100 MHz working clock (MED-14).</span></div>
     </div>
   </div>
   <div class="reglas">
-    <div class="regla"><h3>10 hard gates</h3><p>They run before each push. If one fails, the push does not go out (ADR 0001).</p></div>
+    <div class="regla"><h3>11 hard gates</h3><p>They run before each push. If one fails, the push does not go out (ADR 0001).</p></div>
     <div class="regla"><h3>Second pass</h3><p>Each PR gets an optimization review with resource ratchets (ADR 0010).</p></div>
     <div class="regla"><h3>Tested primitives</h3><p>DSP 27×18, 42 BSRAM blocks and a 100 MHz PLL, verified on the board with Yosys, nextpnr and apicula (MED-06 to MED-08).</p></div>
   </div>
@@ -288,7 +289,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 <section id="ruta">
   <div class="cabeza">
     <div class="etiqueta">The tour</div>
-    <h2>13 phases. 7 closed. The missing parts come last.</h2>
+    <h2>13 phases. 8 closed. The missing parts come last.</h2>
     <p>Up to Phase 08, the board and the microSD are sufficient. The hardware that is not available today waits for phases 09 to 12.</p>
   </div>
   <ol class="ruta">
@@ -299,8 +300,8 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
     <li class="fase cerrada"><span class="n">04</span><span class="t">DSP core in RTL</span><span class="h">closed</span></li>
     <li class="fase cerrada"><span class="n">05</span><span class="t">Core verified through UART</span><span class="h">closed</span></li>
     <li class="fase cerrada"><span class="n">06</span><span class="t">Program library</span><span class="h">closed</span></li>
-    <li class="fase siguiente"><span class="n">07</span><span class="t">Micro-looper and granular</span><span class="h">next</span></li>
-    <li class="fase"><span class="n">08</span><span class="t">Load from the microSD</span><span class="h">PMOD TF</span></li>
+    <li class="fase cerrada"><span class="n">07</span><span class="t">Micro-looper and granular</span><span class="h">closed</span></li>
+    <li class="fase siguiente"><span class="n">08</span><span class="t">Load from the microSD</span><span class="h">next</span></li>
     <li class="fase falta"><span class="n">09</span><span class="t">Physical controls</span><span class="h">needs MCP3208</span></li>
     <li class="fase falta"><span class="n">10</span><span class="t">Four-language OLED interface</span><span class="h">needs OLED</span></li>
     <li class="fase falta"><span class="n">11</span><span class="t">I2S audio</span><span class="h">needs codec</span></li>
@@ -310,7 +311,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 </section>
 
 <footer>
-  Figures counted on the repository on 2026-10-07: programs, presets, instructions and cycles with <span class="dato">sofifi catalogo</span> (<span class="dato">docs/programas.en.md</span>); captures and margin on the board, MED-13 and MED-14 (<span class="dato">docs/mediciones.yaml</span>); UART output with <span class="dato">scripts/leer_uart.py</span> (MED-03); primitives with <span class="dato">scripts/verificar_primitivas.py</span> (MED-06 to MED-08); phases from <span class="dato">docs/fases/</span>. "Why choose SOFIFI?": RTL-model equality from <span class="dato">sim/nucleo/nucleo_test.py</span> and MED-13; FV-1 data from <span class="dato">docs/investigacion/INVESTIGACION.md</span> [V]. Public and technical documentation in Spanish, English, Simplified Chinese and Japanese; the OLED interface will have the same four languages in Phase 10 (ADR 0007). MIT license.
+  Figures counted on the repository on 2026-10-08: programs, presets, instructions and cycles with <span class="dato">sofifi catalogo</span> (<span class="dato">docs/programas.en.md</span>); captures and margin on the board, MED-13 to MED-15 (<span class="dato">docs/mediciones.yaml</span>); UART output with <span class="dato">scripts/leer_uart.py</span> (MED-03); primitives with <span class="dato">scripts/verificar_primitivas.py</span> (MED-06 to MED-08); phases from <span class="dato">docs/fases/</span>. "Why choose SOFIFI?": RTL-model equality from <span class="dato">sim/nucleo/nucleo_test.py</span> and MED-13; FV-1 data from <span class="dato">docs/investigacion/INVESTIGACION.md</span> [V]. Public and technical documentation in Spanish, English, Simplified Chinese and Japanese; the OLED interface will have the same four languages in Phase 10 (ADR 0007). MIT license.
 </footer>
 
 </div>

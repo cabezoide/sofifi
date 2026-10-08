@@ -72,7 +72,7 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 
 | Programa | Qué hace | Mandos | Presets | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|---|
-| `granular` | Nube granular de 4 voces con ventana Hann, pitch en octavas y freeze. | 0: duración<br>1: difusión<br>2: intervalo<br>3: mezcla | 8 | 188 | 1 896 | 1 |
+| `granular` | Nube granular de 4 voces con ventana Hann, pitch en octavas y freeze. | 0: duración<br>1: difusión<br>2: intervalo<br>3: mezcla | 8 | 188 | 1 896 | 32 769 |
 | `lofi` | Menos muestras por segundo y menos bits, con aliasing. | 0: muestreo<br>1: bits<br>2: mezcla<br>3: tono | 8 | 81 | 800 | 1 |
 | `ringmod` | Modulador en anillo: multiplica la guitarra por un seno; suena metálico. | 0: frecuencia<br>2: mezcla | 8 | 33 | 362 | 1 |
 | `saturacion` | Saturación tipo overdrive: de un brillo cálido a una distorsión espesa. | 0: ganancia<br>1: tono<br>2: mezcla<br>3: nivel | 8 | 42 | 462 | 1 |
@@ -89,4 +89,4 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 
 | Programa | Qué hace | Mandos | Presets | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|---|
-| `looper` | Micro-looper de 0,67 s con overdub, ½×, 2× y reverse. | 0: nivel<br>1: velocidad<br>2: sentido<br>3: realimentación | 8 | 85 | 809 | 1 |
+| `looper` | Micro-looper de 0,67 s con overdub, ½×, 2× y reverse. | 0: nivel<br>1: velocidad<br>2: sentido<br>3: realimentación | 8 | 85 | 809 | 32 769 |

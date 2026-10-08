@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=f757a6b610fc estado=al_dia -->
+<!-- i18n: fuente=README.md sha=f9d5cc7f0c1e estado=al_dia -->
 # SOFIFI — FPGA 上のイマーシブな波形とフィルターのシンセサイザー
 
 *英語名: Soundscapes On FPGA: Integrated Filters & Impulses。スペイン語名: Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada。*
@@ -11,16 +11,16 @@ SOFIFI はオープンソースのアンビエント・ギター・ペダルで�
 FPGA（Gowin GW5A-LV25）で動作します。各エフェクトはテキストのプログラムで、独自の
 DSP コアが実行します。
 
-**バージョン:** `0.6`（バージョンは最後に完了したフェーズです。`docs/fases/estado_fases.csv` を参照）。
+**バージョン:** `0.7`（バージョンは最後に完了したフェーズです。`docs/fases/estado_fases.csv` を参照）。
 
 ## 状況
 
 | 項目 | 状況 |
 |---|---|
-| ライブラリ | 7 つのファミリーに **43 のプログラムと 344 のプリセット**（フェーズ 06） |
-| モデルとの一致 | 43 のプログラムすべてが、RTL でモデルと同じビットを出力（シミュレーション） |
-| ボード | plate はシリコン上の 100 MHz でモデルと同じビットを出力（フェーズ 05） |
-| 次の作業 | マイクロルーパーとグラニュラー（フェーズ 07） |
+| ライブラリ | 8 つのファミリーに **45 のプログラムと 360 のプリセット**（フェーズ 07） |
+| モデルとの一致 | 45 のプログラムすべてが、RTL でモデルと同じビットを出力（シミュレーション） |
+| ボード | plate と looper はシリコン上の 100〜125 MHz でモデルと同じビットを出力（フェーズ 07） |
+| 次の作業 | microSD からのプログラムの読み込み（フェーズ 08） |
 | ギターでの音出し | **まだできません**：I2S コーデックがありません（フェーズ 11） |
 
 ## ハードウェアなしでエフェクトを聴く
@@ -48,7 +48,8 @@ DSP コアが実行します。
 | ピッチ | octava, armonizador, doblador, escalera |
 | ダイナミクス | compresor, puerta, swell |
 | フィルター | autowah, filtro, ancho |
-| テクスチャー | saturacion, lofi, ringmod |
+| テクスチャー | saturacion, lofi, ringmod, granular |
+| ルーパー | looper |
 
 `docs/programas.ja.md` に、各プログラムの働き、ノブ、コストがあります。`sofifi catalogo`
 が生成します。プログラム名とプリセット名はスペイン語です。
@@ -60,6 +61,8 @@ DSP コアが実行します。
   ファイル 1 つで、RTL は変わりません。
 - **すべての音声は FPGA の BSRAM に**：43,008 ワード、約 0.88 秒。microSD カードはプリセットと
   録音を保存しますが、書き込みのピークが最大 250 ms あるため、ディレイのメモリーには使えません（ADR 0004）。
+- **ルーパーとグラニュラー**：32,768 ワード（0.67 秒）の領域を絶対アドレスで使います。循環ポインターは
+  この領域を動かしません。`RDAA` と `WRAA` がこの領域を読み書きします（ADR 0009）。SDRAM があれば、より長いループが可能になります。
 - **fs = 48,828 Hz**：100 MHz のクロックで、1 サンプルあたりちょうど 2,048 サイクル（ADR 0005）。
 - **Python のビット精度の参照モデル**：RTL はサンプルごとにモデルと同じビットを出さなければなりません（ADR 0003）。
 - **実際のコスト**：各命令は RTL で 6〜57 サイクルを使います。`sofifi asm` がプログラムのサイクル数を出します。
@@ -117,14 +120,14 @@ sudo なしでボードに書き込むには、BL616 デバッガーの udev ル
 不足しているハードウェアが必要なフェーズは最後（09〜12）です。フェーズ 08 までは、ボードと
 microSD カードだけで足ります。
 
-![13 のフェーズ：完了 7、次のフェーズ、ハードウェア待ちのフェーズ](docs/img/ja/ruta.png)
+![13 のフェーズ：完了 8、次のフェーズ、ハードウェア待ちのフェーズ](docs/img/ja/ruta.png)
 
 ## ドキュメント
 
 | ドキュメント | 内容 |
 |---|---|
-| `docs/programas.ja.md` | 43 のプログラム：働き、ノブ、プリセット、コスト |
-| `presets/banco.toml` | 344 のプリセット |
+| `docs/programas.ja.md` | 45 のプログラム：働き、ノブ、プリセット、コスト |
+| `presets/banco.toml` | 360 のプリセット |
 | `docs/arquitectura_fpga.ja.md` | FPGA のアーキテクチャと、フェーズごとの変化 |
 | `schematics/` | 各 RTL モジュールの PDF 回路図。Verilog から生成 |
 | `docs/EXTENDING.ja.md` | エフェクト、命令、RTL モジュール、ゲートの追加方法 |

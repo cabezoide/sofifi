@@ -1,4 +1,4 @@
-<!-- i18n: fuente=SBOM.md sha=624d35b0074e estado=al_dia -->
+<!-- i18n: fuente=SBOM.md sha=97290156d6e3 estado=al_dia -->
 # SBOM · SOFIFI components
 
 This document tells which parts make the pedal inside and which tools build it. Each part has a simple explanation: what it does and what it gives to the system. The technical details (resources, latencies, history by phase) are in `docs/arquitectura_fpga.en.md`.
@@ -26,7 +26,7 @@ The FPGA contains a **small custom audio processor** (the core). Each effect (pl
 | **Multiplier** (DSP block) | Multiplies two numbers in one step. | Almost all audio operations are multiplications: volume, filters, mixes. |
 | **ALU** | Adds, compares and saturates (prevents overflow of the sound). | Combines the results and keeps them in the accumulator. |
 | **Accumulator (ACC)** | A 48-bit register that adds the products. | High precision: it prevents rounding noise in long tails. |
-| **Delay memory** (BSRAM) | Keeps the audio of the last ~0.9 s, like a tape loop. It has groups of blocks, and each group has its own copy of the address. | It is the base of all reverbs and delays: you hear the past of the sound. The groups give timing margin on the real chip. |
+| **Delay memory** (BSRAM) | Keeps the audio of the last ~0.9 s, like a tape loop. It has groups of blocks, and each group has its own copy of the address. With `RDAA` and `WRAA`, 32,768 words work as a fixed tape: the recorded audio does not move away. | It is the base of all reverbs and delays: you hear the past of the sound. The groups give timing margin on the real chip. The fixed part makes the looper and the granular possible. |
 | **LFO ×4** | Slow oscillators (sine, random, ramp). | They move the read positions in the memory: chorus, reverb modulation and the pitch shift of the shimmer. |
 | **Hermite ROM** | Fixed table of 256 × 4 coefficients. | Lets the core read the memory "between samples" without noise: smooth modulation. |
 | **Soft curve** | A cubic saturation, without hard edges. | Limits the sound in a musical way (`CLIP`) and gives shape to the sine LFO. |

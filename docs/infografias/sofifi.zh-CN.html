@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/infografias/sofifi.html sha=c57c04346d12 estado=al_dia -->
+<!-- i18n: fuente=docs/infografias/sofifi.html sha=bedb5b700437 estado=al_dia -->
 <!-- SPDX-License-Identifier: MIT -->
 <title>SOFIFI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -163,7 +163,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 
 <header class="portada" id="portada">
   <div>
-    <div class="etiqueta">开源氛围效果器 · FPGA Tang Primer 25K · 版本 0.6</div>
+    <div class="etiqueta">开源氛围效果器 · FPGA Tang Primer 25K · 版本 0.7</div>
     <h1 class="marca">SOFI<span>FI</span></h1>
     <div class="subtitulo">Soundscapes On FPGA · Integrated Filters &amp; Impulses</div>
     <p class="tesis">每个效果都是一个<strong>程序</strong>。每个程序在接触硬件之前，都与模型<strong>逐位</strong>比对。开发板已经有了回应。</p>
@@ -199,12 +199,12 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
     <div class="razon fuerte">
       <span class="num">0</span>
       <h3>位差异</h3>
-      <p>在仿真中，全部 <span class="dato">43</span> 个程序的 RTL 输出与模型逐位相同。在开发板上，plate 的 9 次捕获全部一致（MED-13）。</p>
+      <p>在仿真中，全部 <span class="dato">45</span> 个程序的 RTL 输出与模型逐位相同。在开发板上，plate（9 次捕获全部一致，MED-13）和循环器（MED-15）都一致。</p>
     </div>
     <div class="razon">
-      <span class="num">43</span>
+      <span class="num">45</span>
       <h3>文本形式的效果</h3>
-      <p>混响、延迟、调制、音高、动态、滤波和质感，共 <span class="dato">344</span> 个预设。每个效果是一个 <span class="dato">.sasm</span> 文件，含 <span class="dato">25</span> 到 <span class="dato">160</span> 条指令。新增效果无需改动硬件。</p>
+      <p>混响、延迟、调制、音高、动态、滤波、质感和循环器，共 <span class="dato">360</span> 个预设。每个效果是一个 <span class="dato">.sasm</span> 文件，含 <span class="dato">25</span> 到 <span class="dato">188</span> 条指令。新增效果无需改动硬件。</p>
     </div>
     <div class="razon">
       <span class="num">MIT</span>
@@ -221,7 +221,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
         <tr><td>采样率</td><td class="gana">48,828 Hz</td><td>约 32 kHz</td></tr>
         <tr><td>延迟存储器</td><td>43,008 字，0.88 s</td><td class="gana">32,768 字，约 1 s</td></tr>
         <tr><td>内部可读</td><td class="gana">是：模型、RTL 和测试</td><td>否：芯片封闭；程序可读</td></tr>
-        <tr><td>程序库</td><td>43 个自有程序和 344 个预设</td><td class="gana">Spin 官方库和社区库，带可视化编辑器（SpinCAD）</td></tr>
+        <tr><td>程序库</td><td>45 个自有程序和 360 个预设</td><td class="gana">Spin 官方库和社区库，带可视化编辑器（SpinCAD）</td></tr>
         <tr><td>即插即弹</td><td>尚未</td><td class="gana">是，许多效果器已采用</td></tr>
       </tbody>
     </table>
@@ -241,7 +241,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
     <div class="eslabon"><h3>限幅器</h3><p>固化在 RTL 中。任何程序都无法绕过。</p></div>
     <div class="eslabon"><h3>输出</h3><p>I2S DAC（PCM5102A）</p></div>
   </div>
-  <p class="cola">microSD 存储程序。它不用作延迟存储器，因为它有 250 ms 的写入峰值（ADR 0004）。音频存放在 FPGA 的 BSRAM 中：<span class="dato laton">43,008</span> 字，约 <span class="dato laton">0.88 s</span>。</p>
+  <p class="cola">microSD 存储程序。它不用作延迟存储器，因为它有 250 ms 的写入峰值（ADR 0004）。音频存放在 FPGA 的 BSRAM 中：<span class="dato laton">43,008</span> 字，约 <span class="dato laton">0.88 s</span>。循环器和颗粒合成使用其中 <span class="dato laton">32,768</span> 字，采用绝对地址：循环不会漂移（ADR 0009）。</p>
 
   <div class="tabla-caja">
     <table>
@@ -253,7 +253,8 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
         <tr><td>音高</td><td>4</td><td>escalera · 上行回声</td><td>799</td><td><div class="barra" aria-label="39 %"><i style="width:39%"></i></div></td></tr>
         <tr><td>动态</td><td>3</td><td>compresor</td><td>596</td><td><div class="barra" aria-label="29 %"><i style="width:29%"></i></div></td></tr>
         <tr><td>滤波</td><td>3</td><td>autowah</td><td>464</td><td><div class="barra" aria-label="23 %"><i style="width:23%"></i></div></td></tr>
-        <tr><td>质感</td><td>3</td><td>lofi · 7 至 24 位</td><td>800</td><td><div class="barra" aria-label="39 %"><i style="width:39%"></i></div></td></tr>
+        <tr><td>质感</td><td>4</td><td>granular · 4 个颗粒</td><td>1,896</td><td><div class="barra" aria-label="93 %"><i style="width:93%"></i></div></td></tr>
+        <tr><td>循环器</td><td>1</td><td>looper · 0.67 s，叠录</td><td>809</td><td><div class="barra" aria-label="40 %"><i style="width:40%"></i></div></td></tr>
       </tbody>
     </table>
   </div>
@@ -275,11 +276,11 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
     </div>
     <div class="cifras">
       <div class="cifra"><b>9 / 9</b><span>次 plate 捕获在 100 MHz 的芯片上与模型逐位相同（MED-13）。</span></div>
-      <div class="cifra"><b>120 MHz</b><span>在开发板上无错误（4 / 4）：比 100 MHz 工作频率高出 20 % 的余量（MED-14）。</span></div>
+      <div class="cifra"><b>125 MHz</b><span>在开发板上无错误（3 / 3）：比 100 MHz 工作频率高出 25 % 的余量（MED-14）。</span></div>
     </div>
   </div>
   <div class="reglas">
-    <div class="regla"><h3>10 道硬检查门</h3><p>每次 push 前运行。只要有一道失败，push 就不会发出（ADR 0001）。</p></div>
+    <div class="regla"><h3>11 道硬检查门</h3><p>每次 push 前运行。只要有一道失败，push 就不会发出（ADR 0001）。</p></div>
     <div class="regla"><h3>第二轮</h3><p>每个 PR 都要通过一次带资源棘轮的优化审查（ADR 0010）。</p></div>
     <div class="regla"><h3>原语已验证</h3><p>DSP 27×18、42 个 BSRAM 块和 100 MHz PLL，已在开发板上用 Yosys、nextpnr 和 apicula 验证（MED-06 至 MED-08）。</p></div>
   </div>
@@ -288,7 +289,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 <section id="ruta">
   <div class="cabeza">
     <div class="etiqueta">巡演路线</div>
-    <h2>13 个阶段。7 个已完成。缺的放在最后。</h2>
+    <h2>13 个阶段。8 个已完成。缺的放在最后。</h2>
     <p>在阶段 08 之前，开发板和 microSD 就足够了。目前买不到的硬件留给阶段 09 至 12。</p>
   </div>
   <ol class="ruta">
@@ -299,8 +300,8 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
     <li class="fase cerrada"><span class="n">04</span><span class="t">RTL 中的 DSP 核心</span><span class="h">已完成</span></li>
     <li class="fase cerrada"><span class="n">05</span><span class="t">通过 UART 验证的核心</span><span class="h">已完成</span></li>
     <li class="fase cerrada"><span class="n">06</span><span class="t">程序库</span><span class="h">已完成</span></li>
-    <li class="fase siguiente"><span class="n">07</span><span class="t">微型循环器和颗粒合成</span><span class="h">下一个</span></li>
-    <li class="fase"><span class="n">08</span><span class="t">从 microSD 加载</span><span class="h">PMOD TF</span></li>
+    <li class="fase cerrada"><span class="n">07</span><span class="t">微型循环器和颗粒合成</span><span class="h">已完成</span></li>
+    <li class="fase siguiente"><span class="n">08</span><span class="t">从 microSD 加载</span><span class="h">下一个</span></li>
     <li class="fase falta"><span class="n">09</span><span class="t">实体控件</span><span class="h">缺 MCP3208</span></li>
     <li class="fase falta"><span class="n">10</span><span class="t">四语 OLED 界面</span><span class="h">缺 OLED</span></li>
     <li class="fase falta"><span class="n">11</span><span class="t">I2S 音频</span><span class="h">缺编解码器</span></li>
@@ -310,7 +311,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 </section>
 
 <footer>
-  数据于 2026-10-07 在仓库中统计：程序、预设、指令和周期来自 <span class="dato">sofifi catalogo</span>（<span class="dato">docs/programas.zh-CN.md</span>）；开发板上的捕获和余量来自 MED-13 和 MED-14（<span class="dato">docs/mediciones.yaml</span>）；UART 输出来自 <span class="dato">scripts/leer_uart.py</span>（MED-03）；原语来自 <span class="dato">scripts/verificar_primitivas.py</span>（MED-06 至 MED-08）；阶段来自 <span class="dato">docs/fases/</span>。「为什么选择 SOFIFI？」：RTL 与模型的一致性来自 <span class="dato">sim/nucleo/nucleo_test.py</span> 和 MED-13；FV-1 数据来自 <span class="dato">docs/investigacion/INVESTIGACION.md</span> [V]。公开文档与技术文档提供西班牙语、英语、简体中文和日语版本；OLED 界面将在阶段 10 实现同样的四种语言（ADR 0007）。MIT 许可证。
+  数据于 2026-10-08 在仓库中统计：程序、预设、指令和周期来自 <span class="dato">sofifi catalogo</span>（<span class="dato">docs/programas.zh-CN.md</span>）；开发板上的捕获和余量来自 MED-13 至 MED-15（<span class="dato">docs/mediciones.yaml</span>）；UART 输出来自 <span class="dato">scripts/leer_uart.py</span>（MED-03）；原语来自 <span class="dato">scripts/verificar_primitivas.py</span>（MED-06 至 MED-08）；阶段来自 <span class="dato">docs/fases/</span>。「为什么选择 SOFIFI？」：RTL 与模型的一致性来自 <span class="dato">sim/nucleo/nucleo_test.py</span> 和 MED-13；FV-1 数据来自 <span class="dato">docs/investigacion/INVESTIGACION.md</span> [V]。公开文档与技术文档提供西班牙语、英语、简体中文和日语版本；OLED 界面将在阶段 10 实现同样的四种语言（ADR 0007）。MIT 许可证。
 </footer>
 
 </div>

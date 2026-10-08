@@ -5,6 +5,11 @@ Uso::
 
     .venv/bin/python scripts/capturar_infografia.py \\
         docs/infografias/sofifi.html portada docs/img/portada.png
+    .venv/bin/python scripts/capturar_infografia.py --todas   # 3 secciones × 4 idiomas
+
+Cada captura anota en ``docs/img/capturas.json`` la huella del HTML del que
+sale. La compuerta ``cierre`` (``scripts/check_cierre.py``) la compara con la
+infografía actual.
 
 La sección es el ``id`` de un hijo directo de ``.envoltorio`` (``portada``,
 ``porque``, ``ruta``). Solo biblioteca estándar y chrome-headless-shell (caché
@@ -17,12 +22,18 @@ de Playwright):
 
 from __future__ import annotations
 
+import hashlib
+import json
 import re
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
+RAIZ = Path(__file__).resolve().parent.parent
+MANIFIESTO = RAIZ / "docs" / "img" / "capturas.json"
+SECCIONES = ("portada", "porque", "ruta")
+IDIOMAS = ("es", "en", "zh-CN", "ja")
 CHROME = sorted(
     Path.home().glob(".cache/ms-playwright/chromium_headless_shell-*/*/chrome-headless-shell")
 )
@@ -80,12 +91,40 @@ def capturar(html: Path, seccion: str, salida: Path) -> None:
         )
 
 
+def anotar(html: Path, salida: Path) -> None:
+    """Guarda en el manifiesto de qué HTML (y de qué versión) sale la captura."""
+    manifiesto = json.loads(MANIFIESTO.read_text(encoding="utf-8")) if MANIFIESTO.is_file() else {}
+    clave = salida.resolve().relative_to(RAIZ).as_posix()
+    manifiesto[clave] = {
+        "html": html.resolve().relative_to(RAIZ).as_posix(),
+        "sha": hashlib.sha256(html.read_bytes()).hexdigest()[:12],
+    }
+    texto = json.dumps(dict(sorted(manifiesto.items())), ensure_ascii=False, indent=2)
+    MANIFIESTO.write_text(texto + "\n", encoding="utf-8")
+
+
+def todas() -> list[tuple[Path, str, Path]]:
+    trabajos = []
+    for idioma in IDIOMAS:
+        sufijo = "" if idioma == "es" else f".{idioma}"
+        carpeta = RAIZ / "docs" / "img" / ("" if idioma == "es" else idioma)
+        html = RAIZ / "docs" / "infografias" / f"sofifi{sufijo}.html"
+        trabajos += [(html, s, carpeta / f"{s}.png") for s in SECCIONES]
+    return trabajos
+
+
 def main() -> int:
-    if len(sys.argv) != 4 or not CHROME:
+    if sys.argv[1:] == ["--todas"] and CHROME:
+        trabajos = todas()
+    elif len(sys.argv) == 4 and CHROME:
+        trabajos = [(Path(sys.argv[1]), sys.argv[2], Path(sys.argv[3]))]
+    else:
         print(__doc__, file=sys.stderr)
         return 1
-    capturar(Path(sys.argv[1]), sys.argv[2], Path(sys.argv[3]))
-    print(f"{sys.argv[2]} → {sys.argv[3]}")
+    for html, seccion, salida in trabajos:
+        capturar(html, seccion, salida)
+        anotar(html, salida)
+        print(f"{seccion} → {salida.resolve().relative_to(RAIZ)}")
     return 0
 
 

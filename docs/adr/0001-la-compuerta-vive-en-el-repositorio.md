@@ -100,3 +100,21 @@ La persona propietaria elige comprimir las demos. Pasan de WAV a **Ogg Vorbis**:
 El trabajo `model` corre `pytest -n auto` (`pytest-xdist`, MIT). La biblioteca de programas va a crecer a unos 40, y cada programa añade unos segundos de pruebas acústicas. En serie, la suite del modelo tardaba unos 50 s con 9 programas; en paralelo, 18 s en 8 núcleos. La cobertura se sigue midiendo.
 
 El trabajo `sim` corre `pytest sim -n 4`. La prueba del núcleo se parte en una prueba por programa, más otra con las pruebas que no dependen del programa (reset, saltos y coste de cada instrucción). Cada proceso compila el núcleo una vez. Con 9 programas, `sim` baja de 176 s a 111 s. Con 8 procesos tarda 122 s: pesan más las compilaciones.
+
+## Actualización 2026-10-08 (compuerta de cierre de fase, Fase 07)
+
+A petición de la persona propietaria, cerrar una fase exige poner al día **toda** la documentación y **todas** las infografías en los cuatro idiomas (ADR 0007). Lo comprueba el trabajo nuevo `cierre` (`scripts/check_cierre.py`), de clase dura: solo lee ficheros y git.
+
+Siempre comprueba:
+
+1. Los README de los cuatro idiomas declaran la versión de la última fase cerrada.
+2. Las infografías `sofifi` de los cuatro idiomas declaran esa versión.
+3. Cada captura de `docs/img/` sale de la infografía actual. `scripts/capturar_infografia.py` anota la huella del HTML en `docs/img/capturas.json`.
+
+En la rama que cierra una fase (cambia `docs/fases/estado_fases.csv` respecto de `origin/main`), además:
+
+4. Ninguna traducción va `desactualizada`. Entre cierres, el estado `desactualizada` sigue permitido (ADR 0007).
+5. `docs/arquitectura_fpga.md` tiene la sección de la fase.
+6. La spec de la fase dice «Cerrada el …».
+
+La compuerta no juzga si el contenido es correcto: comprueba que nada queda atrás. Revisar el contenido sigue siendo trabajo del PR de cierre.
