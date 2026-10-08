@@ -41,7 +41,7 @@ Opción 2.
 
 - En media, los programas gastan 1,6 veces menos ciclos que con el diseño multiciclo (simulación RTL de los 51 programas y las 18 cadenas que caben). El hall baja de 1 578 a 856 ciclos.
 - La salida no cambia: es la misma del modelo bit-exact en todos los programas (ADR 0003).
-- Parejas en serie de los 51 programas que caben (ADR 0013): de 790 a 1 050 de 2 550. Las parejas que no caben por ciclos bajan de 1 474 a 315. Ahora limitan más la memoria (1 046 parejas) y los registros (904).
+- Parejas en serie de los 51 programas que caben (ADR 0013): de 790 a 1 050 de 2 550. Con los registros temporales compartidos (ADR 0013, actualización 2026-10-08), 1 312. Las parejas que no caben por ciclos bajan de 1 474 a 315. Ahora limita sobre todo la memoria (1 046 parejas): es trabajo de la SDRAM.
 - Coste en el top `hil_nucleo`: +559 LUT4 (+4,7 %) y +432 flip-flops, sobre todo por la cola y la línea de retiro.
 - El coste de una instrucción depende de las anteriores. Para ahorrar ciclos, un programa agrupa las instrucciones que no leen el ACC (`rdax`, `rda`) antes de la que lo lee (`wrax`, `wrap`).
 - La traza del HIL da el pc de la instrucción siguiente a la que escribió el ACC. El significado es el mismo que antes.
