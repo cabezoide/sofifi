@@ -44,7 +44,7 @@ Es una decisión estructural: `model/sofifi/domain/isa.py` es sentinela, así qu
 2. Se escribe el manejador en `model/sofifi/domain/nucleo.py` y se registra en `MANEJADORES`.
 3. Se añade el mnemónico y sus operandos en `model/sofifi/domain/ensamblador.py`.
 4. Los contratos de `model/tests/nucleo_test.py` y `model/tests/ensamblador_test.py` fallan si falta cualquiera de los tres pasos.
-5. Se añade su coste en ciclos del RTL en `CICLOS_RTL` (`model/sofifi/domain/coste.py`) y una línea en `MUESTRA_COSTE` (`sim/nucleo/nucleo_test.py`). La simulación mide el coste y lo compara con la tabla.
+5. Se añaden sus ciclos de ejecución en `DURACION` (`model/sofifi/domain/coste.py`). Si lee el ACC o el banco, se añade también a `LEE_ACC` o a `LEE_REGISTRO`. Se añade una línea en `MUESTRA_COSTE` (`sim/nucleo/nucleo_test.py`). La simulación exige los mismos ciclos que el modelo de tiempos, sola y junto a cada instrucción (ADR 0014).
 
 ## Un módulo RTL
 

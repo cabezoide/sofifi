@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/EXTENDING.md sha=3b5545c20179 estado=al_dia -->
+<!-- i18n: fuente=docs/EXTENDING.md sha=ae7161e5953f estado=al_dia -->
 # 如何扩展
 
 本文按部件类型逐步说明。如果添加某样东西需要改动本清单之外的位置，说明清单不完整：在同一个 PR 中修正。
@@ -35,7 +35,7 @@
 2. 在 `model/sofifi/domain/nucleo.py` 中编写处理函数，并在 `MANEJADORES` 中注册。
 3. 在 `model/sofifi/domain/ensamblador.py` 中添加助记符及其操作数。
 4. 缺少上述三步中的任何一步，`model/tests/nucleo_test.py` 和 `model/tests/ensamblador_test.py` 中的契约测试都会失败。
-5. 在 `CICLOS_RTL`（`model/sofifi/domain/coste.py`）中添加其 RTL 周期开销，并在 `MUESTRA_COSTE`（`sim/nucleo/nucleo_test.py`）中添加一行。仿真测量开销并与该表比较。
+5. 在 `DURACION`（`model/sofifi/domain/coste.py`）中添加其执行周期。如果它读取 ACC 或寄存器组，也把它加入 `LEE_ACC` 或 `LEE_REGISTRO`。在 `MUESTRA_COSTE`（`sim/nucleo/nucleo_test.py`）中添加一行。仿真要求与时序模型的周期数相同，单独运行和与每条指令相邻时都一样（ADR 0014，西班牙语）。
 
 ## 一个 RTL 模块
 

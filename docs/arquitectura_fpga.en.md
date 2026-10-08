@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/arquitectura_fpga.md sha=d6f65e2a2485 estado=al_dia -->
+<!-- i18n: fuente=docs/arquitectura_fpga.md sha=4bbfca227440 estado=al_dia -->
 # FPGA architecture
 
 This document tells what is inside the FPGA, how the parts connect and how the design changed in each phase. We update it when we close each phase and in each PR that changes FPGA blocks. `SBOM.en.md` gives a simple explanation of each component. `fails.en.md` gives the failures that made the design.
@@ -15,13 +15,13 @@ flowchart LR
 
     subgraph nucleo["DSP core"]
         direction LR
-        mc --> sec["Sequencer<br/>read-ahead"] --> deco["Decode"]
+        mc --> sec["Fetch queue<br/>4 words + head"] --> deco["Decode<br/>waits only for dependencies"]
         deco --> regs["Register bank<br/>64 × 24"]
         deco --> lfo["LFO ×4 · Hermite ROM<br/>smooth curve"]
         regs --> mult["Multiplier 27×36<br/>2 DSP"]
         lfo --> mult
         mem["Delay memory<br/>38–42 BSRAM, in groups"] --> mult
-        mult --> alu["ALU<br/>2 stages"] --> acc["ACC 48 bit"]
+        mult --> ret["Retire line"] --> alu["ALU<br/>2 stages"] --> acc["ACC 48 bit"]
         acc --> regs
         acc --> mem
     end
@@ -48,11 +48,12 @@ All the logic runs in **one clock domain of 100 MHz** (ADR 0005 (Spanish)). Ther
 |---|---|---|---|
 | PLL 50 → 100 MHz | `rtl/primitivas/pll_100.v` | 1 PLLA | — |
 | Sample generator | `rtl/comun/generador_muestra.v` | ~20 LUT | 1 tick / 2,048 cycles |
-| Core sequencer | `rtl/nucleo/nucleo.v` | most of the logic | ~14 cycles per instruction; it reads the next instruction while it executes the current one; `E_DECO` keeps the instruction class in a register |
-| Microcode | `bsram_pipe` 2,048 × 54 + one register | 6 BSRAM | 4 cycles; without a jump, the instruction is already read |
-| Register bank | in `nucleo.v` | 64 × 24 in flip-flops + 8 candidates + write mask | read in 2 levels: candidates in `E_LEER`, selection in `E_DECO`; write in 2 stages: mask and data, then the register |
+| Core sequencer | `rtl/nucleo/nucleo.v` | most of the logic | in-order pipeline (ADR 0014, Spanish): 1 decode cycle and 1 or more execution cycles; only an instruction that reads the ACC or a register that was just written waits |
+| Microcode | `bsram_pipe` 2,048 × 54 + one register | 6 BSRAM | 4 cycles; continuous fetch into a queue of 4 words and a registered head; a `SKP` that jumps empties the queue (8 cycles) |
+| Register bank | in `nucleo.v` | 64 × 24 in flip-flops + 8 candidates + write mask | read in 2 levels: candidates from the queue head, selection at decode; write in 2 stages: first the mask and the data, then the register; a reader waits 3 cycles after a `WRAX` |
 | Multiplier | `rtl/primitivas/mult_27x36.v` (with `PREG`) + 1 register | 2 DSP | 5 cycles (`LAT`) |
-| ALU | `rtl/nucleo/alu.v` | ~1,000 LUT and 300 ALU | 2 stages + write |
+| Retire line | in `nucleo.v` | 4 stages × (code, one 24-bit operand and pc) | the product and its instruction arrive together at the ALU; the ACC is written in program order |
+| ALU | `rtl/nucleo/alu.v` | ~1,000 LUT and 300 ALU | 2 stages; the second stage writes the ACC (7 cycles after the execution) |
 | Delay memory | `rtl/nucleo/memoria_retardo.v` + pipelined `bsram_pipe` | 1 BSRAM for each 1,024 words; ~1,700 flip-flops of copies | 9 cycles (`LAT_MEM`), only in `RDA`, `CHO` and `RDAA`. Absolute region of 32,768 words in [P, P + 32,768) if the program uses `RDAA` or `WRAA` |
 | Register copies | `rtl/primitivas/registro_copia.v` | `DFF` flip-flops with `keep` | 1 cycle |
 | LFO ×4 | `rtl/nucleo/lfo_banco.v` | ~380 LUT and 377 ALU | 26 cycles per sample |
@@ -63,22 +64,23 @@ All the logic runs in **one clock domain of 100 MHz** (ADR 0005 (Spanish)). Ther
 | Core trace (HIL only) | `rtl/top/hil_nucleo.v`, command `T` | ~150 flip-flops | records (pc, ACC) in the capture |
 | HIL program | `PROGRAMA` parameter of `hil_nucleo`; tops `hil_looper` and `hil_programa` | one ROM in logic | plate by default; the looper tests `RDAA` and `WRAA`; `hil_programa` has the ROM that `sofifi rom` writes (`make hil HIL=NAME`) |
 
-## Budget (top `hil_nucleo`, Phase 07, RDAA and WRAA)
+## Budget (top `hil_nucleo`, pipelined core, ADR 0014)
 
 | Resource | Use | Notes |
 |---|---|---|
-| LUT4 | 11,428 of 23,040 (50 %) | Value from nextpnr. It includes the pass-through LUTs of the flip-flops. |
-| Flip-flops | 6,705 of 23,040 (29 %) | Approximately 3,100 are copies and pipeline registers (F-15). |
-| ALU | 1,294 of 17,280 (7 %) | The additions of the absolute region add approximately 100 (F-19). |
+| LUT4 | 12,405 of 23,040 (54 %) | Value from nextpnr. It includes the pass-through LUTs of the flip-flops. The core alone (`nucleo_placa`): 11,709. |
+| Flip-flops | 7,145 of 23,040 (31 %) | Approximately 3,100 are copies and pipeline registers (F-15); approximately 450 are the queue and the retire line. |
+| ALU | 1,318 of 17,280 (8 %) | |
 | BSRAM | 56 of 56 | 38 for delay + 6 for microcode + 12 for capture. The final pedal has no capture: 42 + 6 = 48. |
 | DSP | 2 of 28 | |
-| Frequency | 144 MHz from nextpnr; **125 MHz on the board without errors (3 of 3)**; 133.3 MHz, 1 of 1 | real margin of at least 25 % above 100 MHz (F-19, ADR 0011 (Spanish)) |
-| Cycles per sample | reverse 431, lofi 620, cinta 658, plate 1,195, freeze 1,313, cloud 1,356, swell 1,467, shimmer 1,514, hall 1,578 of 2,048 | the cost of each instruction is in `model/sofifi/domain/coste.py` |
+| Frequency | 110 MHz from nextpnr; **125 MHz on the board without errors (3 of 3) and 133.3 MHz (2 of 2)**; the looper, 125 MHz (2 of 2) | real margin of at least 25 % above 100 MHz (ADR 0011, Spanish) |
+| Cycles per sample | plate 783, hall 856, cloud 900, shimmer 1,030, sostenido 1,156, chorale 1,185; the most expensive chain, 1,270 of 2,048 | exact timing model in `model/sofifi/domain/coste.py` |
 
 ## Design rules from the failures
 
 - **No BSRAM output goes to logic in the same cycle.** We make the memories with `bsram_pipe`. It uses the internal output register of the block (F-11).
 - **No chained 50-bit arithmetic in one cycle.** The ALU has two stages. The multiplier inputs come from registers (F-10, F-11).
+- **A new array gets its `ram_style`.** Yosys changes each array that is read by index into BSRAM, also a small array (F-24). The saturation looks at the three high bits and does not compare with constants (ADR 0014, Spanish).
 - **No register drives blocks across all the chip.** Large memories are pipelined. Each group and each block has a copy of the address, and each block has a registered output near it (F-15).
 - **No wide multiplexer in one cycle.** The register bank (64:1) has two levels (F-15).
 - **The register bank write is not decoded in the same cycle.** First, register a 64-bit mask and the data. Then, write (F-19).
@@ -165,8 +167,25 @@ We add the wrappers for the PLL (`pll_100`), the DSP (`mult_27x18`) and the infe
 - **Looper on the board** (top `hil_looper`): the HIL stimulus pushes the footswitch to record and to do an overdub. The looper gives the same bits as the model from 100 to 125 MHz. This is the first test of `RDAA` and `WRAA` in the silicon.
 - **All the catalogue on the board** (top `hil_programa`, `make hil HIL=NAME`): 41 programs and 9 chains give the same bits as the model (MED-16). These are all the programs and chains that fit in the 38 blocks of `hil_nucleo`. The program that uses the most cycles is `chorale`: 1,935 cycles of 2,048.
 
+### After Phase 07 · In-order pipelined core (ADR 0014, Spanish)
+
+- **Decoupled retire:** the instruction puts its product into a retire line, and the sequencer goes to the next instruction. The ACC is written in program order.
+- **Waits only for dependencies:** an instruction that reads the ACC waits until the retire line is empty; an instruction that reads the bank waits 3 cycles after a `WRAX`.
+- **Fetch queue:** the core requests microcode without stopping; a queue of 4 words and a registered head give the next instruction.
+- **Exact timing model:** `coste.py` copies the sequencer; the simulation requires the same cycles as the RTL.
+- **Timing:** the first version failed at 125 MHz in the silicon. The trace showed the ACC loop: a forward path before the addition, and a saturation with two 50-bit comparisons. Without the forward path and with the saturation on the high bits: 125 MHz (3 of 3) and 133.3 MHz (2 of 2).
+
+| Instruction | Cycles (multicycle) | Cycles (pipelined), without dependency |
+|---|---|---|
+| `RDAX`, `WRAX`, `WRA`, `WRAP`, `SOF`, `MULX`, `MAXX` | 10 | 2 |
+| `RDA` | 19 | 11 |
+| `CHO` (SIN LFO) | 52 | 44 |
+| `RDAA` | 27 | 19 |
+
+An instruction that reads the ACC waits 7 cycles after the end of the previous instruction that writes it. On average, the programs use 1.6 times fewer cycles. The series pairs that fit increase from 790 to 1,312 of 2,550 (with the shared registers, ADR 0013, Spanish).
+
 ### Next planned change
 
-**Measurement 2026-10-08: two or three cores do not fit** (ADR 0013, Spanish). With 2 cores, yosys gives 13,112 LUT4 and 9,928 flip-flops before placement, and nextpnr does not find a legal placement, also with the BSRAM at 78 %. With 3, 19,046 LUT4. Two effects at the same time use chains: a composed program, with no change to the RTL.
+**Measurement 2026-10-08: two or three cores do not fit** (ADR 0013, Spanish). With 2 cores, yosys gives 13,112 LUT4 and 9,928 flip-flops before placement, and nextpnr does not find a legal placement, also with the BSRAM at 78 %. With 3, 19,046 LUT4. Two effects at the same time use chains: a composed program, with no change to the RTL. The owner confirmed: no second core.
 
-Now each instruction waits for its result (approximately 14 cycles). The next step is to not wait when the next instruction does not use the ACC or the register that the current instruction writes. This needs the detection of dependencies between instructions. The result stays equal to the model. The change is large, and an ADR will decide it.
+The core now waits only for dependencies (ADR 0014, Spanish). The next step for cycles is to read the memory before its turn, or to decrease `LAT` to 3 (ADR 0014, options 3 and 4). Today the memory is a larger limit: that is work for the SDRAM.

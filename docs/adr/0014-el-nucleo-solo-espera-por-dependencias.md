@@ -46,4 +46,4 @@ Opción 2.
 - Coste en el top `hil_nucleo`: +559 LUT4 (+4,7 %) y +432 flip-flops, sobre todo por la cola y la línea de retiro.
 - El coste de una instrucción depende de las anteriores. Para ahorrar ciclos, un programa agrupa las instrucciones que no leen el ACC (`rdax`, `rda`) antes de la que lo lee (`wrax`, `wrap`).
 - La traza del HIL da el pc de la instrucción siguiente a la que escribió el ACC. El significado es el mismo que antes.
-- El margen de reloj se mide en la placa antes de aceptar (ADR 0011).
+- Margen medido en la placa (ADR 0011): 125 MHz sin errores (3 de 3) y 133,3 MHz (2 de 2) con el plate; el looper, 125 MHz (2 de 2). En la placa, `chorale`, `granular`, «Cuerdas en ola» y «Eco y muelle» dan los mismos bits que el modelo, con los ciclos que da la simulación.

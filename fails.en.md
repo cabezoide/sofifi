@@ -1,4 +1,4 @@
-<!-- i18n: fuente=fails.md sha=74d59e91185b estado=al_dia -->
+<!-- i18n: fuente=fails.md sha=f7dcf11c7376 estado=al_dia -->
 # Failures and their resolution
 
 This is the record of the failures found in the project. Each entry has a symptom, a diagnosis, a root cause, a resolution and a lesson. The record helps us not to repeat them. It also explains why the design is as it is.

@@ -1,4 +1,4 @@
-<!-- i18n: fuente=fails.md sha=74d59e91185b estado=al_dia -->
+<!-- i18n: fuente=fails.md sha=f7dcf11c7376 estado=al_dia -->
 # 故障及其解决
 
 本文件记录项目中发现的故障。每条记录包含现象、诊断、根本原因、解决方法和教训。它帮助我们避免重复同样的故障，也说明设计为何如此。
