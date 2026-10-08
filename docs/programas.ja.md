@@ -1,10 +1,10 @@
-<!-- i18n: fuente=docs/programas.md sha=a897c4fed57e estado=al_dia -->
+<!-- i18n: fuente=docs/programas.md sha=d4dca2838602 estado=al_dia -->
 <!-- GENERADO por `sofifi catalogo` desde programas/*.sasm. No se edita a mano:
      model/tests/catalogo_test.py lo compara con su generador. -->
 
 # コアのプログラム
 
-43 のプログラムと 344 のプリセット。各プログラムは `programas/` のテキストファイルで、プリセットは `presets/banco.toml` にあります。プログラム名とプリセット名はスペイン語です。
+44 のプログラムと 352 のプリセット。各プログラムは `programas/` のテキストファイルで、プリセットは `presets/banco.toml` にあります。プログラム名とプリセット名はスペイン語です。
 サイクル数は RTL の上限で、1 サンプルあたり 2,048（`model/sofifi/domain/coste.py`）。メモリーは 43,008 ワードです。
 
 ## リバーブ
@@ -84,3 +84,9 @@
 | `ancho` | モノラルのギターをステレオに広げ、低音と高音の音色を傾けます。 | 0: 幅<br>1: チルト | 8 | 26 | 304 | 636 |
 | `autowah` | オートワウ：強く弾くほどフィルターが上がります。 | 0: 感度<br>1: レゾナンス<br>2: ミックス | 8 | 43 | 464 | 1 |
 | `filtro` | LFO で自動的に上下する、レゾナンス付きローパスフィルター。 | 0: 速さ<br>1: レゾナンス<br>2: ミックス<br>3: 深さ | 8 | 60 | 608 | 1 |
+
+## ルーパー
+
+| プログラム | 働き | ノブ | プリセット | 命令数 | サイクル | メモリー |
+|---|---|---|---|---|---|---|
+| `looper` | 0.67 秒のマイクロルーパー。オーバーダブ、½×、2×、リバース付き。 | 0: レベル<br>1: 速さ<br>2: 方向<br>3: フィードバック | 8 | 85 | 809 | 1 |

@@ -1,0 +1,135 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: looper
+; resumen: Micro-looper de 0,67 s con overdub, ½×, 2× y reverse.
+; resumen.en: A 0.67 s micro-looper with overdub, ½×, 2× and reverse.
+; resumen.zh-CN: 0.67 秒微型循环器，带叠录、½×、2× 和反向。
+; resumen.ja: 0.67 秒のマイクロルーパー。オーバーダブ、½×、2×、リバース付き。
+;
+; looper.sasm — micro-looper en la región absoluta (RDAA y WRAA, ADR 0009).
+; Un solo footswitch (los controles físicos llegan en la Fase 09):
+;
+;   1. Sin loop, mantener `sw` pulsado graba. Al soltarlo, la longitud queda
+;      fijada y el loop empieza a sonar. A los 0,67 s (32 767 muestras) el
+;      loop se cierra solo.
+;   2. Con loop, mantener `sw` pulsado hace overdub: M = M·pot3 + entrada.
+;      Con pot3 = 0 el overdub reemplaza lo grabado.
+;
+; La cabeza `pos` usa el formato de RDAA: una muestra vale 2^-15 en el
+; registro (15 bit de entero y 8 de fracción). `largo` = 0 quiere decir que no
+; hay loop. Con ½× la lectura interpola entre dos muestras; el overdub escribe
+; en la parte entera.
+;
+; pot0 = nivel           (0 → solo seco · 1 → loop a nivel completo)
+; pot1 = velocidad       (0 → ½× · 0,5 → 1× · 1 → 2×)
+; pot2 = sentido         (< 0,5 → adelante · ≥ 0,5 → al revés)
+; pot3 = realimentación  (0 → el overdub reemplaza · 1 → el overdub suma)
+
+equ  x      reg0            ; entrada mono
+equ  pos    reg1            ; cabeza de lectura y escritura
+equ  largo  reg2            ; longitud del loop; 0 = sin loop
+equ  u      reg3            ; una muestra: 2^-15
+equ  vel    reg4            ; avance por muestra
+equ  y      reg5            ; salida del loop
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 1/32768
+        wrax  u, 0
+inicio:
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wrax  x, 0
+; ── velocidad: tres zonas de pot1 y el sentido de pot2 ───────────────
+        rdax  u, 0.5
+        wrax  vel, 0                    ; ½×
+        rdax  pot1, 1.0
+        sof   1.0, -1/3
+        skp   neg, sentido
+        sof   1.0, -1/3
+        skp   neg, uno
+        clr
+        rdax  u, 1.0
+        rdax  u, 1.0
+        wrax  vel, 0                    ; 2×
+        skp   zro, sentido
+uno:
+        clr
+        rdax  u, 1.0
+        wrax  vel, 0                    ; 1×
+sentido:
+        clr
+        rdax  pot2, 1.0
+        sof   1.0, -0.5
+        skp   neg, con_loop_o_no
+        clr
+        rdax  vel, -1.0
+        wrax  vel, 0                    ; al revés
+con_loop_o_no:
+        clr
+        rdax  largo, 1.0
+        skp   zro, vacio
+; ── con loop: leer, overdub y avanzar ────────────────────────────────
+        clr
+        rdaa  pos, 1.0
+        wrax  y, 0
+        rdax  sw, 1.0
+        skp   zro, avanzar
+        clr
+        rdax  pot3, 1.0
+        mulx  y
+        rdax  x, 1.0
+        wraa  pos, 0                    ; overdub
+avanzar:
+        clr
+        rdax  pos, 1.0
+        rdax  vel, 1.0
+        wrax  pos, 1.0
+        rdax  largo, -1.0
+        skp   neg, no_pasa
+        wrax  pos, 0                    ; pos ≥ largo: vuelve al principio
+no_pasa:
+        clr
+        rdax  pos, 1.0
+        skp   gez, salida
+        rdax  largo, 1.0
+        wrax  pos, 0                    ; pos < 0 (al revés): vuelve al final
+        skp   zro, salida
+; ── sin loop: grabar mientras sw está pulsado ────────────────────────
+vacio:
+        clr
+        rdax  sw, 1.0
+        skp   zro, soltado
+        clr
+        rdax  x, 1.0
+        wraa  pos, 0
+        rdax  pos, 1.0
+        rdax  u, 1.0
+        wrax  pos, 1.0
+        sof   1.0, -32767/32768
+        skp   gez, cerrar               ; región llena: el loop se cierra solo
+        clr
+        skp   zro, sin_salida
+soltado:
+        clr
+        rdax  pos, 1.0
+        skp   zro, sin_salida           ; no se grabó nada
+cerrar:
+        clr
+        rdax  pos, 1.0
+        wrax  largo, 0
+        wrax  pos, 0
+sin_salida:
+        clr
+        wrax  y, 0
+; ── salida: seco + loop · nivel ──────────────────────────────────────
+salida:
+        clr
+        rdax  y, 1.0
+        mulx  pot0
+        rdax  adcl, 1.0
+        wrax  dacl, 0
+        rdax  y, 1.0
+        mulx  pot0
+        rdax  adcr, 1.0
+        wrax  dacr, 0

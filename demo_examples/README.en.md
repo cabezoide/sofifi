@@ -1,4 +1,4 @@
-<!-- i18n: fuente=demo_examples/README.md sha=feb0350228e5 estado=al_dia -->
+<!-- i18n: fuente=demo_examples/README.md sha=5fc2eee58a60 estado=al_dia -->
 # demo_examples
 
 A synthetic guitar (an Em9 arpeggio, Karplus-Strong strings) through each core program, with the bit-exact model. Generate them again with `.venv/bin/python scripts/generar_demos.py`: the audio is the same each time.
@@ -49,5 +49,6 @@ A synthetic guitar (an Em9 arpeggio, Karplus-Strong strings) through each core p
 | `demo_plate_vivo.ogg` | `plate_vivo` | decay 0.75 · damping 0.30 · mix 0.45 · life 1.00 | — |
 | `demo_shimmer_energia.ogg` | `shimmer_energia` | decay 0.80 · damping 0.25 · mix 0.55 · shimmer amount 0.90 | — |
 | `demo_freeze_givens.ogg` | `freeze_givens` | decay 0.60 · damping 0.30 · mix 0.50 · rotation 0.60 | 2.50 → 8.00 s |
+| `demo_looper.ogg` | `looper` | level 0.80 · rate 0.50 · direction 0.00 · feedback 0.80 | 0.00 → 0.66 s, 1.32 → 1.98 s |
 
 Ogg Vorbis at 48,828 Hz (ADR 0005, Spanish); the render is bit-exact at 24 bits. The knobs and the programs are in `docs/programas.en.md`.

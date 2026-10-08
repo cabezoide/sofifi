@@ -7,10 +7,12 @@ el modelo), con una captura corta y una UART rápida.
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
 import cocotb
+import pytest
 from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles
 from cocotb_tools.runner import get_runner
@@ -26,6 +28,7 @@ from uart_rx import recibir_linea  # noqa: E402
 
 DIVISOR = 16
 N_CAPTURA = 1024  # bsram_pipe trabaja con bloques de 1 024
+PROGRAMA = os.environ.get("PROGRAMA", "plate")
 
 
 async def enviar_byte(dut: cocotb.handle.HierarchyObject, byte: int) -> None:
@@ -43,7 +46,7 @@ async def captura_igual_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
     lineas: list[str] = []
     while not lineas or not lineas[-1].startswith("Z "):
         lineas.append(await recibir_linea(dut.clk, dut.uart_tx, DIVISOR))
-    r = comprobar(lineas, N_CAPTURA)
+    r = comprobar(lineas, N_CAPTURA, PROGRAMA)
     dut._log.info(
         "%d muestras, %d iguales, CRC %s, %s ciclos", r.muestras, r.iguales, r.crc_ok, r.ciclos
     )
@@ -64,11 +67,13 @@ async def traza_igual_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
         lineas.append(await recibir_linea(dut.clk, dut.uart_tx, DIVISOR))
     entradas = int(next(t for t in lineas if t.startswith("K "))[2:], 16) >> 16
     assert entradas == N_CAPTURA, f"solo {entradas} entradas"
-    diferencia = comprobar_traza(lineas, k0)
+    diferencia = comprobar_traza(lineas, k0, PROGRAMA, N_CAPTURA)
     assert diferencia is None, diferencia
 
 
-def test_hil_nucleo(tmp_path: Path) -> None:
+@pytest.mark.parametrize("top, programa", [("hil_nucleo", "plate"), ("hil_looper", "looper")])
+def test_hil_nucleo(tmp_path: Path, top: str, programa: str) -> None:
+    """hil_looper lleva RDAA y WRAA a la placa: graba en [N/4, N/2) y hace overdub."""
     fuentes = []
     for linea in (RTL / "top" / "tops.txt").read_text().splitlines():
         campos = linea.split()
@@ -78,12 +83,21 @@ def test_hil_nucleo(tmp_path: Path) -> None:
     runner.build(
         sources=fuentes,
         hdl_toplevel="hil_nucleo",
-        parameters={"F_RELOJ": DIVISOR, "BAUDIOS": 1, "N_CAPTURA": N_CAPTURA},
+        parameters={
+            "F_RELOJ": DIVISOR,
+            "BAUDIOS": 1,
+            "N_CAPTURA": N_CAPTURA,
+            "PROGRAMA": f'"{programa}"',
+        },
         defines={"SIMULACION": 1},
         build_dir=tmp_path,
         build_args=["-Wall"],
         always=True,
     )
     runner.test(
-        hdl_toplevel="hil_nucleo", test_module="hil_nucleo_test", test_dir=AQUI, build_dir=tmp_path
+        hdl_toplevel="hil_nucleo",
+        test_module="hil_nucleo_test",
+        test_dir=AQUI,
+        build_dir=tmp_path,
+        extra_env={"PROGRAMA": programa},
     )

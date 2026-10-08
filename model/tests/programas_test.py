@@ -197,6 +197,7 @@ def test_swell_cada_nota_empieza_en_silencio() -> None:
 # un impulso casi no suenan).
 # Cambian si cambia la aritmética (ADR 0008), la ISA (ADR 0009) o el programa.
 HUELLAS = {
+    "looper": "f4b95ce672872ac4",
     "plate": "7967b952e0f3b48a",
     "shimmer": "85d032aacbdeb748",
     "freeze": "8aaff05950123adf",
@@ -253,7 +254,10 @@ SEGUNDOS_HUELLA = {
     "bbd": 0.3,
     "ducking": 0.5,
     "freeze_givens": 0.5,
+    "looper": 0.3,
 }
+# Sin footswitch, el looper solo deja pasar la señal seca: graba los primeros 0,1 s.
+TRAMOS_SW = {"looper": ((0, int(0.1 * FS)),)}
 CON_TONO = {
     "lofi",
     "swell",
@@ -265,6 +269,7 @@ CON_TONO = {
     "saturacion",
     "ringmod",
     "slicer",
+    "looper",
 }
 
 
@@ -280,9 +285,10 @@ def test_las_huellas_son_distintas() -> None:
 @pytest.mark.parametrize("nombre", sorted(HUELLAS))
 def test_huella_bit_exact(nombre: str) -> None:
     if nombre in CON_TONO:
-        x = Senal(FS, (tono(196, 0.3, 0.5),))
+        x = Senal(FS, (tono(196, SEGUNDOS_HUELLA.get(nombre, 0.3), 0.5),))
     else:
         x = impulso(SEGUNDOS_HUELLA.get(nombre, 0.1))
-    y = procesar(programa(nombre), x, Controles(pots("0.5", "0.3", "0.5", "0.5")))
+    c = Controles(pots("0.5", "0.3", "0.5", "0.5"), tramos_sw=TRAMOS_SW.get(nombre, ()))
+    y = procesar(programa(nombre), x, c)
     datos = b"".join(v.to_bytes(3, "little", signed=True) for c in y.canales for v in c)
     assert hashlib.sha256(datos).hexdigest()[:16] == HUELLAS[nombre]

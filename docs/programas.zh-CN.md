@@ -1,10 +1,10 @@
-<!-- i18n: fuente=docs/programas.md sha=a897c4fed57e estado=al_dia -->
+<!-- i18n: fuente=docs/programas.md sha=d4dca2838602 estado=al_dia -->
 <!-- GENERADO por `sofifi catalogo` desde programas/*.sasm. No se edita a mano:
      model/tests/catalogo_test.py lo compara con su generador. -->
 
 # 核心程序
 
-43 个程序与 344 个预设。每个程序都是 `programas/` 中的一个文本文件；预设位于 `presets/banco.toml`。程序名与预设名为西班牙语。
+44 个程序与 352 个预设。每个程序都是 `programas/` 中的一个文本文件；预设位于 `presets/banco.toml`。程序名与预设名为西班牙语。
 周期数为 RTL 的上限，每个样本 2,048 个（`model/sofifi/domain/coste.py`）。存储器共 43,008 个字。
 
 ## 混响
@@ -84,3 +84,9 @@
 | `ancho` | 将单声道吉他拓宽为立体声，并在低音与高音之间调节音色。 | 0: 宽度<br>1: 倾斜 | 8 | 26 | 304 | 636 |
 | `autowah` | 自动哇音：弹得越用力，滤波器升得越高。 | 0: 灵敏度<br>1: 谐振<br>2: 干湿比 | 8 | 43 | 464 | 1 |
 | `filtro` | 由 LFO 驱动、自动升降的谐振低通滤波器。 | 0: 速度<br>1: 谐振<br>2: 干湿比<br>3: 深度 | 8 | 60 | 608 | 1 |
+
+## 循环器
+
+| 程序 | 作用 | 旋钮 | 预设 | 指令数 | 周期 | 存储器 |
+|---|---|---|---|---|---|---|
+| `looper` | 0.67 秒微型循环器，带叠录、½×、2× 和反向。 | 0: 电平<br>1: 速度<br>2: 方向<br>3: 反馈 | 8 | 85 | 809 | 1 |

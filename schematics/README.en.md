@@ -1,4 +1,4 @@
-<!-- i18n: fuente=schematics/README.md sha=1b1d09f31c1a estado=al_dia -->
+<!-- i18n: fuente=schematics/README.md sha=262861445cdc estado=al_dia -->
 <!-- GENERADO por scripts/esquematicos.py. No se edita a mano. -->
 
 # RTL schematics
@@ -52,9 +52,11 @@ The PDF title blocks and the descriptions in this table come from the Verilog co
 | `primitivas/mult_27x36.pdf` | `rtl/primitivas/mult_27x36.v` | `ba029281dcb5` | Multiplicador con signo de 27 × 36 bit, con latencia de 3 ciclos: registra las entradas, el producto (PREG) y la salida. |
 | `primitivas/pll_100.pdf` | `rtl/primitivas/pll_100.v` | `35ddf86070ba` | Reloj de 100 MHz desde el cristal de 50 MHz de la Tang Primer 25K. |
 | `primitivas/registro_copia.pdf` | `rtl/primitivas/registro_copia.v` | `25ea9c5a2455` | Registro de ANCHO bit que Yosys no fusiona con otro igual. |
-| `top/hil_nucleo.pdf` | `rtl/top/hil_nucleo.v` | `84b1ef546d7e` | Verificación del núcleo en la placa (Fase 05, hardware-in-the-loop). |
+| `top/hil_looper.pdf` | `rtl/top/hil_looper.v` | `f9fa8bc14659` | hil_nucleo con el looper (Fase 07): prueba RDAA y WRAA en la placa. |
+| `top/hil_nucleo.pdf` | `rtl/top/hil_nucleo.v` | `c59c4d78085c` | Verificación del núcleo en la placa (Fase 05, hardware-in-the-loop). |
 | `top/hola_uart.pdf` | `rtl/top/hola_uart.v` | `2f54c9b1fe9f` | Primer bitstream (Fase 02): envía "SOFIFI xxxxxxxx\r\n" una vez por segundo por la UART del depurador BL616 (115 200 8N1), con un contador en hexadecimal. |
 | `top/nucleo_placa.pdf` | `rtl/top/nucleo_placa.v` | `9cd658a3116b` | El núcleo en la placa (Fase 04): PLL de 100 MHz, una muestra cada 2 048 ciclos (48 828,125 Hz, ADR 0005) y el plate cargado desde ROM por el puerto de programa, como hará la microSD (Fase 08). |
+| `top/programa_looper.pdf` | `rtl/top/programa_looper.v` | `3d6fc4abc5a3` | GENERADO por `sofifi tablas` desde programas/looper.sasm. |
 | `top/programa_plate.pdf` | `rtl/top/programa_plate.v` | `c17f03ff244d` | GENERADO por `sofifi tablas` desde programas/plate.sasm. |
 | `top/prueba_bsram.pdf` | `rtl/top/prueba_bsram.v` | `c11b70757e05` | Prueba de la BSRAM (Fase 03), a 100 MHz, con el tamaño real de la memoria de retardo del núcleo: 43 008 palabras de 18 bit (42 bloques). |
 | `top/prueba_dsp.pdf` | `rtl/top/prueba_dsp.v` | `7b3c63e1485e` | Prueba del bloque DSP (Fase 03), a 100 MHz. |

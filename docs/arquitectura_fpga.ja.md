@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/arquitectura_fpga.md sha=f7e2bc47c175 estado=al_dia -->
+<!-- i18n: fuente=docs/arquitectura_fpga.md sha=562629b86483 estado=al_dia -->
 # FPGA アーキテクチャ
 
 この文書は、FPGA の中に何があるか、各部がどうつながるか、設計がフェーズごとにどう変わったかを示します。各フェーズの終了時と、FPGA のブロックを変える各 PR で更新します。各コンポーネントの簡単な説明は `SBOM.ja.md` にあります。設計を形づくった障害は `fails.ja.md` にあります。
@@ -61,6 +61,7 @@ flowchart LR
 | UART TX / RX | `rtl/comun/uart_tx.v`、`uart_rx.v` | それぞれ ~50 LUT | 115,200 ボー |
 | プログラムローダー | `rtl/comun/carga_programa.v` | ~30 LUT | 命令数 + 1 サイクル |
 | コアのトレース（HIL のみ） | `rtl/top/hil_nucleo.v`、コマンド `T` | ~150 フリップフロップ | (pc, ACC) をキャプチャに記録 |
+| HIL のプログラム | `hil_nucleo` のパラメーター `PROGRAMA`、トップ `hil_looper` | ロジック上の ROM 1 つ | 既定は plate。looper で `RDAA` と `WRAA` を試験 |
 
 ## リソース予算（トップ `hil_nucleo`、フェーズ 07、RDAA と WRAA）
 
@@ -160,6 +161,8 @@ PLL（`pll_100`）、DSP（`mult_27x18`）、推論 BSRAM（`bsram_dp`）のラ�
 |---|---|
 | `WRAA` | 10 |
 | `RDAA`（読み出し 2 回、差に小数部を掛け、積に C を掛ける） | 27 |
+
+- **ボード上のルーパー**（トップ `hil_looper`）：HIL の刺激がフットスイッチを押して録音し、次にオーバーダブする。100〜125 MHz で、ルーパーはモデルとビット単位で一致する。これが `RDAA` と `WRAA` の初めてのシリコン上の試験である。
 
 ### 次に予定している変更
 

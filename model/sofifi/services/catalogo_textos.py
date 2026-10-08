@@ -18,6 +18,7 @@ FAMILIAS: dict[str, tuple[str, str, str, str]] = {
     "dinámica": ("Dinámica", "Dynamics", "动态", "ダイナミクス"),
     "textura": ("Textura", "Texture", "质感", "テクスチャー"),
     "filtro": ("Filtro", "Filter", "滤波", "フィルター"),
+    "looper": ("Looper", "Looper", "循环器", "ルーパー"),
 }
 
 MANDOS: dict[str, tuple[str, str, str]] = {
@@ -51,6 +52,7 @@ MANDOS: dict[str, tuple[str, str, str]] = {
     "realimentación": ("feedback", "反馈", "フィードバック"),
     "resonancia": ("resonance", "谐振", "レゾナンス"),
     "seco": ("dry", "干声", "ドライ"),
+    "sentido": ("direction", "方向", "方向"),
     "sensibilidad": ("sensitivity", "灵敏度", "感度"),
     "suavizado": ("smoothing", "平滑", "スムージング"),
     "subida": ("rise time", "上升时间", "立ち上がり"),

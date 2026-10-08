@@ -27,6 +27,7 @@ from pathlib import Path
 import serial
 from sofifi.adapters.archivos import ensamblar_archivo
 from sofifi.domain.nucleo import Nucleo
+from sofifi.services.render import SW_PULSADO
 
 RAIZ = Path(__file__).resolve().parent.parent
 N_CAPTURA = 4096
@@ -37,11 +38,17 @@ def con_signo24(v: int) -> int:
     return v - (1 << 24) if v & (1 << 23) else v
 
 
-def estimulo(k: int) -> tuple[int, int]:
-    """El mismo que hil_nucleo.v: impulso, silencio y un triángulo desde la 1 024."""
+def pulsado(k: int, captura: int = N_CAPTURA) -> int:
+    """El footswitch de hil_nucleo.v: graba en [N/4, N/2) y hace overdub en [3N/4, 3N/4 + N/16)."""
+    n4 = captura // 4
+    return SW_PULSADO if n4 <= k < 2 * n4 or 3 * n4 <= k < 3 * n4 + captura // 16 else 0
+
+
+def estimulo(k: int, captura: int = N_CAPTURA) -> tuple[int, int]:
+    """El mismo que hil_nucleo.v: impulso, silencio y un triángulo desde N/4."""
     if k == 0:
         return 0x400000, -0x200000
-    if k < 1024:
+    if k < captura // 4:
         return 0, 0
     t = k % 64
     triangulo = t - 16 if t < 32 else 48 - t
@@ -80,7 +87,7 @@ def comprobar(lineas: list[str], n: int, programa: str = "plate") -> Resultado:
     modelo = Nucleo(ensamblar_archivo(RAIZ / "programas" / f"{programa}.sasm"))
     iguales, primera, primera_k = 0, None, None
     for k in range(n):
-        esperado = modelo.procesar(*estimulo(k), (POT,) * 6, 0)
+        esperado = modelo.procesar(*estimulo(k, n), (POT,) * 6, pulsado(k, n))
         if k < len(muestras) and muestras[k] == esperado:
             iguales += 1
         elif primera is None:
@@ -90,7 +97,9 @@ def comprobar(lineas: list[str], n: int, programa: str = "plate") -> Resultado:
     return Resultado(len(muestras), iguales, crc_ok, ciclos, primera, primera_k)
 
 
-def traza_esperada(k0: int, n: int, programa: str = "plate") -> list[tuple[int, int]]:
+def traza_esperada(
+    k0: int, n: int, programa: str = "plate", captura: int = N_CAPTURA
+) -> list[tuple[int, int]]:
     """La traza que graba hil_nucleo.v con 'T': (pc, ACC) en cada cambio del ACC.
 
     El núcleo pone ACC = 0 y pc = 0 al empezar cada muestra; cada instrucción deja
@@ -98,7 +107,7 @@ def traza_esperada(k0: int, n: int, programa: str = "plate") -> list[tuple[int, 
     """
     modelo = Nucleo(ensamblar_archivo(RAIZ / "programas" / f"{programa}.sasm"))
     for k in range(k0):
-        modelo.procesar(*estimulo(k), (POT,) * 6, 0)
+        modelo.procesar(*estimulo(k, captura), (POT,) * 6, pulsado(k, captura))
     salida: list[tuple[int, int]] = []
     previo, k = modelo.acc, k0
     while len(salida) < n:
@@ -106,7 +115,7 @@ def traza_esperada(k0: int, n: int, programa: str = "plate") -> list[tuple[int, 
             salida.append((0, 0))
             previo = 0
         pasos: list[tuple[int, int]] = []
-        modelo.procesar(*estimulo(k), (POT,) * 6, 0, pasos)
+        modelo.procesar(*estimulo(k, captura), (POT,) * 6, pulsado(k, captura), pasos)
         for pc, acc in pasos:
             if acc != previo:
                 salida.append((pc, acc))
@@ -115,14 +124,16 @@ def traza_esperada(k0: int, n: int, programa: str = "plate") -> list[tuple[int, 
     return salida[:n]
 
 
-def comprobar_traza(lineas: list[str], k0: int, programa: str = "plate") -> str | None:
+def comprobar_traza(
+    lineas: list[str], k0: int, programa: str = "plate", captura: int = N_CAPTURA
+) -> str | None:
     """Compara la traza de la placa con la del modelo; None si coinciden."""
     k_linea = next((int(t[2:], 16) for t in lineas if t.startswith("K ")), None)
     if k_linea is None:
         return "no llegó la línea K"
     entradas = k_linea >> 16
     placa = [int(t[2:], 16) for t in lineas if t.startswith("M ") and len(t) == 16][:entradas]
-    esperada = traza_esperada(k0, entradas, programa)
+    esperada = traza_esperada(k0, entradas, programa, captura)
     if len(placa) < entradas:
         return f"llegaron {len(placa)} entradas de {entradas}"
     for i, (v, (pc, acc)) in enumerate(zip(placa, esperada, strict=True)):
@@ -161,16 +172,19 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--puerto", default="/dev/ttyUSB1")
     ap.add_argument("--espera", type=float, default=30.0, help="segundos máximos")
     ap.add_argument("--traza", type=int, metavar="K0", help="pide la traza desde la muestra K0")
+    ap.add_argument("--programa", default="plate", help="plate (hil_nucleo) o looper (hil_looper)")
     args = ap.parse_args(argv)
     if args.traza is not None:
         orden = b"T" + args.traza.to_bytes(2, "big")
-        diferencia = comprobar_traza(capturar(args.puerto, args.espera, orden), args.traza)
+        diferencia = comprobar_traza(
+            capturar(args.puerto, args.espera, orden), args.traza, args.programa
+        )
         if diferencia is None:
             print("hil: traza igual al modelo")
         else:
             print(f"hil: traza distinta: {diferencia}")
         return 0 if diferencia is None else 1
-    r = comprobar(capturar(args.puerto, args.espera), N_CAPTURA)
+    r = comprobar(capturar(args.puerto, args.espera), N_CAPTURA, args.programa)
     print(f"hil: {r.muestras} muestras recibidas, {r.iguales} iguales al modelo")
     print(f"hil: CRC {'correcto' if r.crc_ok else 'INCORRECTO'}; máximo {r.ciclos} ciclos/muestra")
     if r.primera_diferencia:

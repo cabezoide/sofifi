@@ -169,4 +169,16 @@ mediciones:
     caduca_en_dias: 90
     como: ".venv/bin/python scripts/margen_reloj.py --mdiv 24 --divisores 12 10 --repeticiones 4 (y --mdiv 20 --divisores 8 para 125 MHz)"
     entorno: "mismo JSON rutado que da 144 MHz en nextpnr; Fase 07 con RDAA y WRAA, escritura del banco en dos etapas (F-19); temperatura ambiente sin medir"
-    no_dice: "Solo el plate: RDAA y WRAA no se ejecutan en la placa. 133,3 MHz con una sola captura no es margen. No se midió con la placa caliente. Fase 06: 120 MHz (125 MHz, 3 de 4); Fase 05: 106,25 MHz."
+    no_dice: "Solo el plate (el looper, en MED-15). 133,3 MHz con una sola captura no es margen. No se midió con la placa caliente. Fase 06: 120 MHz (125 MHz, 3 de 4); Fase 05: 106,25 MHz."
+  - id: MED-15
+    caracteristica: M-08
+    nombre: Capturas del looper en la placa idénticas al modelo (RDAA y WRAA en el silicio)
+    valor: 125
+    unidad: MHz con todas las capturas correctas (2 de 2); a 100 y 114,3 MHz, 2 de 2; a 120 MHz, 3 de 3
+    umbral: 100
+    direccion: mayor_mejor
+    fecha: 2026-10-08
+    caduca_en_dias: 90
+    como: "make synth TOP=hil_looper && .venv/bin/python scripts/margen_reloj.py --base hil_looper --programa looper (y --mdiv 24 --divisores 10, --mdiv 20 --divisores 8)"
+    entorno: "Tang Primer 25K; hil_nucleo con la ROM del looper (120 MHz según nextpnr); el estímulo graba de 1 024 a 2 047 y hace overdub de 3 072 a 3 327; pots a 0,5: 1× y al revés"
+    no_dice: "Una sola combinación de mandos (1×, al revés, realimentación 0,5); ½× y 2× solo en simulación. No se midió con la placa caliente."

@@ -14,7 +14,7 @@ from sofifi.domain.isa import Programa, codificar
 from sofifi.domain.lfo import TipoLfo
 
 RUTA_TABLA_HERMITE = "rtl/nucleo/tabla_hermite.v"
-PROGRAMAS_EN_ROM = ("plate",)
+PROGRAMAS_EN_ROM = ("plate", "looper")
 CODIGO_LFO = {TipoLfo.SIN: 0, TipoLfo.RND: 1, TipoLfo.RAMP: 2}
 
 

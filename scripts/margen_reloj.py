@@ -74,6 +74,7 @@ def cargar(fs: Path) -> None:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--base", default="hil_nucleo", help="top ya rutado en build/")
+    ap.add_argument("--programa", default="plate", help="el de la ROM del top: plate o looper")
     ap.add_argument("--divisores", type=int, nargs="+", default=[8, 7])
     ap.add_argument("--mdiv", type=int, default=16, help="VCO = 50 MHz × MDIV")
     ap.add_argument("--repeticiones", type=int, default=3)
@@ -91,14 +92,15 @@ def main(argv: list[str] | None = None) -> int:
             for _ in range(args.repeticiones):
                 cargar(fs)
                 baudios = round(115_200 * mhz / 100)
-                r = comprobar(capturar(args.puerto, 40, baudios=baudios), N_CAPTURA)
+                r = comprobar(capturar(args.puerto, 40, baudios=baudios), N_CAPTURA, args.programa)
                 correctas += r.correcto and r.muestras == N_CAPTURA
                 if args.traza and r.primera_muestra is not None:
                     k0 = max(0, r.primera_muestra - 1)
                     orden = b"T" + k0.to_bytes(2, "big")
                     lineas = capturar(args.puerto, 40, orden, baudios)
                     print(f"  {r.primera_diferencia}")
-                    print(f"  traza desde la muestra {k0}: {comprobar_traza(lineas, k0)}")
+                    diferencia = comprobar_traza(lineas, k0, args.programa)
+                    print(f"  traza desde la muestra {k0}: {diferencia}")
             print(f"{mhz:6.1f} MHz: {correctas} de {args.repeticiones} capturas iguales al modelo")
             if mhz == 100 and correctas != args.repeticiones:
                 todo_bien_a_100 = False

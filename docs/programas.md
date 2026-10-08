@@ -3,7 +3,7 @@
 
 # Programas del núcleo
 
-43 programas y 344 presets. Cada programa es un fichero de texto en `programas/`; los presets están en `presets/banco.toml`.
+44 programas y 352 presets. Cada programa es un fichero de texto en `programas/`; los presets están en `presets/banco.toml`.
 Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste.py`). La memoria es de 43 008 palabras.
 
 ## Reverb
@@ -83,3 +83,9 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 | `ancho` | Ensancha el estéreo de una guitarra mono y ajusta el tono graves-agudos. | 0: ancho<br>1: tilt | 8 | 26 | 304 | 636 |
 | `autowah` | Wah automático: cuanto más fuerte se toca, más sube el filtro. | 0: sensibilidad<br>1: resonancia<br>2: mezcla | 8 | 43 | 464 | 1 |
 | `filtro` | Filtro paso bajo resonante que sube y baja solo, con un LFO. | 0: velocidad<br>1: resonancia<br>2: mezcla<br>3: profundidad | 8 | 60 | 608 | 1 |
+
+## Looper
+
+| Programa | Qué hace | Mandos | Presets | Instrucciones | Ciclos | Memoria |
+|---|---|---|---|---|---|---|
+| `looper` | Micro-looper de 0,67 s con overdub, ½×, 2× y reverse. | 0: nivel<br>1: velocidad<br>2: sentido<br>3: realimentación | 8 | 85 | 809 | 1 |

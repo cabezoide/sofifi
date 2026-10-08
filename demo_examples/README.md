@@ -48,5 +48,6 @@ Una guitarra sintética (arpegio de Em9, cuerdas Karplus-Strong) procesada por c
 | `demo_plate_vivo.ogg` | `plate_vivo` | decay 0,75 · damping 0,30 · mezcla 0,45 · vida 1,00 | — |
 | `demo_shimmer_energia.ogg` | `shimmer_energia` | decay 0,80 · damping 0,25 · mezcla 0,55 · cantidad de shimmer 0,90 | — |
 | `demo_freeze_givens.ogg` | `freeze_givens` | decay 0,60 · damping 0,30 · mezcla 0,50 · giro 0,60 | 2,50 → 8,00 s |
+| `demo_looper.ogg` | `looper` | nivel 0,80 · velocidad 0,50 · sentido 0,00 · realimentación 0,80 | 0,00 → 0,66 s, 1,32 → 1,98 s |
 
 Ogg Vorbis a 48 828 Hz (ADR 0005); el render es bit-exact en 24 bit. Los mandos y los programas están en `docs/programas.md`.
