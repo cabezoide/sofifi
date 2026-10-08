@@ -19,3 +19,6 @@ contra el modelo de `model/sofifi/` (ADR 0003).
   porque se relanzaría en bucle hasta agotar la memoria.
 - Los bancos que no son DSP (UART, controles) se validan contra el protocolo, no
   contra el modelo: ADR 0003 solo obliga a los bloques DSP.
+- El filtro `testcase` de cocotb es una expresión regular que busca en el nombre.
+  `igual_al_modelo` elige también `absoluta_igual_al_modelo`. Ningún nombre de
+  prueba contiene el de otra (fails.md, F-20).

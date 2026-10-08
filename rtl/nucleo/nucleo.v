@@ -168,7 +168,10 @@ module nucleo #(
     // Región absoluta (ADR 0009): RDAA lee y WRAA escribe en palabras + índice.
     // El índice sale del registro R (15 bit de entero) y del campo addr, y se
     // enmascara a 15 bit. borrar_abs la borra al salir del reset.
-    reg                borrar_abs;
+    // mabs_borrar acompaña a mdir_w: los dos se registran en el mismo flanco.
+    // Con borrar_abs directo, el modo iba un ciclo por delante de la dirección y
+    // quedaban sin borrar la última palabra circular y la última absoluta.
+    reg                borrar_abs, mabs_borrar;
     // Predecodificación (Fase 07): E_DECO registra la clase de la instrucción y
     // unas banderas. Con 18 instrucciones, decidir en E_EJEC desde el op de 6 bit
     // alargaba el camino de control (de 155 a 121 MHz según nextpnr).
@@ -178,7 +181,7 @@ module nucleo #(
     reg es_rdfx, es_rdax_maxx, es_mulx, es_wra_wrap, es_wrax, es_wraa, es_rdaa;
     wire [5:0] op_leido = ins_leida[53:48];
     wire               mabs_r = es_rdaa;
-    wire               mabs_w = es_wraa | borrar_abs;
+    wire               mabs_w = es_wraa | mabs_borrar;
     wire        [14:0] idx_abs = ad[14:0] + r_d[22:8];
     memoria_retardo #(.PALABRAS_MAX(PALABRAS_MAX), .GRUPO(GRUPO_MEM)) u_mem (
         .clk(clk), .rst(rst), .palabras(cfg_palabras), .avanzar(mavanzar),
@@ -187,6 +190,9 @@ module nucleo #(
     );
     reg  signed [23:0] m0_abs;    // RDAA: M[i]; la fracción va en frac_abs
     reg         [7:0]  frac_abs;
+    // M[i+1] − M[i], registrada: el multiplicador no lleva aritmética delante (F-11).
+    reg  signed [24:0] dif_abs;
+    always @(posedge clk) dif_abs <= {mdato_r[23], mdato_r} - {m0_abs[23], m0_abs};
     reg  signed [23:0] v_abs;     // RDAA: valor interpolado
 
     // ── LFO ───────────────────────────────────────────────────────────────
@@ -261,12 +267,22 @@ module nucleo #(
         if (tick) begin adc_l_t <= adc_l; adc_r_t <= adc_r; pots_t <= pots; sw_t <= sw; end
     end
 
+    // Escritura del banco en dos etapas (Fase 07, fails.md F-19): E_EJEC registra
+    // una máscara de 64 bit y el dato; en el ciclo siguiente cada registro se
+    // escribe con su bit de la máscara. Los 1 536 biestables del banco ocupan
+    // todo el chip, y la decodificación de `rg` en el mismo ciclo fallaba en el
+    // silicio a 114 MHz. La siguiente lectura llega varios ciclos después.
+    reg        [63:0] esc_mascara;
+    reg signed [23:0] esc_dato;
+
     integer i;
     always @(posedge clk) begin
         fin         <= 1'b0;
         mwe         <= 1'b0;
         mavanzar    <= 1'b0;
         lfo_avanzar <= 1'b0;
+        esc_mascara <= 64'd0;
+        mabs_borrar <= 1'b0;
         if (rst) begin
             estado <= E_BORRAR; borrar <= 16'd0; borrar_abs <= 1'b0;
             clase <= C_OTRA; es_rdfx <= 1'b0; es_rdax_maxx <= 1'b0; es_mulx <= 1'b0;
@@ -277,12 +293,13 @@ module nucleo #(
             dac_l <= 24'sd0; dac_r <= 24'sd0; ciclos <= 16'd0; cuenta <= 16'd0;
             for (i = 0; i < 64; i = i + 1) regs[i] <= 24'sd0;
         end else begin
+            for (i = 0; i < 64; i = i + 1) if (esc_mascara[i]) regs[i] <= esc_dato;
             if (estado != E_PARADO && estado != E_BORRAR) cuenta <= cuenta + 1'b1;
             // edad vuelve a 0 en el mismo flanco en que cambia pc_mc (más abajo).
             if (edad != 3'd4) edad <= edad + 1'b1;
             case (estado)
             E_BORRAR: begin   // primero la memoria circular; después, la región absoluta
-                mwe <= 1'b1; mdir_w <= {1'b0, borrar}; mdato_w <= 24'sd0;
+                mwe <= 1'b1; mdir_w <= {1'b0, borrar}; mdato_w <= 24'sd0; mabs_borrar <= borrar_abs;
                 if (!borrar_abs && borrar == cfg_palabras - 1'b1) begin
                     if (cfg_absoluta) begin borrar_abs <= 1'b1; borrar <= 16'd0; end
                     else estado <= E_PARADO;
@@ -354,7 +371,7 @@ module nucleo #(
                         if (es_wraa) begin
                             mwe <= 1'b1; mdir_w <= {2'b00, idx_abs}; mdato_w <= a24;
                         end
-                        if (es_wrax) regs[rg] <= a24;
+                        if (es_wrax) begin esc_mascara <= 64'd1 << rg; esc_dato <= a24; end
                         paso <= 5'd1; espera <= LAT - 1'b1;
                     end else begin
                         estado <= E_ESCR;
@@ -475,8 +492,9 @@ module nucleo #(
                     5'd26: begin mdir_r <= mdir_r + 17'sd1; paso <= 5'd27; espera <= LAT_MEM - 4'd3; end
                     5'd27: paso <= 5'd28;   // M[i] llega LAT_MEM ciclos después de pedirla
                     5'd28: begin m0_abs <= mdato_r; paso <= 5'd29; end
-                    5'd29: begin   // (M[i+1] − M[i])·f; la fracción, sin signo
-                        ma <= a27({mdato_r[23], mdato_r} - {m0_abs[23], m0_abs});
+                    5'd29: paso <= 5'd15;   // dif_abs = M[i+1] − M[i] se registra
+                    5'd15: begin   // (M[i+1] − M[i])·f; la fracción, sin signo
+                        ma <= a27(dif_abs);
                         mb <= b36({17'd0, frac_abs});
                         paso <= 5'd30; espera <= LAT - 1'b1;
                     end

@@ -1,4 +1,4 @@
-<!-- i18n: fuente=fails.md sha=0d64bf724454 estado=al_dia -->
+<!-- i18n: fuente=fails.md sha=15dcd8f64a08 estado=al_dia -->
 # Failures and their resolution
 
 This is the record of the failures found in the project. Each entry has a symptom, a diagnosis, a root cause, a resolution and a lesson. The record helps us not to repeat them. It also explains why the design is as it is.
@@ -25,6 +25,8 @@ Add a new entry when a failure is diagnosed and resolved. Do not rewrite the ent
 | F-16 | 06 | Large simulations did not compile with the pip verilator | resolved |
 | F-17 | 06 | The velvet-noise diffuser did not do better than the allpass filters | rejected: not published |
 | F-18 | 06 | Four programming faults in the Phase 06 catalog | resolved before publication |
+| F-19 | 07 | With RDAA and WRAA, the silicon failed at 114 MHz in the first sample | resolved; measured margin ≥ 25 % |
+| F-20 | 07 | The clear of the absolute region did not clear two words | resolved |
 
 ---
 
@@ -204,3 +206,30 @@ Add a new entry when a failure is diagnosed and resolved. Do not rewrite the ent
   3. A decrease proportional to the gain itself: exponential, it never goes across 0.
   4. Longer fingerprints, and a test that requires different fingerprints between programs.
 - **Lesson:** in the core, the ACC is wide, but each instruction that reads a24 (`SOF`, `WRAX`, `MULX`, `RDFX`) saturates. A test that measures the limit of the control finds these failures; a test that measures the center does not.
+
+## F-19 · With RDAA and WRAA, the silicon failed at 114 MHz in the first sample
+
+- **Symptom:** the core with `RDAA` and `WRAA` was the same as the model in simulation and on the board at 100 MHz. At 114.3 MHz it always failed, from sample 0. In Phase 06, the same plate passed at 120 MHz. nextpnr gave 157 MHz.
+- **Diagnosis:**
+  1. The trace (`margen_reloj.py --traza`) gave entry 2: board pc = 8, model pc = 4.
+  2. The board ACC in that entry was the model ACC at pc = 8. Thus `rdax tmp` (pc 3 and pc 5) gave 0 both times.
+  3. `wrax tmp` (pc 2) did not write the register, or the read failed. In sample 0 the memory does not give data yet: the failure was on a control path.
+  4. In the routing, the 24 bits of `reg7` (`tmp`) were spread across all the chip (x from 12 to 53). The control (`estado`, `es_wrax`) was at x = 51, and `a24` at x from 12 to 21.
+- **Root cause:** the `WRAX` write decoded `rg` and the state conditions in the same cycle as the write. That net goes to the 1,536 flip-flops of the register bank, which are spread across all the chip. The design became larger in Phase 07, the placement changed, and that path became the path with the smallest margin.
+- **Resolution:**
+  - Register bank write in two stages. `E_EJEC` registers a 64-bit mask and the data. In the next cycle, each register is written with its bit of the mask. This costs no cycles: the next read occurs some cycles later.
+  - The `RDAA` subtraction `M[i+1] − M[i]` is registered before the multiplier (rule of F-11). `RDAA` increases from 26 to 27 cycles.
+- **Measured result** (nextpnr gives 144 MHz for this routing): 100 MHz, 2 of 2; 114.3 MHz, 2 of 2; 120 MHz, 3 of 3; **125 MHz, 3 of 3**; 133.3 MHz, 1 of 1. In Phase 06 the results were 125 MHz, 3 of 4, and 133.3 MHz, 0 of 1.
+- **Lesson:** a register that writes to all the register bank goes across the chip, the same as a memory address. Do the decoding in one cycle and the write in the next cycle. nextpnr decreased from 157 to 144 MHz and the board result became better: you cannot use the nextpnr value to compare two routings.
+
+## F-20 · The clear of the absolute region did not clear two words
+
+- **Symptom:** the test `absoluta_igual_al_modelo` failed at sample 67 when it ran after a different test. When it ran alone, it passed.
+- **Diagnosis:**
+  1. At sample 67, `rdaa pe, 0.5, 32700` reads index 32,767 of the region. The model reads 0. The RTL read a value from the previous test.
+  2. The cocotb filter is a regular expression: `igual_al_modelo` also selected `absoluta_igual_al_modelo`. Thus the test ran after each program, with data in the memory.
+- **Root cause:** in `E_BORRAR`, `mdir_w` comes from a register, but the absolute mode came directly from `borrar_abs`. The mode was one cycle before the address. The last circular word was written in the region, and the last word of the region was written in the circular area.
+- **Resolution:**
+  - `mabs_borrar` is registered on the same clock edge as `mdir_w`.
+  - The test has the new name `absoluta_como_el_modelo`. Before the clear, it writes data to the limits of the region with `WRAA`. With the old failure, the test fails.
+- **Lesson:** register the signals that go with a registered address together with that address. A test of the memory clear needs a memory with data in it. The simulation starts with the memory at zero, so the clear is not tested (as in F-12).

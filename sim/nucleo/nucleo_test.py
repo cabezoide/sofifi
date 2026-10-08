@@ -252,11 +252,22 @@ inicio:
 """
 
 
+# Ensucia los extremos de la región absoluta antes de la prueba: el reset debe
+# borrarlos (la lectura de la muestra 67 usa el índice 32 767).
+SUCIA = """
+        rdax adcl, 1.0
+        wraa reg0, 1.0, 32767
+        wraa reg0, 1.0, 0
+"""
+
+
 @cocotb.test()
-async def absoluta_igual_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
+async def absoluta_como_el_modelo(dut: cocotb.handle.HierarchyObject) -> None:
     """RDAA y WRAA (ADR 0009): fracción, origen, desborde por la máscara y lectura al revés."""
     cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
     dut.pots.value = 0
+    await cargar(dut, ensamblar(SUCIA, "sucia"))
+    await muestra(dut, 1 << 22)
     programa = ensamblar(ABSOLUTA, "absoluta")
     await cargar(dut, programa)
     modelo = Nucleo(programa)
@@ -366,7 +377,7 @@ def test_nucleo_auxiliares(construido: tuple[Runner, Path]) -> None:
         "reset_borra_la_memoria",
         "saltos_iguales_al_modelo",
         "coste_de_cada_instruccion",
-        "absoluta_igual_al_modelo",
+        "absoluta_como_el_modelo",
     ]
     _correr(construido, casos, "auxiliares", {})
 

@@ -47,12 +47,12 @@ Todo corre en **un solo dominio de reloj de 100 MHz** (ADR 0005). La única exce
 |---|---|---|---|
 | PLL 50 → 100 MHz | `rtl/primitivas/pll_100.v` | 1 PLLA | — |
 | Generador de muestra | `rtl/comun/generador_muestra.v` | ~20 LUT | 1 tick / 2 048 ciclos |
-| Secuenciador del núcleo | `rtl/nucleo/nucleo.v` | la mayor parte de la lógica | ~14 ciclos por instrucción; lee la siguiente mientras ejecuta la actual |
+| Secuenciador del núcleo | `rtl/nucleo/nucleo.v` | la mayor parte de la lógica | ~14 ciclos por instrucción; lee la siguiente mientras ejecuta la actual; `E_DECO` deja la clase de la instrucción en un registro |
 | Microcódigo | `bsram_pipe` 2 048 × 54 + un registro | 6 BSRAM | 4 ciclos; sin salto, ya está leída |
-| Banco de registros | dentro de `nucleo.v` | 64 × 24 en flip-flops + 8 candidatos | 2 niveles: candidatos en `E_LEER`, elección en `E_DECO` |
+| Banco de registros | dentro de `nucleo.v` | 64 × 24 en flip-flops + 8 candidatos + máscara de escritura | lectura en 2 niveles: candidatos en `E_LEER`, elección en `E_DECO`; escritura en 2 etapas: máscara y dato, y después el registro |
 | Multiplicador | `rtl/primitivas/mult_27x36.v` (con `PREG`) + 1 registro | 2 DSP | 5 ciclos (`LAT`) |
 | ALU | `rtl/nucleo/alu.v` | ~1 000 LUT y 300 ALU | 2 etapas + escritura |
-| Memoria de retardo | `rtl/nucleo/memoria_retardo.v` + `bsram_pipe` segmentada | 1 BSRAM por cada 1 024 palabras; ~1 700 flip-flops de copias | 9 ciclos (`LAT_MEM`), solo en `RDA` y `CHO` |
+| Memoria de retardo | `rtl/nucleo/memoria_retardo.v` + `bsram_pipe` segmentada | 1 BSRAM por cada 1 024 palabras; ~1 700 flip-flops de copias | 9 ciclos (`LAT_MEM`), solo en `RDA`, `CHO` y `RDAA`. Región absoluta de 32 768 palabras en [P, P + 32 768) si el programa usa `RDAA` o `WRAA` |
 | Copias de un registro | `rtl/primitivas/registro_copia.v` | flip-flops `DFF` con `keep` | 1 ciclo |
 | LFO ×4 | `rtl/nucleo/lfo_banco.v` | ~380 LUT y 377 ALU | 26 ciclos por muestra |
 | ROM Hermite | `rtl/nucleo/tabla_hermite.v` (generada) | ~820 LUT | combinacional + registro |
@@ -61,15 +61,16 @@ Todo corre en **un solo dominio de reloj de 100 MHz** (ADR 0005). La única exce
 | Cargador de programa | `rtl/comun/carga_programa.v` | ~30 LUT | instrucciones + 1 ciclos |
 | Traza del núcleo (solo HIL) | `rtl/top/hil_nucleo.v`, orden `T` | ~150 flip-flops | graba (pc, ACC) en la captura |
 
-## Presupuesto (top `hil_nucleo`, Fase 06, requisito previo)
+## Presupuesto (top `hil_nucleo`, Fase 07, RDAA y WRAA)
 
 | Recurso | Uso | Notas |
 |---|---|---|
-| LUT4 | 11 490 de 23 040 (50 %) | Según nextpnr, con las LUT de paso de los flip-flops. Lógica real según Yosys: unas 7 900. |
-| Flip-flops | 6 523 de 23 040 (28 %) | Unos 3 100 son copias y registros de segmentación (F-15). |
+| LUT4 | 11 428 de 23 040 (50 %) | Según nextpnr, con las LUT de paso de los flip-flops. |
+| Flip-flops | 6 705 de 23 040 (29 %) | Unos 3 100 son copias y registros de segmentación (F-15). |
+| ALU | 1 294 de 17 280 (7 %) | Las sumas de la región absoluta suben unas 100 (F-19). |
 | BSRAM | 56 de 56 | 38 de retardo + 6 de microcódigo + 12 de captura. En el pedal final, la captura no existe: 42 + 6 = 48. |
 | DSP | 2 de 28 | |
-| Frecuencia | 154 MHz según nextpnr; **120 MHz en la placa sin errores (4 de 4)**; 125 MHz, 3 de 4 | margen real de al menos un 20 % sobre 100 MHz (F-15, ADR 0011) |
+| Frecuencia | 144 MHz según nextpnr; **125 MHz en la placa sin errores (3 de 3)**; 133,3 MHz, 1 de 1 | margen real de al menos un 25 % sobre 100 MHz (F-19, ADR 0011) |
 | Ciclos por muestra | reverse 431, lofi 620, cinta 658, plate 1 195, freeze 1 313, cloud 1 356, swell 1 467, shimmer 1 514, hall 1 578 de 2 048 | coste de cada instrucción en `model/sofifi/domain/coste.py` |
 
 ## Reglas de diseño que salen de los fallos
@@ -78,6 +79,8 @@ Todo corre en **un solo dominio de reloj de 100 MHz** (ADR 0005). La única exce
 - **Ninguna aritmética de 50 bit encadenada en un ciclo.** La ALU va en dos etapas; las entradas del multiplicador salen de registros (F-10, F-11).
 - **Ningún registro alimenta bloques de todo el chip.** Las memorias grandes van segmentadas: copias de la dirección por grupo y por bloque, y salida registrada junto a cada bloque (F-15).
 - **Ningún multiplexor ancho en un ciclo.** El banco de registros (64:1) va en dos niveles (F-15).
+- **La escritura en el banco no se decodifica en el mismo ciclo.** Primero se registran una máscara de 64 bit y el dato; después se escribe (F-19).
+- **Las señales que acompañan a una dirección registrada se registran con ella** (F-20).
 - **Sumas en paralelo antes que en serie.** Si una corrección depende de un signo, se calculan todas las opciones y el signo elige (F-15).
 - **Las ROM van en lógica**, con `rom_style` en el `case`, para no caer en BSRAM `SPX9` (F-09).
 - **El timing se mide en la placa** (ADR 0011): nextpnr es optimista en un factor de 1,45 a 1,5 en el GW5A. Para el 20 % de margen hace falta que nextpnr dé unos 150 MHz o más, y medirlo. Si falla, `margen_reloj.py --traza` dice qué instrucción.
@@ -143,6 +146,19 @@ Se añaden los envoltorios del PLL (`pll_100`), del DSP (`mult_27x18`) y de la B
 
 - Un programa cabe si la suma es de 2 048 o menos. `sofifi asm` la da y `programas_test.py` la exige.
 - **El cloud usa 42 814 palabras: no cabe en `hil_nucleo`**, que tiene 38 bloques de retardo para dejar sitio a la captura. Para probarlo en la placa hace falta reducir la captura.
+
+### Fase 07 · RDAA y WRAA (región absoluta)
+
+- **Dos instrucciones nuevas** (ADR 0009, actualización 2026-10-07): `RDAA` lee con interpolación lineal y `WRAA` escribe en una región de 32 768 palabras sin puntero. El registro R da la posición.
+- **Región absoluta:** detrás de la memoria circular, en [P, P + 32 768). La dirección física es una suma (P + i), en paralelo con la de la memoria circular. El reset también la borra.
+- **Predecodificación:** con 18 instrucciones, decidir en `E_EJEC` desde el `op` de 6 bit alargaba el control. `E_DECO` deja en registros la clase de la instrucción y unas banderas.
+- **`tick` registrado** a la entrada del núcleo, con las entradas capturadas en el mismo flanco.
+- **Escritura del banco en dos etapas** y resta de `RDAA` registrada (F-19). Margen medido: **125 MHz sin errores**, frente a 120 MHz en la Fase 06.
+
+| Instrucción | Ciclos |
+|---|---|
+| `WRAA` | 10 |
+| `RDAA` (dos lecturas, la diferencia por la fracción y el producto por C) | 27 |
 
 ### Próximo cambio previsto
 

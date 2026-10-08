@@ -33,13 +33,19 @@ class MemoriaFija:
     def escribir(self, direccion: int, valor: int) -> None:
         pass
 
+    def leer_absoluta(self, origen: int, posicion: int) -> int:
+        return self.valor
+
+    def escribir_absoluta(self, origen: int, posicion: int, valor: int) -> None:
+        pass
+
 
 def producto(op: Op, a24: int, r: int, v: int, c: int) -> int:
-    if op in (Op.RDA,):
+    if op in (Op.RDA, Op.RDAA):
         return v * c
     if op in (Op.RDAX, Op.MAXX):
         return r * c
-    if op in (Op.WRA, Op.WRAX, Op.WRAP, Op.SOF):
+    if op in (Op.WRA, Op.WRAX, Op.WRAP, Op.SOF, Op.WRAA):
         return a24 * c
     if op is Op.RDFX:
         return (a24 - r) * c

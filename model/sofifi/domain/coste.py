@@ -34,7 +34,7 @@ CICLOS_RTL: dict[Op, int] = {
     Op.RDA: 19,
     Op.CHO: 52,
     Op.SKP: 8,  # si salta: vuelve a leer el microcódigo
-    Op.RDAA: 26,  # dos lecturas, la diferencia por la fracción y el producto por C
+    Op.RDAA: 27,  # dos lecturas, la diferencia por la fracción y el producto por C
     Op.WRAA: 10,
 }
 CICLOS_SKP_SIN_SALTO = 6
