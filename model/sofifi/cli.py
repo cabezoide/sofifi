@@ -6,6 +6,9 @@ sofifi catalogo  (regenera docs/programas.md)
 sofifi render  PROGRAMA.sasm  ENTRADA.wav  SALIDA.wav
                [--preset NOMBRE] [--pot N=V] [--freeze A:B] [--cola S]
 sofifi presets [PROGRAMA]
+sofifi cadenas                     (lista presets/cadenas.toml: coste y si cabe)
+sofifi componer NOMBRE SALIDA.sasm (la cadena como un programa, ADR 0013)
+sofifi cadena  NOMBRE  ENTRADA.wav  SALIDA.wav  [--pot N=V] [--freeze A:B] [--cola S]
 """
 
 from __future__ import annotations
@@ -16,14 +19,17 @@ from fractions import Fraction
 from pathlib import Path
 
 from sofifi.adapters.archivos import FuenteProgramaArchivo, SumideroHex, ensamblar_archivo
+from sofifi.adapters.cadenas import FuenteCadena, leer_cadenas, textos_de_programas
 from sofifi.adapters.presets import leer_banco
 from sofifi.adapters.wav import FuenteWav, SumideroWav
 from sofifi.domain.aritmetica import CICLOS_POR_MUESTRA, FS_WAV, dato
+from sofifi.domain.cadena import Cadena
+from sofifi.domain.composicion import componer, recursos
 from sofifi.domain.coste import ciclos_rtl
 from sofifi.domain.ensamblador import ErrorEnsamblado
 from sofifi.domain.isa import NUM_POTS
 from sofifi.domain.senal import Controles
-from sofifi.services.catalogo import catalogos, ficha
+from sofifi.services.catalogo import catalogos, ficha, ficha_cadena
 from sofifi.services.render import exportar_microcodigo, renderizar
 from sofifi.services.tablas import (
     PROGRAMAS_EN_ROM,
@@ -34,6 +40,19 @@ from sofifi.services.tablas import (
 )
 
 RUTA_BANCO = Path("presets/banco.toml")
+RUTA_CADENAS = Path("presets/cadenas.toml")
+PROGRAMAS = Path("programas")
+
+
+def _cadena(nombre: str) -> Cadena:
+    for c in leer_cadenas(RUTA_CADENAS):
+        if c.nombre == nombre:
+            return c
+    raise argparse.ArgumentTypeError(f"«{nombre}» no está en {RUTA_CADENAS} (ver: sofifi cadenas)")
+
+
+def _incluir(nombre: str) -> str:
+    return (PROGRAMAS / nombre).read_text(encoding="utf-8")
 
 
 def _pots(valores: list[str]) -> tuple[int, ...]:
@@ -78,6 +97,17 @@ def main(argv: list[str] | None = None) -> int:
     )
     pr = sub.add_parser("presets", help="lista los presets de presets/banco.toml")
     pr.add_argument("programa", nargs="?", help="solo los de este programa")
+    sub.add_parser("cadenas", help="lista las cadenas de presets/cadenas.toml y si caben")
+    co = sub.add_parser("componer", help="escribe una cadena como un solo programa .sasm")
+    co.add_argument("nombre")
+    co.add_argument("salida", type=Path)
+    ca = sub.add_parser("cadena", help="procesa un WAV con una cadena")
+    ca.add_argument("nombre")
+    ca.add_argument("entrada", type=Path)
+    ca.add_argument("salida", type=Path)
+    ca.add_argument("--pot", action="append", default=[], metavar="potN=V")
+    ca.add_argument("--freeze", action="append", default=[], metavar="INICIO:FIN", help="segundos")
+    ca.add_argument("--cola", type=float, default=0.0, help="segundos de silencio al final")
     args = p.parse_args(argv)
     try:
         if args.orden == "presets":
@@ -85,13 +115,45 @@ def main(argv: list[str] | None = None) -> int:
             for programa in [args.programa] if args.programa else sorted(banco):
                 for nombre, valores in banco.get(programa, {}).items():
                     print(f"{programa}/{nombre}: " + " ".join(f"{float(v):.2f}" for v in valores))
+        elif args.orden == "cadenas":
+            textos = textos_de_programas(PROGRAMAS)
+            for c in leer_cadenas(RUTA_CADENAS):
+                gasto = recursos(c, textos, _incluir)
+                falta = gasto.excedidos()
+                estado = "cabe" if not falta else "no cabe: " + ", ".join(falta)
+                programas = (" → " if c.modo.value == "serie" else " ‖ ").join(
+                    e.programa for e in c.eslabones
+                )
+                print(
+                    f"{c.nombre}: {programas}; {gasto.ciclos} ciclos, {gasto.memoria} palabras,"
+                    f" {gasto.registros} registros, {gasto.lfos} LFOs; {estado}"
+                )
+        elif args.orden == "componer":
+            texto = componer(_cadena(args.nombre), textos_de_programas(PROGRAMAS), _incluir)
+            args.salida.write_text(texto, encoding="utf-8")
+            print(f"{args.nombre} → {args.salida}")
+        elif args.orden == "cadena":
+            c = _cadena(args.nombre)
+            pots_cadena = [f"pot{k}={v}" for k, v in enumerate(c.posiciones)]
+            informe = renderizar(
+                FuenteCadena(c, PROGRAMAS),
+                FuenteWav(args.entrada),
+                SumideroWav(args.salida),
+                Controles(_pots(pots_cadena + args.pot), _tramos(args.freeze)),
+                round(args.cola * FS_WAV),
+            )
+            print(f"{informe.programa}: {informe.muestras} muestras → {args.salida}")
         elif args.orden == "catalogo":
             fichas = [
                 ficha(r.stem, r.read_text(encoding="utf-8"), ensamblar_archivo(r))
                 for r in sorted(Path("programas").glob("*.sasm"))
             ]
             presets = {p: len(v) for p, v in leer_banco(RUTA_BANCO).items()}
-            for ruta, texto in catalogos(fichas, presets).items():
+            textos = textos_de_programas(PROGRAMAS)
+            cadenas = [
+                ficha_cadena(c, recursos(c, textos, _incluir)) for c in leer_cadenas(RUTA_CADENAS)
+            ]
+            for ruta, texto in catalogos(fichas, presets, cadenas).items():
                 Path(ruta).write_text(texto, encoding="utf-8")
                 print(f"{len(fichas)} programas → {ruta}")
         elif args.orden == "tablas":

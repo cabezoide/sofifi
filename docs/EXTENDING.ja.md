@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/EXTENDING.md sha=a578f7b153a1 estado=al_dia -->
+<!-- i18n: fuente=docs/EXTENDING.md sha=3b5545c20179 estado=al_dia -->
 # 拡張の方法
 
 部品の種類ごとの手順です。何かを追加するときにこのリストにない箇所を変更する必要があれば、リストが不完全です。同じ PR で修正してください。
@@ -16,6 +16,16 @@
 6. `presets/banco.toml` に、プログラム名のテーブルでプリセットを 5 個以上追加してください。`model/tests/presets_test.py` がノブを確認します。
 7. `sofifi catalogo` でカタログを再生成してください。
 8. `DEMOS`（`scripts/generar_demos.py`）と `demo_examples/README.ja.md` にデモを追加してください。
+
+## チェーン（2 つのプログラムを 1 つに）
+
+チェーンは既存のプログラムをつなぎます。RTL は不要です（ADR 0013、スペイン語）。
+
+1. `sofifi cadenas` で、似たチェーンがどれだけ使うかを確かめる。各プログラムは自分のレジスタと LFO を使う。コアには 32 のレジスタと 4 つの LFO がある。
+2. `presets/cadenas.toml` に `[[cadena]]` を追加する。`mandos` では、数値は固定値、`"potN"` はペダルの N 番目のポット。`pots` はチェーンを読み込んだときの 6 つのポットの位置。
+3. メモリーだけが足りない場合は `requiere = "sdram"` とする。`model/tests/cadenas_test.py` は、各チェーンが収まるか、足りないのがメモリーだけであることを求める。
+4. `sofifi cadena 名前 入力.wav 出力.wav` で聴く。チェーンが plate の 2 倍を超える音量なら、音量のテストが失敗する。
+5. `sofifi catalogo` でカタログを再生成する。RTL シミュレーションは収まるチェーンを実行する。
 
 ## コアの命令
 

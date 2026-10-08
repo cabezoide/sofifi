@@ -165,4 +165,6 @@ Se añaden los envoltorios del PLL (`pll_100`), del DSP (`mult_27x18`) y de la B
 
 ### Próximo cambio previsto
 
+**Medida 2026-10-08: dos o tres núcleos no caben** (ADR 0013). Con 2 núcleos, yosys da 13 112 LUT4 y 9 928 flip-flops antes de colocar, y nextpnr no encuentra una colocación legal, ni con la BSRAM al 78 %. Con 3, 19 046 LUT4. Dos efectos a la vez se hacen con cadenas: un programa compuesto, sin cambiar el RTL.
+
 Hoy cada instrucción espera a su resultado (unos 14 ciclos). La siguiente palanca es no esperar cuando la instrucción siguiente no usa el ACC ni el registro que se escribe. Hay que detectar las dependencias entre instrucciones. El resultado sigue igual al modelo; el cambio es grande y se decidirá en un ADR.

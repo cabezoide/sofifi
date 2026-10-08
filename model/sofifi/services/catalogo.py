@@ -14,6 +14,7 @@ import re
 from dataclasses import dataclass
 
 from sofifi.domain.aritmetica import CICLOS_POR_MUESTRA
+from sofifi.domain.cadena import Cadena, Modo, Recursos
 from sofifi.domain.coste import ciclos_rtl
 from sofifi.domain.isa import Programa
 from sofifi.domain.memoria import PALABRAS_ABSOLUTAS, PALABRAS_MAX
@@ -37,6 +38,19 @@ class Ficha:
 
     def resumen_en(self, idioma: str) -> str:
         return dict(self.resumenes).get(idioma, self.resumen) if idioma != "es" else self.resumen
+
+
+@dataclass(frozen=True)
+class FichaCadena:
+    """Una cadena de ``presets/cadenas.toml`` y lo que gasta (``composicion.recursos``)."""
+
+    nombre: str
+    programas: str  # «delay → plate» o «octava ‖ bloom»
+    ciclos: int
+    palabras: int
+    registros: int
+    lfos: int
+    sdram: bool
 
 
 def ficha(nombre: str, texto: str, programa: Programa) -> Ficha:
@@ -68,6 +82,20 @@ def ficha(nombre: str, texto: str, programa: Programa) -> Ficha:
     )
 
 
+def ficha_cadena(cadena: Cadena, gasto: Recursos) -> FichaCadena:
+    union = " → " if cadena.modo is Modo.SERIE else " ‖ "
+    return FichaCadena(
+        cadena.nombre,
+        union.join(f"`{e.programa}`" for e in cadena.eslabones),
+        gasto.ciclos,
+        # La región absoluta (RDAA, WRAA) también es memoria de la cadena.
+        gasto.memoria + (PALABRAS_ABSOLUTAS if gasto.absolutas else 0),
+        gasto.registros,
+        gasto.lfos,
+        cadena.requiere == "sdram",
+    )
+
+
 def _miles(n: int, idioma: str = "es") -> str:
     """2048 → «2 048» en español; «2,048» en los demás idiomas."""
     return f"{n:,}".replace(",", " " if idioma == "es" else ",")
@@ -81,9 +109,15 @@ def mando_traducido(m: str, idioma: str) -> str:
     return f"{k}: {MANDOS[etiqueta][IDIOMAS.index(idioma) - 1]}"
 
 
-def markdown(fichas: list[Ficha], presets: dict[str, int] | None = None, idioma: str = "es") -> str:
+def markdown(
+    fichas: list[Ficha],
+    presets: dict[str, int] | None = None,
+    idioma: str = "es",
+    cadenas: list[FichaCadena] | None = None,
+) -> str:
     """Catálogo en Markdown en ``idioma``; ``presets`` da cuántos presets tiene cada programa."""
     presets = presets or {}
+    cadenas = cadenas or []
     t = TEXTOS[idioma]
     lineas = [
         "<!-- GENERADO por `sofifi catalogo` desde programas/*.sasm. No se edita a mano:",
@@ -112,6 +146,23 @@ def markdown(fichas: list[Ficha], presets: dict[str, int] | None = None, idioma:
                 f"| {f.instrucciones} | {_miles(f.ciclos, idioma)} | {_miles(f.palabras, idioma)} |"
             )
         lineas.append("")
+    if cadenas:
+        sdram = sum(c.sdram for c in cadenas)
+        lineas += [
+            t["cadenas_titulo"],
+            "",
+            t["cadenas_intro"].format(n=len(cadenas) - sdram, s=sdram),
+            "",
+            t["cadenas_cabecera"],
+            "|---|---|---|---|---|---|---|",
+        ]
+        for c in sorted(cadenas, key=lambda c: (c.sdram, c.nombre)):
+            lineas.append(
+                f"| {c.nombre} | {c.programas} | {_miles(c.ciclos, idioma)} "
+                f"| {_miles(c.palabras, idioma)} | {c.registros} | {c.lfos} "
+                f"| {t['sdram'] if c.sdram else t['cabe']} |"
+            )
+        lineas.append("")
     return "\n".join(lineas)
 
 
@@ -119,13 +170,15 @@ def ruta_catalogo(idioma: str) -> str:
     return RUTA_CATALOGO if idioma == "es" else RUTA_CATALOGO.replace(".md", f".{idioma}.md")
 
 
-def catalogos(fichas: list[Ficha], presets: dict[str, int]) -> dict[str, str]:
+def catalogos(
+    fichas: list[Ficha], presets: dict[str, int], cadenas: list[FichaCadena] | None = None
+) -> dict[str, str]:
     """Los cuatro catálogos, ruta → texto. Las traducciones llevan el sello i18n (ADR 0007)
     con la huella del catálogo español que se genera a la vez."""
-    es = markdown(fichas, presets, "es")
+    es = markdown(fichas, presets, "es", cadenas)
     sha = hashlib.sha256(es.encode("utf-8")).hexdigest()[:12]
     res = {RUTA_CATALOGO: es}
     for idioma in IDIOMAS[1:]:
         sello = f"<!-- i18n: fuente={RUTA_CATALOGO} sha={sha} estado=al_dia -->\n"
-        res[ruta_catalogo(idioma)] = sello + markdown(fichas, presets, idioma)
+        res[ruta_catalogo(idioma)] = sello + markdown(fichas, presets, idioma, cadenas)
     return res

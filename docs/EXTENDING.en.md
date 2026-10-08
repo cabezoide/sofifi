@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/EXTENDING.md sha=a578f7b153a1 estado=al_dia -->
+<!-- i18n: fuente=docs/EXTENDING.md sha=3b5545c20179 estado=al_dia -->
 # How to extend
 
 This guide gives the steps for each type of part. Sometimes an addition makes
@@ -28,6 +28,16 @@ An effect is a program, not an RTL module (ADR 0006 (Spanish)).
 7. Generate the catalog again with `sofifi catalogo`.
 8. Add the demo in `DEMOS` (`scripts/generar_demos.py`) and in
    `demo_examples/README.en.md`.
+
+## A chain (two programs in one)
+
+A chain joins programs that already exist, with no RTL (ADR 0013, Spanish).
+
+1. Check with `sofifi cadenas` how much a similar chain uses. Each program uses its registers and its LFOs; the core has 32 registers and 4 LFOs.
+2. Add a `[[cadena]]` in `presets/cadenas.toml`. In `mandos`, a number is a fixed value and `"potN"` is pot N of the pedal. `pots` gives the six pots when the chain loads.
+3. If the chain only needs memory, set `requiere = "sdram"`. `model/tests/cadenas_test.py` requires that each chain fits, or that it only needs memory.
+4. Listen with `sofifi cadena NAME input.wav output.wav`. The volume test fails if the chain is more than twice as loud as the plate.
+5. Generate the catalogue again with `sofifi catalogo`. The RTL simulation runs the chains that fit.
 
 ## A core instruction
 

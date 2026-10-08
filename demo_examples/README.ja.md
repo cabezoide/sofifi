@@ -1,4 +1,4 @@
-<!-- i18n: fuente=demo_examples/README.md sha=6916e123cdd2 estado=al_dia -->
+<!-- i18n: fuente=demo_examples/README.md sha=652d4c2773fe estado=al_dia -->
 # demo_examples
 
 合成ギター（Em9 のアルペジオ、Karplus-Strong の弦）を、ビット精度のモデルでコアの各プログラムに通したものです。`.venv/bin/python scripts/generar_demos.py` で再生成でき、毎回同じ音声になります。
@@ -57,5 +57,11 @@
 | `demo_sostenido.ogg` | `sostenido` | レイヤー 0.20 · ダンピング 0.30 · ミックス 0.50 · キャプチャー 0.30 | — |
 | `demo_shoegaze.ogg` | `shoegaze` | ディケイ 0.85 · ダンピング 0.30 · ミックス 0.55 · サチュレーション 0.80 | — |
 | `demo_bruma.ogg` | `bruma` | 拡散 0.70 · フィードバック 0.55 · ミックス 0.50 · ヘッド 1.00 | — |
+| `demo_cadena_eco_y_muelle.ogg` | Eco y muelle: `delay` → `spring` | pot0 0.55 · pot1 0.40 · pot2 0.35 · pot3 0.60 · pot4 0.40 · pot5 0.00 | — |
+| `demo_cadena_flor_al_reves.ogg` | Flor al revés: `reverse` → `bloom` | pot0 0.60 · pot1 0.40 · pot2 0.50 · pot3 0.80 · pot4 0.55 · pot5 0.40 | — |
+| `demo_cadena_organo_infinito.ogg` | Órgano infinito: `octava` → `infinite` | pot0 0.60 · pot1 0.40 · pot2 0.00 · pot3 0.10 · pot4 0.50 · pot5 0.00 | — |
+| `demo_cadena_shimmer_con_vibrato.ogg` | Shimmer con vibrato: `vibrato` → `shimmer` | pot0 0.30 · pot1 0.40 · pot2 0.00 · pot3 0.75 · pot4 0.55 · pot5 0.60 | — |
+| `demo_cadena_cuerdas_en_ola.ogg` | Cuerdas en ola: `tremolo` → `ensemble` | pot0 0.15 · pot1 0.70 · pot2 0.00 · pot3 0.80 · pot4 0.50 · pot5 0.70 | — |
+| `demo_cadena_fuzz_en_la_nube.ogg` | Fuzz en la nube: `saturacion` → `cloud` | pot0 0.60 · pot1 0.00 · pot2 0.00 · pot3 0.70 · pot4 0.50 · pot5 0.60 | — |
 
 Ogg Vorbis、48,828 Hz（ADR 0005、スペイン語）。レンダリングは 24 ビットでビット精度です。ノブとプログラムは `docs/programas.ja.md` にあります。

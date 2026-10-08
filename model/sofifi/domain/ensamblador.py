@@ -40,7 +40,7 @@ from fractions import Fraction
 
 from sofifi.domain.expresion import ErrorEnsamblado as ErrorEnsamblado
 from sofifi.domain.expresion import Expresion, entero
-from sofifi.domain.isa import NOMBRES_REGISTRO, Programa
+from sofifi.domain.isa import NOMBRES_REGISTRO, Instruccion, Programa
 from sofifi.domain.lfo import NUM_LFOS, ConfigLfo, TipoLfo
 from sofifi.domain.operandos import MNEMONICOS as MNEMONICOS
 from sofifi.domain.operandos import instruccion
@@ -119,7 +119,33 @@ class _Estado:
     cuerpo: list[tuple[str | None, int, str, str, int]] = field(default_factory=list)
 
 
+def expandir(texto: str, incluir: Incluir | None = None) -> list[str]:
+    """Líneas útiles del programa, en minúsculas, sin comentarios y con los ``include`` dentro.
+
+    Es lo que lee el compositor de cadenas (``composicion.py``).
+    """
+    return [linea for _, _, linea in _lineas(texto, incluir)]
+
+
+@dataclass(frozen=True)
+class Piezas:
+    """Lo que da el ensamblado antes de validar el programa contra los límites del núcleo."""
+
+    instrucciones: tuple[Instruccion, ...]
+    memoria_usada: int
+    lfos: tuple[ConfigLfo | None, ...]
+
+
 def ensamblar(texto: str, nombre: str = "programa", incluir: Incluir | None = None) -> Programa:
+    p = piezas(texto, incluir)
+    try:
+        return Programa(nombre, p.instrucciones, max(1, p.memoria_usada), p.lfos)
+    except ValueError as exc:
+        raise ErrorEnsamblado(0, str(exc)) from exc
+
+
+def piezas(texto: str, incluir: Incluir | None = None) -> Piezas:
+    """Ensambla sin comprobar ciclos, memoria ni LFOs: sirve para medir lo que no cabe."""
     e = _Estado()
     # Pasada 1: directivas, etiquetas y posiciones.
     for origen, n, linea in _lineas(texto, incluir):
@@ -134,10 +160,7 @@ def ensamblar(texto: str, nombre: str = "programa", incluir: Incluir | None = No
             instrucciones.append(instruccion(n, mnem, ops, pc, e.simbolos, e.alias, e.etiquetas))
         except ErrorEnsamblado as exc:
             raise exc.en(origen) from None
-    try:
-        return Programa(nombre, tuple(instrucciones), max(1, e.memoria_usada), tuple(e.lfos))
-    except ValueError as exc:
-        raise ErrorEnsamblado(0, str(exc)) from exc
+    return Piezas(tuple(instrucciones), e.memoria_usada, tuple(e.lfos))
 
 
 def _pasada_1(e: _Estado, n: int, linea: str, origen: str | None) -> None:

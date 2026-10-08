@@ -10,6 +10,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 from sofifi.adapters.archivos import FuenteProgramaArchivo, SumideroHex, ensamblar_archivo
+from sofifi.adapters.cadenas import leer_cadenas
 from sofifi.adapters.wav import FuenteWav, SumideroWav
 from sofifi.cli import main
 from sofifi.domain.aritmetica import DATO_MAX, DATO_MIN, FS_WAV, dato
@@ -161,3 +162,35 @@ def test_cli_presets(
         main(["render", "programas/plate.sasm", str(entrada), str(salida), "--preset", "Nada"]) == 1
     )
     assert "no está en [plate]" in capsys.readouterr().err
+
+
+def test_cli_cadenas_componer_y_cadena(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(Path(__file__).resolve().parents[2])
+    assert main(["cadenas"]) == 0
+    listado = capsys.readouterr().out
+    assert "Eco y muelle: delay → spring" in listado and "no cabe: memoria" in listado
+    sasm = tmp_path / "eco.sasm"
+    assert main(["componer", "Eco y muelle", str(sasm)]) == 0
+    assert ensamblar_archivo(sasm).palabras_memoria > 1
+    entrada, salida = tmp_path / "in.wav", tmp_path / "out.wav"
+    _wav16(entrada, [1000, -1000] * 200)
+    assert main(["cadena", "Eco y muelle", str(entrada), str(salida), "--pot", "pot2=0.5"]) == 0
+    assert FuenteWav(salida).leer().muestras == 400
+    assert main(["cadena", "No existe", str(entrada), str(salida)]) == 1
+    assert "no está" in capsys.readouterr().err
+
+
+def test_banco_de_cadenas_con_errores(tmp_path: Path) -> None:
+    ruta = tmp_path / "c.toml"
+    efectos = 'efectos = [{ programa = "plate", mandos = [MANDO] }, { programa = "plate" }]'
+    ruta.write_text(
+        f'[[cadena]]\nnombre = "a"\nmodo = "serie"\n{efectos}\n'.replace("MANDO", '"x"')
+    )
+    with pytest.raises(ValueError, match="no es un número"):
+        leer_cadenas(ruta)
+    una = f'[[cadena]]\nnombre = "a"\nmodo = "serie"\n{efectos}\n'.replace("MANDO", "0.5")
+    ruta.write_text(una + una)
+    with pytest.raises(ValueError, match="repetidas"):
+        leer_cadenas(ruta)

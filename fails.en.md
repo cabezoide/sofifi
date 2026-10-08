@@ -1,4 +1,4 @@
-<!-- i18n: fuente=fails.md sha=feab6ccbf401 estado=al_dia -->
+<!-- i18n: fuente=fails.md sha=74d59e91185b estado=al_dia -->
 # Failures and their resolution
 
 This is the record of the failures found in the project. Each entry has a symptom, a diagnosis, a root cause, a resolution and a lesson. The record helps us not to repeat them. It also explains why the design is as it is.
@@ -29,6 +29,7 @@ Add a new entry when a failure is diagnosed and resolved. Do not rewrite the ent
 | F-20 | 07 | The clear of the absolute region did not clear two words | resolved |
 | F-21 | 07 | In marea, the software LFO stayed at +1 | resolved before publication |
 | F-22 | 07 | The shoegaze program was five times louder than the plate | resolved before publication |
+| F-23 | 07 | A chain with saturation was six times louder than the plate | resolved before publication |
 
 ---
 
@@ -251,3 +252,11 @@ Add a new entry when a failure is diagnosed and resolved. Do not rewrite the ent
 - **Root cause:** the output gain was fixed (0.5). The test measured the compression, not the level against the plate.
 - **Resolution:** the output decreases from 0.6 to 0.1 when pot3 increases. With the mix at half, the level stays within ±25 % of the plate across the full range of the knob.
 - **Lesson:** a jump in volume when you change the program is a risk (SECURITY.md). Compare the level of each new program with the plate before publication.
+
+## F-23 · A chain with saturation was six times louder than the plate
+
+- **Symptom:** the demo of «Fuzz en la nube» (`saturacion` → `cloud`) clipped: a peak of 1.03 and an RMS level ten times that of the plate.
+- **Diagnosis:** the «nivel» (level) knob of `saturacion` was fixed at 0.6 and the mix at 1. With a soft guitar, the saturation raises the signal to the limit; `cloud` receives it at almost full scale.
+- **Root cause:** the lesson of F-22 was applied to the `shoegaze` program, but there was no level test for the chains. A program that is correct alone can be wrong in a chain.
+- **Resolution:** «nivel» at 0.1 in that chain and a gain of 0.2 in «Sustain en la placa». New test `ninguna_cadena_salta_de_volumen`: with a soft note and a loud note, no chain is more than twice as loud as the plate.
+- **Lesson:** make a test from each rule that comes from a failure. If the rule stays in a note, the same failure comes back by a different path.
