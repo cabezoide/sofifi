@@ -32,7 +32,8 @@ Opción 2.
 
 - **Línea de retiro:** la instrucción que presenta su último producto lo marca. Su código, un operando (LR en `WRAP`, D en `SOF`, R en las demás) y el pc llegan a la ALU junto al producto. La ALU escribe el ACC un ciclo después.
 - **Orden del ACC:** las escrituras del ACC van siempre en el orden del programa. La saturación no es asociativa, así que el orden es parte del contrato (ADR 0008).
-- **Acumulación sin espera:** `RDA`, `RDAX`, `CHO` y `RDAA` toman el ACC en la segunda etapa de la ALU. Dos retiros seguidos ven el ACC al día.
+- **Acumulación sin espera:** entre dos empujes al retiro hay al menos 2 ciclos (una decodificación y una ejecución). La primera etapa de la ALU de un retiro ya lee el ACC que escribió el anterior: no hace falta reenvío. Un reenvío en la segunda etapa alargaba el bucle del ACC, y `nucleo_placa` bajaba a 98,9 MHz en nextpnr.
+- **Saturación por los bits altos:** el ACC satura si los tres bits altos de la suma no son iguales. Antes se comparaba con dos constantes de 50 bit: dos cadenas de acarreo más en el bucle del ACC.
 - **Dependencias:** una instrucción que lee el ACC o `a24` no se decodifica hasta que el retiro está vacío. Una que lee el banco espera 3 ciclos tras un `WRAX`.
 - **Cola de búsqueda:** el microcódigo se pide sin parar. Una cola de 4 palabras y una cabeza registrada dan la instrucción siguiente. Un `SKP` que salta vacía la cola.
 - **El modelo de tiempos es exacto:** `model/sofifi/domain/coste.py` reproduce el secuenciador. La simulación exige el mismo número de ciclos que el RTL en cada programa sin `SKP`, en cada instrucción y en cada pareja de instrucciones. Con `SKP`, el modelo es una cota.

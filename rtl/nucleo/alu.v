@@ -16,10 +16,10 @@
 //
 // Los desplazamientos a la derecha son aritméticos: el floor del modelo.
 // Dos etapas (REGISTRADA = 1 en el núcleo): la 1 elige los operandos y la 2
-// hace una sola operación (suma o máximo) y satura. Las que acumulan (RDA, RDAX,
-// CHO, RDAA) toman el ACC en la etapa 2 y no en la 1: el núcleo segmentado
-// (ADR 0014) retira dos instrucciones en ciclos seguidos y la segunda tiene que
-// ver el ACC que escribió la primera. En una etapa, la ALU daba
+// hace una sola operación (suma o máximo) y satura. En el núcleo segmentado
+// (ADR 0014) dos retiros llegan como poco con 2 ciclos de separación (una
+// decodificación y una ejecución): la etapa 1 del segundo ya lee el ACC que
+// escribió el primero, sin reenvío. En una etapa, la ALU daba
 // 157 MHz con una colocación y 80 con otra (fails.md, F-11). Con REGISTRADA = 0
 // es combinacional: así la prueba contra el modelo no necesita reloj.
 `default_nettype none
@@ -54,14 +54,13 @@ module alu #(
     // ── Etapa 1: operandos y modo ────────────────────────────────────────
     // MAXX compara |ACC| con |R·C|; ABSA pasa |ACC| (|x| + 0); el resto suma.
     reg signed [49:0] x_a, x_b;
-    reg               maximo, acumula;
+    reg               maximo;
     always @(*) begin
         x_a = acc50;   // NOP, SKP: ACC + 0
         x_b = 50'sd0;
         maximo = 1'b0;
-        acumula = 1'b0;
         case (op)
-            RDA, RDAX, CHO, RDAA: begin x_b = p50; acumula = 1'b1; end
+            RDA, RDAX, CHO, RDAA: x_b = p50;
             WRA, WRAX, WRAA:      begin x_a = 50'sd0; x_b = p50; end
             WRAP:           begin x_a = lr16;   x_b = p50; end
             RDFX:           begin x_a = r16;    x_b = p50; end
@@ -81,11 +80,11 @@ module alu #(
 
     // Registro entre etapas (REGISTRADA = 1) o paso directo (0, para la prueba).
     reg signed [49:0] r_a, r_b;
-    reg               r_max, r_acumula;
+    reg               r_max;
     always @(posedge clk) begin
-        r_a <= x_a; r_b <= x_b; r_max <= maximo; r_acumula <= acumula;
+        r_a <= x_a; r_b <= x_b; r_max <= maximo;
     end
-    wire signed [49:0] e_a   = (REGISTRADA == 0) ? x_a : (r_acumula ? acc50 : r_a);
+    wire signed [49:0] e_a   = (REGISTRADA != 0) ? r_a : x_a;
     wire signed [49:0] e_b   = (REGISTRADA != 0) ? r_b : x_b;
     wire               e_max = (REGISTRADA != 0) ? r_max : maximo;
 

@@ -109,6 +109,7 @@ module nucleo #(
     reg [2:0]  cola_n;
     reg [53:0] cabeza;
     reg        cab_v, cab_vieja;   // cab_vieja: la cabeza lleva al menos un ciclo
+    reg        cab_lee_acc, cab_lee_reg;
     reg        vaciar;             // la orden de vaciar, desde el secuenciador
     reg [11:0] destino;
     wire       tomar;              // la decodificación consume la cabeza
@@ -156,6 +157,8 @@ module nucleo #(
             cab_vieja <= cab_v && !tomar;
             if (cargar_cab) begin
                 cabeza <= cola[cola_lec]; cola_lec <= cola_lec + 1'b1;
+                cab_lee_acc <= lee_acc_f(cola[cola_lec][53:48]);
+                cab_lee_reg <= lee_reg_f(cola[cola_lec][53:48]);
                 cab_v <= 1'b1;
             end else if (tomar) cab_v <= 1'b0;
         end
@@ -221,13 +224,18 @@ module nucleo #(
     wire [5:0] op_leido = cabeza[53:48];
     // Dependencias de la cabeza: lee el ACC o a24, o lee el banco de registros.
     // MAXX y ABSA leen |ACC| en la primera etapa del retiro.
-    wire lee_acc = (op_leido == WRA) || (op_leido == WRAP) || (op_leido == WRAX) ||
-                   (op_leido == RDFX) || (op_leido == MULX) || (op_leido == SOF) ||
-                   (op_leido == CLIP) || (op_leido == SKP) || (op_leido == WRAA) ||
-                   (op_leido == MAXX) || (op_leido == 6'd15);   // ABSA
-    wire lee_reg = (op_leido == RDAX) || (op_leido == MAXX) || (op_leido == RDFX) ||
-                   (op_leido == MULX) || (op_leido == 6'd13) ||  // LDAX
-                   (op_leido == RDAA) || (op_leido == WRAA) || (op_leido == CHO);
+    // Se calculan al cargar la cabeza y van registradas (cab_lee_*): decidir la
+    // decodificación desde el op de la cabeza fallaba en el silicio a 125 MHz.
+    function automatic lee_acc_f(input [5:0] o);
+        lee_acc_f = (o == WRA) || (o == WRAP) || (o == WRAX) || (o == RDFX) ||
+                    (o == MULX) || (o == SOF) || (o == CLIP) || (o == SKP) ||
+                    (o == WRAA) || (o == MAXX) || (o == 6'd15);   // ABSA
+    endfunction
+    function automatic lee_reg_f(input [5:0] o);
+        lee_reg_f = (o == RDAX) || (o == MAXX) || (o == RDFX) || (o == MULX) ||
+                    (o == 6'd13) ||   // LDAX
+                    (o == RDAA) || (o == WRAA) || (o == CHO);
+    endfunction
     wire               mabs_r = es_rdaa;
     wire               mabs_w = es_wraa | mabs_borrar;
     wire        [14:0] idx_abs = ad[14:0] + r_d[22:8];
@@ -303,9 +311,9 @@ module nucleo #(
         ret2_pc <= ret_pc[ETAPAS-1];
     end
     wire signed [47:0] acc_alu;
-    // Dos etapas: la primera elige los operandos; la segunda suma y satura y su
-    // salida va directa al ACC. Las instrucciones que acumulan toman el ACC en la
-    // segunda etapa: así dos retiros seguidos ven el ACC al día.
+    // Dos etapas: la primera elige los operandos (lee el ACC); la segunda suma y
+    // satura y su salida va directa al ACC. Entre dos empujes hay al menos 2
+    // ciclos, así que la etapa 1 de un retiro ve el ACC del anterior.
     alu #(.REGISTRADA(1)) u_alu (
         .clk(clk), .op(ret_op[ETAPAS-1]), .acc(acc), .p(p), .lr(ret_x[ETAPAS-1]),
         .r(ret_x[ETAPAS-1]), .addr(ret_x[ETAPAS-1][17:0]), .acc_sig(acc_alu)
@@ -358,9 +366,12 @@ module nucleo #(
     // a candidatos al día. El programa acaba igual: retiro vacío y banco escrito.
     reg  [1:0] reg_edad;   // ciclos desde la última escritura del banco por WRAX
     wire       retiro_vacio = (pendientes == 3'd0) && !empujar;
-    wire       fin_prog = (pc == cfg_instrucciones);
-    wire       sin_dep  = (!lee_acc || retiro_vacio) &&
-                          (!lee_reg || (cab_vieja && reg_edad == 2'd2));
+    // fin_prog va registrado: llega un ciclo tarde, pero E_LEER no lo mira hasta
+    // un ciclo después de cambiar pc (la ejecución dura al menos un ciclo).
+    reg        fin_prog;
+    always @(posedge clk) fin_prog <= (pc == cfg_instrucciones);
+    wire       sin_dep  = (!cab_lee_acc || retiro_vacio) &&
+                          (!cab_lee_reg || (cab_vieja && reg_edad == 2'd2));
     assign tomar = (estado == E_LEER) && !vaciar && !fin_prog && cab_v && sin_dep;
 
     integer i;
