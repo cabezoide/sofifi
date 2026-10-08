@@ -91,6 +91,7 @@ async def igual_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
     dut.cfg_lfo_excursiones.value = sum(
         c.excursion << (15 * k) for k, c in enumerate(programa.lfos) if c is not None
     )
+    dut.cfg_absoluta.value = int(programa.usa_absoluta)
     dut.pots.value = sum((v & 0xFFFFFF) << (24 * k) for k, v in enumerate(pots))
     await ClockCycles(dut.clk, 3)
     for k, ins in enumerate(programa.instrucciones):
@@ -142,6 +143,7 @@ async def cargar(dut: cocotb.handle.HierarchyObject, programa: Programa) -> None
     dut.cfg_instrucciones.value = len(programa.instrucciones)
     dut.cfg_palabras.value = programa.palabras_memoria
     dut.cfg_lfo_tipos.value, dut.cfg_lfo_excursiones.value = 0, 0
+    dut.cfg_absoluta.value = int(programa.usa_absoluta)
     for k, ins in enumerate(programa.instrucciones):
         dut.prog_we.value, dut.prog_dir.value, dut.prog_dato.value = 1, k, codificar(ins)
         await RisingEdge(dut.clk)
@@ -220,6 +222,58 @@ async def saltos_iguales_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
         assert obtenido == esperado, f"muestra {k}: RTL {obtenido}, modelo {esperado}"
 
 
+ABSOLUTA = """
+equ  pe   reg0            ; cabeza de escritura: 1 muestra por muestra
+equ  pl   reg1            ; lectura lenta: 0,37 muestras por muestra
+equ  pr   reg2            ; lectura al revés: −1,5 muestras por muestra
+equ  u    reg3            ; 2^-15: una muestra en R
+        skp  run, inicio
+        sof  0, 1/32768
+        wrax u, 0
+        sof  0, 0.5
+        wrax pr, 0
+inicio:
+        rdax adcl, 1.0
+        wraa pe, 0
+        rdaa pl, 1.0, 100
+        rdaa pe, 0.5, 32700       ; origen cerca del final: la máscara da la vuelta
+        wrax dacl, 0
+        rdaa pr, 1.0, 7
+        wrax dacr, 0
+        rdax pe, 1.0
+        rdax u, 1.0
+        wrax pe, 0
+        rdax pl, 1.0
+        rdax u, 0.37
+        wrax pl, 0
+        rdax pr, 1.0
+        rdax u, -1.5
+        wrax pr, 0
+"""
+
+
+@cocotb.test()
+async def absoluta_igual_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
+    """RDAA y WRAA (ADR 0009): fracción, origen, desborde por la máscara y lectura al revés."""
+    cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
+    dut.pots.value = 0
+    programa = ensamblar(ABSOLUTA, "absoluta")
+    await cargar(dut, programa)
+    modelo = Nucleo(programa)
+    azar = random.Random(17)
+    for k in range(int(os.environ.get("SOFIFI_MUESTRAS", "1000")) * 3):
+        izq = azar.randrange(-(1 << 22), 1 << 22)
+        dut.adc_l.value, dut.adc_r.value, dut.sw.value = izq, 0, 0
+        dut.tick.value = 1
+        await RisingEdge(dut.clk)
+        dut.tick.value = 0
+        while not int(dut.fin.value):
+            await RisingEdge(dut.clk)
+        esperado = modelo.procesar(izq, 0)
+        obtenido = (dut.dac_l.value.to_signed(), dut.dac_r.value.to_signed())
+        assert obtenido == esperado, f"muestra {k}: RTL {obtenido}, modelo {esperado}"
+
+
 CABECERA_COSTE = "mem d 64\nlfo 0 sin 8\nlfo 1 rnd 8\nlfo 2 ramp 32\n"
 MUESTRA_COSTE = {
     "rdax": "rdax adcl, 0.5",
@@ -242,6 +296,8 @@ MUESTRA_COSTE = {
     "cho_ramp_na": "cho d + 10, 0.5, lfo2, na",
     "skp_no": "skp neg, 0",
     "skp_si": "skp gez, 1\nnop",  # salta: el nop no se ejecuta
+    "rdaa": "rdaa reg1, 0.5, 3",
+    "wraa": "wraa reg1, 0.5, 3",
 }
 
 
@@ -306,7 +362,12 @@ def _correr(
 
 def test_nucleo_auxiliares(construido: tuple[Runner, Path]) -> None:
     """Reset, saltos y coste de cada instrucción: no dependen del programa."""
-    casos = ["reset_borra_la_memoria", "saltos_iguales_al_modelo", "coste_de_cada_instruccion"]
+    casos = [
+        "reset_borra_la_memoria",
+        "saltos_iguales_al_modelo",
+        "coste_de_cada_instruccion",
+        "absoluta_igual_al_modelo",
+    ]
     _correr(construido, casos, "auxiliares", {})
 
 

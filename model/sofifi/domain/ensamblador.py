@@ -19,6 +19,7 @@ Sintaxis::
     clip | clr | absa | nop
     skp   run|zro|gez|neg, etiqueta|N
     cho   dir, C, lfoN [, na|media]
+    rdaa  reg, C [, origen]          wraa reg, C [, origen]    ; región absoluta (ADR 0009)
 
 En las direcciones, ``linea`` es el inicio (escritura), ``linea#`` el final
 (retardo completo) y ``linea^`` el punto medio, como en SpinASM. ``mem x N``
@@ -78,9 +79,10 @@ _MEMORIA_COEF = {"rda": Op.RDA, "wra": Op.WRA, "wrap": Op.WRAP}
 _REGISTRO_COEF = {"rdax": Op.RDAX, "wrax": Op.WRAX, "rdfx": Op.RDFX, "maxx": Op.MAXX}
 _SOLO_REGISTRO = {"mulx": Op.MULX, "ldax": Op.LDAX}
 _OTRAS = {"sof": Op.SOF, "skp": Op.SKP, "cho": Op.CHO}
+_ABSOLUTAS = {"rdaa": Op.RDAA, "wraa": Op.WRAA}
 
 MNEMONICOS: dict[str, Op] = (
-    _SIN_OPERANDOS | _MEMORIA_COEF | _REGISTRO_COEF | _SOLO_REGISTRO | _OTRAS
+    _SIN_OPERANDOS | _MEMORIA_COEF | _REGISTRO_COEF | _SOLO_REGISTRO | _OTRAS | _ABSOLUTAS
 )
 
 
@@ -253,6 +255,11 @@ def _instruccion(
     if op in _MEMORIA_COEF.values():
         esperar(2)
         return Instruccion(op, coef=c(args[1]), addr=direccion(args[0]))
+    if op in _ABSOLUTAS.values():  # rdaa|wraa reg, C [, origen]
+        if len(args) not in (2, 3):
+            raise ErrorEnsamblado(n, f"uso: {mnem} reg, C [, origen]")
+        origen = direccion(args[2]) if len(args) == 3 else 0
+        return Instruccion(op, reg=reg(args[0]), coef=c(args[1]), addr=origen)
     if op in _REGISTRO_COEF.values():
         esperar(2)
         return Instruccion(op, reg=reg(args[0]), coef=c(args[1]))

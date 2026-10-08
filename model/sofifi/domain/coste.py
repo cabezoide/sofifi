@@ -34,6 +34,8 @@ CICLOS_RTL: dict[Op, int] = {
     Op.RDA: 19,
     Op.CHO: 52,
     Op.SKP: 8,  # si salta: vuelve a leer el microcódigo
+    Op.RDAA: 26,  # dos lecturas, la diferencia por la fracción y el producto por C
+    Op.WRAA: 10,
 }
 CICLOS_SKP_SIN_SALTO = 6
 CICLOS_CHO_NA = 5  # la ventana del pitch shifter es una multiplicación más

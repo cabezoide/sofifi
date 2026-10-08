@@ -40,6 +40,7 @@ module nucleo #(
     input  wire [15:0]        cfg_palabras,        // memoria de retardo, 1..PALABRAS_MAX
     input  wire [7:0]         cfg_lfo_tipos,       // 2 bit por LFO: 0 SIN, 1 RND, 2 RAMP
     input  wire [59:0]        cfg_lfo_excursiones, // 15 bit por LFO
+    input  wire               cfg_absoluta,        // 1: el programa usa la región absoluta (RDAA, WRAA)
     // Muestra
     input  wire               tick,
     input  wire signed [23:0] adc_l,
@@ -64,7 +65,7 @@ module nucleo #(
     localparam [5:0] RDA = 6'd1,  WRA = 6'd2,   WRAP = 6'd3,
                      RDAX = 6'd4, WRAX = 6'd5, RDFX = 6'd6,  MAXX = 6'd7,
                      MULX = 6'd8, SOF = 6'd9,  CLIP = 6'd10, SKP = 6'd11,
-                     CHO = 6'd12;
+                     CHO = 6'd12, RDAA = 6'd16, WRAA = 6'd17;
     localparam [1:0] T_SIN = 2'd0, T_RAMP = 2'd2;   // RND (1): rama por defecto de CHO
     localparam [3:0] LAT = 4'd5;
     localparam integer GRUPO_MEM = 8;   // bloques de memoria de retardo por grupo
@@ -164,10 +165,29 @@ module nucleo #(
     reg  signed [23:0] mdato_w;
     reg                mavanzar;
     wire signed [23:0] mdato_r;
+    // Región absoluta (ADR 0009): RDAA lee y WRAA escribe en palabras + índice.
+    // El índice sale del registro R (15 bit de entero) y del campo addr, y se
+    // enmascara a 15 bit. borrar_abs la borra al salir del reset.
+    reg                borrar_abs;
+    // Predecodificación (Fase 07): E_DECO registra la clase de la instrucción y
+    // unas banderas. Con 18 instrucciones, decidir en E_EJEC desde el op de 6 bit
+    // alargaba el camino de control (de 155 a 121 MHz según nextpnr).
+    localparam [2:0] C_SIMPLE = 3'd0, C_RDA = 3'd1, C_CLIP = 3'd2, C_CHO = 3'd3,
+                     C_SKP = 3'd4, C_RDAA = 3'd5, C_OTRA = 3'd6;
+    reg [2:0] clase;
+    reg es_rdfx, es_rdax_maxx, es_mulx, es_wra_wrap, es_wrax, es_wraa, es_rdaa;
+    wire [5:0] op_leido = ins_leida[53:48];
+    wire               mabs_r = es_rdaa;
+    wire               mabs_w = es_wraa | borrar_abs;
+    wire        [14:0] idx_abs = ad[14:0] + r_d[22:8];
     memoria_retardo #(.PALABRAS_MAX(PALABRAS_MAX), .GRUPO(GRUPO_MEM)) u_mem (
         .clk(clk), .rst(rst), .palabras(cfg_palabras), .avanzar(mavanzar),
-        .dir_r(mdir_r), .dato_r(mdato_r), .we(mwe), .dir_w(mdir_w), .dato_w(mdato_w)
+        .dir_r(mdir_r), .abs_r(mabs_r), .dato_r(mdato_r),
+        .we(mwe), .dir_w(mdir_w), .abs_w(mabs_w), .dato_w(mdato_w)
     );
+    reg  signed [23:0] m0_abs;    // RDAA: M[i]; la fracción va en frac_abs
+    reg         [7:0]  frac_abs;
+    reg  signed [23:0] v_abs;     // RDAA: valor interpolado
 
     // ── LFO ───────────────────────────────────────────────────────────────
     reg                lfo_avanzar;
@@ -227,6 +247,20 @@ module nucleo #(
     wire saltar = (fl[0] & ~primera) | (fl[1] & (acc == 48'sd0)) |
                   (fl[2] & ~acc[47]) | (fl[3] & acc[47]);
 
+    // `tick` se registra a la entrada (Fase 07): llegaba combinacional desde el
+    // generador de muestra y el cargador del top, y su lógica se sumaba a la de
+    // arranque del núcleo en el camino crítico. Un ciclo más de latencia, sin
+    // cambio en los bits ni en los ciclos que cuenta `ciclos`.
+    // Las entradas se capturan en el flanco del `tick` original: el top puede
+    // cambiarlas en el ciclo siguiente (el estímulo del HIL lo hace).
+    reg tick_r;
+    reg signed [23:0] adc_l_t, adc_r_t, sw_t;
+    reg        [143:0] pots_t;
+    always @(posedge clk) begin
+        tick_r <= tick & ~rst;
+        if (tick) begin adc_l_t <= adc_l; adc_r_t <= adc_r; pots_t <= pots; sw_t <= sw; end
+    end
+
     integer i;
     always @(posedge clk) begin
         fin         <= 1'b0;
@@ -234,7 +268,10 @@ module nucleo #(
         mavanzar    <= 1'b0;
         lfo_avanzar <= 1'b0;
         if (rst) begin
-            estado <= E_BORRAR; borrar <= 16'd0; escr <= 1'b0; pc_mc <= 12'd0; edad <= 3'd0;
+            estado <= E_BORRAR; borrar <= 16'd0; borrar_abs <= 1'b0;
+            clase <= C_OTRA; es_rdfx <= 1'b0; es_rdax_maxx <= 1'b0; es_mulx <= 1'b0;
+            es_wra_wrap <= 1'b0; es_wrax <= 1'b0; es_wraa <= 1'b0; es_rdaa <= 1'b0;
+            escr <= 1'b0; pc_mc <= 12'd0; edad <= 3'd0;
             pc <= 12'd0; paso <= 5'd0; espera <= 4'd0;
             primera <= 1'b1; acc <= 48'sd0; lr <= 24'sd0; ins <= 54'd0;
             dac_l <= 24'sd0; dac_r <= 24'sd0; ciclos <= 16'd0; cuenta <= 16'd0;
@@ -244,16 +281,20 @@ module nucleo #(
             // edad vuelve a 0 en el mismo flanco en que cambia pc_mc (más abajo).
             if (edad != 3'd4) edad <= edad + 1'b1;
             case (estado)
-            E_BORRAR: begin
+            E_BORRAR: begin   // primero la memoria circular; después, la región absoluta
                 mwe <= 1'b1; mdir_w <= {1'b0, borrar}; mdato_w <= 24'sd0;
-                if (borrar == cfg_palabras - 1'b1) estado <= E_PARADO;
-                else borrar <= borrar + 1'b1;
+                if (!borrar_abs && borrar == cfg_palabras - 1'b1) begin
+                    if (cfg_absoluta) begin borrar_abs <= 1'b1; borrar <= 16'd0; end
+                    else estado <= E_PARADO;
+                end else if (borrar_abs && borrar == 16'd32767) begin
+                    borrar_abs <= 1'b0; estado <= E_PARADO;
+                end else borrar <= borrar + 1'b1;
             end
-            E_PARADO: if (tick) begin
-                regs[ADCL] <= adc_l;
-                regs[ADCR] <= adc_r;
-                for (i = 0; i < 6; i = i + 1) regs[POT_BASE + i] <= pots[24*i +: 24];
-                regs[SW] <= sw;
+            E_PARADO: if (tick_r) begin
+                regs[ADCL] <= adc_l_t;
+                regs[ADCR] <= adc_r_t;
+                for (i = 0; i < 6; i = i + 1) regs[POT_BASE + i] <= pots_t[24*i +: 24];
+                regs[SW] <= sw_t;
                 lfo_avanzar <= 1'b1;
                 acc <= 48'sd0; lr <= 24'sd0; pc <= 12'd0; cuenta <= 16'd1;
                 estado <= E_LFO;
@@ -266,6 +307,22 @@ module nucleo #(
             end
             E_DECO: begin
                 ins <= ins_leida;
+                case (op_leido)
+                    RDAX, MAXX, WRA, WRAX, WRAP, RDFX, MULX, SOF, WRAA: clase <= C_SIMPLE;
+                    RDA:     clase <= C_RDA;
+                    CLIP:    clase <= C_CLIP;
+                    CHO:     clase <= C_CHO;
+                    SKP:     clase <= C_SKP;
+                    RDAA:    clase <= C_RDAA;
+                    default: clase <= C_OTRA;   // NOP, LDAX, CLR, ABSA
+                endcase
+                es_rdfx      <= (op_leido == RDFX);
+                es_rdax_maxx <= (op_leido == RDAX) || (op_leido == MAXX);
+                es_mulx      <= (op_leido == MULX);
+                es_wra_wrap  <= (op_leido == WRA) || (op_leido == WRAP);
+                es_wrax      <= (op_leido == WRAX);
+                es_wraa      <= (op_leido == WRAA);
+                es_rdaa      <= (op_leido == RDAA);
                 pc_mc <= pc + 1'b1; edad <= 3'd0;            // adelantar la siguiente
                 r_d      <= candidato[ins_leida[47:45]];
                 dep_d    <= regs[6'd43 + {3'd0, sel_leida, 1'b0}];   // lfoN_depth = 42 + 2N + 1
@@ -282,26 +339,27 @@ module nucleo #(
                 espera <= espera - 1'b1;
             end else begin
                 // Por defecto, la instrucción termina en este ciclo.
-                case (op)
-                RDAX, MAXX, WRA, WRAX, WRAP, RDFX, MULX, SOF:
-                    if (paso == 5'd0 && op == RDFX) begin
+                case (clase)
+                C_SIMPLE:   // RDAX, MAXX, WRA, WRAX, WRAP, RDFX, MULX, SOF, WRAA
+                    if (paso == 5'd0 && es_rdfx) begin
                         paso <= 5'd2;   // dif = a24 − R se registra en este ciclo
                     end else if (paso == 5'd0 || paso == 5'd2) begin
-                        case (op)
-                            RDFX:    ma <= a27(dif);
-                            RDAX, MAXX: ma <= a27({r_d[23], r_d});
-                            default: ma <= a27({a24[23], a24});
-                        endcase
-                        mb <= (op == MULX) ? b36({r_d[23], r_d}) : b36({{7{cf[17]}}, cf});
-                        if (op == WRA || op == WRAP) begin
+                        if (es_rdfx)           ma <= a27(dif);
+                        else if (es_rdax_maxx) ma <= a27({r_d[23], r_d});
+                        else                   ma <= a27({a24[23], a24});
+                        mb <= es_mulx ? b36({r_d[23], r_d}) : b36({{7{cf[17]}}, cf});
+                        if (es_wra_wrap) begin
                             mwe <= 1'b1; mdir_w <= {1'b0, ad[15:0]}; mdato_w <= a24;
                         end
-                        if (op == WRAX) regs[rg] <= a24;
+                        if (es_wraa) begin
+                            mwe <= 1'b1; mdir_w <= {2'b00, idx_abs}; mdato_w <= a24;
+                        end
+                        if (es_wrax) regs[rg] <= a24;
                         paso <= 5'd1; espera <= LAT - 1'b1;
                     end else begin
                         estado <= E_ESCR;
                     end
-                RDA:
+                C_RDA:
                     case (paso)
                     5'd0: begin mdir_r <= {1'b0, ad[15:0]}; paso <= 5'd1; espera <= LAT_MEM - 1'b1; end
                     5'd1: begin
@@ -311,7 +369,7 @@ module nucleo #(
                     end
                     default: begin estado <= E_ESCR; end
                     endcase
-                CLIP:
+                C_CLIP:
                     case (paso)
                     5'd0: begin
                         x <= a24;
@@ -329,7 +387,7 @@ module nucleo #(
                         pc <= pc + 1'b1; estado <= E_LEER;
                     end
                     endcase
-                CHO:
+                C_CHO:
                     case (paso)
                     // Desplazamiento q8 según el tipo de LFO (lfo.py).
                     5'd0: begin
@@ -410,7 +468,27 @@ module nucleo #(
                     end
                     default: begin estado <= E_ESCR; end
                     endcase
-                SKP: begin
+                C_RDAA:
+                    case (paso)
+                    // Lecturas de M[i] y M[i+1] en dos ciclos seguidos.
+                    5'd0:  begin mdir_r <= {2'b00, idx_abs}; frac_abs <= r_d[7:0]; paso <= 5'd26; end
+                    5'd26: begin mdir_r <= mdir_r + 17'sd1; paso <= 5'd27; espera <= LAT_MEM - 4'd3; end
+                    5'd27: paso <= 5'd28;   // M[i] llega LAT_MEM ciclos después de pedirla
+                    5'd28: begin m0_abs <= mdato_r; paso <= 5'd29; end
+                    5'd29: begin   // (M[i+1] − M[i])·f; la fracción, sin signo
+                        ma <= a27({mdato_r[23], mdato_r} - {m0_abs[23], m0_abs});
+                        mb <= b36({17'd0, frac_abs});
+                        paso <= 5'd30; espera <= LAT - 1'b1;
+                    end
+                    5'd30: begin v_abs <= m0_abs + 24'(p50 >>> 8); paso <= 5'd31; end
+                    5'd31: begin   // LR = v; ACC += v·C
+                        lr <= v_abs;
+                        ma <= a27({v_abs[23], v_abs}); mb <= b36({{7{cf[17]}}, cf});
+                        paso <= 5'd19; espera <= LAT - 1'b1;
+                    end
+                    default: estado <= E_ESCR;
+                    endcase
+                C_SKP: begin
                     pc <= pc + 12'd1 + (saltar ? ad[11:0] : 12'd0);
                     estado <= E_LEER;
                 end
