@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/infografias/sofifi.html sha=c57c04346d12 estado=al_dia -->
+<!-- i18n: fuente=docs/infografias/sofifi.html sha=bedb5b700437 estado=al_dia -->
 <!-- SPDX-License-Identifier: MIT -->
 <title>SOFIFI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -163,7 +163,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 
 <header class="portada" id="portada">
   <div>
-    <div class="etiqueta">オープンなアンビエントペダル · FPGA Tang Primer 25K · バージョン 0.6</div>
+    <div class="etiqueta">オープンなアンビエントペダル · FPGA Tang Primer 25K · バージョン 0.7</div>
     <h1 class="marca">SOFI<span>FI</span></h1>
     <div class="subtitulo">Soundscapes On FPGA · Integrated Filters &amp; Impulses</div>
     <p class="tesis">エフェクトはすべて<strong>プログラム</strong>です。各プログラムは、ハードウェアに載せる前にモデルと<strong>ビット単位</strong>で照合します。ボードはすでに応答しています。</p>
@@ -199,12 +199,12 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
     <div class="razon fuerte">
       <span class="num">0</span>
       <h3>ビットの差</h3>
-      <p>シミュレーションでは、<span class="dato">43</span> 個すべてのプログラムで RTL の出力がモデルとビット単位で一致します。ボード上では、plate が 9 回中 9 回のキャプチャで一致しました（MED-13）。</p>
+      <p>シミュレーションでは、<span class="dato">45</span> 個すべてのプログラムで RTL の出力がモデルとビット単位で一致します。ボード上では、plate（9 回中 9 回のキャプチャ、MED-13）と looper（MED-15）が一致しました。</p>
     </div>
     <div class="razon">
-      <span class="num">43</span>
+      <span class="num">45</span>
       <h3>テキストで書くエフェクト</h3>
-      <p>リバーブ、ディレイ、モジュレーション、ピッチ、ダイナミクス、フィルター、テクスチャ。プリセットは <span class="dato">344</span> 個です。各エフェクトは <span class="dato">25</span>〜<span class="dato">160</span> 命令の <span class="dato">.sasm</span> ファイルです。新しいエフェクトはハードウェアに触れません。</p>
+      <p>リバーブ、ディレイ、モジュレーション、ピッチ、ダイナミクス、フィルター、テクスチャ、ルーパー。プリセットは <span class="dato">360</span> 個です。各エフェクトは <span class="dato">25</span>〜<span class="dato">188</span> 命令の <span class="dato">.sasm</span> ファイルです。新しいエフェクトはハードウェアに触れません。</p>
     </div>
     <div class="razon">
       <span class="num">MIT</span>
@@ -221,7 +221,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
         <tr><td>サンプリング周波数</td><td class="gana">48,828 Hz</td><td>約 32 kHz</td></tr>
         <tr><td>ディレイメモリ</td><td>43,008 ワード、0.88 s</td><td class="gana">32,768 ワード、約 1 s</td></tr>
         <tr><td>中身を読める</td><td class="gana">はい：モデル、RTL、テスト</td><td>いいえ：チップは非公開。プログラムは読める</td></tr>
-        <tr><td>プログラムライブラリ</td><td>独自プログラム 43 個とプリセット 344 個</td><td class="gana">Spin とコミュニティのライブラリ、ビジュアルエディタ（SpinCAD）付き</td></tr>
+        <tr><td>プログラムライブラリ</td><td>独自プログラム 45 個とプリセット 360 個</td><td class="gana">Spin とコミュニティのライブラリ、ビジュアルエディタ（SpinCAD）付き</td></tr>
         <tr><td>すぐに弾ける</td><td>まだ</td><td class="gana">はい、多くのペダルで</td></tr>
       </tbody>
     </table>
@@ -241,7 +241,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
     <div class="eslabon"><h3>リミッター</h3><p>RTL に固定。どのプログラムも回避できません。</p></div>
     <div class="eslabon"><h3>出力</h3><p>I2S DAC（PCM5102A）</p></div>
   </div>
-  <p class="cola">microSD はプログラムを保存します。ディレイメモリには使いません。250 ms の書き込みピークがあるためです（ADR 0004）。オーディオは FPGA の BSRAM に置きます：<span class="dato laton">43,008</span> ワード、約 <span class="dato laton">0.88 s</span>。</p>
+  <p class="cola">microSD はプログラムを保存します。ディレイメモリには使いません。250 ms の書き込みピークがあるためです（ADR 0004）。オーディオは FPGA の BSRAM に置きます：<span class="dato laton">43,008</span> ワード、約 <span class="dato laton">0.88 s</span>。ルーパーとグラニュラーは、そのうち <span class="dato laton">32,768</span> ワードを絶対アドレスで使います。ループは移動しません（ADR 0009）。</p>
 
   <div class="tabla-caja">
     <table>
@@ -253,7 +253,8 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
         <tr><td>ピッチ</td><td>4</td><td>escalera · 上昇するエコー</td><td>799</td><td><div class="barra" aria-label="39 %"><i style="width:39%"></i></div></td></tr>
         <tr><td>ダイナミクス</td><td>3</td><td>compresor</td><td>596</td><td><div class="barra" aria-label="29 %"><i style="width:29%"></i></div></td></tr>
         <tr><td>フィルター</td><td>3</td><td>autowah</td><td>464</td><td><div class="barra" aria-label="23 %"><i style="width:23%"></i></div></td></tr>
-        <tr><td>テクスチャ</td><td>3</td><td>lofi · 7〜24 ビット</td><td>800</td><td><div class="barra" aria-label="39 %"><i style="width:39%"></i></div></td></tr>
+        <tr><td>テクスチャ</td><td>4</td><td>granular · 4 グレイン</td><td>1,896</td><td><div class="barra" aria-label="93 %"><i style="width:93%"></i></div></td></tr>
+        <tr><td>ルーパー</td><td>1</td><td>looper · 0.67 s、オーバーダブ</td><td>809</td><td><div class="barra" aria-label="40 %"><i style="width:40%"></i></div></td></tr>
       </tbody>
     </table>
   </div>
@@ -275,11 +276,11 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
     </div>
     <div class="cifras">
       <div class="cifra"><b>9 / 9</b><span>plate のキャプチャが、100 MHz の実チップ上でモデルとビット単位で一致（MED-13）。</span></div>
-      <div class="cifra"><b>120 MHz</b><span>ボード上でエラーなし（4 / 4）：動作周波数 100 MHz に対し 20 % のマージン（MED-14）。</span></div>
+      <div class="cifra"><b>125 MHz</b><span>ボード上でエラーなし（3 / 3）：動作周波数 100 MHz に対し 25 % のマージン（MED-14）。</span></div>
     </div>
   </div>
   <div class="reglas">
-    <div class="regla"><h3>10 個のハードゲート</h3><p>push の前に毎回実行します。1 つでも失敗すると、push は出ません（ADR 0001）。</p></div>
+    <div class="regla"><h3>11 個のハードゲート</h3><p>push の前に毎回実行します。1 つでも失敗すると、push は出ません（ADR 0001）。</p></div>
     <div class="regla"><h3>セカンドパス</h3><p>各 PR は、リソースのラチェット付きの最適化レビューを受けます（ADR 0010）。</p></div>
     <div class="regla"><h3>検証済みのプリミティブ</h3><p>DSP 27×18、BSRAM 42 ブロック、100 MHz の PLL。Yosys、nextpnr、apicula を使い、ボード上で検証済み（MED-06〜MED-08）。</p></div>
   </div>
@@ -288,7 +289,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 <section id="ruta">
   <div class="cabeza">
     <div class="etiqueta">ツアー</div>
-    <h2>13 フェーズ。7 つ完了。足りないものは最後に。</h2>
+    <h2>13 フェーズ。8 つ完了。足りないものは最後に。</h2>
     <p>フェーズ 08 までは、ボードと microSD だけで足ります。今は入手できないハードウェアは、フェーズ 09〜12 に回します。</p>
   </div>
   <ol class="ruta">
@@ -299,8 +300,8 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
     <li class="fase cerrada"><span class="n">04</span><span class="t">RTL の DSP コア</span><span class="h">完了</span></li>
     <li class="fase cerrada"><span class="n">05</span><span class="t">UART で検証したコア</span><span class="h">完了</span></li>
     <li class="fase cerrada"><span class="n">06</span><span class="t">プログラムライブラリ</span><span class="h">完了</span></li>
-    <li class="fase siguiente"><span class="n">07</span><span class="t">マイクロルーパーとグラニュラー</span><span class="h">次</span></li>
-    <li class="fase"><span class="n">08</span><span class="t">microSD からの読み込み</span><span class="h">PMOD TF</span></li>
+    <li class="fase cerrada"><span class="n">07</span><span class="t">マイクロルーパーとグラニュラー</span><span class="h">完了</span></li>
+    <li class="fase siguiente"><span class="n">08</span><span class="t">microSD からの読み込み</span><span class="h">次</span></li>
     <li class="fase falta"><span class="n">09</span><span class="t">物理コントロール</span><span class="h">MCP3208 が必要</span></li>
     <li class="fase falta"><span class="n">10</span><span class="t">4 言語の OLED インターフェース</span><span class="h">OLED が必要</span></li>
     <li class="fase falta"><span class="n">11</span><span class="t">I2S オーディオ</span><span class="h">コーデックが必要</span></li>
@@ -310,7 +311,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 </section>
 
 <footer>
-  数値は 2026-10-07 にリポジトリ上で集計：プログラム、プリセット、命令、サイクルは <span class="dato">sofifi catalogo</span>（<span class="dato">docs/programas.ja.md</span>）；ボード上のキャプチャとマージンは MED-13 と MED-14（<span class="dato">docs/mediciones.yaml</span>）；UART の出力は <span class="dato">scripts/leer_uart.py</span>（MED-03）；プリミティブは <span class="dato">scripts/verificar_primitivas.py</span>（MED-06〜MED-08）；フェーズは <span class="dato">docs/fases/</span>。「SOFIFI を選ぶ理由」：RTL とモデルの一致は <span class="dato">sim/nucleo/nucleo_test.py</span> と MED-13；FV-1 のデータは <span class="dato">docs/investigacion/INVESTIGACION.md</span> [V]。公開ドキュメントと技術ドキュメントはスペイン語、英語、簡体字中国語、日本語で提供；OLED のインターフェースもフェーズ 10 で同じ 4 言語に対応します（ADR 0007）。MIT ライセンス。
+  数値は 2026-10-08 にリポジトリ上で集計：プログラム、プリセット、命令、サイクルは <span class="dato">sofifi catalogo</span>（<span class="dato">docs/programas.ja.md</span>）；ボード上のキャプチャとマージンは MED-13〜MED-15（<span class="dato">docs/mediciones.yaml</span>）；UART の出力は <span class="dato">scripts/leer_uart.py</span>（MED-03）；プリミティブは <span class="dato">scripts/verificar_primitivas.py</span>（MED-06〜MED-08）；フェーズは <span class="dato">docs/fases/</span>。「SOFIFI を選ぶ理由」：RTL とモデルの一致は <span class="dato">sim/nucleo/nucleo_test.py</span> と MED-13；FV-1 のデータは <span class="dato">docs/investigacion/INVESTIGACION.md</span> [V]。公開ドキュメントと技術ドキュメントはスペイン語、英語、簡体字中国語、日本語で提供；OLED のインターフェースもフェーズ 10 で同じ 4 言語に対応します（ADR 0007）。MIT ライセンス。
 </footer>
 
 </div>

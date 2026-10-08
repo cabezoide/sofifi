@@ -25,7 +25,7 @@ La FPGA contiene un **pequeño procesador de audio hecho a medida** (el núcleo)
 | **Multiplicador** (bloque DSP) | Multiplica dos números en un paso. | Casi todo en audio son multiplicaciones: volumen, filtros, mezclas. |
 | **ALU** | Suma, compara y satura (evita que el sonido se desborde). | Combina los resultados y los guarda en el acumulador. |
 | **Acumulador (ACC)** | Un registro de 48 bit donde se suman los productos. | Mucha precisión: evita el ruido de redondeo en las colas largas. |
-| **Memoria de retardo** (BSRAM) | Guarda el audio de los últimos ~0,9 s, como una cinta en bucle. Va por grupos de bloques, cada uno con su copia de la dirección. | Es la base de toda reverb y todo delay: oír el pasado del sonido. Los grupos dejan que funcione con margen en el chip real. |
+| **Memoria de retardo** (BSRAM) | Guarda el audio de los últimos ~0,9 s, como una cinta en bucle. Va por grupos de bloques, cada uno con su copia de la dirección. Con `RDAA` y `WRAA`, 32 768 palabras funcionan como una cinta fija: lo grabado no se aleja. | Es la base de toda reverb y todo delay: oír el pasado del sonido. Los grupos dejan que funcione con margen en el chip real. La parte fija hace posibles el looper y el granular. |
 | **LFO ×4** | Osciladores lentos (senoidal, aleatorio, rampa). | Mueven las lecturas de la memoria: el chorus, la modulación de la reverb y el cambio de tono del shimmer. |
 | **ROM Hermite** | Tabla fija de 256 × 4 coeficientes. | Permite leer la memoria «entre muestras» sin ruido: modulación suave. |
 | **Curva suave** | Una saturación cúbica, sin cortes bruscos. | Limita el sonido de forma musical (`CLIP`) y da forma al LFO senoidal. |

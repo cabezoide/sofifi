@@ -37,11 +37,15 @@ por capa y el detalle que un agente necesita para trabajar sin releer todo.
   causa, resolución, lección). `docs/arquitectura_fpga.md` se actualiza en cada PR
   que cambie bloques del FPGA. `BOM.md` y `SBOM.md`, cuando cambie el hardware o
   un componente.
-- **Al cerrar una fase**, actualizar la versión y la ruta en
-  `docs/infografias/sofifi.html` y regenerar `docs/img/portada.png` y
-  `docs/img/ruta.png` (y `docs/img/porque.png`): el README las muestra. Se
-  capturan con `scripts/capturar_infografia.py <html> <sección> <png>`, que usa
-  `chrome-headless-shell` (caché de Playwright) a escala 2, una sección cada vez.
+- **Al cerrar una fase, toda la documentación y todas las infografías se
+  ponen al día en los cuatro idiomas** (compuerta `cierre`, ADR 0001). En el PR
+  de cierre:
+  1. Actualizar la spec, `docs/fases/estado_fases.csv` y `docs/arquitectura_fpga.md`.
+  2. Subir la versión y el estado en los cuatro README.
+  3. Actualizar versión, cifras y ruta en las cuatro `docs/infografias/sofifi*.html`.
+  4. Recapturar con `scripts/capturar_infografia.py --todas` (3 secciones × 4
+     idiomas, `chrome-headless-shell` de la caché de Playwright, a escala 2).
+  5. Revisar y resellar toda traducción: ninguna queda `desactualizada`.
 - **Un ADR no se reescribe:** se le añade al pie «Actualización AAAA-MM-DD».
 - **Al portar un algoritmo de un tercero:** entrada en `docs/terceros.yaml` con
   `uso: portado`, cabecera SPDX del origen en el fichero y cita al origen en el

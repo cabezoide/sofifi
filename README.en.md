@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=f757a6b610fc estado=al_dia -->
+<!-- i18n: fuente=README.md sha=f9d5cc7f0c1e estado=al_dia -->
 # SOFIFI — Soundscapes On FPGA: Integrated Filters & Impulses
 
 *In Spanish: Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada.*
@@ -11,16 +11,16 @@ SOFIFI is an open-source ambient guitar pedal. It runs on a **Sipeed Tang
 Primer 25K** FPGA (Gowin GW5A-LV25). Each effect is a text program that a
 custom DSP core executes.
 
-**Version:** `0.6` (the version is the last closed phase; see `docs/fases/estado_fases.csv`).
+**Version:** `0.7` (the version is the last closed phase; see `docs/fases/estado_fases.csv`).
 
 ## Status
 
 | Item | Status |
 |---|---|
-| Library | **43 programs and 344 presets** in 7 families (Phase 06) |
-| Match with the model | all 43 programs give in the RTL the same bits as the model (simulation) |
-| Board | the plate gives on the silicon, at 100 MHz, the same bits as the model (Phase 05) |
-| Next | micro-looper and granular engine (Phase 07) |
+| Library | **45 programs and 360 presets** in 8 families (Phase 07) |
+| Match with the model | all 45 programs give in the RTL the same bits as the model (simulation) |
+| Board | the plate and the looper give on the silicon the same bits as the model, from 100 to 125 MHz (Phase 07) |
+| Next | program load from the microSD (Phase 08) |
 | Audio with a guitar | **not yet**: the I2S codec is missing (Phase 11) |
 
 ## Listen to the effects without hardware
@@ -50,7 +50,8 @@ custom DSP core executes.
 | Pitch | octava, armonizador, doblador, escalera |
 | Dynamics | compresor, puerta, swell |
 | Filter | autowah, filtro, ancho |
-| Texture | saturacion, lofi, ringmod |
+| Texture | saturacion, lofi, ringmod, granular |
+| Looper | looper |
 
 `docs/programas.en.md` tells what each program does, which knobs it has and
 what it costs. `sofifi catalogo` generates it. The program and preset names
@@ -64,6 +65,9 @@ are in Spanish.
 - **All the audio in the FPGA BSRAM:** 43,008 words, approximately 0.88 s. The
   microSD card keeps presets and recordings. It cannot be the delay memory,
   because its write peaks are up to 250 ms (ADR 0004).
+- **Looper and granular:** a region of 32,768 words (0.67 s) with absolute
+  addresses. The circular pointer does not move it. `RDAA` and `WRAA` read and
+  write it (ADR 0009). The SDRAM will give longer loops.
 - **fs = 48,828 Hz:** a 100 MHz clock gives exactly 2,048 cycles per sample (ADR 0005).
 - **Bit-exact reference model in Python.** The RTL must give the same bits as
   the model, sample by sample (ADR 0003).
@@ -125,14 +129,14 @@ If a tool is missing, the gate says it (`NO CORRIÓ`, "did not run"). It does no
 The phases that need missing hardware come last (09 to 12). Up to Phase 08,
 the board and the microSD card are sufficient.
 
-![The 13 phases: 7 closed, the next one and the ones that wait for hardware](docs/img/en/ruta.png)
+![The 13 phases: 8 closed, the next one and the ones that wait for hardware](docs/img/en/ruta.png)
 
 ## Documentation
 
 | Document | Contents |
 |---|---|
-| `docs/programas.en.md` | the 43 programs: what they do, knobs, presets and cost |
-| `presets/banco.toml` | the 344 presets |
+| `docs/programas.en.md` | the 45 programs: what they do, knobs, presets and cost |
+| `presets/banco.toml` | the 360 presets |
 | `docs/arquitectura_fpga.en.md` | the FPGA architecture and how it changes in each phase |
 | `schematics/` | a PDF schematic of each RTL module, generated from the Verilog |
 | `docs/EXTENDING.en.md` | how to add an effect, an instruction, an RTL module or a gate |

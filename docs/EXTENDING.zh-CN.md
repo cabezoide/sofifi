@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/EXTENDING.md sha=c1cf8814ec31 estado=al_dia -->
+<!-- i18n: fuente=docs/EXTENDING.md sha=a578f7b153a1 estado=al_dia -->
 # 如何扩展
 
 本文按部件类型逐步说明。如果添加某样东西需要改动本清单之外的位置，说明清单不完整：在同一个 PR 中修正。
@@ -52,3 +52,4 @@
 
 1. 在 `docs/fases/` 中编写规格，包含固定章节（SPEC_RAIZ §2.5（西班牙语））。
 2. 在阶段关闭之前，**不要**将其加入管控。关闭时：在 `docs/fases/estado_fases.csv` 中添加一行，写明发现和修订，并将 README 的版本升至 `0.<fase>`。
+3. 在同一个 PR 中，用四种语言更新全部文档和信息图。用 `scripts/capturar_infografia.py --todas` 重新截图。`cierre` 关卡会检查这一点。

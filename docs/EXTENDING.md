@@ -73,3 +73,6 @@ Es una decisión estructural: `model/sofifi/domain/isa.py` es sentinela, así qu
 2. **No** se añade al control hasta cerrarla. Al cerrar: fila en
    `docs/fases/estado_fases.csv` con el hallazgo y las enmiendas, y se sube la
    versión del README a `0.<fase>`.
+3. En el mismo PR se pone al día toda la documentación y las infografías en los
+   cuatro idiomas. Las capturas se rehacen con
+   `scripts/capturar_infografia.py --todas`. La compuerta `cierre` lo comprueba.

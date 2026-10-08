@@ -1,6 +1,6 @@
 # Fase 07 — Micro-looper y granular en BSRAM
 
-> Planificada: no está en el control hasta cerrarse.
+> Cerrada el 2026-10-08. Enmiendas respecto de esta spec: ver la fila 07 de `docs/fases/estado_fases.csv`.
 
 ## Objetivo
 

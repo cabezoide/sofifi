@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/programas.md sha=9b4d888846a3 estado=al_dia -->
+<!-- i18n: fuente=docs/programas.md sha=0d277c41ec59 estado=al_dia -->
 <!-- GENERADO por `sofifi catalogo` desde programas/*.sasm. No se edita a mano:
      model/tests/catalogo_test.py lo compara con su generador. -->
 
@@ -73,7 +73,7 @@ The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/co
 
 | Program | What it does | Knobs | Presets | Instructions | Cycles | Memory |
 |---|---|---|---|---|---|---|
-| `granular` | A 4-voice granular cloud with a Hann window, octave pitch and freeze. | 0: length<br>1: diffusion<br>2: interval<br>3: mix | 8 | 188 | 1,896 | 1 |
+| `granular` | A 4-voice granular cloud with a Hann window, octave pitch and freeze. | 0: length<br>1: diffusion<br>2: interval<br>3: mix | 8 | 188 | 1,896 | 32,769 |
 | `lofi` | Fewer samples per second and fewer bits, with aliasing. | 0: sample rate<br>1: bits<br>2: mix<br>3: tone | 8 | 81 | 800 | 1 |
 | `ringmod` | Ring modulator: it multiplies the guitar by a sine; it sounds metallic. | 0: frequency<br>2: mix | 8 | 33 | 362 | 1 |
 | `saturacion` | Overdrive-type saturation: from a warm glow to a thick distortion. | 0: gain<br>1: tone<br>2: mix<br>3: level | 8 | 42 | 462 | 1 |
@@ -90,4 +90,4 @@ The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/co
 
 | Program | What it does | Knobs | Presets | Instructions | Cycles | Memory |
 |---|---|---|---|---|---|---|
-| `looper` | A 0.67 s micro-looper with overdub, ½×, 2× and reverse. | 0: level<br>1: rate<br>2: direction<br>3: feedback | 8 | 85 | 809 | 1 |
+| `looper` | A 0.67 s micro-looper with overdub, ½×, 2× and reverse. | 0: level<br>1: rate<br>2: direction<br>3: feedback | 8 | 85 | 809 | 32,769 |
