@@ -96,3 +96,34 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 | Programa | Qué hace | Mandos | Presets | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|---|
 | `looper` | Micro-looper de 0,67 s con overdub, ½×, 2× y reverse. | 0: nivel<br>1: velocidad<br>2: sentido<br>3: realimentación | 8 | 85 | 809 | 32 769 |
+
+## Cadenas
+
+Una cadena une dos programas en uno, en serie (→) o en paralelo (‖), sin cambiar el RTL (ADR 0013). Están en `presets/cadenas.toml`; `sofifi cadena` las procesa. 18 caben hoy y 6 esperan la SDRAM: solo les falta memoria.
+
+| Cadena | Programas | Ciclos | Memoria | Registros | LFOs | Estado |
+|---|---|---|---|---|---|---|
+| Armonía en la placa | `armonizador` → `plate` | 1 834 | 41 539 | 17 | 3 | cabe |
+| Bruma que gira | `bruma` → `chorus` | 1 336 | 42 654 | 18 | 4 | cabe |
+| Campanas | `ringmod` → `shimmer` | 1 915 | 41 539 | 23 | 3 | cabe |
+| Cinta desgastada | `cinta` → `lofi` | 1 505 | 41 600 | 23 | 3 | cabe |
+| Cuerdas en ola | `tremolo` → `ensemble` | 1 887 | 38 540 | 21 | 4 | cabe |
+| Doble resonancia | `doblador` → `resonador` | 1 484 | 1 028 | 28 | 2 | cabe |
+| Eco oscuro en flor | `bbd` → `bloom` | 1 562 | 38 194 | 25 | 2 | cabe |
+| Eco y muelle | `delay` → `spring` | 1 748 | 35 599 | 19 | 1 | cabe |
+| Eco y resonancia | `delay` ‖ `resonador` | 1 465 | 33 749 | 32 | 1 | cabe |
+| Flor al revés | `reverse` → `bloom` | 1 449 | 39 908 | 22 | 1 | cabe |
+| Fuzz en la nube | `saturacion` → `cloud` | 1 907 | 42 814 | 22 | 4 | cabe |
+| Loop filtrado | `looper` → `filtro` | 1 477 | 32 769 | 25 | 0 | cabe |
+| Octavas en flor | `octava` ‖ `bloom` | 1 515 | 27 620 | 20 | 2 | cabe |
+| Placa que tiembla | `tremolo` → `plate` | 1 644 | 37 439 | 19 | 2 | cabe |
+| Shimmer con vibrato | `vibrato` → `shimmer` | 1 917 | 41 664 | 21 | 4 | cabe |
+| Silencio y agujero negro | `puerta` → `blackhole` | 1 932 | 40 882 | 23 | 2 | cabe |
+| Sustain en la placa | `compresor` → `plate` | 1 838 | 37 439 | 23 | 2 | cabe |
+| Órgano infinito | `octava` → `infinite` | 1 790 | 41 539 | 15 | 4 | cabe |
+| Bruma en flor | `bruma` → `bloom` | 1 757 | 65 073 | 25 | 1 | espera la SDRAM |
+| Cinta en la flor | `cinta` → `bloom` | 1 664 | 65 120 | 25 | 3 | espera la SDRAM |
+| Eco al revés congelado | `reverse` → `freeze` | 1 848 | 53 827 | 18 | 3 | espera la SDRAM |
+| Eco en la nube | `delay` → `plate` | 1 677 | 71 188 | 20 | 3 | espera la SDRAM |
+| Lluvia sobre la placa | `lluvia` → `plate` | 1 795 | 72 824 | 18 | 2 | espera la SDRAM |
+| Ping-pong infinito | `pingpong` → `infinite` | 1 797 | 78 313 | 18 | 3 | espera la SDRAM |

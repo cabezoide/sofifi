@@ -1,0 +1,233 @@
+# SPDX-License-Identifier: MIT
+#
+# Banco de cadenas de SOFIFI: dos programas en uno, en serie o en paralelo (ADR 0013).
+# Cada [[cadena]] tiene:
+#   nombre    el nombre que se ve en el pedal;
+#   modo      "serie" (la salida del primero entra en el segundo) o "paralelo" (media de los dos);
+#   efectos   los programas, en orden. En mandos, un número es un valor fijo y "potN" es el
+#             potenciómetro N del pedal. Un mando que falta vale 0;
+#   pots      dónde están los seis potenciómetros al cargar la cadena;
+#   requiere  "sdram" si no cabe hasta que llegue la SDRAM: hoy solo le falta memoria.
+# model/tests/cadenas_test.py comprueba que cada cadena cabe o que solo le falta memoria.
+
+[[cadena]]
+nombre = "Eco y muelle"
+modo = "serie"
+efectos = [
+    { programa = "delay", mandos = ["pot0", "pot1", "pot2", 0.60] },
+    { programa = "spring", mandos = ["pot3", 0.40, "pot4"] },
+]
+pots = [0.55, 0.40, 0.35, 0.60, 0.40, 0.00]
+
+[[cadena]]
+nombre = "Flor al revés"
+modo = "serie"
+efectos = [
+    { programa = "reverse", mandos = ["pot0", "pot1", "pot2"] },
+    { programa = "bloom", mandos = ["pot3", 0.30, "pot4", "pot5"] },
+]
+pots = [0.60, 0.40, 0.50, 0.80, 0.55, 0.40]
+
+[[cadena]]
+nombre = "Eco oscuro en flor"
+modo = "serie"
+efectos = [
+    { programa = "bbd", mandos = ["pot0", "pot1", "pot2", 0.50] },
+    { programa = "bloom", mandos = ["pot3", 0.35, "pot4", "pot5"] },
+]
+pots = [0.60, 0.50, 0.40, 0.80, 0.50, 0.40]
+
+[[cadena]]
+nombre = "Órgano infinito"
+modo = "serie"
+efectos = [
+    { programa = "octava", mandos = ["pot0", "pot1", 0.80] },
+    { programa = "infinite", mandos = ["pot3", 0.30, "pot4"] },
+]
+pots = [0.60, 0.40, 0.00, 0.10, 0.50, 0.00]
+
+[[cadena]]
+nombre = "Shimmer con vibrato"
+modo = "serie"
+efectos = [
+    { programa = "vibrato", mandos = ["pot0", "pot1", 1] },
+    { programa = "shimmer", mandos = ["pot3", 0.25, "pot4", "pot5"] },
+]
+pots = [0.30, 0.40, 0.00, 0.75, 0.55, 0.60]
+
+[[cadena]]
+nombre = "Placa que tiembla"
+modo = "serie"
+efectos = [
+    { programa = "tremolo", mandos = ["pot0", "pot1", "pot2"] },
+    { programa = "plate", mandos = ["pot3", 0.30, "pot4"] },
+]
+pots = [0.30, 0.60, 0.50, 0.70, 0.45, 0.00]
+
+[[cadena]]
+nombre = "Cuerdas en ola"
+modo = "serie"
+efectos = [
+    { programa = "tremolo", mandos = ["pot0", "pot1", 0] },
+    { programa = "ensemble", mandos = ["pot3", 0.30, "pot4", "pot5"] },
+]
+pots = [0.15, 0.70, 0.00, 0.80, 0.50, 0.70]
+
+[[cadena]]
+nombre = "Campanas"
+modo = "serie"
+efectos = [
+    { programa = "ringmod", mandos = ["pot0", 0, "pot2"] },
+    { programa = "shimmer", mandos = ["pot3", 0.20, "pot4", "pot5"] },
+]
+pots = [0.15, 0.00, 0.40, 0.80, 0.50, 0.60]
+
+[[cadena]]
+nombre = "Silencio y agujero negro"
+modo = "serie"
+efectos = [
+    { programa = "puerta", mandos = ["pot0", "pot1"] },
+    { programa = "blackhole", mandos = ["pot3", 0.35, "pot4"] },
+]
+pots = [0.20, 0.40, 0.00, 0.85, 0.50, 0.00]
+
+[[cadena]]
+nombre = "Fuzz en la nube"
+modo = "serie"
+efectos = [
+    { programa = "saturacion", mandos = ["pot0", 0.50, 1, 0.10] },
+    { programa = "cloud", mandos = ["pot3", 0.30, "pot4", "pot5"] },
+]
+pots = [0.60, 0.00, 0.00, 0.70, 0.50, 0.60]
+
+[[cadena]]
+nombre = "Sustain en la placa"
+modo = "serie"
+efectos = [
+    { programa = "compresor", mandos = ["pot0", "pot1", 1, 0.20] },
+    { programa = "plate", mandos = ["pot3", 0.30, "pot4"] },
+]
+pots = [0.30, 0.80, 0.00, 0.70, 0.45, 0.00]
+
+[[cadena]]
+nombre = "Armonía en la placa"
+modo = "serie"
+efectos = [
+    { programa = "armonizador", mandos = ["pot0", "pot1", "pot2"] },
+    { programa = "plate", mandos = ["pot3", 0.30, "pot4"] },
+]
+pots = [0.75, 0.30, 0.45, 0.70, 0.45, 0.00]
+
+[[cadena]]
+nombre = "Doble resonancia"
+modo = "serie"
+efectos = [
+    { programa = "doblador", mandos = ["pot0", 0, "pot2"] },
+    { programa = "resonador", mandos = ["pot3", 0.70, "pot4", 0] },
+]
+pots = [0.50, 0.00, 0.50, 0.80, 0.50, 0.00]
+
+[[cadena]]
+nombre = "Bruma que gira"
+modo = "serie"
+efectos = [
+    { programa = "bruma", mandos = ["pot0", "pot1", "pot2", 1] },
+    { programa = "chorus", mandos = ["pot3", "pot4", "pot5"] },
+]
+pots = [0.70, 0.55, 0.50, 0.30, 0.60, 0.50]
+
+[[cadena]]
+nombre = "Loop filtrado"
+modo = "serie"
+efectos = [
+    { programa = "looper", mandos = ["pot0", 0.50, 0, 0.80] },
+    { programa = "filtro", mandos = ["pot3", 0.60, "pot4", "pot5"] },
+]
+pots = [0.80, 0.00, 0.00, 0.25, 0.90, 0.80]
+
+[[cadena]]
+nombre = "Cinta desgastada"
+modo = "serie"
+efectos = [
+    { programa = "cinta", mandos = ["pot0", "pot1", "pot2", 0.60] },
+    { programa = "lofi", mandos = [0.60, "pot4", "pot5", 0.40] },
+]
+pots = [0.45, 0.55, 0.40, 0.00, 0.70, 0.60]
+
+[[cadena]]
+nombre = "Octavas en flor"
+modo = "paralelo"
+efectos = [
+    { programa = "octava", mandos = ["pot0", "pot1", "pot2"] },
+    { programa = "bloom", mandos = ["pot3", 0.30, "pot4", "pot5"] },
+]
+pots = [0.60, 0.40, 0.50, 0.80, 0.60, 0.40]
+
+[[cadena]]
+nombre = "Eco y resonancia"
+modo = "paralelo"
+efectos = [
+    { programa = "delay", mandos = ["pot0", "pot1", "pot2", 0.60] },
+    { programa = "resonador", mandos = ["pot3", 0.70, "pot4", "pot5"] },
+]
+pots = [0.50, 0.45, 0.50, 0.80, 0.60, 0.00]
+
+[[cadena]]
+nombre = "Eco en la nube"
+modo = "serie"
+requiere = "sdram"
+efectos = [
+    { programa = "delay", mandos = ["pot0", "pot1", "pot2", 0.60] },
+    { programa = "plate", mandos = ["pot3", 0.30, "pot4"] },
+]
+pots = [0.55, 0.45, 0.40, 0.75, 0.45, 0.00]
+
+[[cadena]]
+nombre = "Ping-pong infinito"
+modo = "serie"
+requiere = "sdram"
+efectos = [
+    { programa = "pingpong", mandos = ["pot0", "pot1", "pot2"] },
+    { programa = "infinite", mandos = ["pot3", 0.30, "pot4"] },
+]
+pots = [0.70, 0.50, 0.45, 0.10, 0.45, 0.00]
+
+[[cadena]]
+nombre = "Lluvia sobre la placa"
+modo = "serie"
+requiere = "sdram"
+efectos = [
+    { programa = "lluvia", mandos = ["pot0", "pot1", "pot2"] },
+    { programa = "plate", mandos = ["pot3", 0.30, "pot4"] },
+]
+pots = [0.70, 0.40, 0.50, 0.75, 0.45, 0.00]
+
+[[cadena]]
+nombre = "Eco al revés congelado"
+modo = "serie"
+requiere = "sdram"
+efectos = [
+    { programa = "reverse", mandos = ["pot0", "pot1", "pot2"] },
+    { programa = "freeze", mandos = ["pot3", 0.30, "pot4"] },
+]
+pots = [0.60, 0.40, 0.50, 0.60, 0.50, 0.00]
+
+[[cadena]]
+nombre = "Bruma en flor"
+modo = "serie"
+requiere = "sdram"
+efectos = [
+    { programa = "bruma", mandos = ["pot0", "pot1", "pot2", 1] },
+    { programa = "bloom", mandos = ["pot3", 0.30, "pot4", "pot5"] },
+]
+pots = [0.70, 0.55, 0.50, 0.80, 0.55, 0.40]
+
+[[cadena]]
+nombre = "Cinta en la flor"
+modo = "serie"
+requiere = "sdram"
+efectos = [
+    { programa = "cinta", mandos = ["pot0", "pot1", "pot2", 0.50] },
+    { programa = "bloom", mandos = ["pot3", 0.30, "pot4", "pot5"] },
+]
+pots = [0.45, 0.55, 0.40, 0.80, 0.55, 0.40]

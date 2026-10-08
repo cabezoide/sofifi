@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/EXTENDING.md sha=a578f7b153a1 estado=al_dia -->
+<!-- i18n: fuente=docs/EXTENDING.md sha=3b5545c20179 estado=al_dia -->
 # 如何扩展
 
 本文按部件类型逐步说明。如果添加某样东西需要改动本清单之外的位置，说明清单不完整：在同一个 PR 中修正。
@@ -16,6 +16,16 @@
 6. 在 `presets/banco.toml` 中添加至少 5 个预设，放在以程序名命名的表中。`model/tests/presets_test.py` 检查旋钮。
 7. 用 `sofifi catalogo` 重新生成目录。
 8. 在 `DEMOS`（`scripts/generar_demos.py`）和 `demo_examples/README.zh-CN.md` 中添加演示。
+
+## 一条链（两个程序合为一个）
+
+链把已有的程序连在一起，不需要 RTL（ADR 0013，西班牙语）。
+
+1. 用 `sofifi cadenas` 查看类似的链用了多少资源。每个程序使用自己的寄存器和 LFO；核心有 32 个寄存器和 4 个 LFO。
+2. 在 `presets/cadenas.toml` 中添加一个 `[[cadena]]`。在 `mandos` 中，数字是固定值，`"potN"` 是踏板的第 N 个电位器。`pots` 给出加载链时六个电位器的位置。
+3. 如果只缺存储器，设置 `requiere = "sdram"`。`model/tests/cadenas_test.py` 要求每条链都能装入，或者只缺存储器。
+4. 用 `sofifi cadena 名称 输入.wav 输出.wav` 试听。如果链的响度超过 plate 的两倍，音量测试会失败。
+5. 用 `sofifi catalogo` 重新生成目录。RTL 仿真会运行能装入的链。
 
 ## 一条核心指令
 

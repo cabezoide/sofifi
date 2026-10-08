@@ -1,4 +1,4 @@
-<!-- i18n: fuente=demo_examples/README.md sha=6916e123cdd2 estado=al_dia -->
+<!-- i18n: fuente=demo_examples/README.md sha=652d4c2773fe estado=al_dia -->
 # demo_examples
 
 一段合成吉他（Em9 琶音，Karplus-Strong 弦模型）经内核的每个程序处理，使用逐位精确模型。可用 `.venv/bin/python scripts/generar_demos.py` 重新生成，每次得到的音频都相同。
@@ -57,5 +57,11 @@
 | `demo_sostenido.ogg` | `sostenido` | 层叠 0.20 · 阻尼 0.30 · 干湿比 0.50 · 捕捉 0.30 | — |
 | `demo_shoegaze.ogg` | `shoegaze` | 衰减 0.85 · 阻尼 0.30 · 干湿比 0.55 · 饱和 0.80 | — |
 | `demo_bruma.ogg` | `bruma` | 扩散 0.70 · 反馈 0.55 · 干湿比 0.50 · 磁头 1.00 | — |
+| `demo_cadena_eco_y_muelle.ogg` | Eco y muelle: `delay` → `spring` | pot0 0.55 · pot1 0.40 · pot2 0.35 · pot3 0.60 · pot4 0.40 · pot5 0.00 | — |
+| `demo_cadena_flor_al_reves.ogg` | Flor al revés: `reverse` → `bloom` | pot0 0.60 · pot1 0.40 · pot2 0.50 · pot3 0.80 · pot4 0.55 · pot5 0.40 | — |
+| `demo_cadena_organo_infinito.ogg` | Órgano infinito: `octava` → `infinite` | pot0 0.60 · pot1 0.40 · pot2 0.00 · pot3 0.10 · pot4 0.50 · pot5 0.00 | — |
+| `demo_cadena_shimmer_con_vibrato.ogg` | Shimmer con vibrato: `vibrato` → `shimmer` | pot0 0.30 · pot1 0.40 · pot2 0.00 · pot3 0.75 · pot4 0.55 · pot5 0.60 | — |
+| `demo_cadena_cuerdas_en_ola.ogg` | Cuerdas en ola: `tremolo` → `ensemble` | pot0 0.15 · pot1 0.70 · pot2 0.00 · pot3 0.80 · pot4 0.50 · pot5 0.70 | — |
+| `demo_cadena_fuzz_en_la_nube.ogg` | Fuzz en la nube: `saturacion` → `cloud` | pot0 0.60 · pot1 0.00 · pot2 0.00 · pot3 0.70 · pot4 0.50 · pot5 0.60 | — |
 
 Ogg Vorbis，48,828 Hz（ADR 0005，西班牙语）；渲染在 24 位下逐位精确。旋钮与程序见 `docs/programas.zh-CN.md`。

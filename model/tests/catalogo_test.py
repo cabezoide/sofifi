@@ -7,9 +7,11 @@ from pathlib import Path
 
 import pytest
 from sofifi.adapters.archivos import ensamblar_archivo
+from sofifi.adapters.cadenas import leer_cadenas, textos_de_programas
 from sofifi.adapters.presets import leer_banco
+from sofifi.domain.composicion import recursos
 from sofifi.domain.ensamblador import ensamblar
-from sofifi.services.catalogo import catalogos, ficha
+from sofifi.services.catalogo import catalogos, ficha, ficha_cadena
 from sofifi.services.catalogo_textos import MANDOS
 
 RAIZ = Path(__file__).resolve().parents[2]
@@ -21,7 +23,17 @@ def test_docs_programas_es_el_del_generador() -> None:
         for r in sorted((RAIZ / "programas").glob("*.sasm"))
     ]
     presets = {p: len(v) for p, v in leer_banco(RAIZ / "presets" / "banco.toml").items()}
-    for ruta, texto in catalogos(fichas, presets).items():
+    carpeta = RAIZ / "programas"
+    textos = textos_de_programas(carpeta)
+
+    def incluir(nombre: str) -> str:
+        return (carpeta / nombre).read_text(encoding="utf-8")
+
+    cadenas = [
+        ficha_cadena(c, recursos(c, textos, incluir))
+        for c in leer_cadenas(RAIZ / "presets" / "cadenas.toml")
+    ]
+    for ruta, texto in catalogos(fichas, presets, cadenas).items():
         en_repo = (RAIZ / ruta).read_text(encoding="utf-8")
         assert en_repo == texto, f"{ruta}: regenerar con: .venv/bin/sofifi catalogo"
 

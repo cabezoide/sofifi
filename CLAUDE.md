@@ -14,6 +14,7 @@ por capa y el detalle que un agente necesita para trabajar sin releer todo.
 | RTL | `scripts/ci_local.sh rtl-lint` · `make sim` (cocotb sobre verilator, del `.venv`) |
 | Núcleo | `SOFIFI_MUESTRAS=4883 pytest sim/nucleo/nucleo_test.py` (aceptación; la compuerta usa 1 000) · `sofifi tablas` regenera ROM y programas |
 | Programas | `sofifi asm` (ciclos del RTL) · `sofifi catalogo` (docs/programas.md) · `sofifi presets` · `sofifi render --preset NOMBRE` |
+| Cadenas | `sofifi cadenas` (coste y si caben) · `sofifi componer NOMBRE salida.sasm` · `sofifi cadena NOMBRE entrada.wav salida.wav` (ADR 0013) |
 | Placa | `make synth` · `make prog` (SRAM) · `make uart` (lee `/dev/ttyUSB1`) |
 | Núcleo en placa | `make prog TOP=hil_nucleo` · `.venv/bin/python scripts/hil_nucleo.py` · margen: `scripts/margen_reloj.py` (ADR 0011). Looper: `TOP=hil_looper` y `--programa looper` (con `--base hil_looper` en el margen) |
 | Primitivas | `make prog TOP=prueba_dsp` y `.venv/bin/python scripts/verificar_primitivas.py dsp` (también `bsram` y `pll`) |
@@ -106,3 +107,4 @@ Ver `docs/EXTENDING.md`.
 | ADR 0010 | Cada PR pasa una segunda vuelta de optimización |
 | ADR 0011 | El timing se mide en la placa, no se cree a nextpnr |
 | ADR 0012 | Los esquemáticos se generan del RTL, no se dibujan |
+| ADR 0013 | Dos efectos a la vez son un programa compuesto, no un segundo núcleo |

@@ -82,6 +82,13 @@ TEXTOS: dict[str, dict[str, str]] = {
         "coste": "Los ciclos son la cota del RTL, de {c} por muestra (`model/sofifi/domain/coste.py`). "
         "La memoria es de {m} palabras.",
         "cabecera": "| Programa | Qué hace | Mandos | Presets | Instrucciones | Ciclos | Memoria |",
+        "cadenas_titulo": "## Cadenas",
+        "cadenas_intro": "Una cadena une dos programas en uno, en serie (→) o en paralelo (‖), "
+        "sin cambiar el RTL (ADR 0013). Están en `presets/cadenas.toml`; `sofifi cadena` las procesa. "
+        "{n} caben hoy y {s} esperan la SDRAM: solo les falta memoria.",
+        "cadenas_cabecera": "| Cadena | Programas | Ciclos | Memoria | Registros | LFOs | Estado |",
+        "cabe": "cabe",
+        "sdram": "espera la SDRAM",
     },
     "en": {
         "titulo": "# Core programs",
@@ -90,6 +97,13 @@ TEXTOS: dict[str, dict[str, str]] = {
         "coste": "The cycles are the RTL upper limit, of {c} per sample (`model/sofifi/domain/coste.py`). "
         "The memory has {m} words.",
         "cabecera": "| Program | What it does | Knobs | Presets | Instructions | Cycles | Memory |",
+        "cadenas_titulo": "## Chains",
+        "cadenas_intro": "A chain joins two programs into one, in series (→) or in parallel (‖), "
+        "with no change to the RTL (ADR 0013, Spanish). The chains are in `presets/cadenas.toml`; "
+        "`sofifi cadena` processes them. {n} fit today and {s} wait for the SDRAM: they only need memory.",
+        "cadenas_cabecera": "| Chain | Programs | Cycles | Memory | Registers | LFOs | Status |",
+        "cabe": "fits",
+        "sdram": "waits for the SDRAM",
     },
     "zh-CN": {
         "titulo": "# 核心程序",
@@ -98,6 +112,12 @@ TEXTOS: dict[str, dict[str, str]] = {
         "coste": "周期数为 RTL 的上限，每个样本 {c} 个（`model/sofifi/domain/coste.py`）。"
         "存储器共 {m} 个字。",
         "cabecera": "| 程序 | 作用 | 旋钮 | 预设 | 指令数 | 周期 | 存储器 |",
+        "cadenas_titulo": "## 链",
+        "cadenas_intro": "链把两个程序合成一个，串联（→）或并联（‖），不改动 RTL（ADR 0013，西班牙语）。"
+        "链位于 `presets/cadenas.toml`；用 `sofifi cadena` 处理。今天有 {n} 条可以装入，{s} 条等待 SDRAM：它们只缺存储器。",
+        "cadenas_cabecera": "| 链 | 程序 | 周期 | 存储器 | 寄存器 | LFO | 状态 |",
+        "cabe": "可装入",
+        "sdram": "等待 SDRAM",
     },
     "ja": {
         "titulo": "# コアのプログラム",
@@ -106,5 +126,12 @@ TEXTOS: dict[str, dict[str, str]] = {
         "coste": "サイクル数は RTL の上限で、1 サンプルあたり {c}（`model/sofifi/domain/coste.py`）。"
         "メモリーは {m} ワードです。",
         "cabecera": "| プログラム | 働き | ノブ | プリセット | 命令数 | サイクル | メモリー |",
+        "cadenas_titulo": "## チェーン",
+        "cadenas_intro": "チェーンは 2 つのプログラムを直列（→）または並列（‖）で 1 つにまとめます。"
+        "RTL は変えません（ADR 0013、スペイン語）。チェーンは `presets/cadenas.toml` にあり、"
+        "`sofifi cadena` で処理します。現在 {n} 本が収まり、{s} 本は SDRAM を待っています：足りないのはメモリーだけです。",
+        "cadenas_cabecera": "| チェーン | プログラム | サイクル | メモリー | レジスタ | LFO | 状態 |",
+        "cabe": "収まる",
+        "sdram": "SDRAM 待ち",
     },
 }

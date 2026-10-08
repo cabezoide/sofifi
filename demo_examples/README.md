@@ -56,5 +56,11 @@ Una guitarra sintética (arpegio de Em9, cuerdas Karplus-Strong) procesada por c
 | `demo_sostenido.ogg` | `sostenido` | capas 0,20 · damping 0,30 · mezcla 0,50 · captura 0,30 | — |
 | `demo_shoegaze.ogg` | `shoegaze` | decay 0,85 · damping 0,30 · mezcla 0,55 · saturación 0,80 | — |
 | `demo_bruma.ogg` | `bruma` | difusión 0,70 · realimentación 0,55 · mezcla 0,50 · cabezas 1,00 | — |
+| `demo_cadena_eco_y_muelle.ogg` | Eco y muelle: `delay` → `spring` | pot0 0,55 · pot1 0,40 · pot2 0,35 · pot3 0,60 · pot4 0,40 · pot5 0,00 | — |
+| `demo_cadena_flor_al_reves.ogg` | Flor al revés: `reverse` → `bloom` | pot0 0,60 · pot1 0,40 · pot2 0,50 · pot3 0,80 · pot4 0,55 · pot5 0,40 | — |
+| `demo_cadena_organo_infinito.ogg` | Órgano infinito: `octava` → `infinite` | pot0 0,60 · pot1 0,40 · pot2 0,00 · pot3 0,10 · pot4 0,50 · pot5 0,00 | — |
+| `demo_cadena_shimmer_con_vibrato.ogg` | Shimmer con vibrato: `vibrato` → `shimmer` | pot0 0,30 · pot1 0,40 · pot2 0,00 · pot3 0,75 · pot4 0,55 · pot5 0,60 | — |
+| `demo_cadena_cuerdas_en_ola.ogg` | Cuerdas en ola: `tremolo` → `ensemble` | pot0 0,15 · pot1 0,70 · pot2 0,00 · pot3 0,80 · pot4 0,50 · pot5 0,70 | — |
+| `demo_cadena_fuzz_en_la_nube.ogg` | Fuzz en la nube: `saturacion` → `cloud` | pot0 0,60 · pot1 0,00 · pot2 0,00 · pot3 0,70 · pot4 0,50 · pot5 0,60 | — |
 
 Ogg Vorbis a 48 828 Hz (ADR 0005); el render es bit-exact en 24 bit. Los mandos y los programas están en `docs/programas.md`.

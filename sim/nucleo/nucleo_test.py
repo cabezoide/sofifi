@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-"""nucleo.v: los programas de programas/ dan la misma salida que el modelo, muestra a muestra.
+"""nucleo.v: los programas de programas/ y las cadenas dan la misma salida que el modelo.
 
 Es el criterio de la Fase 04 (ADR 0003): igualdad exacta, tolerancia cero. El
 estímulo es un impulso y después ruido del LFSR del modelo; los potenciómetros
@@ -30,15 +30,28 @@ from cocotb.triggers import ClockCycles, RisingEdge
 from cocotb_tools.runner import Runner, get_runner
 from comun import AQUI, RAIZ, RTL
 from sofifi.adapters.archivos import ensamblar_archivo
+from sofifi.adapters.cadenas import leer_cadenas, textos_de_programas
 from sofifi.domain.aritmetica import CICLOS_POR_MUESTRA, dato
+from sofifi.domain.composicion import ensamblar_cadena, nombre_programa
 from sofifi.domain.coste import CICLOS_SKP_SIN_SALTO, ciclos_instruccion_rtl, ciclos_rtl
 from sofifi.domain.ensamblador import ensamblar
 from sofifi.domain.isa import Programa, codificar
 from sofifi.domain.lfo import TipoLfo
 from sofifi.domain.nucleo import Nucleo
 
-PROGRAMAS = tuple(sorted(p.stem for p in (RAIZ / "programas").glob("*.sasm")))
+# Las cadenas que caben (presets/cadenas.toml, ADR 0013) también son programas del núcleo.
+CADENAS = {
+    nombre_programa(c): c
+    for c in leer_cadenas(RAIZ / "presets" / "cadenas.toml")
+    if c.requiere is None
+}
+PROGRAMAS = tuple(sorted(p.stem for p in (RAIZ / "programas").glob("*.sasm"))) + tuple(
+    sorted(CADENAS)
+)
 CON_PULSADOR = {"freeze", "freeze_givens", "looper", "granular"}  # el footswitch se pulsa a mitad de la prueba
+CON_PULSADOR |= {
+    n for n, c in CADENAS.items() if any(e.programa in CON_PULSADOR for e in c.eslabones)
+}
 # La cinta, con pot0 = 0: el primer eco llega a las ~8 800 muestras y no a las ~31 700.
 POTS_PRUEBA = {
     "plate": ("0.7", "0.5", "0.3", "0.6", "0.4", "0.2"),
@@ -64,6 +77,18 @@ FUENTES = [
 ]
 
 
+def programa_de(nombre: str) -> Programa:
+    """Un programa de programas/ o una cadena del banco, ya compuesta."""
+    carpeta = RAIZ / "programas"
+    if nombre in CADENAS:
+        return ensamblar_cadena(
+            CADENAS[nombre],
+            textos_de_programas(carpeta),
+            lambda n: (carpeta / n).read_text(encoding="utf-8"),
+        )
+    return ensamblar_archivo(carpeta / f"{nombre}.sasm")
+
+
 def estimulo(n: int) -> list[tuple[int, int]]:
     """Impulso en la muestra 0 y, desde la mitad, ruido de media escala."""
     azar = random.Random(2026)
@@ -77,7 +102,7 @@ def estimulo(n: int) -> list[tuple[int, int]]:
 async def igual_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
     nombre = os.environ["PROGRAMA"]
     n = int(os.environ.get("SOFIFI_MUESTRAS", "1000"))
-    programa = ensamblar_archivo(RAIZ / "programas" / f"{nombre}.sasm")
+    programa = programa_de(nombre)
     modelo = Nucleo(programa)
     pots = tuple(dato(v) for v in POTS_PRUEBA.get(nombre, POTS_PRUEBA["plate"]))
 

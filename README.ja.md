@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=316187411754 estado=al_dia -->
+<!-- i18n: fuente=README.md sha=f252e7f7d9a6 estado=al_dia -->
 # SOFIFI — FPGA 上のイマーシブな波形とフィルターのシンセサイザー
 
 *英語名: Soundscapes On FPGA: Integrated Filters & Impulses。スペイン語名: Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada。*
@@ -18,7 +18,8 @@ DSP コアが実行します。
 | 項目 | 状況 |
 |---|---|
 | ライブラリ | 8 つのファミリーに **51 のプログラムと 408 のプリセット**（フェーズ 07） |
-| モデルとの一致 | 51 のプログラムすべてが、RTL でモデルと同じビットを出力（シミュレーション） |
+| 2 つのエフェクトを同時に | **24 のチェーン**：18 は現在収まり、6 は SDRAM 待ち（`presets/cadenas.toml`、ADR 0013） |
+| モデルとの一致 | 51 のプログラムすべてと収まる 18 のチェーンが、RTL でモデルと同じビットを出力（シミュレーション） |
 | ボード | plate と looper はシリコン上の 100〜125 MHz でモデルと同じビットを出力（フェーズ 07） |
 | 次の作業 | microSD からのプログラムの読み込み（フェーズ 08） |
 | ギターでの音出し | **まだできません**：I2S コーデックがありません（フェーズ 11） |

@@ -16,3 +16,4 @@ Se lee antes de proponer un cambio estructural. Un ADR no se reescribe: se le a�
 | [0010](0010-cada-pr-pasa-una-segunda-vuelta-de-optimizacion.md) | Cada PR pasa una segunda vuelta de optimización (timing, listones de recursos y pistas) | Aceptado |
 | [0011](0011-el-timing-se-mide-en-la-placa.md) | El timing se mide en la placa, no se cree a nextpnr (margen con el mismo rutado) | Aceptado |
 | [0012](0012-los-esquematicos-se-generan-del-rtl.md) | Los esquemáticos se generan del RTL, no se dibujan (Yosys + netlistsvg, PDF) | Aceptado |
+| [0013](0013-dos-efectos-son-un-programa-compuesto.md) | Dos efectos a la vez son un programa compuesto, no un segundo núcleo (cadenas; 2 núcleos no caben) | Aceptado |

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-"""Regenera ``demo_examples/``: una guitarra sintética y su paso por cada programa.
+"""Regenera ``demo_examples/``: una guitarra sintética y su paso por cada programa y cadena.
 
 La guitarra es un arpegio de Em9 con cuerdas Karplus-Strong y semilla fija. El
 núcleo es bit-exact y no hay remuestreo (la señal ya está a 48 828 Hz), así que
@@ -26,8 +26,11 @@ from pathlib import Path
 import numpy as np
 import soundfile  # type: ignore[import-untyped]
 from sofifi.adapters.archivos import ensamblar_archivo
+from sofifi.adapters.cadenas import leer_cadenas, textos_de_programas
 from sofifi.adapters.wav import a_pcm16
 from sofifi.domain.aritmetica import DATO_MAX, DATO_MIN, FS_WAV, dato
+from sofifi.domain.cadena import Cadena, Modo
+from sofifi.domain.composicion import ensamblar_cadena, nombre_programa
 from sofifi.domain.senal import Controles, Senal
 from sofifi.services.catalogo import ficha, mando_traducido
 from sofifi.services.render import procesar
@@ -96,6 +99,15 @@ DEMOS: tuple[tuple[str, dict[int, str], tuple[tuple[float, float], ...], float],
     ("shoegaze", {0: "0.85", 1: "0.3", 2: "0.55", 3: "0.8"}, (), 5.0),
     ("bruma", {0: "0.7", 1: "0.55", 2: "0.5", 3: "1"}, (), 5.0),
 )
+# Cadenas del banco (presets/cadenas.toml, ADR 0013), con sus pots: (nombre, cola en segundos).
+DEMOS_CADENAS: tuple[tuple[str, float], ...] = (
+    ("Eco y muelle", 4.0),
+    ("Flor al revés", 5.0),
+    ("Órgano infinito", 6.0),
+    ("Shimmer con vibrato", 6.0),
+    ("Cuerdas en ola", 6.0),
+    ("Fuzz en la nube", 5.0),
+)
 # Calidad de Vorbis: 0 es la mejor. Con 0,3, una demo de 8 s ocupa unos 190 kB.
 COMPRESION = 0.3
 
@@ -151,6 +163,25 @@ def _demo(demo: tuple[str, dict[int, str], tuple[tuple[float, float], ...], floa
     programa = ensamblar_archivo(ROOT / "programas" / f"{nombre}.sasm")
     salida = procesar(programa, guitarra(), controles, round(cola * FS_WAV))
     destino = DESTINO / f"demo_{nombre}.ogg"
+    escrita = escribir_ogg(destino, salida)
+    return f"{nombre} → {destino.relative_to(ROOT)}" + ("" if escrita else " (igual)")
+
+
+def _cadenas() -> dict[str, Cadena]:
+    return {c.nombre: c for c in leer_cadenas(ROOT / "presets" / "cadenas.toml")}
+
+
+def _demo_cadena(demo: tuple[str, float]) -> str:
+    """Como ``_demo``, para una cadena del banco con los pots que trae."""
+    nombre, cola = demo
+    cadena = _cadenas()[nombre]
+    carpeta = ROOT / "programas"
+    programa = ensamblar_cadena(
+        cadena, textos_de_programas(carpeta), lambda n: (carpeta / n).read_text(encoding="utf-8")
+    )
+    controles = Controles(tuple(dato(v) for v in cadena.posiciones))
+    salida = procesar(programa, guitarra(), controles, round(cola * FS_WAV))
+    destino = DESTINO / f"demo_{nombre_programa(cadena)}.ogg"
     escrita = escribir_ogg(destino, salida)
     return f"{nombre} → {destino.relative_to(ROOT)}" + ("" if escrita else " (igual)")
 
@@ -221,6 +252,17 @@ def guias() -> dict[Path, str]:
                 f"{_decimal(str(a), idioma)} → {_decimal(str(b), idioma)} s" for a, b in tramos
             )
             filas.append(f"| `demo_{nombre}.ogg` | `{nombre}` | {mandos} | {pulsador or '—'} |")
+        cadenas = _cadenas()
+        for nombre, _ in DEMOS_CADENAS:
+            c = cadenas[nombre]
+            union = " → " if c.modo is Modo.SERIE else " ‖ "
+            programas = union.join(f"`{e.programa}`" for e in c.eslabones)
+            posiciones = " · ".join(
+                f"pot{k} {_decimal(str(float(v)), idioma)}" for k, v in enumerate(c.posiciones)
+            )
+            filas.append(
+                f"| `demo_{nombre_programa(c)}.ogg` | {nombre}: {programas} | {posiciones} | — |"
+            )
         textos[idioma] = "\n".join(
             ["# demo_examples", "", intro, "", cabecera, "|---|---|---|---|", *filas, "", pie, ""]
         )
@@ -245,6 +287,8 @@ def main() -> int:
     # Un proceso por núcleo: cada demo es independiente y el modelo usa un solo núcleo.
     with ProcessPoolExecutor() as procesos:
         for linea in procesos.map(_demo, DEMOS):
+            print(linea)
+        for linea in procesos.map(_demo_cadena, DEMOS_CADENAS):
             print(linea)
     return 0
 

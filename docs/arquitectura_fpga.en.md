@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/arquitectura_fpga.md sha=562629b86483 estado=al_dia -->
+<!-- i18n: fuente=docs/arquitectura_fpga.md sha=2a6ecce41c9b estado=al_dia -->
 # FPGA architecture
 
 This document tells what is inside the FPGA, how the parts connect and how the design changed in each phase. We update it when we close each phase and in each PR that changes FPGA blocks. `SBOM.en.md` gives a simple explanation of each component. `fails.en.md` gives the failures that made the design.
@@ -165,5 +165,7 @@ We add the wrappers for the PLL (`pll_100`), the DSP (`mult_27x18`) and the infe
 - **Looper on the board** (top `hil_looper`): the HIL stimulus pushes the footswitch to record and to do an overdub. The looper gives the same bits as the model from 100 to 125 MHz. This is the first test of `RDAA` and `WRAA` in the silicon.
 
 ### Next planned change
+
+**Measurement 2026-10-08: two or three cores do not fit** (ADR 0013, Spanish). With 2 cores, yosys gives 13,112 LUT4 and 9,928 flip-flops before placement, and nextpnr does not find a legal placement, also with the BSRAM at 78 %. With 3, 19,046 LUT4. Two effects at the same time use chains: a composed program, with no change to the RTL.
 
 Now each instruction waits for its result (approximately 14 cycles). The next step is to not wait when the next instruction does not use the ACC or the register that the current instruction writes. This needs the detection of dependencies between instructions. The result stays equal to the model. The change is large, and an ADR will decide it.

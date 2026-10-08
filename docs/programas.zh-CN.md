@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/programas.md sha=c040bd4772a4 estado=al_dia -->
+<!-- i18n: fuente=docs/programas.md sha=688d64e5a4c4 estado=al_dia -->
 <!-- GENERADO por `sofifi catalogo` desde programas/*.sasm. No se edita a mano:
      model/tests/catalogo_test.py lo compara con su generador. -->
 
@@ -97,3 +97,34 @@
 | 程序 | 作用 | 旋钮 | 预设 | 指令数 | 周期 | 存储器 |
 |---|---|---|---|---|---|---|
 | `looper` | 0.67 秒微型循环器，带叠录、½×、2× 和反向。 | 0: 电平<br>1: 速度<br>2: 方向<br>3: 反馈 | 8 | 85 | 809 | 32,769 |
+
+## 链
+
+链把两个程序合成一个，串联（→）或并联（‖），不改动 RTL（ADR 0013，西班牙语）。链位于 `presets/cadenas.toml`；用 `sofifi cadena` 处理。今天有 18 条可以装入，6 条等待 SDRAM：它们只缺存储器。
+
+| 链 | 程序 | 周期 | 存储器 | 寄存器 | LFO | 状态 |
+|---|---|---|---|---|---|---|
+| Armonía en la placa | `armonizador` → `plate` | 1,834 | 41,539 | 17 | 3 | 可装入 |
+| Bruma que gira | `bruma` → `chorus` | 1,336 | 42,654 | 18 | 4 | 可装入 |
+| Campanas | `ringmod` → `shimmer` | 1,915 | 41,539 | 23 | 3 | 可装入 |
+| Cinta desgastada | `cinta` → `lofi` | 1,505 | 41,600 | 23 | 3 | 可装入 |
+| Cuerdas en ola | `tremolo` → `ensemble` | 1,887 | 38,540 | 21 | 4 | 可装入 |
+| Doble resonancia | `doblador` → `resonador` | 1,484 | 1,028 | 28 | 2 | 可装入 |
+| Eco oscuro en flor | `bbd` → `bloom` | 1,562 | 38,194 | 25 | 2 | 可装入 |
+| Eco y muelle | `delay` → `spring` | 1,748 | 35,599 | 19 | 1 | 可装入 |
+| Eco y resonancia | `delay` ‖ `resonador` | 1,465 | 33,749 | 32 | 1 | 可装入 |
+| Flor al revés | `reverse` → `bloom` | 1,449 | 39,908 | 22 | 1 | 可装入 |
+| Fuzz en la nube | `saturacion` → `cloud` | 1,907 | 42,814 | 22 | 4 | 可装入 |
+| Loop filtrado | `looper` → `filtro` | 1,477 | 32,769 | 25 | 0 | 可装入 |
+| Octavas en flor | `octava` ‖ `bloom` | 1,515 | 27,620 | 20 | 2 | 可装入 |
+| Placa que tiembla | `tremolo` → `plate` | 1,644 | 37,439 | 19 | 2 | 可装入 |
+| Shimmer con vibrato | `vibrato` → `shimmer` | 1,917 | 41,664 | 21 | 4 | 可装入 |
+| Silencio y agujero negro | `puerta` → `blackhole` | 1,932 | 40,882 | 23 | 2 | 可装入 |
+| Sustain en la placa | `compresor` → `plate` | 1,838 | 37,439 | 23 | 2 | 可装入 |
+| Órgano infinito | `octava` → `infinite` | 1,790 | 41,539 | 15 | 4 | 可装入 |
+| Bruma en flor | `bruma` → `bloom` | 1,757 | 65,073 | 25 | 1 | 等待 SDRAM |
+| Cinta en la flor | `cinta` → `bloom` | 1,664 | 65,120 | 25 | 3 | 等待 SDRAM |
+| Eco al revés congelado | `reverse` → `freeze` | 1,848 | 53,827 | 18 | 3 | 等待 SDRAM |
+| Eco en la nube | `delay` → `plate` | 1,677 | 71,188 | 20 | 3 | 等待 SDRAM |
+| Lluvia sobre la placa | `lluvia` → `plate` | 1,795 | 72,824 | 18 | 2 | 等待 SDRAM |
+| Ping-pong infinito | `pingpong` → `infinite` | 1,797 | 78,313 | 18 | 3 | 等待 SDRAM |

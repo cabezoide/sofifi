@@ -26,6 +26,16 @@ Un efecto es un programa, no un módulo RTL (ADR 0006).
 8. Se añade la demo en `DEMOS` (`scripts/generar_demos.py`) y en
    `demo_examples/README.md`.
 
+## Una cadena (dos programas en uno)
+
+Una cadena une programas que ya existen, sin RTL (ADR 0013).
+
+1. Comprobar con `sofifi cadenas` cuánto gasta una cadena parecida. Cada programa gasta sus registros y sus LFOs; el núcleo tiene 32 registros y 4 LFOs.
+2. Añadir un `[[cadena]]` en `presets/cadenas.toml`. En `mandos`, un número es un valor fijo y `"potN"` es el pot N del pedal. `pots` da los seis pots al cargar la cadena.
+3. Si solo le falta memoria, poner `requiere = "sdram"`. `model/tests/cadenas_test.py` exige que cada cadena quepa o que solo le falte memoria.
+4. Escuchar con `sofifi cadena NOMBRE entrada.wav salida.wav`. La prueba de volumen falla si la cadena suena más del doble que el plate.
+5. Regenerar el catálogo con `sofifi catalogo`. La simulación RTL recorre las cadenas que caben.
+
 ## Una instrucción del núcleo
 
 Es una decisión estructural: `model/sofifi/domain/isa.py` es sentinela, así que va con su ADR o con una actualización del ADR 0009.
