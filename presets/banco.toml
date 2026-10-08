@@ -434,3 +434,13 @@
 "Solo reverso" = [0.60, 0.40, 1.00]
 "Reverso sutil" = [0.60, 0.30, 0.25]
 "Remolino" = [0.50, 0.70, 0.60]
+
+[looper]
+"Loop" = [0.80, 0.50, 0.00, 1.00]
+"Loop de fondo" = [0.40, 0.50, 0.00, 1.00]
+"Media velocidad" = [0.80, 0.00, 0.00, 1.00]
+"Octava arriba" = [0.80, 1.00, 0.00, 1.00]
+"Al revés" = [0.80, 0.50, 1.00, 1.00]
+"Al revés y lento" = [0.80, 0.00, 1.00, 1.00]
+"Reemplazo" = [0.80, 0.50, 0.00, 0.00]
+"Capas que se gastan" = [0.80, 0.50, 0.00, 0.70]

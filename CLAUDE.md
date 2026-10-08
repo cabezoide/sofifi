@@ -15,7 +15,7 @@ por capa y el detalle que un agente necesita para trabajar sin releer todo.
 | Núcleo | `SOFIFI_MUESTRAS=4883 pytest sim/nucleo/nucleo_test.py` (aceptación; la compuerta usa 1 000) · `sofifi tablas` regenera ROM y programas |
 | Programas | `sofifi asm` (ciclos del RTL) · `sofifi catalogo` (docs/programas.md) · `sofifi presets` · `sofifi render --preset NOMBRE` |
 | Placa | `make synth` · `make prog` (SRAM) · `make uart` (lee `/dev/ttyUSB1`) |
-| Núcleo en placa | `make prog TOP=hil_nucleo` · `.venv/bin/python scripts/hil_nucleo.py` · margen: `scripts/margen_reloj.py` (ADR 0011) |
+| Núcleo en placa | `make prog TOP=hil_nucleo` · `.venv/bin/python scripts/hil_nucleo.py` · margen: `scripts/margen_reloj.py` (ADR 0011). Looper: `TOP=hil_looper` y `--programa looper` (con `--base hil_looper` en el margen) |
 | Primitivas | `make prog TOP=prueba_dsp` y `.venv/bin/python scripts/verificar_primitivas.py dsp` (también `bsram` y `pll`) |
 | Optimización | `make optimizacion` (síntesis de todos los tops, ~3 min; release, ADR 0010) |
 | Release | `make release-check` (síntesis de los tops con informe de recursos) |

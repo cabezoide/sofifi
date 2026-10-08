@@ -1,10 +1,10 @@
-<!-- i18n: fuente=docs/programas.md sha=a897c4fed57e estado=al_dia -->
+<!-- i18n: fuente=docs/programas.md sha=d4dca2838602 estado=al_dia -->
 <!-- GENERADO por `sofifi catalogo` desde programas/*.sasm. No se edita a mano:
      model/tests/catalogo_test.py lo compara con su generador. -->
 
 # Core programs
 
-43 programs and 344 presets. Each program is a text file in `programas/`; the presets are in `presets/banco.toml`. Program and preset names are in Spanish.
+44 programs and 352 presets. Each program is a text file in `programas/`; the presets are in `presets/banco.toml`. Program and preset names are in Spanish.
 The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/coste.py`). The memory has 43,008 words.
 
 ## Reverb
@@ -84,3 +84,9 @@ The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/co
 | `ancho` | Makes a mono guitar wide in stereo and tilts the tone between bass and treble. | 0: width<br>1: tilt | 8 | 26 | 304 | 636 |
 | `autowah` | Automatic wah: the harder you play, the higher the filter goes. | 0: sensitivity<br>1: resonance<br>2: mix | 8 | 43 | 464 | 1 |
 | `filtro` | A resonant low-pass filter that goes up and down by itself, with an LFO. | 0: rate<br>1: resonance<br>2: mix<br>3: depth | 8 | 60 | 608 | 1 |
+
+## Looper
+
+| Program | What it does | Knobs | Presets | Instructions | Cycles | Memory |
+|---|---|---|---|---|---|---|
+| `looper` | A 0.67 s micro-looper with overdub, ½×, 2× and reverse. | 0: level<br>1: rate<br>2: direction<br>3: feedback | 8 | 85 | 809 | 1 |

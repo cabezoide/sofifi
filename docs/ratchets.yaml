@@ -163,7 +163,7 @@ ratchets:
   - id: RAT-16
     nombre: LUT4 del top hil_nucleo
     medida: recursos:hil_nucleo:LUT4
-    liston: 11428
+    liston: 11787
     direccion: menor_mejor
     aviso_holgura: 0
     motivo: >-
@@ -176,10 +176,13 @@ ratchets:
       A cambio, el margen medido en la placa pasa del 6 % a más del 20 %.
       2026-10-08, Fase 07: baja a 11 428 con la escritura del banco en dos
       etapas (F-19), aun con RDAA y WRAA.
+      2026-10-08, Fase 07 (looper en la placa): el estímulo pulsa el
+      footswitch. Antes `sw` era la constante 0 y Yosys podaba su ruta en el
+      núcleo. Es coste del banco de pruebas: nucleo_placa no cambia.
   - id: RAT-17
     nombre: ALU del top hil_nucleo
     medida: recursos:hil_nucleo:ALU
-    liston: 1294
+    liston: 1302
     direccion: menor_mejor
     aviso_holgura: 0
     motivo: >-
@@ -194,3 +197,23 @@ ratchets:
       dirección física de lectura y de escritura, M[i+1] − M[i] e interpolación),
       la predecodificación y la escritura del banco en dos etapas (F-19). A
       cambio, el margen medido en la placa pasa de 120 a 125 MHz sin errores.
+      2026-10-08, Fase 07 (looper en la placa): el estímulo pulsa el
+      footswitch. Antes `sw` era la constante 0 y Yosys podaba su ruta en el
+      núcleo. Es coste del banco de pruebas: nucleo_placa no cambia.
+  - id: RAT-18
+    nombre: LUT4 del top hil_looper
+    medida: recursos:hil_looper:LUT4
+    liston: 11415
+    direccion: menor_mejor
+    aviso_holgura: 0
+    motivo: >-
+      2026-10-08, Fase 07: listón donde se está (ADR 0010). hil_nucleo con la
+      ROM del looper: prueba RDAA y WRAA en la placa.
+  - id: RAT-19
+    nombre: ALU del top hil_looper
+    medida: recursos:hil_looper:ALU
+    liston: 1280
+    direccion: menor_mejor
+    aviso_holgura: 0
+    motivo: >-
+      2026-10-08, Fase 07: listón donde se está (ADR 0010).

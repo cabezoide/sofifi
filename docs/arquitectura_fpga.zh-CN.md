@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/arquitectura_fpga.md sha=f7e2bc47c175 estado=al_dia -->
+<!-- i18n: fuente=docs/arquitectura_fpga.md sha=562629b86483 estado=al_dia -->
 # FPGA 架构
 
 本文说明 FPGA 内部有什么、各部分如何连接，以及设计在各阶段如何变化。每个阶段结束时更新本文；每个改动 FPGA 模块的 PR 也要更新本文。各组件的简明说明见 `SBOM.zh-CN.md`；塑造了设计的故障见 `fails.zh-CN.md`。
@@ -61,6 +61,7 @@ flowchart LR
 | UART TX / RX | `rtl/comun/uart_tx.v`、`uart_rx.v` | 各 ~50 LUT | 115,200 波特 |
 | 程序加载器 | `rtl/comun/carga_programa.v` | ~30 LUT | 指令数 + 1 个周期 |
 | 核心跟踪（仅 HIL） | `rtl/top/hil_nucleo.v`，命令 `T` | ~150 个触发器 | 把 (pc, ACC) 记录到捕获中 |
+| HIL 的程序 | `hil_nucleo` 的参数 `PROGRAMA`；顶层 `hil_looper` | 一个逻辑实现的 ROM | 默认是 plate；looper 用来测试 `RDAA` 和 `WRAA` |
 
 ## 预算（顶层 `hil_nucleo`，第 07 阶段，RDAA 和 WRAA）
 
@@ -160,6 +161,8 @@ UART TX 和一个计数器。没有 PLL，运行在 50 MHz。第一次“第二�
 |---|---|
 | `WRAA` | 10 |
 | `RDAA`（两次读取、差值乘以小数部分、再乘以 C） | 27 |
+
+- **板上的 looper**（顶层 `hil_looper`）：HIL 激励按下脚踏开关，先录音，再叠录。从 100 到 125 MHz，looper 与模型逐位一致。这是 `RDAA` 和 `WRAA` 在芯片上的第一次测试。
 
 ### 下一个计划中的改动
 

@@ -22,16 +22,23 @@
 // Solo vuelca cuando el PC lo pide: a pleno caudal, el puente UART del BL616 se
 // cuelga si el PC no lee (Fase 03).
 //
-// Estímulo (scripts/hil_nucleo.py lo reproduce): muestra 0, impulso (0,5; -0,25);
-// hasta la 1 023, silencio; desde la 1 024, un triángulo de 64 muestras de
-// periodo y ±0,25 de amplitud, invertido en el canal derecho.
+// Estímulo (scripts/hil_nucleo.py lo reproduce), con N = N_CAPTURA: muestra 0,
+// impulso (0,5; -0,25); hasta N/4, silencio; desde N/4, un triángulo de 64
+// muestras de periodo y ±0,25 de amplitud, invertido en el canal derecho. El
+// footswitch está pulsado en [N/4, N/2) y en [3N/4, 3N/4 + N/16): el looper
+// graba y después hace overdub (Fase 07). El plate no lee `sw`. Con N = 4 096:
+// triángulo desde la 1 024; footswitch de 1 024 a 2 047 y de 3 072 a 3 327.
+//
+// PROGRAMA elige la ROM: "plate" (por defecto) o "looper" (top hil_looper).
+// Las dos ROM están en programa_<nombre>.v, generadas por `sofifi tablas`.
 `default_nettype none
 
 module hil_nucleo #(
     parameter integer F_RELOJ      = 100_000_000,
     parameter integer BAUDIOS      = 115_200,
     parameter integer N_CAPTURA    = 4096,     // potencia de 2
-    parameter integer PALABRAS_MAX = 38_912    // 38 bloques: deja BSRAM para la captura
+    parameter integer PALABRAS_MAX = 38_912,   // 38 bloques: deja BSRAM para la captura
+    parameter [47:0]  PROGRAMA     = "plate"     // 6 caracteres como máximo
 ) (
     input  wire clk,      // 50 MHz (E2)
     input  wire rst_n,
@@ -64,11 +71,19 @@ module hil_nucleo #(
     wire [10:0] dir, prog_dir;
     wire [53:0] prog_dato;
     wire        prog_we, cargado;
-    programa_plate u_prog (
-        .dir(dir), .palabra(palabra), .instrucciones(instrucciones),
-        .palabras(palabras), .lfo_tipos(lfo_tipos), .lfo_excursiones(lfo_excursiones),
-        .absoluta(absoluta)
-    );
+    generate if (PROGRAMA == "looper") begin : g_looper
+        programa_looper u_prog (
+            .dir(dir), .palabra(palabra), .instrucciones(instrucciones),
+            .palabras(palabras), .lfo_tipos(lfo_tipos), .lfo_excursiones(lfo_excursiones),
+            .absoluta(absoluta)
+        );
+    end else begin : g_plate
+        programa_plate u_prog (
+            .dir(dir), .palabra(palabra), .instrucciones(instrucciones),
+            .palabras(palabras), .lfo_tipos(lfo_tipos), .lfo_excursiones(lfo_excursiones),
+            .absoluta(absoluta)
+        );
+    end endgenerate
     carga_programa u_carga (
         .clk(clk_100), .rst(rst), .instrucciones(instrucciones),
         .dir(dir), .palabra(palabra), .prog_we(prog_we), .prog_dir(prog_dir),
@@ -91,10 +106,15 @@ module hil_nucleo #(
                                             : 7'sd48 - $signed({1'b0, t});
     wire signed [23:0] tono = {triang, 17'd0};   // triang · 2^17, en [-2^21, 2^21]
     wire [31:0]        k32  = {{(32-AK){1'b0}}, k};   // vale para cualquier N_CAPTURA
-    wire signed [23:0] adc_l = (k32 == 32'd0)  ? 24'sh400000 :
-                               (k32 < 32'd1024) ? 24'sd0 : tono;
-    wire signed [23:0] adc_r = (k32 == 32'd0)  ? 24'shE00000 :
-                               (k32 < 32'd1024) ? 24'sd0 : -tono;
+    localparam [31:0]  N4  = N_CAPTURA / 4;
+    localparam [31:0]  N16 = N_CAPTURA / 16;
+    wire signed [23:0] adc_l = (k32 == 32'd0) ? 24'sh400000 :
+                               (k32 < N4)     ? 24'sd0 : tono;
+    wire signed [23:0] adc_r = (k32 == 32'd0) ? 24'shE00000 :
+                               (k32 < N4)     ? 24'sd0 : -tono;
+    wire               pulsado = (k32 >= N4 && k32 < 2 * N4) ||
+                                 (k32 >= 3 * N4 && k32 < 3 * N4 + N16);
+    wire signed [23:0] sw = pulsado ? 24'sh7FFFFF : 24'sd0;
 
     // ── Núcleo ────────────────────────────────────────────────────────────
     wire               tick;
@@ -109,7 +129,7 @@ module hil_nucleo #(
         .cfg_lfo_tipos(lfo_tipos), .cfg_lfo_excursiones(lfo_excursiones),
         .cfg_absoluta(absoluta),
         .tick(tick), .adc_l(adc_l), .adc_r(adc_r),
-        .pots({6{24'sh400000}}), .sw(24'sd0),
+        .pots({6{24'sh400000}}), .sw(sw),
         .dac_l(dac_l), .dac_r(dac_r), .fin(fin), .ocupado(ocupado), .ciclos(ciclos),
         .traza_pc(traza_pc), .traza_acc(traza_acc)
     );

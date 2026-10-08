@@ -60,6 +60,7 @@ Todo corre en **un solo dominio de reloj de 100 MHz** (ADR 0005). La única exce
 | UART TX / RX | `rtl/comun/uart_tx.v`, `uart_rx.v` | ~50 LUT cada una | 115 200 baudios |
 | Cargador de programa | `rtl/comun/carga_programa.v` | ~30 LUT | instrucciones + 1 ciclos |
 | Traza del núcleo (solo HIL) | `rtl/top/hil_nucleo.v`, orden `T` | ~150 flip-flops | graba (pc, ACC) en la captura |
+| Programa del HIL | parámetro `PROGRAMA` de `hil_nucleo`; top `hil_looper` | una ROM en lógica | plate por defecto; el looper prueba `RDAA` y `WRAA` |
 
 ## Presupuesto (top `hil_nucleo`, Fase 07, RDAA y WRAA)
 
@@ -159,6 +160,8 @@ Se añaden los envoltorios del PLL (`pll_100`), del DSP (`mult_27x18`) y de la B
 |---|---|
 | `WRAA` | 10 |
 | `RDAA` (dos lecturas, la diferencia por la fracción y el producto por C) | 27 |
+
+- **Looper en la placa** (top `hil_looper`): el estímulo del HIL pulsa el footswitch para grabar y para hacer un overdub. El looper coincide bit a bit con el modelo de 100 a 125 MHz. Es la primera prueba de `RDAA` y `WRAA` en el silicio.
 
 ### Próximo cambio previsto
 
