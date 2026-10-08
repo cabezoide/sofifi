@@ -33,9 +33,9 @@ from sofifi.adapters.archivos import ensamblar_archivo
 from sofifi.adapters.cadenas import leer_cadenas, textos_de_programas
 from sofifi.domain.aritmetica import CICLOS_POR_MUESTRA, dato
 from sofifi.domain.composicion import ensamblar_cadena, nombre_programa
-from sofifi.domain.coste import CICLOS_SKP_SIN_SALTO, ciclos_instruccion_rtl, ciclos_rtl
+from sofifi.domain.coste import ciclos_rtl
 from sofifi.domain.ensamblador import ensamblar
-from sofifi.domain.isa import Programa, codificar
+from sofifi.domain.isa import Op, Programa, codificar
 from sofifi.domain.lfo import TipoLfo
 from sofifi.domain.nucleo import Nucleo
 
@@ -151,6 +151,9 @@ async def igual_al_modelo(dut: cocotb.handle.HierarchyObject) -> None:
         cota,
     )
     assert maximo <= cota <= CICLOS_POR_MUESTRA, f"{nombre}: {maximo} ciclos, cota {cota}"
+    # Sin saltos, el modelo de tiempos (coste.py) es exacto: ADR 0014.
+    if all(i.op is not Op.SKP for i in programa.instrucciones):
+        assert maximo == cota, f"{nombre}: RTL {maximo} ciclos, modelo {cota}"
 
 
 RETARDO_8 = """
@@ -167,7 +170,13 @@ async def cargar(dut: cocotb.handle.HierarchyObject, programa: Programa) -> None
     dut.rst.value, dut.tick.value = 1, 0
     dut.cfg_instrucciones.value = len(programa.instrucciones)
     dut.cfg_palabras.value = programa.palabras_memoria
-    dut.cfg_lfo_tipos.value, dut.cfg_lfo_excursiones.value = 0, 0
+    # Los tipos de LFO cambian la duración del CHO (coste.py).
+    dut.cfg_lfo_tipos.value = sum(
+        CODIGO_LFO[c.tipo] << (2 * k) for k, c in enumerate(programa.lfos) if c is not None
+    )
+    dut.cfg_lfo_excursiones.value = sum(
+        c.excursion << (15 * k) for k, c in enumerate(programa.lfos) if c is not None
+    )
     dut.cfg_absoluta.value = int(programa.usa_absoluta)
     for k, ins in enumerate(programa.instrucciones):
         dut.prog_we.value, dut.prog_dir.value, dut.prog_dato.value = 1, k, codificar(ins)
@@ -346,20 +355,23 @@ async def ciclos_de(dut: cocotb.handle.HierarchyObject, texto: str) -> int:
 
 @cocotb.test()
 async def coste_de_cada_instruccion(dut: cocotb.handle.HierarchyObject) -> None:
-    """Ciclos de cada instrucción en el RTL: los que cuenta el modelo (coste.py)."""
+    """Ciclos de cada instrucción en el RTL: los que cuenta el modelo de tiempos (coste.py).
+
+    Con 10 y 20 copias de cada instrucción, y con cada pareja de instrucciones
+    seguidas: así se prueban también las esperas por dependencia (ADR 0014).
+    """
     cocotb.start_soon(Clock(dut.clk, 10, unit="ns").start())
     dut.pots.value = 0
-    # Con 10 y 20 copias de cada instrucción: la diferencia es el coste de 10.
-    for nombre, linea in MUESTRA_COSTE.items():
-        diez = await ciclos_de(dut, "\n".join([linea] * 10))
-        veinte = await ciclos_de(dut, "\n".join([linea] * 20))
-        modelo = ciclos_instruccion_rtl(ensamblar(CABECERA_COSTE + linea, "coste").instrucciones[0])
-        if nombre == "skp_no":
-            modelo = CICLOS_SKP_SIN_SALTO
-        assert veinte - diez == 10 * modelo, (
-            f"{nombre}: RTL {(veinte - diez) / 10}, modelo {modelo}"
-        )
-        assert diez <= ciclos_rtl(ensamblar(CABECERA_COSTE + "\n".join([linea] * 10), "coste"))
+    lineas = list(MUESTRA_COSTE.items())
+    casos = [(n, "\n".join([t] * k)) for n, t in lineas for k in (10, 20)]
+    casos += [(f"{n1}+{n2}", f"{t1}\n{t2}\n" * 3) for n1, t1 in lineas for n2, t2 in lineas]
+    for nombre, texto in casos:
+        programa = ensamblar(CABECERA_COSTE + texto, "coste")
+        rtl = await ciclos_de(dut, texto)
+        if "skp" in nombre:   # con SKP, el modelo es una cota: cuenta cada salto
+            assert rtl <= ciclos_rtl(programa), f"{nombre}: RTL {rtl}, cota {ciclos_rtl(programa)}"
+        else:
+            assert rtl == ciclos_rtl(programa), f"{nombre}: RTL {rtl}, modelo {ciclos_rtl(programa)}"
 
 
 SELECCION = os.environ.get("SOFIFI_PROGRAMAS", ",".join(PROGRAMAS)).split(",")
