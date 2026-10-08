@@ -1,10 +1,10 @@
-<!-- i18n: fuente=docs/programas.md sha=d4dca2838602 estado=al_dia -->
+<!-- i18n: fuente=docs/programas.md sha=9b4d888846a3 estado=al_dia -->
 <!-- GENERADO por `sofifi catalogo` desde programas/*.sasm. No se edita a mano:
      model/tests/catalogo_test.py lo compara con su generador. -->
 
 # コアのプログラム
 
-44 のプログラムと 352 のプリセット。各プログラムは `programas/` のテキストファイルで、プリセットは `presets/banco.toml` にあります。プログラム名とプリセット名はスペイン語です。
+45 のプログラムと 360 のプリセット。各プログラムは `programas/` のテキストファイルで、プリセットは `presets/banco.toml` にあります。プログラム名とプリセット名はスペイン語です。
 サイクル数は RTL の上限で、1 サンプルあたり 2,048（`model/sofifi/domain/coste.py`）。メモリーは 43,008 ワードです。
 
 ## リバーブ
@@ -73,6 +73,7 @@
 
 | プログラム | 働き | ノブ | プリセット | 命令数 | サイクル | メモリー |
 |---|---|---|---|---|---|---|
+| `granular` | Hann 窓、オクターブ単位のピッチ、フリーズ付きの 4 声グラニュラー。 | 0: 長さ<br>1: 拡散<br>2: 音程<br>3: ミックス | 8 | 188 | 1,896 | 1 |
 | `lofi` | サンプル数とビット数を減らし、エイリアシングを加えます。 | 0: サンプリング周波数<br>1: ビット<br>2: ミックス<br>3: トーン | 8 | 81 | 800 | 1 |
 | `ringmod` | リングモジュレーター：ギターにサイン波を掛け、金属的に鳴らします。 | 0: 周波数<br>2: ミックス | 8 | 33 | 362 | 1 |
 | `saturacion` | オーバードライブ系の飽和：温かい艶から厚い歪みまで。 | 0: ゲイン<br>1: トーン<br>2: ミックス<br>3: レベル | 8 | 42 | 462 | 1 |

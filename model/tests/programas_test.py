@@ -197,6 +197,7 @@ def test_swell_cada_nota_empieza_en_silencio() -> None:
 # un impulso casi no suenan).
 # Cambian si cambia la aritmética (ADR 0008), la ISA (ADR 0009) o el programa.
 HUELLAS = {
+    "granular": "5bab1e168ac461df",
     "looper": "f4b95ce672872ac4",
     "plate": "7967b952e0f3b48a",
     "shimmer": "85d032aacbdeb748",
@@ -255,6 +256,7 @@ SEGUNDOS_HUELLA = {
     "ducking": 0.5,
     "freeze_givens": 0.5,
     "looper": 0.3,
+    "granular": 0.5,
 }
 # Sin footswitch, el looper solo deja pasar la señal seca: graba los primeros 0,1 s.
 TRAMOS_SW = {"looper": ((0, int(0.1 * FS)),)}
@@ -270,6 +272,7 @@ CON_TONO = {
     "ringmod",
     "slicer",
     "looper",
+    "granular",
 }
 
 

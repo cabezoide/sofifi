@@ -1,10 +1,10 @@
-<!-- i18n: fuente=docs/programas.md sha=d4dca2838602 estado=al_dia -->
+<!-- i18n: fuente=docs/programas.md sha=9b4d888846a3 estado=al_dia -->
 <!-- GENERADO por `sofifi catalogo` desde programas/*.sasm. No se edita a mano:
      model/tests/catalogo_test.py lo compara con su generador. -->
 
 # 核心程序
 
-44 个程序与 352 个预设。每个程序都是 `programas/` 中的一个文本文件；预设位于 `presets/banco.toml`。程序名与预设名为西班牙语。
+45 个程序与 360 个预设。每个程序都是 `programas/` 中的一个文本文件；预设位于 `presets/banco.toml`。程序名与预设名为西班牙语。
 周期数为 RTL 的上限，每个样本 2,048 个（`model/sofifi/domain/coste.py`）。存储器共 43,008 个字。
 
 ## 混响
@@ -73,6 +73,7 @@
 
 | 程序 | 作用 | 旋钮 | 预设 | 指令数 | 周期 | 存储器 |
 |---|---|---|---|---|---|---|
+| `granular` | 4 声部颗粒云，Hann 窗、八度音高和冻结。 | 0: 时长<br>1: 扩散<br>2: 音程<br>3: 干湿比 | 8 | 188 | 1,896 | 1 |
 | `lofi` | 更少的每秒样本数和更少的位数，带混叠。 | 0: 采样率<br>1: 位数<br>2: 干湿比<br>3: 音色 | 8 | 81 | 800 | 1 |
 | `ringmod` | 环形调制器：将吉他与正弦波相乘，声音带金属感。 | 0: 频率<br>2: 干湿比 | 8 | 33 | 362 | 1 |
 | `saturacion` | 过载式饱和：从温暖的光泽到厚重的失真。 | 0: 增益<br>1: 音色<br>2: 干湿比<br>3: 电平 | 8 | 42 | 462 | 1 |

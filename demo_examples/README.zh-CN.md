@@ -1,4 +1,4 @@
-<!-- i18n: fuente=demo_examples/README.md sha=5fc2eee58a60 estado=al_dia -->
+<!-- i18n: fuente=demo_examples/README.md sha=f4b7e51f3061 estado=al_dia -->
 # demo_examples
 
 一段合成吉他（Em9 琶音，Karplus-Strong 弦模型）经内核的每个程序处理，使用逐位精确模型。可用 `.venv/bin/python scripts/generar_demos.py` 重新生成，每次得到的音频都相同。
@@ -50,5 +50,6 @@
 | `demo_shimmer_energia.ogg` | `shimmer_energia` | 衰减 0.80 · 阻尼 0.25 · 干湿比 0.55 · shimmer 量 0.90 | — |
 | `demo_freeze_givens.ogg` | `freeze_givens` | 衰减 0.60 · 阻尼 0.30 · 干湿比 0.50 · 旋转 0.60 | 2.50 → 8.00 s |
 | `demo_looper.ogg` | `looper` | 电平 0.80 · 速度 0.50 · 方向 0.00 · 反馈 0.80 | 0.00 → 0.66 s, 1.32 → 1.98 s |
+| `demo_granular.ogg` | `granular` | 时长 0.60 · 扩散 0.50 · 音程 1.00 · 干湿比 0.60 | 1.60 → 7.00 s |
 
 Ogg Vorbis，48,828 Hz（ADR 0005，西班牙语）；渲染在 24 位下逐位精确。旋钮与程序见 `docs/programas.zh-CN.md`。
