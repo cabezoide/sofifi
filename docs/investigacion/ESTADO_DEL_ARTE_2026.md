@@ -43,6 +43,50 @@ Las críticas también se repiten. Los usuarios dicen que el granular del Microc
 
 La conclusión para SOFIFI es directa. El paquete mínimo competitivo de 2026 incluye estéreo, freeze en pulsador, shimmer, un mando de stretch, modulación de cola, presets por MIDI y expresión [INF]. SOFIFI ya tiene plate, shimmer y freeze. Le faltan el stretch, el granular, las rampas, el morphing y el MIDI [INF]. El looper de frase de 30-60 s no cabe en 0,88 s. Hay que declararlo fuera de alcance hasta tener SDRAM [INF].
 
+## Para superar a los Eventide hay que ganar en sonido, no en número
+
+*Añadido el 2026-10-08, tras cerrar la Fase 07 (versión 0.7).* La persona propietaria fija un objetivo: superar a los Eventide de gama alta. Esta sección compara cifras y dice qué falta.
+
+| Pedal | Efectos o algoritmos | Presets | Precio nuevo |
+|---|---|---|---|
+| **SOFIFI 0.7** | 45 programas en 8 familias | 360 | unos 125 USD de BOM, sin caja (`BOM.md`) |
+| Eventide H9 Gen 2 | 74 algoritmos, con las bibliotecas del H90 y del H9 Max [?] | más de 1 000 [?] | 599 USD [?] |
+| Eventide H90 | 62 a 64 algoritmos [?] | 99 en el pedal y unos 500 por la app [?] | 899 USD; la edición Dark, hasta 999 [?] |
+| Eventide Space | 12 algoritmos [?] | 100 [?] | 399 a 499 USD [?] |
+| Eventide Blackhole | 1 algoritmo [V] | 5, ampliables a 127 por MIDI [V] | 239 a 299 USD [?] |
+| Strymon BigSky MX | 12 reverbs, dos a la vez [V] | 300 [V] | 679 USD [V] |
+| Boss RV-500 | 12 modos con 21 tipos de reverb [?] | 297 [?] | sin consultar |
+| Hologram Microcosm | 11 efectos × 4 variaciones = 44 [V] | 16 de usuario [V] | 459 USD [V] |
+
+En número, SOFIFI ya supera a los pedales de reverb dedicados y queda por debajo del H90 y del H9 Gen 2 [INF]. El número engaña por tres razones [INF]:
+
+1. Los 45 programas incluyen efectos que no son ambient, como el compresor, la puerta o el autowah.
+2. Los 360 presets son otras posiciones de los mandos de los mismos programas.
+3. Un algoritmo de Eventide tiene años de ajuste por oído detrás; un programa `.sasm` tiene una prueba acústica y una huella.
+
+**Qué quiere decir «superar».** Se proponen ocho criterios medibles [INF]:
+
+| Criterio | H9 Gen 2 / H90 | SOFIFI hoy | Qué hace falta |
+|---|---|---|---|
+| Suena con guitarra | sí | no | códec I2S, mandos y OLED (Fases 09 a 11) |
+| Algoritmos | 74 [?] | 45 | 30 programas más; caben como ficheros, sin RTL (ADR 0006) |
+| Presets | más de 1 000 [?] | 360 | más presets por programa, y presets de usuario en la microSD (Fase 08) |
+| Dos efectos a la vez | el H90 encadena dos algoritmos por preset [?] | uno | repartir los 2 048 ciclos entre dos programas, o un segundo núcleo |
+| Memoria | segundos de retardo [?] | 0,88 s (0,67 s para loops) | SDRAM (`BOM.md`, línea 12) |
+| Calidad percibida | referencia del mercado | sin medir | prueba ciega ABX contra grabaciones de referencia |
+| Precio | 599 a 999 USD [?] | unos 125 USD de BOM | ya gana |
+| Abierto y comprobable | no | sí, bit a bit (ADR 0003) | ya gana |
+
+**Lo más difícil son dos efectos a la vez y la calidad** [INF]:
+
+- El hall usa 1 585 de 2 048 ciclos y el granular, 1 896. Dos efectos así no caben en un núcleo.
+- Un segundo núcleo ocuparía casi otra mitad del chip: hoy `nucleo_placa` usa 11 097 de 23 040 LUT4 (`docs/ratchets.yaml`, RAT-11). Antes hay que reducir la espera de unos 14 ciclos por instrucción (`docs/arquitectura_fpga.md`, «Próximo cambio previsto»).
+- La calidad no se demuestra con una huella. Hace falta una prueba de escucha con personas y un criterio de aceptación escrito antes de escuchar.
+
+**Lo que ya gana** [INF]: el precio, que es de cinco a siete veces menor que el de un H90, y la apertura. Ningún Eventide deja leer su algoritmo ni comprobarlo bit a bit.
+
+Fuentes de los precios y las cifras de Eventide (agregadores y tiendas, por eso van con [?]): [Equipboard H90](https://equipboard.com/items/eventide-h90-harmonizer-multi-effects-pedal), [Guitar Chalk](https://www.guitarchalk.com/best-multi-effects-pedals-under-1000/), [Equipboard H9 Gen 2](https://equipboard.com/items/eventide-h9-harmonizer-gen-2), [SOS H9 Gen 2](https://www.soundonsound.com/news/eventide-launch-h9-harmonizer-gen-2), [Thomann H90](https://thomannmusic.com/eventide_h90_harmonizer.htm), [Equipboard Space](https://equipboard.com/items/eventide-space-reverb-pedal), [Equipboard Blackhole](https://equipboard.com/items/eventide-blackhole-pedal), [SOS Space](https://www.soundonsound.com/node/4904933), [zZounds RV-500](https://www.zzounds.com/pagearea--61/item--BOSRV500), [SOS Microcosm](https://www.soundonsound.com/reviews/hologram-electronics-microcosm).
+
 ## La investigación DSP mejora la calidad sin hardware nuevo
 
 La línea académica dominante de 2020-2026 no cambia la topología de la reverb. Optimiza la **FDN** (red de retardos con realimentación, del inglés *feedback delay network*) fuera de línea y la densifica con poco coste. Ese trabajo ocurre en el PC; el pedal solo ejecuta coeficientes [INF].
