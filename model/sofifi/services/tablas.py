@@ -58,7 +58,9 @@ def verilog_tabla_hermite() -> str:
     return "\n".join(lineas)
 
 
-def verilog_programa(programa: Programa, modulo: str | None = None, origen: str | None = None) -> str:
+def verilog_programa(
+    programa: Programa, modulo: str | None = None, origen: str | None = None
+) -> str:
     """ROM con el microcódigo de un programa y su configuración (lo que va en el .json).
 
     La carga un top en el núcleo por el puerto de programa, igual que hará el

@@ -134,7 +134,8 @@ def main(argv: list[str] | None = None) -> int:
             args.salida.write_text(verilog_programa(prog, "programa_hil", origen), encoding="utf-8")
             print(
                 f"{args.nombre}: {len(prog.instrucciones)} instrucciones, "
-                f"{ciclos_rtl(prog)} ciclos del RTL, {prog.palabras_memoria} palabras → {args.salida}"
+                f"{ciclos_rtl(prog)} ciclos del RTL, {prog.palabras_memoria} palabras"
+                f" → {args.salida}"
             )
             return 0
         if args.orden == "presets":

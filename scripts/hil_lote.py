@@ -59,7 +59,9 @@ def probar(nombre: str) -> dict[str, str]:
     iguales = re.search(r"hil: (\d+) muestras recibidas, (\d+) iguales", salida)
     ciclos = re.search(r"máximo (\d+) ciclos/muestra", salida)
     mhz = re.search(r'"alcanzada_mhz": ([\d.]+)', salida)
-    correcto = iguales is not None and iguales[1] == iguales[2] == "4096" and "CRC correcto" in salida
+    correcto = (
+        iguales is not None and iguales[1] == iguales[2] == "4096" and "CRC correcto" in salida
+    )
     return {
         "nombre": nombre,
         "resultado": "igual" if correcto else "DISTINTO",
