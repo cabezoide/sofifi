@@ -87,6 +87,28 @@ En número, SOFIFI ya supera a los pedales de reverb dedicados y queda por debaj
 
 Fuentes de los precios y las cifras de Eventide (agregadores y tiendas, por eso van con [?]): [Equipboard H90](https://equipboard.com/items/eventide-h90-harmonizer-multi-effects-pedal), [Guitar Chalk](https://www.guitarchalk.com/best-multi-effects-pedals-under-1000/), [Equipboard H9 Gen 2](https://equipboard.com/items/eventide-h9-harmonizer-gen-2), [SOS H9 Gen 2](https://www.soundonsound.com/news/eventide-launch-h9-harmonizer-gen-2), [Thomann H90](https://thomannmusic.com/eventide_h90_harmonizer.htm), [Equipboard Space](https://equipboard.com/items/eventide-space-reverb-pedal), [Equipboard Blackhole](https://equipboard.com/items/eventide-blackhole-pedal), [SOS Space](https://www.soundonsound.com/node/4904933), [zZounds RV-500](https://www.zzounds.com/pagearea--61/item--BOSRV500), [SOS Microcosm](https://www.soundonsound.com/reviews/hologram-electronics-microcosm).
 
+### Actualización 2026-10-08: lote ambient (51 programas)
+
+La persona propietaria pidió más efectos ambient. Se compararon los modos de tres pedales de referencia con el catálogo. La tabla dice qué idea faltaba y qué programa la cubre ahora.
+
+| Idea en el mercado | Dónde aparece | Programa nuevo |
+|---|---|---|
+| Eco de varias cabezas con difusión, entre delay y reverb | Magneto del BigSky MX: de una a seis cabezas y un mando de difusión [?] | `bruma` |
+| Pad de cuerdas sobre la reverb | modo Ensemble del Cloudburst y del Cloud del BigSky MX [?] | `ensemble` |
+| Drone que se sostiene solo | Tunnel del Microcosm: drones con micro-loops cíclicos [?]; hoja de ruta, punto 4 | `sostenido` |
+| Reverb con trémolo o con distorsión | algoritmos de reverb con trémolo y reverb distorsionada de los multiefectos [INF] | `marea`, `shoegaze` |
+| Shimmer de −12 | lista de efectos de la investigación (`INVESTIGACION.md` §4.3) | `shimmer_grave` |
+
+Los seis caben en el núcleo sin cambiar la ISA ni el RTL: el más caro, `shoegaze`, usa 1 772 de 2 048 ciclos. Con ellos hay 51 programas y 408 presets [V] (`docs/programas.md`). Al H9 Gen 2 le quedan 23 algoritmos de ventaja [?].
+
+Quedan fuera, porque necesitan algo que el núcleo aún no tiene [INF]:
+
+- Polyphony y Prism Shift del H90: pitch polifónico, que pide un STFT (hoja de ruta, punto 25) [?].
+- Strum, Seq y Arp del Microcosm: secuencias de notas recientes, que piden más memoria (SDRAM, punto 24) [?].
+- Choir del BigSky MX: voces con tono y timbre al azar; el `chorale` es su base, pero un coro de varias voces no cabe hoy en los ciclos [INF].
+
+Fuentes: [Strymon BigSky MX, guía rápida](https://www.strymon.net/manuals/BigSkyMX_QuickStart_RevB.pdf), [Synth Anatomy Microcosm](https://synthanatomy.com/2020/02/microcosm-new-super-creative-granular-looper-pedal-from-hologram.html), [MusicRadar H90](https://musicradar.com/news/eventide-h90-harmonizer-effects-pedal), [SOS H90](https://www.soundonsound.com/news/eventide-reveal-h90-harmonizer-pedal).
+
 ## La investigación DSP mejora la calidad sin hardware nuevo
 
 La línea académica dominante de 2020-2026 no cambia la topología de la reverb. Optimiza la **FDN** (red de retardos con realimentación, del inglés *feedback delay network*) fuera de línea y la densifica con poco coste. Ese trabajo ocurre en el PC; el pedal solo ejecuta coeficientes [INF].

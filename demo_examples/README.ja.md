@@ -1,4 +1,4 @@
-<!-- i18n: fuente=demo_examples/README.md sha=f4b7e51f3061 estado=al_dia -->
+<!-- i18n: fuente=demo_examples/README.md sha=6916e123cdd2 estado=al_dia -->
 # demo_examples
 
 合成ギター（Em9 のアルペジオ、Karplus-Strong の弦）を、ビット精度のモデルでコアの各プログラムに通したものです。`.venv/bin/python scripts/generar_demos.py` で再生成でき、毎回同じ音声になります。
@@ -51,5 +51,11 @@
 | `demo_freeze_givens.ogg` | `freeze_givens` | ディケイ 0.60 · ダンピング 0.30 · ミックス 0.50 · 回転 0.60 | 2.50 → 8.00 s |
 | `demo_looper.ogg` | `looper` | レベル 0.80 · 速さ 0.50 · 方向 0.00 · フィードバック 0.80 | 0.00 → 0.66 s, 1.32 → 1.98 s |
 | `demo_granular.ogg` | `granular` | 長さ 0.60 · 拡散 0.50 · 音程 1.00 · ミックス 0.60 | 1.60 → 7.00 s |
+| `demo_shimmer_grave.ogg` | `shimmer_grave` | ディケイ 0.75 · ダンピング 0.30 · ミックス 0.50 · シマー量 0.60 | — |
+| `demo_marea.ogg` | `marea` | ディケイ 0.80 · ダンピング 0.30 · ミックス 0.50 · 速さ 0.20 | — |
+| `demo_ensemble.ogg` | `ensemble` | ディケイ 0.75 · ダンピング 0.30 · ミックス 0.50 · アンサンブル 0.70 | — |
+| `demo_sostenido.ogg` | `sostenido` | レイヤー 0.20 · ダンピング 0.30 · ミックス 0.50 · キャプチャー 0.30 | — |
+| `demo_shoegaze.ogg` | `shoegaze` | ディケイ 0.85 · ダンピング 0.30 · ミックス 0.55 · サチュレーション 0.80 | — |
+| `demo_bruma.ogg` | `bruma` | 拡散 0.70 · フィードバック 0.55 · ミックス 0.50 · ヘッド 1.00 | — |
 
 Ogg Vorbis、48,828 Hz（ADR 0005、スペイン語）。レンダリングは 24 ビットでビット精度です。ノブとプログラムは `docs/programas.ja.md` にあります。

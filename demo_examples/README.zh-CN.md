@@ -1,4 +1,4 @@
-<!-- i18n: fuente=demo_examples/README.md sha=f4b7e51f3061 estado=al_dia -->
+<!-- i18n: fuente=demo_examples/README.md sha=6916e123cdd2 estado=al_dia -->
 # demo_examples
 
 一段合成吉他（Em9 琶音，Karplus-Strong 弦模型）经内核的每个程序处理，使用逐位精确模型。可用 `.venv/bin/python scripts/generar_demos.py` 重新生成，每次得到的音频都相同。
@@ -51,5 +51,11 @@
 | `demo_freeze_givens.ogg` | `freeze_givens` | 衰减 0.60 · 阻尼 0.30 · 干湿比 0.50 · 旋转 0.60 | 2.50 → 8.00 s |
 | `demo_looper.ogg` | `looper` | 电平 0.80 · 速度 0.50 · 方向 0.00 · 反馈 0.80 | 0.00 → 0.66 s, 1.32 → 1.98 s |
 | `demo_granular.ogg` | `granular` | 时长 0.60 · 扩散 0.50 · 音程 1.00 · 干湿比 0.60 | 1.60 → 7.00 s |
+| `demo_shimmer_grave.ogg` | `shimmer_grave` | 衰减 0.75 · 阻尼 0.30 · 干湿比 0.50 · shimmer 量 0.60 | — |
+| `demo_marea.ogg` | `marea` | 衰减 0.80 · 阻尼 0.30 · 干湿比 0.50 · 速度 0.20 | — |
+| `demo_ensemble.ogg` | `ensemble` | 衰减 0.75 · 阻尼 0.30 · 干湿比 0.50 · 合奏 0.70 | — |
+| `demo_sostenido.ogg` | `sostenido` | 层叠 0.20 · 阻尼 0.30 · 干湿比 0.50 · 捕捉 0.30 | — |
+| `demo_shoegaze.ogg` | `shoegaze` | 衰减 0.85 · 阻尼 0.30 · 干湿比 0.55 · 饱和 0.80 | — |
+| `demo_bruma.ogg` | `bruma` | 扩散 0.70 · 反馈 0.55 · 干湿比 0.50 · 磁头 1.00 | — |
 
 Ogg Vorbis，48,828 Hz（ADR 0005，西班牙语）；渲染在 24 位下逐位精确。旋钮与程序见 `docs/programas.zh-CN.md`。

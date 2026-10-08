@@ -1,0 +1,60 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: reverb
+; resumen: Un coro de tres voces antes del plate: la cola suena como una sección de cuerdas.
+; resumen.en: A three-voice chorus before the plate: the tail sounds like a string section.
+; resumen.zh-CN: plate 之前的三声部合唱：尾音听起来像弦乐组。
+; resumen.ja: plate の前に 3 声のコーラス：残響がストリングス・セクションのように響きます。
+;
+; ensemble.sasm — Plate de Dattorro (ver plate.sasm) con un ensemble en la
+; entrada de la reverb. Tres voces entran en el tanque: la directa y dos con
+; retardos que se mueven (LFO 2 y 3, a 0,53 y 0,71 Hz). Las voces desafinan
+; un poco y la cola se ensancha como un pad. La señal seca no pasa por el
+; coro. Hoja de ruta de la Fase 03, punto 9
+; (docs/investigacion/ESTADO_DEL_ARTE_2026.md). Diseño propio.
+;
+; pot0 = decay · pot1 = damping · pot2 = mezcla (como plate.sasm)
+; pot3 = ensemble   (0 → plate · 1 → coro de ±2,5 ms)
+
+include  comun/dattorro_decl.sasm
+
+equ  e     120                ; excursión de las voces: ±2,5 ms
+equ  d     977                ; retardo central: 20 ms
+
+equ  v1       reg9
+
+mem  ens   d + e + 3
+
+lfo  2  sin  e
+lfo  3  sin  e
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+include  comun/dattorro_lfo.sasm
+        sof   0, 0.99
+        wrax  lfo0_depth, 1.0
+        wrax  lfo1_depth, 0
+        rdax  tmp, 1024*0.53/48828.125  ; LFO2 a 0,53 Hz
+        wrax  lfo2_rate, 0
+        rdax  tmp, 1024*0.71/48828.125  ; LFO3 a 0,71 Hz
+        wrax  lfo3_rate, 0
+inicio:
+include  comun/controles.sasm
+        rdax  pot3, 1.0                 ; la profundidad del coro sigue a pot3
+        wrax  lfo2_depth, 1.0
+        wrax  lfo3_depth, 0
+; ── entrada: mono, escalada por la mezcla, predelay ──────────────────
+include  comun/entrada.sasm
+; ── ensemble: directa + dos voces móviles, a 1/2 cada una ────────────
+        wra   ens, 0
+        cho   ens + d - e, 0.5, lfo2
+        wrax  v1, 0
+        cho   ens + d - e, 0.5, lfo3
+        rdax  v1, 1.0
+        rda   ens + d, 0.5              ; la voz directa, con el mismo retardo central
+; ── ancho de banda, difusión, tanque y salida ───────────────────────
+        rdfx  bw, kbw
+        wrax  bw, 1.0
+include  comun/dattorro_difusion.sasm
+include  comun/dattorro_tanque.sasm
+include  comun/dattorro_salida.sasm

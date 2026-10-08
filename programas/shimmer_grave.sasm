@@ -1,0 +1,19 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: reverb
+; resumen: Shimmer hacia abajo: cada vuelta baja una octava y la cola se vuelve un órgano grave.
+; resumen.en: Downward shimmer: each turn goes down one octave and the tail becomes a deep organ.
+; resumen.zh-CN: 向下的 shimmer：每一轮降低一个八度，尾音变成低沉的管风琴。
+; resumen.ja: 下向きの shimmer：一巡ごとに 1 オクターブ下がり、残響が低いオルガンになります。
+;
+; shimmer_grave.sasm — El shimmer (shimmer.sasm) con −12 en lugar de +12. La
+; razón 0,5 hace que la rampa del shifter baje: rate positivo. El paso alto del
+; bucle (comun/shimmer_cola.sasm, unos 155 Hz) impide que los graves se
+; acumulen. Idea del shimmer de −12 (docs/investigacion/INVESTIGACION.md §4.3).
+;
+; pot0 = decay · pot1 = damping · pot2 = mezcla · pot3 = cantidad de shimmer
+
+equ  rate_pit  1/4096             ; −12: razón 0,5
+
+include  comun/shimmer_cuerpo.sasm
+include  comun/shimmer_cola.sasm

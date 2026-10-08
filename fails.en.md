@@ -1,4 +1,4 @@
-<!-- i18n: fuente=fails.md sha=15dcd8f64a08 estado=al_dia -->
+<!-- i18n: fuente=fails.md sha=feab6ccbf401 estado=al_dia -->
 # Failures and their resolution
 
 This is the record of the failures found in the project. Each entry has a symptom, a diagnosis, a root cause, a resolution and a lesson. The record helps us not to repeat them. It also explains why the design is as it is.
@@ -27,6 +27,8 @@ Add a new entry when a failure is diagnosed and resolved. Do not rewrite the ent
 | F-18 | 06 | Four programming faults in the Phase 06 catalog | resolved before publication |
 | F-19 | 07 | With RDAA and WRAA, the silicon failed at 114 MHz in the first sample | resolved; measured margin ≥ 25 % |
 | F-20 | 07 | The clear of the absolute region did not clear two words | resolved |
+| F-21 | 07 | In marea, the software LFO stayed at +1 | resolved before publication |
+| F-22 | 07 | The shoegaze program was five times louder than the plate | resolved before publication |
 
 ---
 
@@ -233,3 +235,19 @@ Add a new entry when a failure is diagnosed and resolved. Do not rewrite the ent
   - `mabs_borrar` is registered on the same clock edge as `mdir_w`.
   - The test has the new name `absoluta_como_el_modelo`. Before the clear, it writes data to the limits of the region with `WRAA`. With the old failure, the test fails.
 - **Lesson:** register the signals that go with a registered address together with that address. A test of the memory clear needs a memory with data in it. The simulation starts with the memory at zero, so the clear is not tested (as in F-12).
+
+## F-21 · In marea, the software LFO stayed at +1
+
+- **Symptom:** in the `marea` test, the right tail was approximately ten times quieter than the left tail, and neither tail made waves.
+- **Diagnosis:** the left gain was 1 and the right gain was 0.1 in all samples. Both gains come from the LFO: the LFO was always at +1.
+- **Root cause:** the program rounded the triangle with `CLIP` and wrote the result into `tri`. `tri` is the state of `comun/lfo_triangulo.sasm`. `CLIP` has a slope of 1.5 at the origin: each sample pushed the value towards 1, and the value stayed there.
+- **Resolution:** the rounded value goes into a different register (`ola`). Only the common block writes `tri`.
+- **Lesson:** do not write the state register of a common block outside the block. Put the values that you calculate from it into a different register.
+
+## F-22 · The shoegaze program was five times louder than the plate
+
+- **Symptom:** the `shoegaze` demo had an RMS level of 0.13; the plate demo had 0.027. The acoustic test passed.
+- **Diagnosis:** with saturation, the tail is clipped near ±1. The plate keeps the tail near ±0.1. The gain of ×16 raises the tail to the limit.
+- **Root cause:** the output gain was fixed (0.5). The test measured the compression, not the level against the plate.
+- **Resolution:** the output decreases from 0.6 to 0.1 when pot3 increases. With the mix at half, the level stays within ±25 % of the plate across the full range of the knob.
+- **Lesson:** a jump in volume when you change the program is a risk (SECURITY.md). Compare the level of each new program with the plate before publication.

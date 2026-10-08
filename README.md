@@ -16,8 +16,8 @@ texto que ejecuta un núcleo DSP propio.
 
 | Qué | Estado |
 |---|---|
-| Biblioteca | **45 programas y 360 presets** en 8 familias (Fase 07) |
-| Igualdad con el modelo | los 45 programas dan en el RTL los mismos bits que el modelo (simulación) |
+| Biblioteca | **51 programas y 408 presets** en 8 familias (Fase 07) |
+| Igualdad con el modelo | los 51 programas dan en el RTL los mismos bits que el modelo (simulación) |
 | Placa | el plate y el looper dan en el silicio los mismos bits que el modelo, de 100 a 125 MHz (Fase 07) |
 | Siguiente | carga de programas desde la microSD (Fase 08) |
 | Audio con guitarra | **todavía no**: falta el códec I2S (Fase 11) |
@@ -133,8 +133,8 @@ Fase 08 bastan la placa y la microSD.
 
 | Documento | Qué contiene |
 |---|---|
-| `docs/programas.md` | los 45 programas: qué hacen, mandos, presets y coste |
-| `presets/banco.toml` | los 360 presets |
+| `docs/programas.md` | los 51 programas: qué hacen, mandos, presets y coste |
+| `presets/banco.toml` | los 408 presets |
 | `docs/arquitectura_fpga.md` | la arquitectura del FPGA y cómo cambia en cada fase |
 | `schematics/` | un esquemático PDF de cada módulo RTL, generado desde el Verilog |
 | `docs/EXTENDING.md` | cómo añadir un efecto, una instrucción, un módulo RTL o una compuerta |
