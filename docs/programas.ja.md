@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/programas.md sha=688d64e5a4c4 estado=al_dia -->
+<!-- i18n: fuente=docs/programas.md sha=799e9020ffd9 estado=al_dia -->
 <!-- GENERADO por `sofifi catalogo` desde programas/*.sasm. No se edita a mano:
      model/tests/catalogo_test.py lo compara con su generador. -->
 
@@ -104,27 +104,27 @@
 
 | チェーン | プログラム | サイクル | メモリー | レジスタ | LFO | 状態 |
 |---|---|---|---|---|---|---|
-| Armonía en la placa | `armonizador` → `plate` | 1,834 | 41,539 | 17 | 3 | 収まる |
-| Bruma que gira | `bruma` → `chorus` | 1,336 | 42,654 | 18 | 4 | 収まる |
-| Campanas | `ringmod` → `shimmer` | 1,915 | 41,539 | 23 | 3 | 収まる |
-| Cinta desgastada | `cinta` → `lofi` | 1,505 | 41,600 | 23 | 3 | 収まる |
-| Cuerdas en ola | `tremolo` → `ensemble` | 1,887 | 38,540 | 21 | 4 | 収まる |
-| Doble resonancia | `doblador` → `resonador` | 1,484 | 1,028 | 28 | 2 | 収まる |
-| Eco oscuro en flor | `bbd` → `bloom` | 1,562 | 38,194 | 25 | 2 | 収まる |
-| Eco y muelle | `delay` → `spring` | 1,748 | 35,599 | 19 | 1 | 収まる |
-| Eco y resonancia | `delay` ‖ `resonador` | 1,465 | 33,749 | 32 | 1 | 収まる |
-| Flor al revés | `reverse` → `bloom` | 1,449 | 39,908 | 22 | 1 | 収まる |
-| Fuzz en la nube | `saturacion` → `cloud` | 1,907 | 42,814 | 22 | 4 | 収まる |
-| Loop filtrado | `looper` → `filtro` | 1,477 | 32,769 | 25 | 0 | 収まる |
-| Octavas en flor | `octava` ‖ `bloom` | 1,515 | 27,620 | 20 | 2 | 収まる |
-| Placa que tiembla | `tremolo` → `plate` | 1,644 | 37,439 | 19 | 2 | 収まる |
-| Shimmer con vibrato | `vibrato` → `shimmer` | 1,917 | 41,664 | 21 | 4 | 収まる |
-| Silencio y agujero negro | `puerta` → `blackhole` | 1,932 | 40,882 | 23 | 2 | 収まる |
-| Sustain en la placa | `compresor` → `plate` | 1,838 | 37,439 | 23 | 2 | 収まる |
-| Órgano infinito | `octava` → `infinite` | 1,790 | 41,539 | 15 | 4 | 収まる |
-| Bruma en flor | `bruma` → `bloom` | 1,757 | 65,073 | 25 | 1 | SDRAM 待ち |
-| Cinta en la flor | `cinta` → `bloom` | 1,664 | 65,120 | 25 | 3 | SDRAM 待ち |
-| Eco al revés congelado | `reverse` → `freeze` | 1,848 | 53,827 | 18 | 3 | SDRAM 待ち |
-| Eco en la nube | `delay` → `plate` | 1,677 | 71,188 | 20 | 3 | SDRAM 待ち |
-| Lluvia sobre la placa | `lluvia` → `plate` | 1,795 | 72,824 | 18 | 2 | SDRAM 待ち |
-| Ping-pong infinito | `pingpong` → `infinite` | 1,797 | 78,313 | 18 | 3 | SDRAM 待ち |
+| Armonía en la placa | `armonizador` → `plate` | 1,834 | 41,539 | 14 | 3 | 収まる |
+| Bruma que gira | `bruma` → `chorus` | 1,336 | 42,654 | 12 | 4 | 収まる |
+| Campanas | `ringmod` → `shimmer` | 1,915 | 41,539 | 18 | 3 | 収まる |
+| Cinta desgastada | `cinta` → `lofi` | 1,505 | 41,600 | 18 | 3 | 収まる |
+| Cuerdas en ola | `tremolo` → `ensemble` | 1,887 | 38,540 | 16 | 4 | 収まる |
+| Doble resonancia | `doblador` → `resonador` | 1,484 | 1,028 | 24 | 2 | 収まる |
+| Eco oscuro en flor | `bbd` → `bloom` | 1,562 | 38,194 | 20 | 2 | 収まる |
+| Eco y muelle | `delay` → `spring` | 1,748 | 35,599 | 14 | 1 | 収まる |
+| Eco y resonancia | `delay` ‖ `resonador` | 1,465 | 33,749 | 27 | 1 | 収まる |
+| Flor al revés | `reverse` → `bloom` | 1,449 | 39,908 | 17 | 1 | 収まる |
+| Fuzz en la nube | `saturacion` → `cloud` | 1,907 | 42,814 | 16 | 4 | 収まる |
+| Loop filtrado | `looper` → `filtro` | 1,477 | 32,769 | 22 | 0 | 収まる |
+| Octavas en flor | `octava` ‖ `bloom` | 1,515 | 27,620 | 18 | 2 | 収まる |
+| Placa que tiembla | `tremolo` → `plate` | 1,644 | 37,439 | 14 | 2 | 収まる |
+| Shimmer con vibrato | `vibrato` → `shimmer` | 1,917 | 41,664 | 18 | 4 | 収まる |
+| Silencio y agujero negro | `puerta` → `blackhole` | 1,932 | 40,882 | 20 | 2 | 収まる |
+| Sustain en la placa | `compresor` → `plate` | 1,838 | 37,439 | 17 | 2 | 収まる |
+| Órgano infinito | `octava` → `infinite` | 1,790 | 41,539 | 13 | 4 | 収まる |
+| Bruma en flor | `bruma` → `bloom` | 1,757 | 65,073 | 19 | 1 | SDRAM 待ち |
+| Cinta en la flor | `cinta` → `bloom` | 1,664 | 65,120 | 20 | 3 | SDRAM 待ち |
+| Eco al revés congelado | `reverse` → `freeze` | 1,848 | 53,827 | 13 | 3 | SDRAM 待ち |
+| Eco en la nube | `delay` → `plate` | 1,677 | 71,188 | 15 | 3 | SDRAM 待ち |
+| Lluvia sobre la placa | `lluvia` → `plate` | 1,795 | 72,824 | 12 | 2 | SDRAM 待ち |
+| Ping-pong infinito | `pingpong` → `infinite` | 1,797 | 78,313 | 13 | 3 | SDRAM 待ち |

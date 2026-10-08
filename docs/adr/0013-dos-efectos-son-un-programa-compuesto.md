@@ -41,3 +41,11 @@ Opción 4 ahora; la opción 3, después, si las cadenas piden más ciclos.
 - Hoy caben 213 de las parejas en serie medidas; delay y luego reverb casi nunca, por memoria. Esa pareja espera a la SDRAM.
 - Una cadena sube el riesgo de saltos de volumen (fails.md, F-23). Toda cadena pasa una prueba de nivel frente al plate.
 - Un segundo núcleo vuelve a estudiarse solo con una FPGA más grande. Su ventaja real no es el cálculo: es cambiar de preset sin cortes.
+
+## Actualización 2026-10-08 · Registros temporales compartidos
+
+- **Medida:** de las 2 550 parejas en serie de los 51 programas, 904 no cabían por registros. El 61 % de los registros de los programas (326 de 530) son temporales: el programa los escribe antes de leerlos en cada muestra.
+- **Cambio:** el compositor ya no da registros propios a todo. Cada programa conserva sus registros persistentes. Los temporales salen de un grupo común a todos los programas de la cadena (`registros_temporales` en `composicion.py`).
+- **Por qué es seguro:** los programas de una cadena corren uno detrás de otro. Un registro temporal no lleva nada de un programa al siguiente, porque cada uno lo escribe antes de leerlo. El análisis sigue todos los caminos de los `SKP`: si un salto puede evitar la escritura, el registro es persistente.
+- **Contrato:** no cambia. En serie, la cadena da los mismos bits que dos pasadas; la prueba añade dos parejas con muchos temporales (`filtro` y luego `resonador`, `compresor` y luego `freeze_givens`).
+- **Resultado:** las parejas que no caben por registros bajan de 904 a 300.

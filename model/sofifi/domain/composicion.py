@@ -10,7 +10,10 @@ Para cada programa, el compositor:
 
 1. expande sus ``include`` (``ensamblador.expandir``);
 2. antepone ``eN_`` a sus nombres (``equ``, ``mem``, etiquetas): no chocan;
-3. le da registros generales y LFOs que no usa ningún otro programa;
+3. le da LFOs que no usa ningún otro programa, y registros generales propios
+   para los que guardan algo de una muestra a la siguiente (persistentes). Los
+   temporales, que el programa escribe antes de leer en cada muestra, se
+   comparten entre los programas (``registros_temporales``);
 4. cambia ``adcl``/``adcr`` y ``dacl``/``dacr`` por los registros que unen
    los programas, y cada ``potN`` por un pot físico o por una constante.
 
@@ -20,24 +23,61 @@ heredan el cambio sin tocar este fichero, salvo la regla de ``mem``.
 
 **Propiedad:** en serie, la cadena da los mismos bits que procesar la entrada
 con el primer programa y su salida con el segundo. Cada programa conserva sus
-registros, sus LFOs (cada uno con su LFSR) y su zona de memoria. Lo comprueba
-``model/tests/composicion_test.py``.
+registros persistentes, sus LFOs (cada uno con su LFSR) y su zona de memoria.
+Un registro temporal compartido no lleva nada de un programa a otro: cada
+programa lo escribe antes de leerlo. Lo comprueba ``model/tests/composicion_test.py``.
 """
 
 from __future__ import annotations
 
 import re
 import unicodedata
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from fractions import Fraction
 
 from sofifi.domain.cadena import Cadena, Eslabon, Modo, PotFisico, Recursos
 from sofifi.domain.coste import CICLOS_FIJOS_RTL, ciclos_instruccion_rtl
 from sofifi.domain.ensamblador import ErrorEnsamblado, Incluir, ensamblar, expandir, piezas
-from sofifi.domain.isa import NOMBRES_REGISTRO, NUM_REGS_GENERALES, Programa
+from sofifi.domain.isa import NOMBRES_REGISTRO, NUM_REGS_GENERALES, Instruccion, Op, Programa
 from sofifi.domain.lfo import NUM_LFOS
 from sofifi.domain.renombre import LFO_REG, POT, REG, reescribir, uso
+
+# Instrucciones que leen el registro de su campo `reg` (en RDAA y WRAA, R da la posición).
+LEEN_REGISTRO = frozenset({Op.RDAX, Op.RDFX, Op.MAXX, Op.MULX, Op.LDAX, Op.RDAA, Op.WRAA})
+
+
+def registros_temporales(instrucciones: Sequence[Instruccion]) -> frozenset[int]:
+    """Registros generales que el programa escribe antes de leer, en todos los caminos.
+
+    Un registro así no guarda nada de una muestra a la siguiente: otro programa
+    de la cadena puede usarlo en su turno. Los saltos (``SKP``) solo van hacia
+    delante, así que basta una pasada: a cada instrucción llega la intersección
+    de lo escrito en todos los caminos que llevan a ella.
+    """
+    n = len(instrucciones)
+    escritos: list[frozenset[int] | None] = [frozenset()] + [None] * n
+    leidos_antes: set[int] = set()
+    usados: set[int] = set()
+    for k, ins in enumerate(instrucciones):
+        llega = escritos[k]
+        if llega is None:  # ningún camino llega aquí
+            continue
+        general = ins.reg < NUM_REGS_GENERALES
+        sale = llega
+        if ins.op in LEEN_REGISTRO and general:
+            usados.add(ins.reg)
+            if ins.reg not in llega:
+                leidos_antes.add(ins.reg)
+        if ins.op is Op.WRAX and general:
+            usados.add(ins.reg)
+            sale = llega | {ins.reg}
+        destinos = [k + 1] + ([k + 1 + ins.addr] if ins.op is Op.SKP else [])
+        for d in destinos:
+            d = min(d, n)
+            previo = escritos[d]
+            escritos[d] = sale if previo is None else previo & sale
+    return frozenset(usados - leidos_antes)
 
 
 @dataclass(frozen=True)
@@ -86,6 +126,10 @@ def _plan(
     n = len(cadena.eslabones)
     lineas = [expandir(textos[e.programa], incluir) for e in cadena.eslabones]
     usos = [uso(ls) for ls in lineas]
+    temporales = [
+        registros_temporales(piezas(textos[e.programa], incluir).instrucciones)
+        for e in cadena.eslabones
+    ]
     libres = iter(range(NUM_REGS_GENERALES)) if not contar else None
     asignados = 0
 
@@ -118,8 +162,20 @@ def _plan(
             cuerpo += [f"        sof  0, {valor}", f"        wrax  {nombre_k}, 0"]
         cuerpo.append("cad_arranque:")
     lfo_libre = 0
-    for i, (e, ls, u) in enumerate(zip(cadena.eslabones, lineas, usos, strict=True), start=1):
-        regs = {r: registro() for r in sorted(u.regs)}
+    compartidos: list[str] = []  # registros temporales, comunes a todos los programas
+
+    def compartido(k: int) -> str:
+        while len(compartidos) <= k:
+            compartidos.append(registro())
+        return compartidos[k]
+
+    for i, (e, ls, u, t) in enumerate(
+        zip(cadena.eslabones, lineas, usos, temporales, strict=True), start=1
+    ):
+        orden_t = sorted(t & u.regs)
+        regs = {
+            r: compartido(orden_t.index(r)) if r in orden_t else registro() for r in sorted(u.regs)
+        }
         lfos: dict[int, int] = {}
         for k in sorted(u.lfos):
             lfos[k] = 0 if contar else lfo_libre
