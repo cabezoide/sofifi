@@ -58,25 +58,36 @@ def verilog_tabla_hermite() -> str:
     return "\n".join(lineas)
 
 
-def verilog_programa(programa: Programa) -> str:
+def verilog_programa(
+    programa: Programa, modulo: str | None = None, origen: str | None = None
+) -> str:
     """ROM con el microcódigo de un programa y su configuración (lo que va en el .json).
 
     La carga un top en el núcleo por el puerto de programa, igual que hará el
-    cargador de la microSD (Fase 08).
+    cargador de la microSD (Fase 08). ``modulo`` cambia el nombre del módulo
+    (``programa_hil`` para ``sofifi rom``) y ``origen``, la fuente que cita la cabecera.
     """
+    modulo = modulo or f"programa_{programa.nombre}"
+    origen = origen or f"programas/{programa.nombre}.sasm"
+    orden = "sofifi tablas" if modulo == f"programa_{programa.nombre}" else "sofifi rom"
     tipos = sum(CODIGO_LFO[c.tipo] << (2 * k) for k, c in enumerate(programa.lfos) if c is not None)
     excursiones = sum(c.excursion << (15 * k) for k, c in enumerate(programa.lfos) if c is not None)
     n = len(programa.instrucciones)
     lineas = [
         "// SPDX-License-Identifier: MIT",
         "//",
-        f"// GENERADO por `sofifi tablas` desde programas/{programa.nombre}.sasm.",
-        "// No se edita a mano: model/tests/tablas_test.py compara este fichero con su",
-        f"// generador. {n} instrucciones, {programa.ciclos} ciclos del modelo,",
+        f"// GENERADO por `{orden}` desde {origen}.",
+        (
+            "// No se edita a mano: model/tests/tablas_test.py compara este fichero con su"
+            if orden == "sofifi tablas"
+            else "// No se edita a mano: `make hil` lo regenera cada vez que carga la placa."
+        ),
+        f"// {'generador. ' if orden == 'sofifi tablas' else ''}{n} instrucciones, "
+        f"{programa.ciclos} ciclos del modelo,",
         f"// {programa.palabras_memoria} palabras de memoria.",
         "`default_nettype none",
         "",
-        f"module programa_{programa.nombre} (",
+        f"module {modulo} (",
         "    input  wire [10:0] dir,",
         "    output reg  [53:0] palabra,",
         "    output wire [11:0] instrucciones,",

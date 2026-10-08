@@ -182,3 +182,15 @@ mediciones:
     como: "make synth TOP=hil_looper && .venv/bin/python scripts/margen_reloj.py --base hil_looper --programa looper (y --mdiv 24 --divisores 10, --mdiv 20 --divisores 8)"
     entorno: "Tang Primer 25K; hil_nucleo con la ROM del looper (120 MHz según nextpnr); el estímulo graba de 1 024 a 2 047 y hace overdub de 3 072 a 3 327; pots a 0,5: 1× y al revés"
     no_dice: "Una sola combinación de mandos (1×, al revés, realimentación 0,5); ½× y 2× solo en simulación. No se midió con la placa caliente."
+  - id: MED-16
+    caracteristica: M-08
+    nombre: Programas y cadenas en la placa idénticos al modelo
+    valor: 50
+    unidad: de 50 (41 programas y 9 cadenas), cada uno 4 096 muestras con CRC correcto
+    umbral: 50
+    direccion: mayor_mejor
+    fecha: 2026-10-08
+    caduca_en_dias: 90
+    como: ".venv/bin/python scripts/hil_lote.py --todos (make hil HIL=NOMBRE por cada uno; resultados en build/hil_lote.csv)"
+    entorno: "Tang Primer 25K a 100 MHz; hil_programa con la ROM de sofifi rom; núcleo multiciclo de la Fase 07; pots a 0,5; estímulo de hil_nucleo"
+    no_dice: "Solo lo que cabe en los 38 bloques de hil_nucleo: 41 programas y 9 cadenas. No caben 10 programas (shimmer, cloud, cinta, bruma, blackhole, pingpong, escalera y las variantes del shimmer) ni 9 cadenas. Una sola posición de los mandos. Máximo medido: chorale, 1 935 ciclos de 2 048."

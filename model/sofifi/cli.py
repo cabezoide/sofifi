@@ -9,6 +9,7 @@ sofifi presets [PROGRAMA]
 sofifi cadenas                     (lista presets/cadenas.toml: coste y si cabe)
 sofifi componer NOMBRE SALIDA.sasm (la cadena como un programa, ADR 0013)
 sofifi cadena  NOMBRE  ENTRADA.wav  SALIDA.wav  [--pot N=V] [--freeze A:B] [--cola S]
+sofifi rom     NOMBRE  SALIDA.v   (programa o cadena como ROM programa_hil, para `make hil`)
 """
 
 from __future__ import annotations
@@ -19,7 +20,12 @@ from fractions import Fraction
 from pathlib import Path
 
 from sofifi.adapters.archivos import FuenteProgramaArchivo, SumideroHex, ensamblar_archivo
-from sofifi.adapters.cadenas import FuenteCadena, leer_cadenas, textos_de_programas
+from sofifi.adapters.cadenas import (
+    FuenteCadena,
+    leer_cadenas,
+    programa_o_cadena,
+    textos_de_programas,
+)
 from sofifi.adapters.presets import leer_banco
 from sofifi.adapters.wav import FuenteWav, SumideroWav
 from sofifi.domain.aritmetica import CICLOS_POR_MUESTRA, FS_WAV, dato
@@ -40,6 +46,7 @@ from sofifi.services.tablas import (
 )
 
 RUTA_BANCO = Path("presets/banco.toml")
+PALABRAS_HIL = 38_912  # memoria de retardo de hil_nucleo: 38 bloques, el resto es captura
 RUTA_CADENAS = Path("presets/cadenas.toml")
 PROGRAMAS = Path("programas")
 
@@ -108,8 +115,29 @@ def main(argv: list[str] | None = None) -> int:
     ca.add_argument("--pot", action="append", default=[], metavar="potN=V")
     ca.add_argument("--freeze", action="append", default=[], metavar="INICIO:FIN", help="segundos")
     ca.add_argument("--cola", type=float, default=0.0, help="segundos de silencio al final")
+    ro = sub.add_parser("rom", help="ROM programa_hil de un programa o una cadena (make hil)")
+    ro.add_argument("nombre", help="programa (programas/NOMBRE.sasm) o cadena")
+    ro.add_argument("salida", type=Path)
     args = p.parse_args(argv)
     try:
+        if args.orden == "rom":
+            try:
+                prog = programa_o_cadena(args.nombre, PROGRAMAS, RUTA_CADENAS)
+            except ValueError as exc:
+                raise argparse.ArgumentTypeError(str(exc)) from exc
+            if prog.palabras_memoria > PALABRAS_HIL:
+                raise argparse.ArgumentTypeError(
+                    f"{args.nombre}: {prog.palabras_memoria} palabras; "
+                    f"hil_nucleo tiene {PALABRAS_HIL}"
+                )
+            origen = f"«{args.nombre}» ({prog.nombre})"
+            args.salida.write_text(verilog_programa(prog, "programa_hil", origen), encoding="utf-8")
+            print(
+                f"{args.nombre}: {len(prog.instrucciones)} instrucciones, "
+                f"{ciclos_rtl(prog)} ciclos del RTL, {prog.palabras_memoria} palabras"
+                f" → {args.salida}"
+            )
+            return 0
         if args.orden == "presets":
             banco = leer_banco(RUTA_BANCO)
             for programa in [args.programa] if args.programa else sorted(banco):

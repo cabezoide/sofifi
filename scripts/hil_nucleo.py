@@ -6,6 +6,8 @@ Uso::
     make prog TOP=hil_nucleo
     .venv/bin/python scripts/hil_nucleo.py
 
+    make hil HIL=marea    # cualquier programa o cadena: ROM, síntesis, carga y este script
+
 Envía 'C' a rtl/top/hil_nucleo.v, recibe las muestras capturadas a velocidad
 real, comprueba el CRC-32 y compara cada muestra con el modelo bit-exact
 procesando el mismo estímulo. Termina con código 0 si todas coinciden.
@@ -25,13 +27,19 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import serial
-from sofifi.adapters.archivos import ensamblar_archivo
+from sofifi.adapters.cadenas import programa_o_cadena
+from sofifi.domain.isa import Programa
 from sofifi.domain.nucleo import Nucleo
 from sofifi.services.render import SW_PULSADO
 
 RAIZ = Path(__file__).resolve().parent.parent
 N_CAPTURA = 4096
 POT = 0x400000  # 0,5 en S.23: los seis potenciómetros del top
+
+
+def cargar(programa: str) -> Programa:
+    """Un programa de programas/ o una cadena de presets/cadenas.toml (make hil)."""
+    return programa_o_cadena(programa, RAIZ / "programas", RAIZ / "presets" / "cadenas.toml")
 
 
 def con_signo24(v: int) -> int:
@@ -84,7 +92,7 @@ def comprobar(lineas: list[str], n: int, programa: str = "plate") -> Resultado:
     )
     crc_ok = crc_placa is not None and zlib.crc32(datos) == crc_placa
 
-    modelo = Nucleo(ensamblar_archivo(RAIZ / "programas" / f"{programa}.sasm"))
+    modelo = Nucleo(cargar(programa))
     iguales, primera, primera_k = 0, None, None
     for k in range(n):
         esperado = modelo.procesar(*estimulo(k, n), (POT,) * 6, pulsado(k, n))
@@ -105,7 +113,7 @@ def traza_esperada(
     El núcleo pone ACC = 0 y pc = 0 al empezar cada muestra; cada instrucción deja
     el pc de la siguiente junto al ACC nuevo.
     """
-    modelo = Nucleo(ensamblar_archivo(RAIZ / "programas" / f"{programa}.sasm"))
+    modelo = Nucleo(cargar(programa))
     for k in range(k0):
         modelo.procesar(*estimulo(k, captura), (POT,) * 6, pulsado(k, captura))
     salida: list[tuple[int, int]] = []
@@ -172,7 +180,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--puerto", default="/dev/ttyUSB1")
     ap.add_argument("--espera", type=float, default=30.0, help="segundos máximos")
     ap.add_argument("--traza", type=int, metavar="K0", help="pide la traza desde la muestra K0")
-    ap.add_argument("--programa", default="plate", help="plate (hil_nucleo) o looper (hil_looper)")
+    ap.add_argument(
+        "--programa",
+        default="plate",
+        help="plate (hil_nucleo), looper (hil_looper) o el NOMBRE de `make hil HIL=NOMBRE`",
+    )
     args = ap.parse_args(argv)
     if args.traza is not None:
         orden = b"T" + args.traza.to_bytes(2, "big")
