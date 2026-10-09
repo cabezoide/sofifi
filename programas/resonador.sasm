@@ -15,7 +15,8 @@
 ; pot0 = sustain       (0 → corto, Q ≈ 50 · 1 → largo, Q ≈ 500)
 ; pot1 = excitación    (cuánta señal entra en los resonadores)
 ; pot2 = mezcla        (0 → seco · 1 → solo resonadores)
-; pot3 = afinación     (0 → mi mayor · 1 → una octava abajo)
+; pot3 = afinación     (frecuencia × (1 − pot3/2); no es lineal en semitonos:
+;                      0 → mi mayor · 0,22 → −2 · 0,5 → −5 · 0,67 → −7 · 1 → −12)
 
 equ  kwet     reg0
 equ  kdry     reg1

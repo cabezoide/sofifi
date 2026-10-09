@@ -22,7 +22,7 @@
 ; interpolación de la última muestra mira el principio del loop.
 ;
 ; pot0 = nivel           (0 → solo seco · 1 → loop a nivel completo)
-; pot1 = velocidad       (0 → ½× · 0,5 → 1× · 1 → 2×)
+; pot1 = velocidad       (tres zonas: < 1/3 → ½× · de 1/3 a 2/3 → 1× · > 2/3 → 2×)
 ; pot2 = sentido         (< 0,5 → adelante · ≥ 0,5 → al revés)
 ; pot3 = realimentación  (0 → el overdub reemplaza · 1 → el overdub suma)
 

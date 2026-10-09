@@ -23,7 +23,8 @@
 ;
 ; pot0 = duración        (0 → 21 ms · 1 → 168 ms)
 ; pot1 = difusión        (0 → granos juntos · 1 → repartidos en 0,17 s)
-; pot2 = intervalo       (0 → octava baja · 0,5 → unísono · 1 → octava alta)
+; pot2 = intervalo       (tres zonas: < 1/3 → octava baja · de 1/3 a 2/3 → unísono
+;                          · > 2/3 → octava alta)
 ; pot3 = mezcla          (0 → seco · 1 → solo granos)
 
 equ  u      reg0            ; una muestra: 2^-15

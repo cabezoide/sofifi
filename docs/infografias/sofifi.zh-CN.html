@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/infografias/sofifi.html sha=d3b21f642e3d estado=al_dia -->
+<!-- i18n: fuente=docs/infografias/sofifi.html sha=455a97f901d3 estado=al_dia -->
 <!-- SPDX-License-Identifier: MIT -->
 <title>SOFIFI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -142,9 +142,6 @@ tr.compuesta .barra i{background:repeating-linear-gradient(90deg,var(--laton) 0 
 .frente td{font-size:14.5px;vertical-align:top}
 .gana{color:var(--laton);font-weight:600}
 .gana::before{content:"▲ ";font-size:10px;vertical-align:1px}
-.eventide{margin-top:22px}
-.confianza{font-family:var(--f-dato);font-size:10.5px;letter-spacing:.06em;color:var(--hueso-2);border:1px solid var(--linea);padding:0 4px;border-radius:3px;white-space:nowrap;font-weight:400}
-.gana .confianza{color:var(--hueso-2)}
 .nota{margin:14px 0 0;font-size:15px;color:var(--hueso-2)}
 .nota::before{content:"◆ ";color:var(--laton)}
 .aviso{margin:22px 0 0;padding:14px 16px;border-left:3px solid var(--led);background:#22090d;font-size:15.5px}
@@ -234,18 +231,6 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
     </table>
   </div>
 
-  <div class="tabla-caja eventide">
-    <table class="frente">
-      <thead><tr><th>对比 Eventide H9 Gen 2</th><th>SOFIFI</th><th>H9 Gen 2</th></tr></thead>
-      <tbody>
-        <tr><td>算法</td><td class="gana">86 个程序，8 个类别</td><td>74 <span class="confianza">?</span></td></tr>
-        <tr><td>预设</td><td>1,032</td><td>超过 1,000 <span class="confianza">?</span></td></tr>
-        <tr><td>同时运行两个效果</td><td>24 条链：现有 18 条可装入，6 条等待 SDRAM（ADR 0013）</td><td>H90 每个预设串联两个算法 <span class="confianza">?</span></td></tr>
-        <tr><td>价格</td><td class="gana">BOM 约 125 USD，不含外壳</td><td>599 USD <span class="confianza">?</span></td></tr>
-        <tr><td>可以验证</td><td class="gana">可以，逐位验证（ADR 0003）</td><td>不可以：算法封闭</td></tr>
-      </tbody>
-    </table>
-  </div>
   <p class="nota">86 个程序中有 35 个来自社区的想法：DIY 论坛和补丁仓库（第 9 至 14 批）。只采用每个效果的原理（ADR 0002）。</p>
   <p class="aviso"><b>目前还不能接吉他发声。</b>I2S 音频在阶段 11 到来，旋钮在阶段 09：硬件尚缺。阶段 08（microSD 上的程序库）正在进行。在此之前，可以在演示中听到效果，演示由逐位精确模型生成。</p>
 </section>
@@ -336,7 +321,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 </section>
 
 <footer>
-  数据于 2026-10-09 在仓库中统计：程序、预设、指令和周期来自 <span class="dato">sofifi catalogo</span>（<span class="dato">docs/programas.zh-CN.md</span>）；链来自 <span class="dato">sofifi cadenas</span>；开发板上的捕获和余量来自 MED-14 至 MED-16（<span class="dato">docs/mediciones.yaml</span>、<span class="dato">build/hil_lote.csv</span>）；流水线核心来自 ADR 0014；原语来自 <span class="dato">scripts/verificar_primitivas.py</span>（MED-06 至 MED-08）；阶段来自 <span class="dato">docs/fases/</span>。「为什么选择 SOFIFI？」：RTL 与模型的一致性来自 <span class="dato">sim/nucleo/nucleo_test.py</span> 和 MED-16；FV-1 数据来自 <span class="dato">docs/investigacion/INVESTIGACION.md</span> [V]；H9 Gen 2 数据和社区批次来自 <span class="dato">docs/investigacion/ESTADO_DEL_ARTE_2026.md</span> [?]。公开文档与技术文档提供西班牙语、英语、简体中文和日语版本；OLED 界面将在阶段 10 实现同样的四种语言（ADR 0007）。MIT 许可证。
+  数据于 2026-10-09 在仓库中统计：程序、预设、指令和周期来自 <span class="dato">sofifi catalogo</span>（<span class="dato">docs/programas.zh-CN.md</span>）；链来自 <span class="dato">sofifi cadenas</span>；开发板上的捕获和余量来自 MED-14 至 MED-16（<span class="dato">docs/mediciones.yaml</span>、<span class="dato">build/hil_lote.csv</span>）；流水线核心来自 ADR 0014；原语来自 <span class="dato">scripts/verificar_primitivas.py</span>（MED-06 至 MED-08）；阶段来自 <span class="dato">docs/fases/</span>。「为什么选择 SOFIFI？」：RTL 与模型的一致性来自 <span class="dato">sim/nucleo/nucleo_test.py</span> 和 MED-16；FV-1 数据来自 <span class="dato">docs/investigacion/INVESTIGACION.md</span> [V]；社区批次来自 <span class="dato">docs/investigacion/ESTADO_DEL_ARTE_2026.md</span> [?]。公开文档与技术文档提供西班牙语、英语、简体中文和日语版本；OLED 界面将在阶段 10 实现同样的四种语言（ADR 0007）。MIT 许可证。
 </footer>
 
 </div>

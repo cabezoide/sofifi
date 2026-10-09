@@ -37,6 +37,7 @@
 ; pot3 = cabezas          (diez combinaciones, de «solo la 1» a «las cuatro»)
 ; pot4 = edad             (0 → tambor nuevo · 1 → oscuro y con temblor)
 ; pot5 = tono             (0 → oscuro · 1 → limpio)
+; sw   = congela el tambor mientras se pisa (paso 5)
 
 equ  b1    1221               ; cuarto de la vuelta mínima (0,1 s / 4)
 equ  e1    4096               ; excursión de la cabeza 1; la 4 tiene 16 384

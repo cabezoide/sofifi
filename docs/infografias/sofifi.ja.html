@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/infografias/sofifi.html sha=d3b21f642e3d estado=al_dia -->
+<!-- i18n: fuente=docs/infografias/sofifi.html sha=455a97f901d3 estado=al_dia -->
 <!-- SPDX-License-Identifier: MIT -->
 <title>SOFIFI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -142,9 +142,6 @@ tr.compuesta .barra i{background:repeating-linear-gradient(90deg,var(--laton) 0 
 .frente td{font-size:14.5px;vertical-align:top}
 .gana{color:var(--laton);font-weight:600}
 .gana::before{content:"▲ ";font-size:10px;vertical-align:1px}
-.eventide{margin-top:22px}
-.confianza{font-family:var(--f-dato);font-size:10.5px;letter-spacing:.06em;color:var(--hueso-2);border:1px solid var(--linea);padding:0 4px;border-radius:3px;white-space:nowrap;font-weight:400}
-.gana .confianza{color:var(--hueso-2)}
 .nota{margin:14px 0 0;font-size:15px;color:var(--hueso-2)}
 .nota::before{content:"◆ ";color:var(--laton)}
 .aviso{margin:22px 0 0;padding:14px 16px;border-left:3px solid var(--led);background:#22090d;font-size:15.5px}
@@ -234,18 +231,6 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
     </table>
   </div>
 
-  <div class="tabla-caja eventide">
-    <table class="frente">
-      <thead><tr><th>Eventide H9 Gen 2 との比較</th><th>SOFIFI</th><th>H9 Gen 2</th></tr></thead>
-      <tbody>
-        <tr><td>アルゴリズム</td><td class="gana">8 ファミリーで 86 プログラム</td><td>74 <span class="confianza">?</span></td></tr>
-        <tr><td>プリセット</td><td>1,032</td><td>1,000 以上 <span class="confianza">?</span></td></tr>
-        <tr><td>2 つのエフェクトを同時に</td><td>24 本のチェーン：今 18 本が収まり、6 本は SDRAM 待ち（ADR 0013）</td><td>H90 はプリセットごとに 2 つのアルゴリズムをつなぐ <span class="confianza">?</span></td></tr>
-        <tr><td>価格</td><td class="gana">BOM 約 125 USD、ケースなし</td><td>599 USD <span class="confianza">?</span></td></tr>
-        <tr><td>検証できる</td><td class="gana">はい、ビット単位で（ADR 0003）</td><td>いいえ：アルゴリズムは非公開</td></tr>
-      </tbody>
-    </table>
-  </div>
   <p class="nota">86 プログラムのうち 35 個は、コミュニティのアイデアから生まれました：DIY フォーラムとパッチのリポジトリ（第 9〜14 バッチ）。各エフェクトの原理だけを使います（ADR 0002）。</p>
   <p class="aviso"><b>現時点では、まだギターで鳴りません。</b>I2S オーディオはフェーズ 11、ノブはフェーズ 09 で入ります。ハードウェアが足りないためです。フェーズ 08（microSD のプログラムバンク）は進行中です。それまでは、デモでエフェクトを聴けます。デモはビット精度のモデルから生成しています。</p>
 </section>
@@ -336,7 +321,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 </section>
 
 <footer>
-  数値は 2026-10-09 にリポジトリ上で集計：プログラム、プリセット、命令、サイクルは <span class="dato">sofifi catalogo</span>（<span class="dato">docs/programas.ja.md</span>）；チェーンは <span class="dato">sofifi cadenas</span>；ボード上のキャプチャとマージンは MED-14〜MED-16（<span class="dato">docs/mediciones.yaml</span>、<span class="dato">build/hil_lote.csv</span>）；パイプライン化したコアは ADR 0014；プリミティブは <span class="dato">scripts/verificar_primitivas.py</span>（MED-06〜MED-08）；フェーズは <span class="dato">docs/fases/</span>。「SOFIFI を選ぶ理由」：RTL とモデルの一致は <span class="dato">sim/nucleo/nucleo_test.py</span> と MED-16；FV-1 のデータは <span class="dato">docs/investigacion/INVESTIGACION.md</span> [V]；H9 Gen 2 のデータとコミュニティのバッチは <span class="dato">docs/investigacion/ESTADO_DEL_ARTE_2026.md</span> [?]。公開ドキュメントと技術ドキュメントはスペイン語、英語、簡体字中国語、日本語で提供；OLED のインターフェースもフェーズ 10 で同じ 4 言語に対応します（ADR 0007）。MIT ライセンス。
+  数値は 2026-10-09 にリポジトリ上で集計：プログラム、プリセット、命令、サイクルは <span class="dato">sofifi catalogo</span>（<span class="dato">docs/programas.ja.md</span>）；チェーンは <span class="dato">sofifi cadenas</span>；ボード上のキャプチャとマージンは MED-14〜MED-16（<span class="dato">docs/mediciones.yaml</span>、<span class="dato">build/hil_lote.csv</span>）；パイプライン化したコアは ADR 0014；プリミティブは <span class="dato">scripts/verificar_primitivas.py</span>（MED-06〜MED-08）；フェーズは <span class="dato">docs/fases/</span>。「SOFIFI を選ぶ理由」：RTL とモデルの一致は <span class="dato">sim/nucleo/nucleo_test.py</span> と MED-16；FV-1 のデータは <span class="dato">docs/investigacion/INVESTIGACION.md</span> [V]；コミュニティのバッチは <span class="dato">docs/investigacion/ESTADO_DEL_ARTE_2026.md</span> [?]。公開ドキュメントと技術ドキュメントはスペイン語、英語、簡体字中国語、日本語で提供；OLED のインターフェースもフェーズ 10 で同じ 4 言語に対応します（ADR 0007）。MIT ライセンス。
 </footer>
 
 </div>

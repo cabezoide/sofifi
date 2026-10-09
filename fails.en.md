@@ -1,4 +1,4 @@
-<!-- i18n: fuente=fails.md sha=061e703dbebc estado=al_dia -->
+<!-- i18n: fuente=fails.md sha=4df37ddbe88b estado=al_dia -->
 # Failures and their resolution
 
 This is the record of the failures found in the project. Each entry has a symptom, a diagnosis, a root cause, a resolution and a lesson. The record helps us not to repeat them. It also explains why the design is as it is.
@@ -472,3 +472,13 @@ When we documented the scripts (PR #58), we found six unexpected behaviors. None
 
 - **Resolution:** we decreased a little the decay, the level, the gain or the feedback of each one. All are below 1 % and below +6 dB. `scripts/medir_presets.py` measures the full bank.
 - **Lesson:** measure a preset; do not only listen to it one time. The extremes («Solo …», mix 1) are the presets that saturate.
+
+## F-36 · One test note can mislead: oddities that were not real
+
+- **Symptom:** when we measured the presets with one note at 196 Hz, `dimension` gave −5 to −10 dB, `autowah` −23 dB and `flanger` down to −14 dB. In `dimension`, a lower mix gave a lower level.
+- **Cause:** one frequency only. A chorus with a delay of approximately 8 ms has a comb null near 196 Hz: the dry signal and its copy arrive almost in opposite phase (204°). A wah sweeps above 196 Hz, so the note is outside its band.
+- **Check:** with the broadband synthetic guitar of the demos, `dimension` gives −2.5 to −5.6 dB, `autowah` −4.6 to +5.7 dB, and `flanger`, `ancho` and `blackhole` stay near 0 dB.
+- **Resolution:** `scripts/medir_presets.py` uses a strum of six strings with harmonics. The level is the maximum RMS in windows of 50 ms: the RMS of the full test penalized the effects that sustain the note.
+- **Real oddity: `saturacion`.** Stage 1 multiplies by 1.999 before stage 2, and the output got almost to full scale. With gain ×1 and level 1, a strong note came out +6 dB louder. The output is now divided by 2: the tone does not change and that case is almost 0 dB.
+- **Headers corrected:** `resonador` (pot3 multiplies the frequency by 1 − pot3/2: it is not linear in semitones), `looper` and `granular` (their speed or interval control has three zones) and `tambor` (it did not have the `sw` line).
+- **Lesson:** measure an effect with a broadband signal. Before you change a program because of an unusual measurement, do the measurement again with a different signal.
