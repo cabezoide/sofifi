@@ -1,6 +1,6 @@
 # ADR 0014 — El núcleo solo espera cuando una instrucción depende de otra
 
-- **Estado:** Propuesto · 2026-10-08
+- **Estado:** Aceptado · 2026-10-09 (propuesto el 2026-10-08)
 - **Revisión prevista:** si un programa necesita más ciclos de los que da este diseño, o si se baja la latencia del multiplicador (`LAT`).
 
 ## Contexto

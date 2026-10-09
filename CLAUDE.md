@@ -108,4 +108,4 @@ Ver `docs/EXTENDING.md`.
 | ADR 0011 | El timing se mide en la placa, no se cree a nextpnr |
 | ADR 0012 | Los esquemáticos se generan del RTL, no se dibujan |
 | ADR 0013 | Dos efectos a la vez son un programa compuesto, no un segundo núcleo |
-| ADR 0014 | El núcleo solo espera cuando una instrucción depende de otra (propuesto) |
+| ADR 0014 | El núcleo solo espera cuando una instrucción depende de otra |
