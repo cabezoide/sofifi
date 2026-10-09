@@ -1,4 +1,4 @@
-<!-- i18n: fuente=fails.md sha=74d59e91185b estado=al_dia -->
+<!-- i18n: fuente=fails.md sha=f7dcf11c7376 estado=al_dia -->
 # Failures and their resolution
 
 This is the record of the failures found in the project. Each entry has a symptom, a diagnosis, a root cause, a resolution and a lesson. The record helps us not to repeat them. It also explains why the design is as it is.
@@ -30,6 +30,7 @@ Add a new entry when a failure is diagnosed and resolved. Do not rewrite the ent
 | F-21 | 07 | In marea, the software LFO stayed at +1 | resolved before publication |
 | F-22 | 07 | The shoegaze program was five times louder than the plate | resolved before publication |
 | F-23 | 07 | A chain with saturation was six times louder than the plate | resolved before publication |
+| F-24 | 07 | The microcode queue took the last BSRAM | resolved |
 
 ---
 
@@ -260,3 +261,11 @@ Add a new entry when a failure is diagnosed and resolved. Do not rewrite the ent
 - **Root cause:** the lesson of F-22 was applied to the `shoegaze` program, but there was no level test for the chains. A program that is correct alone can be wrong in a chain.
 - **Resolution:** «nivel» at 0.1 in that chain and a gain of 0.2 in «Sustain en la placa». New test `ninguna_cadena_salta_de_volumen`: with a soft note and a loud note, no chain is more than twice as loud as the plate.
 - **Lesson:** make a test from each rule that comes from a failure. If the rule stays in a note, the same failure comes back by a different path.
+
+## F-24 · The microcode queue took the last BSRAM
+
+- **Symptom:** with the pipelined core (ADR 0014), nextpnr stopped: «no BELs remaining to implement cell type 'DP'». The simulation passed.
+- **Diagnosis:** the resource report gave 56 BSRAM of 56. One more BSRAM came from the microcode fetch queue (8 × 54 bit).
+- **Root cause:** Yosys changes each array that is read by index into BSRAM, also a small array. In `hil_nucleo`, the capture already uses all the free BSRAM.
+- **Resolution:** `(* ram_style = "logic" *)` on the queue. Then the second pass made the queue smaller: 4 words.
+- **Lesson:** give each new array in the RTL its `ram_style` from the start. In this chip, each BSRAM is delay memory.

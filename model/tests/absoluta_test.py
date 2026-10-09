@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 from sofifi.domain.aritmetica import DATO_FRAC, dato, dato_a_memoria
-from sofifi.domain.coste import CICLOS_RTL
+from sofifi.domain.coste import DURACION
 from sofifi.domain.ensamblador import ErrorEnsamblado, ensamblar
 from sofifi.domain.isa import Instruccion, Op
 from sofifi.domain.memoria import PALABRAS_ABSOLUTAS, MemoriaRetardo
@@ -15,7 +15,7 @@ UNA_MUESTRA = 1 << 8  # en R, la parte entera empieza en el bit 8
 
 
 def test_toda_instruccion_tiene_coste_en_el_rtl() -> None:
-    assert set(CICLOS_RTL) == set(Op)
+    assert set(DURACION) == set(Op)
 
 
 def test_escribir_y_leer_en_la_misma_posicion() -> None:

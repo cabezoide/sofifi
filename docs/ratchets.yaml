@@ -97,7 +97,7 @@ ratchets:
   - id: RAT-11
     nombre: LUT4 del top nucleo_placa (el núcleo completo)
     medida: recursos:nucleo_placa:LUT4
-    liston: 11097
+    liston: 11709
     direccion: menor_mejor
     aviso_holgura: 0
     motivo: >-
@@ -115,10 +115,16 @@ ratchets:
       dirección física de lectura y de escritura, M[i+1] − M[i] e interpolación),
       la predecodificación y la escritura del banco en dos etapas (F-19). A
       cambio, el margen medido en la placa pasa de 120 a 125 MHz sin errores.
+      2026-10-08, ADR 0014 (núcleo segmentado en orden): la cola de búsqueda
+      del microcódigo (4 × 54 bit y la cabeza), la línea de retiro y la lógica
+      de dependencias. A cambio, los programas gastan 1,6 veces menos ciclos.
+      Segunda vuelta: la cola bajó de 8 a 4 palabras y el retiro lleva un
+      solo operando de 24 bit, la saturación mira los tres bits altos y la ALU
+      no reenvía el ACC (hil_nucleo: de +894 a +618 LUT4; nucleo_placa, +612).
   - id: RAT-12
     nombre: ALU del top nucleo_placa
     medida: recursos:nucleo_placa:ALU
-    liston: 1158
+    liston: 1208
     direccion: menor_mejor
     aviso_holgura: 0
     motivo: >-
@@ -134,6 +140,12 @@ ratchets:
       dirección física de lectura y de escritura, M[i+1] − M[i] e interpolación),
       la predecodificación y la escritura del banco en dos etapas (F-19). A
       cambio, el margen medido en la placa pasa de 120 a 125 MHz sin errores.
+      2026-10-08, ADR 0014 (núcleo segmentado en orden): la cola de búsqueda
+      del microcódigo (4 × 54 bit y la cabeza), la línea de retiro y la lógica
+      de dependencias. A cambio, los programas gastan 1,6 veces menos ciclos.
+      Segunda vuelta: la cola bajó de 8 a 4 palabras y el retiro lleva un
+      solo operando de 24 bit, la saturación mira los tres bits altos y la ALU
+      no reenvía el ACC (hil_nucleo: de +894 a +618 LUT4; nucleo_placa, +612).
   - id: RAT-13
     nombre: BSRAM del top nucleo_placa
     medida: recursos:nucleo_placa:BSRAM
@@ -163,7 +175,7 @@ ratchets:
   - id: RAT-16
     nombre: LUT4 del top hil_nucleo
     medida: recursos:hil_nucleo:LUT4
-    liston: 11787
+    liston: 12405
     direccion: menor_mejor
     aviso_holgura: 0
     motivo: >-
@@ -179,10 +191,16 @@ ratchets:
       2026-10-08, Fase 07 (looper en la placa): el estímulo pulsa el
       footswitch. Antes `sw` era la constante 0 y Yosys podaba su ruta en el
       núcleo. Es coste del banco de pruebas: nucleo_placa no cambia.
+      2026-10-08, ADR 0014 (núcleo segmentado en orden): la cola de búsqueda
+      del microcódigo (4 × 54 bit y la cabeza), la línea de retiro y la lógica
+      de dependencias. A cambio, los programas gastan 1,6 veces menos ciclos.
+      Segunda vuelta: la cola bajó de 8 a 4 palabras y el retiro lleva un
+      solo operando de 24 bit, la saturación mira los tres bits altos y la ALU
+      no reenvía el ACC (hil_nucleo: de +894 a +618 LUT4; nucleo_placa, +612).
   - id: RAT-17
     nombre: ALU del top hil_nucleo
     medida: recursos:hil_nucleo:ALU
-    liston: 1302
+    liston: 1318
     direccion: menor_mejor
     aviso_holgura: 0
     motivo: >-
@@ -200,20 +218,38 @@ ratchets:
       2026-10-08, Fase 07 (looper en la placa): el estímulo pulsa el
       footswitch. Antes `sw` era la constante 0 y Yosys podaba su ruta en el
       núcleo. Es coste del banco de pruebas: nucleo_placa no cambia.
+      2026-10-08, ADR 0014 (núcleo segmentado en orden): la cola de búsqueda
+      del microcódigo (4 × 54 bit y la cabeza), la línea de retiro y la lógica
+      de dependencias. A cambio, los programas gastan 1,6 veces menos ciclos.
+      Segunda vuelta: la cola bajó de 8 a 4 palabras y el retiro lleva un
+      solo operando de 24 bit, la saturación mira los tres bits altos y la ALU
+      no reenvía el ACC (hil_nucleo: de +894 a +618 LUT4; nucleo_placa, +612).
   - id: RAT-18
     nombre: LUT4 del top hil_looper
     medida: recursos:hil_looper:LUT4
-    liston: 11415
+    liston: 12135
     direccion: menor_mejor
     aviso_holgura: 0
     motivo: >-
       2026-10-08, Fase 07: listón donde se está (ADR 0010). hil_nucleo con la
       ROM del looper: prueba RDAA y WRAA en la placa.
+      2026-10-08, ADR 0014 (núcleo segmentado en orden): la cola de búsqueda
+      del microcódigo (4 × 54 bit y la cabeza), la línea de retiro y la lógica
+      de dependencias. A cambio, los programas gastan 1,6 veces menos ciclos.
+      Segunda vuelta: la cola bajó de 8 a 4 palabras y el retiro lleva un
+      solo operando de 24 bit, la saturación mira los tres bits altos y la ALU
+      no reenvía el ACC (hil_nucleo: de +894 a +618 LUT4; nucleo_placa, +612).
   - id: RAT-19
     nombre: ALU del top hil_looper
     medida: recursos:hil_looper:ALU
-    liston: 1280
+    liston: 1294
     direccion: menor_mejor
     aviso_holgura: 0
     motivo: >-
       2026-10-08, Fase 07: listón donde se está (ADR 0010).
+      2026-10-08, ADR 0014 (núcleo segmentado en orden): la cola de búsqueda
+      del microcódigo (4 × 54 bit y la cabeza), la línea de retiro y la lógica
+      de dependencias. A cambio, los programas gastan 1,6 veces menos ciclos.
+      Segunda vuelta: la cola bajó de 8 a 4 palabras y el retiro lleva un
+      solo operando de 24 bit, la saturación mira los tres bits altos y la ALU
+      no reenvía el ACC (hil_nucleo: de +894 a +618 LUT4; nucleo_placa, +612).

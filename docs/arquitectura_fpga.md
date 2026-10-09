@@ -14,13 +14,13 @@ flowchart LR
 
     subgraph nucleo["Núcleo DSP"]
         direction LR
-        mc --> sec["Secuenciador<br/>lectura adelantada"] --> deco["Decodificación"]
+        mc --> sec["Cola de búsqueda<br/>4 palabras + cabeza"] --> deco["Decodificación<br/>espera solo por dependencias"]
         deco --> regs["Banco de registros<br/>64 × 24"]
         deco --> lfo["LFO ×4 · ROM Hermite<br/>curva suave"]
         regs --> mult["Multiplicador 27×36<br/>2 DSP"]
         lfo --> mult
         mem["Memoria de retardo<br/>38–42 BSRAM, por grupos"] --> mult
-        mult --> alu["ALU<br/>2 etapas"] --> acc["ACC 48 bit"]
+        mult --> ret["Línea de retiro"] --> alu["ALU<br/>2 etapas"] --> acc["ACC 48 bit"]
         acc --> regs
         acc --> mem
     end
@@ -47,11 +47,12 @@ Todo corre en **un solo dominio de reloj de 100 MHz** (ADR 0005). La única exce
 |---|---|---|---|
 | PLL 50 → 100 MHz | `rtl/primitivas/pll_100.v` | 1 PLLA | — |
 | Generador de muestra | `rtl/comun/generador_muestra.v` | ~20 LUT | 1 tick / 2 048 ciclos |
-| Secuenciador del núcleo | `rtl/nucleo/nucleo.v` | la mayor parte de la lógica | ~14 ciclos por instrucción; lee la siguiente mientras ejecuta la actual; `E_DECO` deja la clase de la instrucción en un registro |
-| Microcódigo | `bsram_pipe` 2 048 × 54 + un registro | 6 BSRAM | 4 ciclos; sin salto, ya está leída |
-| Banco de registros | dentro de `nucleo.v` | 64 × 24 en flip-flops + 8 candidatos + máscara de escritura | lectura en 2 niveles: candidatos en `E_LEER`, elección en `E_DECO`; escritura en 2 etapas: máscara y dato, y después el registro |
+| Secuenciador del núcleo | `rtl/nucleo/nucleo.v` | la mayor parte de la lógica | segmentado en orden (ADR 0014): 1 ciclo de decodificación y 1 o más de ejecución; solo espera la instrucción que lee el ACC o un registro recién escrito |
+| Microcódigo | `bsram_pipe` 2 048 × 54 + un registro | 6 BSRAM | 4 ciclos; búsqueda continua en una cola de 4 palabras y una cabeza registrada; un `SKP` que salta la vacía (8 ciclos) |
+| Banco de registros | dentro de `nucleo.v` | 64 × 24 en flip-flops + 8 candidatos + máscara de escritura | lectura en 2 niveles: candidatos con la cabeza de la cola, elección al decodificar; escritura en 2 etapas: máscara y dato, y después el registro; quien lo lee espera 3 ciclos tras un `WRAX` |
 | Multiplicador | `rtl/primitivas/mult_27x36.v` (con `PREG`) + 1 registro | 2 DSP | 5 ciclos (`LAT`) |
-| ALU | `rtl/nucleo/alu.v` | ~1 000 LUT y 300 ALU | 2 etapas + escritura |
+| Línea de retiro | dentro de `nucleo.v` | 4 etapas × (código, un operando de 24 bit y pc) | el producto y su instrucción llegan juntos a la ALU; el ACC se escribe en el orden del programa |
+| ALU | `rtl/nucleo/alu.v` | ~1 000 LUT y 300 ALU | 2 etapas; la segunda escribe el ACC (7 ciclos desde la ejecución) |
 | Memoria de retardo | `rtl/nucleo/memoria_retardo.v` + `bsram_pipe` segmentada | 1 BSRAM por cada 1 024 palabras; ~1 700 flip-flops de copias | 9 ciclos (`LAT_MEM`), solo en `RDA`, `CHO` y `RDAA`. Región absoluta de 32 768 palabras en [P, P + 32 768) si el programa usa `RDAA` o `WRAA` |
 | Copias de un registro | `rtl/primitivas/registro_copia.v` | flip-flops `DFF` con `keep` | 1 ciclo |
 | LFO ×4 | `rtl/nucleo/lfo_banco.v` | ~380 LUT y 377 ALU | 26 ciclos por muestra |
@@ -62,22 +63,23 @@ Todo corre en **un solo dominio de reloj de 100 MHz** (ADR 0005). La única exce
 | Traza del núcleo (solo HIL) | `rtl/top/hil_nucleo.v`, orden `T` | ~150 flip-flops | graba (pc, ACC) en la captura |
 | Programa del HIL | parámetro `PROGRAMA` de `hil_nucleo`; tops `hil_looper` y `hil_programa` | una ROM en lógica | plate por defecto; el looper prueba `RDAA` y `WRAA`; `hil_programa` lleva la ROM que escribe `sofifi rom` (`make hil HIL=NOMBRE`) |
 
-## Presupuesto (top `hil_nucleo`, Fase 07, RDAA y WRAA)
+## Presupuesto (top `hil_nucleo`, núcleo segmentado, ADR 0014)
 
 | Recurso | Uso | Notas |
 |---|---|---|
-| LUT4 | 11 428 de 23 040 (50 %) | Según nextpnr, con las LUT de paso de los flip-flops. |
-| Flip-flops | 6 705 de 23 040 (29 %) | Unos 3 100 son copias y registros de segmentación (F-15). |
-| ALU | 1 294 de 17 280 (7 %) | Las sumas de la región absoluta suben unas 100 (F-19). |
+| LUT4 | 12 405 de 23 040 (54 %) | Según nextpnr, con las LUT de paso de los flip-flops. El núcleo solo (`nucleo_placa`): 11 709. |
+| Flip-flops | 7 145 de 23 040 (31 %) | Unos 3 100 son copias y registros de segmentación (F-15); unos 450, la cola y el retiro. |
+| ALU | 1 318 de 17 280 (8 %) | |
 | BSRAM | 56 de 56 | 38 de retardo + 6 de microcódigo + 12 de captura. En el pedal final, la captura no existe: 42 + 6 = 48. |
 | DSP | 2 de 28 | |
-| Frecuencia | 144 MHz según nextpnr; **125 MHz en la placa sin errores (3 de 3)**; 133,3 MHz, 1 de 1 | margen real de al menos un 25 % sobre 100 MHz (F-19, ADR 0011) |
-| Ciclos por muestra | reverse 431, lofi 620, cinta 658, plate 1 195, freeze 1 313, cloud 1 356, swell 1 467, shimmer 1 514, hall 1 578 de 2 048 | coste de cada instrucción en `model/sofifi/domain/coste.py` |
+| Frecuencia | 110 MHz según nextpnr; **125 MHz en la placa sin errores (3 de 3) y 133,3 MHz (2 de 2)**; el looper, 125 MHz (2 de 2) | margen real de al menos un 25 % sobre 100 MHz (ADR 0011) |
+| Ciclos por muestra | plate 783, hall 856, cloud 900, shimmer 1 030, sostenido 1 156, chorale 1 185; la cadena más cara, 1 270 de 2 048 | modelo de tiempos exacto en `model/sofifi/domain/coste.py` |
 
 ## Reglas de diseño que salen de los fallos
 
 - **Ninguna salida de BSRAM va a lógica en el mismo ciclo.** Las memorias se hacen con `bsram_pipe`, que usa el registro de salida interno del bloque (F-11).
-- **Ninguna aritmética de 50 bit encadenada en un ciclo.** La ALU va en dos etapas; las entradas del multiplicador salen de registros (F-10, F-11).
+- **Ninguna aritmética de 50 bit encadenada en un ciclo.** La ALU va en dos etapas; las entradas del multiplicador salen de registros (F-10, F-11). La saturación mira los tres bits altos y no compara con constantes (ADR 0014).
+- **Un array nuevo lleva su `ram_style`.** Yosys convierte en BSRAM cualquier array con lectura por índice, aunque sea pequeño (F-24).
 - **Ningún registro alimenta bloques de todo el chip.** Las memorias grandes van segmentadas: copias de la dirección por grupo y por bloque, y salida registrada junto a cada bloque (F-15).
 - **Ningún multiplexor ancho en un ciclo.** El banco de registros (64:1) va en dos niveles (F-15).
 - **La escritura en el banco no se decodifica en el mismo ciclo.** Primero se registran una máscara de 64 bit y el dato; después se escribe (F-19).
@@ -164,8 +166,25 @@ Se añaden los envoltorios del PLL (`pll_100`), del DSP (`mult_27x18`) y de la B
 - **Looper en la placa** (top `hil_looper`): el estímulo del HIL pulsa el footswitch para grabar y para hacer un overdub. El looper coincide bit a bit con el modelo de 100 a 125 MHz. Es la primera prueba de `RDAA` y `WRAA` en el silicio.
 - **Todo el catálogo en la placa** (top `hil_programa`, `make hil HIL=NOMBRE`): 41 programas y 9 cadenas dan los mismos bits que el modelo (MED-16). Son todos los que caben en los 38 bloques de `hil_nucleo`. El que más gasta es `chorale`, con 1 935 ciclos de 2 048.
 
+### Después de la Fase 07 · Núcleo segmentado en orden (ADR 0014)
+
+- **Retiro desacoplado:** la instrucción deja su producto en una línea de retiro y el secuenciador pasa a la siguiente. El ACC se escribe en el orden del programa.
+- **Esperas solo por dependencias:** la instrucción que lee el ACC espera a que el retiro se vacíe; la que lee el banco, 3 ciclos tras un `WRAX`.
+- **Cola de búsqueda:** el microcódigo se pide sin parar; una cola de 4 palabras y una cabeza registrada dan la siguiente instrucción.
+- **Modelo de tiempos exacto:** `coste.py` reproduce el secuenciador; la simulación exige los mismos ciclos que el RTL.
+- **Timing:** la primera versión fallaba a 125 MHz en el silicio. La traza señaló el bucle del ACC: un reenvío delante de la suma y la saturación con dos comparaciones de 50 bit. Sin reenvío y con la saturación por los bits altos: 125 MHz (3 de 3) y 133,3 MHz (2 de 2).
+
+| Instrucción | Ciclos (multiciclo) | Ciclos (segmentado), sin dependencia |
+|---|---|---|
+| `RDAX`, `WRAX`, `WRA`, `WRAP`, `SOF`, `MULX`, `MAXX` | 10 | 2 |
+| `RDA` | 19 | 11 |
+| `CHO` (LFO SIN) | 52 | 44 |
+| `RDAA` | 27 | 19 |
+
+Una instrucción que lee el ACC espera 7 ciclos desde el final de la anterior que lo escribe. En media, los programas gastan 1,6 veces menos ciclos. Las parejas en serie que caben pasan de 790 a 1 312 de 2 550 (con los registros compartidos, ADR 0013).
+
 ### Próximo cambio previsto
 
-**Medida 2026-10-08: dos o tres núcleos no caben** (ADR 0013). Con 2 núcleos, yosys da 13 112 LUT4 y 9 928 flip-flops antes de colocar, y nextpnr no encuentra una colocación legal, ni con la BSRAM al 78 %. Con 3, 19 046 LUT4. Dos efectos a la vez se hacen con cadenas: un programa compuesto, sin cambiar el RTL.
+**Medida 2026-10-08: dos o tres núcleos no caben** (ADR 0013). Con 2 núcleos, yosys da 13 112 LUT4 y 9 928 flip-flops antes de colocar, y nextpnr no encuentra una colocación legal, ni con la BSRAM al 78 %. Con 3, 19 046 LUT4. Dos efectos a la vez se hacen con cadenas: un programa compuesto, sin cambiar el RTL. La persona propietaria confirmó seguir sin segundo núcleo.
 
-Hoy cada instrucción espera a su resultado (unos 14 ciclos). La siguiente palanca es no esperar cuando la instrucción siguiente no usa el ACC ni el registro que se escribe. Hay que detectar las dependencias entre instrucciones. El resultado sigue igual al modelo; el cambio es grande y se decidirá en un ADR.
+El núcleo ya solo espera por dependencias (ADR 0014). La siguiente palanca de ciclos sería leer la memoria antes de su turno o bajar `LAT` a 3 (ADR 0014, opciones 3 y 4). Hoy limita más la memoria: es trabajo de la SDRAM.

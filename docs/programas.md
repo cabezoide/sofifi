@@ -10,92 +10,92 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 
 | Programa | Qué hace | Mandos | Presets | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|---|
-| `blackhole` | Sala gigante con un decay de decenas de segundos. | 0: decay<br>1: damping<br>2: mezcla | 8 | 140 | 1 615 | 40 882 |
-| `bloom` | La reverb crece despacio después de cada nota, como una flor que se abre. | 0: decay<br>1: damping<br>2: mezcla<br>3: apertura | 8 | 84 | 979 | 23 520 |
-| `chorale` | La cola del plate canta una vocal, de «a» a «i». | 0: decay<br>1: damping<br>2: mezcla<br>3: vocal | 8 | 160 | 1 942 | 37 439 |
-| `cloud` | Difusores largos con modulación aleatoria: el ataque se disuelve. | 0: decay<br>1: damping<br>2: mezcla<br>3: modulación | 8 | 96 | 1 385 | 42 814 |
-| `ensemble` | Un coro de tres voces antes del plate: la cola suena como una sección de cuerdas. | 0: decay<br>1: damping<br>2: mezcla<br>3: ensemble | 8 | 99 | 1 425 | 38 540 |
-| `freeze` | Plate que congela la cola con el pulsador. | 0: decay<br>1: damping<br>2: mezcla | 8 | 103 | 1 378 | 37 439 |
-| `freeze_givens` | Freeze que se mueve sin perder energía: la cola congelada gira entre las ramas. | 0: decay<br>1: damping<br>2: mezcla<br>3: giro | 8 | 136 | 1 708 | 37 439 |
-| `gated` | Reverb que se corta de golpe tras cada ataque, como en los años 80. | 0: decay<br>1: damping<br>2: mezcla<br>3: duración | 8 | 133 | 1 657 | 37 439 |
-| `hall` | Red de 8 retardos con matriz de Householder: sala grande. | 0: decay<br>1: damping<br>2: mezcla | 8 | 137 | 1 585 | 34 522 |
-| `infinite` | Plate que no decae: cada nota se suma a una capa que no se apaga. | 0: vaciado<br>1: damping<br>2: mezcla | 8 | 95 | 1 300 | 37 439 |
-| `marea` | La cola del plate sube y baja en olas, de un lado a otro; la señal seca no cambia. | 0: decay<br>1: damping<br>2: mezcla<br>3: velocidad | 8 | 137 | 1 690 | 37 439 |
-| `plate` | Plate de Dattorro con el tanque modulado. | 0: decay<br>1: damping<br>2: mezcla | 8 | 86 | 1 202 | 37 439 |
-| `plate_vivo` | Plate cuya modulación deriva al azar: la cola nunca se repite igual. | 0: decay<br>1: damping<br>2: mezcla<br>3: vida | 8 | 127 | 1 599 | 37 439 |
-| `resonador` | Cuatro cuerdas afinadas en mi mayor que vibran por simpatía con lo que se toca. | 0: sustain<br>1: excitación<br>2: mezcla<br>3: afinación | 8 | 89 | 924 | 1 |
-| `reverb_inversa` | Reverb al revés: tras cada ataque, la cola crece y se corta de golpe. | 0: decay<br>1: damping<br>2: mezcla<br>3: duración | 8 | 133 | 1 657 | 37 439 |
-| `shimmer` | Plate con un +12 en la realimentación: cada vuelta sube una octava. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 8 | 108 | 1 553 | 41 539 |
-| `shimmer_energia` | Shimmer que se regula solo: cuanta más octava acumula, menos añade. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 8 | 117 | 1 643 | 41 539 |
-| `shimmer_grave` | Shimmer hacia abajo: cada vuelta baja una octava y la cola se vuelve un órgano grave. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 8 | 108 | 1 553 | 41 539 |
-| `shimmer_quinta` | Shimmer de quinta: cada vuelta sube 7 semitonos, como un acorde que se abre. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 8 | 108 | 1 553 | 41 539 |
-| `shoegaze` | Plate que se satura después de la cola: un muro de ruido cálido detrás de la guitarra. | 0: decay<br>1: damping<br>2: mezcla<br>3: saturación | 8 | 142 | 1 772 | 37 439 |
-| `sostenido` | Freeze automático: cada acorde nuevo se captura y queda sonando como un pad. | 0: capas<br>1: damping<br>2: mezcla<br>3: captura | 8 | 141 | 1 747 | 37 439 |
-| `spring` | Reverb de muelle: el sonido gotea, con los agudos antes que los graves. | 0: decay<br>1: damping<br>2: mezcla | 8 | 95 | 1 273 | 1 850 |
+| `blackhole` | Sala gigante con un decay de decenas de segundos. | 0: decay<br>1: damping<br>2: mezcla | 8 | 140 | 883 | 40 882 |
+| `bloom` | La reverb crece despacio después de cada nota, como una flor que se abre. | 0: decay<br>1: damping<br>2: mezcla<br>3: apertura | 8 | 84 | 637 | 23 520 |
+| `chorale` | La cola del plate canta una vocal, de «a» a «i». | 0: decay<br>1: damping<br>2: mezcla<br>3: vocal | 8 | 160 | 1 192 | 37 439 |
+| `cloud` | Difusores largos con modulación aleatoria: el ataque se disuelve. | 0: decay<br>1: damping<br>2: mezcla<br>3: modulación | 8 | 96 | 907 | 42 814 |
+| `ensemble` | Un coro de tres voces antes del plate: la cola suena como una sección de cuerdas. | 0: decay<br>1: damping<br>2: mezcla<br>3: ensemble | 8 | 99 | 953 | 38 540 |
+| `freeze` | Plate que congela la cola con el pulsador. | 0: decay<br>1: damping<br>2: mezcla | 8 | 103 | 940 | 37 439 |
+| `freeze_givens` | Freeze que se mueve sin perder energía: la cola congelada gira entre las ramas. | 0: decay<br>1: damping<br>2: mezcla<br>3: giro | 8 | 136 | 1 138 | 37 439 |
+| `gated` | Reverb que se corta de golpe tras cada ataque, como en los años 80. | 0: decay<br>1: damping<br>2: mezcla<br>3: duración | 8 | 133 | 1 098 | 37 439 |
+| `hall` | Red de 8 retardos con matriz de Householder: sala grande. | 0: decay<br>1: damping<br>2: mezcla | 8 | 137 | 863 | 34 522 |
+| `infinite` | Plate que no decae: cada nota se suma a una capa que no se apaga. | 0: vaciado<br>1: damping<br>2: mezcla | 8 | 95 | 872 | 37 439 |
+| `marea` | La cola del plate sube y baja en olas, de un lado a otro; la señal seca no cambia. | 0: decay<br>1: damping<br>2: mezcla<br>3: velocidad | 8 | 137 | 1 126 | 37 439 |
+| `plate` | Plate de Dattorro con el tanque modulado. | 0: decay<br>1: damping<br>2: mezcla | 8 | 86 | 790 | 37 439 |
+| `plate_vivo` | Plate cuya modulación deriva al azar: la cola nunca se repite igual. | 0: decay<br>1: damping<br>2: mezcla<br>3: vida | 8 | 127 | 1 054 | 37 439 |
+| `resonador` | Cuatro cuerdas afinadas en mi mayor que vibran por simpatía con lo que se toca. | 0: sustain<br>1: excitación<br>2: mezcla<br>3: afinación | 8 | 89 | 525 | 1 |
+| `reverb_inversa` | Reverb al revés: tras cada ataque, la cola crece y se corta de golpe. | 0: decay<br>1: damping<br>2: mezcla<br>3: duración | 8 | 133 | 1 098 | 37 439 |
+| `shimmer` | Plate con un +12 en la realimentación: cada vuelta sube una octava. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 8 | 108 | 1 037 | 41 539 |
+| `shimmer_energia` | Shimmer que se regula solo: cuanta más octava acumula, menos añade. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 8 | 117 | 1 095 | 41 539 |
+| `shimmer_grave` | Shimmer hacia abajo: cada vuelta baja una octava y la cola se vuelve un órgano grave. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 8 | 108 | 1 037 | 41 539 |
+| `shimmer_quinta` | Shimmer de quinta: cada vuelta sube 7 semitonos, como un acorde que se abre. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 8 | 108 | 1 037 | 41 539 |
+| `shoegaze` | Plate que se satura después de la cola: un muro de ruido cálido detrás de la guitarra. | 0: decay<br>1: damping<br>2: mezcla<br>3: saturación | 8 | 142 | 1 106 | 37 439 |
+| `sostenido` | Freeze automático: cada acorde nuevo se captura y queda sonando como un pad. | 0: capas<br>1: damping<br>2: mezcla<br>3: captura | 8 | 141 | 1 190 | 37 439 |
+| `spring` | Reverb de muelle: el sonido gotea, con los agudos antes que los graves. | 0: decay<br>1: damping<br>2: mezcla | 8 | 95 | 832 | 1 850 |
 
 ## Delay
 
 | Programa | Qué hace | Mandos | Presets | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|---|
-| `bbd` | Eco analógico oscuro: cada repetición pierde agudos y se satura. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: modulación | 8 | 44 | 563 | 14 674 |
-| `bruma` | Eco de cuatro cabezas que se difumina en cada vuelta hasta volverse reverb. | 0: difusión<br>1: realimentación<br>2: mezcla<br>3: cabezas | 8 | 53 | 758 | 41 553 |
-| `cinta` | Eco de cinta de 0,18 a 0,85 s con wow, flutter y saturación. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: wow y flutter | 8 | 50 | 665 | 41 600 |
-| `delay` | Eco digital limpio de 20 a 690 ms, con tono en la realimentación. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: tono | 8 | 38 | 455 | 33 749 |
-| `ducking` | Eco que se aparta mientras se toca y aparece en los silencios. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: ducking | 8 | 51 | 586 | 33 749 |
-| `lluvia` | Seis ecos irregulares que se deshacen en allpass: una lluvia de notas. | 0: difusión<br>1: realimentación<br>2: mezcla | 8 | 46 | 593 | 35 385 |
-| `pingpong` | Eco estéreo que salta de un lado a otro. | 0: tiempo<br>1: realimentación<br>2: mezcla | 8 | 38 | 497 | 40 874 |
-| `reverse` | Eco invertido en granos de 0,17 s. | 0: tono<br>1: realimentación<br>2: mezcla | 8 | 34 | 470 | 16 388 |
+| `bbd` | Eco analógico oscuro: cada repetición pierde agudos y se satura. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: modulación | 8 | 44 | 408 | 14 674 |
+| `bruma` | Eco de cuatro cabezas que se difumina en cada vuelta hasta volverse reverb. | 0: difusión<br>1: realimentación<br>2: mezcla<br>3: cabezas | 8 | 53 | 536 | 41 553 |
+| `cinta` | Eco de cinta de 0,18 a 0,85 s con wow, flutter y saturación. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: wow y flutter | 8 | 50 | 484 | 41 600 |
+| `delay` | Eco digital limpio de 20 a 690 ms, con tono en la realimentación. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: tono | 8 | 38 | 309 | 33 749 |
+| `ducking` | Eco que se aparta mientras se toca y aparece en los silencios. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: ducking | 8 | 51 | 394 | 33 749 |
+| `lluvia` | Seis ecos irregulares que se deshacen en allpass: una lluvia de notas. | 0: difusión<br>1: realimentación<br>2: mezcla | 8 | 46 | 364 | 35 385 |
+| `pingpong` | Eco estéreo que salta de un lado a otro. | 0: tiempo<br>1: realimentación<br>2: mezcla | 8 | 38 | 353 | 40 874 |
+| `reverse` | Eco invertido en granos de 0,17 s. | 0: tono<br>1: realimentación<br>2: mezcla | 8 | 34 | 301 | 16 388 |
 
 ## Modulación
 
 | Programa | Qué hace | Mandos | Presets | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|---|
-| `chorus` | Tres voces con retardos que se mueven. | 0: velocidad<br>1: profundidad<br>2: mezcla | 8 | 42 | 578 | 1 101 |
-| `flanger` | Retardo muy corto y móvil con realimentación: peines que barren. | 0: velocidad<br>1: profundidad<br>2: mezcla<br>3: realimentación | 8 | 31 | 384 | 247 |
-| `phaser` | Cuatro allpass con coeficiente móvil: muescas que barren. | 0: velocidad<br>1: profundidad<br>2: mezcla<br>3: realimentación | 8 | 79 | 802 | 1 |
-| `slicer` | Corta el sonido en pulsos rítmicos, como una puerta que abre y cierra. | 0: velocidad<br>1: profundidad<br>2: ciclo<br>3: suavizado | 8 | 37 | 390 | 1 |
-| `tremolo` | El volumen sube y baja; con pot2, de un lado a otro. | 0: velocidad<br>1: profundidad<br>2: panorama | 8 | 43 | 442 | 1 |
-| `vibrato` | El tono sube y baja. | 0: velocidad<br>1: profundidad<br>2: mezcla | 8 | 27 | 344 | 125 |
+| `chorus` | Tres voces con retardos que se mueven. | 0: velocidad<br>1: profundidad<br>2: mezcla | 8 | 42 | 416 | 1 101 |
+| `flanger` | Retardo muy corto y móvil con realimentación: peines que barren. | 0: velocidad<br>1: profundidad<br>2: mezcla<br>3: realimentación | 8 | 31 | 266 | 247 |
+| `phaser` | Cuatro allpass con coeficiente móvil: muescas que barren. | 0: velocidad<br>1: profundidad<br>2: mezcla<br>3: realimentación | 8 | 79 | 513 | 1 |
+| `slicer` | Corta el sonido en pulsos rítmicos, como una puerta que abre y cierra. | 0: velocidad<br>1: profundidad<br>2: ciclo<br>3: suavizado | 8 | 37 | 262 | 1 |
+| `tremolo` | El volumen sube y baja; con pot2, de un lado a otro. | 0: velocidad<br>1: profundidad<br>2: panorama | 8 | 43 | 325 | 1 |
+| `vibrato` | El tono sube y baja. | 0: velocidad<br>1: profundidad<br>2: mezcla | 8 | 27 | 240 | 125 |
 
 ## Pitch
 
 | Programa | Qué hace | Mandos | Presets | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|---|
-| `armonizador` | Una voz a −12, −7, −5, +5, +7 o +12 semitonos, con realimentación. | 0: intervalo<br>1: realimentación<br>2: mezcla | 8 | 55 | 632 | 4 100 |
-| `doblador` | Dos voces desafinadas unos cents, una a cada lado: ensancha el sonido. | 0: desafinación<br>2: mezcla | 8 | 32 | 540 | 1 028 |
-| `escalera` | Eco en el que cada repetición sube o baja un intervalo: una escalera. | 0: intervalo<br>1: realimentación<br>2: mezcla<br>3: tiempo | 8 | 67 | 799 | 39 313 |
-| `octava` | Octavador: una octava abajo y una arriba, cada una con su nivel. | 0: octava baja<br>1: octava alta<br>2: seco | 8 | 25 | 470 | 4 100 |
+| `armonizador` | Una voz a −12, −7, −5, +5, +7 o +12 semitonos, con realimentación. | 0: intervalo<br>1: realimentación<br>2: mezcla | 8 | 55 | 450 | 4 100 |
+| `doblador` | Dos voces desafinadas unos cents, una a cada lado: ensancha el sonido. | 0: desafinación<br>2: mezcla | 8 | 32 | 346 | 1 028 |
+| `escalera` | Eco en el que cada repetición sube o baja un intervalo: una escalera. | 0: intervalo<br>1: realimentación<br>2: mezcla<br>3: tiempo | 8 | 67 | 582 | 39 313 |
+| `octava` | Octavador: una octava abajo y una arriba, cada una con su nivel. | 0: octava baja<br>1: octava alta<br>2: seco | 8 | 25 | 296 | 4 100 |
 
 ## Dinámica
 
 | Programa | Qué hace | Mandos | Presets | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|---|
-| `compresor` | Compresor: baja lo fuerte y deja lo suave; sostiene las notas. | 0: umbral<br>1: compresión<br>2: mezcla<br>3: ganancia | 8 | 57 | 596 | 1 |
-| `puerta` | Puerta de ruido: calla el zumbido entre notas y deja pasar lo que se toca. | 0: umbral<br>1: cierre | 8 | 29 | 317 | 1 |
-| `swell` | Cada nota empieza en silencio y sube, antes de un plate. | 0: decay<br>1: damping<br>2: mezcla<br>3: subida | 8 | 116 | 1 490 | 37 439 |
+| `compresor` | Compresor: baja lo fuerte y deja lo suave; sostiene las notas. | 0: umbral<br>1: compresión<br>2: mezcla<br>3: ganancia | 8 | 57 | 394 | 1 |
+| `puerta` | Puerta de ruido: calla el zumbido entre notas y deja pasar lo que se toca. | 0: umbral<br>1: cierre | 8 | 29 | 222 | 1 |
+| `swell` | Cada nota empieza en silencio y sube, antes de un plate. | 0: decay<br>1: damping<br>2: mezcla<br>3: subida | 8 | 116 | 983 | 37 439 |
 
 ## Textura
 
 | Programa | Qué hace | Mandos | Presets | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|---|
-| `granular` | Nube granular de 4 voces con ventana Hann, pitch en octavas y freeze. | 0: duración<br>1: difusión<br>2: intervalo<br>3: mezcla | 8 | 188 | 1 896 | 32 769 |
-| `lofi` | Menos muestras por segundo y menos bits, con aliasing. | 0: muestreo<br>1: bits<br>2: mezcla<br>3: tono | 8 | 81 | 800 | 1 |
-| `ringmod` | Modulador en anillo: multiplica la guitarra por un seno; suena metálico. | 0: frecuencia<br>2: mezcla | 8 | 33 | 362 | 1 |
-| `saturacion` | Saturación tipo overdrive: de un brillo cálido a una distorsión espesa. | 0: ganancia<br>1: tono<br>2: mezcla<br>3: nivel | 8 | 42 | 462 | 1 |
+| `granular` | Nube granular de 4 voces con ventana Hann, pitch en octavas y freeze. | 0: duración<br>1: difusión<br>2: intervalo<br>3: mezcla | 8 | 188 | 1 209 | 32 769 |
+| `lofi` | Menos muestras por segundo y menos bits, con aliasing. | 0: muestreo<br>1: bits<br>2: mezcla<br>3: tono | 8 | 81 | 577 | 1 |
+| `ringmod` | Modulador en anillo: multiplica la guitarra por un seno; suena metálico. | 0: frecuencia<br>2: mezcla | 8 | 33 | 236 | 1 |
+| `saturacion` | Saturación tipo overdrive: de un brillo cálido a una distorsión espesa. | 0: ganancia<br>1: tono<br>2: mezcla<br>3: nivel | 8 | 42 | 277 | 1 |
 
 ## Filtro
 
 | Programa | Qué hace | Mandos | Presets | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|---|
-| `ancho` | Ensancha el estéreo de una guitarra mono y ajusta el tono graves-agudos. | 0: ancho<br>1: tilt | 8 | 26 | 304 | 636 |
-| `autowah` | Wah automático: cuanto más fuerte se toca, más sube el filtro. | 0: sensibilidad<br>1: resonancia<br>2: mezcla | 8 | 43 | 464 | 1 |
-| `filtro` | Filtro paso bajo resonante que sube y baja solo, con un LFO. | 0: velocidad<br>1: resonancia<br>2: mezcla<br>3: profundidad | 8 | 60 | 608 | 1 |
+| `ancho` | Ensancha el estéreo de una guitarra mono y ajusta el tono graves-agudos. | 0: ancho<br>1: tilt | 8 | 26 | 185 | 636 |
+| `autowah` | Wah automático: cuanto más fuerte se toca, más sube el filtro. | 0: sensibilidad<br>1: resonancia<br>2: mezcla | 8 | 43 | 295 | 1 |
+| `filtro` | Filtro paso bajo resonante que sube y baja solo, con un LFO. | 0: velocidad<br>1: resonancia<br>2: mezcla<br>3: profundidad | 8 | 60 | 394 | 1 |
 
 ## Looper
 
 | Programa | Qué hace | Mandos | Presets | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|---|
-| `looper` | Micro-looper de 0,67 s con overdub, ½×, 2× y reverse. | 0: nivel<br>1: velocidad<br>2: sentido<br>3: realimentación | 8 | 85 | 809 | 32 769 |
+| `looper` | Micro-looper de 0,67 s con overdub, ½×, 2× y reverse. | 0: nivel<br>1: velocidad<br>2: sentido<br>3: realimentación | 8 | 85 | 549 | 32 769 |
 
 ## Cadenas
 
@@ -103,27 +103,27 @@ Una cadena une dos programas en uno, en serie (→) o en paralelo (‖), sin cam
 
 | Cadena | Programas | Ciclos | Memoria | Registros | LFOs | Estado |
 |---|---|---|---|---|---|---|
-| Armonía en la placa | `armonizador` → `plate` | 1 834 | 41 539 | 14 | 3 | cabe |
-| Bruma que gira | `bruma` → `chorus` | 1 336 | 42 654 | 12 | 4 | cabe |
-| Campanas | `ringmod` → `shimmer` | 1 915 | 41 539 | 18 | 3 | cabe |
-| Cinta desgastada | `cinta` → `lofi` | 1 505 | 41 600 | 18 | 3 | cabe |
-| Cuerdas en ola | `tremolo` → `ensemble` | 1 887 | 38 540 | 16 | 4 | cabe |
-| Doble resonancia | `doblador` → `resonador` | 1 484 | 1 028 | 24 | 2 | cabe |
-| Eco oscuro en flor | `bbd` → `bloom` | 1 562 | 38 194 | 20 | 2 | cabe |
-| Eco y muelle | `delay` → `spring` | 1 748 | 35 599 | 14 | 1 | cabe |
-| Eco y resonancia | `delay` ‖ `resonador` | 1 465 | 33 749 | 27 | 1 | cabe |
-| Flor al revés | `reverse` → `bloom` | 1 449 | 39 908 | 17 | 1 | cabe |
-| Fuzz en la nube | `saturacion` → `cloud` | 1 907 | 42 814 | 16 | 4 | cabe |
-| Loop filtrado | `looper` → `filtro` | 1 477 | 32 769 | 22 | 0 | cabe |
-| Octavas en flor | `octava` ‖ `bloom` | 1 515 | 27 620 | 18 | 2 | cabe |
-| Placa que tiembla | `tremolo` → `plate` | 1 644 | 37 439 | 14 | 2 | cabe |
-| Shimmer con vibrato | `vibrato` → `shimmer` | 1 917 | 41 664 | 18 | 4 | cabe |
-| Silencio y agujero negro | `puerta` → `blackhole` | 1 932 | 40 882 | 20 | 2 | cabe |
-| Sustain en la placa | `compresor` → `plate` | 1 838 | 37 439 | 17 | 2 | cabe |
-| Órgano infinito | `octava` → `infinite` | 1 790 | 41 539 | 13 | 4 | cabe |
-| Bruma en flor | `bruma` → `bloom` | 1 757 | 65 073 | 19 | 1 | espera la SDRAM |
-| Cinta en la flor | `cinta` → `bloom` | 1 664 | 65 120 | 20 | 3 | espera la SDRAM |
-| Eco al revés congelado | `reverse` → `freeze` | 1 848 | 53 827 | 13 | 3 | espera la SDRAM |
-| Eco en la nube | `delay` → `plate` | 1 677 | 71 188 | 15 | 3 | espera la SDRAM |
-| Lluvia sobre la placa | `lluvia` → `plate` | 1 795 | 72 824 | 12 | 2 | espera la SDRAM |
-| Ping-pong infinito | `pingpong` → `infinite` | 1 797 | 78 313 | 13 | 3 | espera la SDRAM |
+| Armonía en la placa | `armonizador` → `plate` | 1 270 | 41 539 | 14 | 3 | cabe |
+| Bruma que gira | `bruma` → `chorus` | 950 | 42 654 | 12 | 4 | cabe |
+| Campanas | `ringmod` → `shimmer` | 1 239 | 41 539 | 18 | 3 | cabe |
+| Cinta desgastada | `cinta` → `lofi` | 1 085 | 41 600 | 18 | 3 | cabe |
+| Cuerdas en ola | `tremolo` → `ensemble` | 1 288 | 38 540 | 16 | 4 | cabe |
+| Doble resonancia | `doblador` → `resonador` | 879 | 1 028 | 24 | 2 | cabe |
+| Eco oscuro en flor | `bbd` → `bloom` | 1 053 | 38 194 | 20 | 2 | cabe |
+| Eco y muelle | `delay` → `spring` | 1 149 | 35 599 | 14 | 1 | cabe |
+| Eco y resonancia | `delay` ‖ `resonador` | 870 | 33 749 | 27 | 1 | cabe |
+| Flor al revés | `reverse` → `bloom` | 930 | 39 908 | 17 | 1 | cabe |
+| Fuzz en la nube | `saturacion` → `cloud` | 1 248 | 42 814 | 16 | 4 | cabe |
+| Loop filtrado | `looper` → `filtro` | 983 | 32 769 | 22 | 0 | cabe |
+| Octavas en flor | `octava` ‖ `bloom` | 953 | 27 620 | 18 | 2 | cabe |
+| Placa que tiembla | `tremolo` → `plate` | 1 109 | 37 439 | 14 | 2 | cabe |
+| Shimmer con vibrato | `vibrato` → `shimmer` | 1 243 | 41 664 | 18 | 4 | cabe |
+| Silencio y agujero negro | `puerta` → `blackhole` | 1 099 | 40 882 | 20 | 2 | cabe |
+| Sustain en la placa | `compresor` → `plate` | 1 214 | 37 439 | 17 | 2 | cabe |
+| Órgano infinito | `octava` → `infinite` | 1 246 | 41 539 | 13 | 4 | cabe |
+| Bruma en flor | `bruma` → `bloom` | 1 181 | 65 073 | 19 | 1 | espera la SDRAM |
+| Cinta en la flor | `cinta` → `bloom` | 1 129 | 65 120 | 20 | 3 | espera la SDRAM |
+| Eco al revés congelado | `reverse` → `freeze` | 1 271 | 53 827 | 13 | 3 | espera la SDRAM |
+| Eco en la nube | `delay` → `plate` | 1 113 | 71 188 | 15 | 3 | espera la SDRAM |
+| Lluvia sobre la placa | `lluvia` → `plate` | 1 148 | 72 824 | 12 | 2 | espera la SDRAM |
+| Ping-pong infinito | `pingpong` → `infinite` | 1 223 | 78 313 | 13 | 3 | espera la SDRAM |

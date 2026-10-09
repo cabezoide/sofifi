@@ -16,7 +16,10 @@
 //
 // Los desplazamientos a la derecha son aritméticos: el floor del modelo.
 // Dos etapas (REGISTRADA = 1 en el núcleo): la 1 elige los operandos y la 2
-// hace una sola operación (suma o máximo) y satura. En una etapa, la ALU daba
+// hace una sola operación (suma o máximo) y satura. En el núcleo segmentado
+// (ADR 0014) dos retiros llegan como poco con 2 ciclos de separación (una
+// decodificación y una ejecución): la etapa 1 del segundo ya lee el ACC que
+// escribió el primero, sin reenvío. En una etapa, la ALU daba
 // 157 MHz con una colocación y 80 con otra (fails.md, F-11). Con REGISTRADA = 0
 // es combinacional: así la prueba contra el modelo no necesita reloj.
 `default_nettype none

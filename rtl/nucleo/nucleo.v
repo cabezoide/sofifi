@@ -12,12 +12,15 @@
 // ciclos) para empezar como el modelo, con todo a cero; mientras tanto,
 // `ocupado` vale 1 y no atiende ticks. El reset no borra la BSRAM por sí solo.
 //
-// Multiciclo (spec de la Fase 04): cada instrucción espera a su resultado antes
-// de la siguiente. Desde la Fase 06, mientras ejecuta una instrucción ya lee la
-// siguiente del microcódigo (lectura adelantada). Se presentan operandos al
-// multiplicador en un ciclo y el resultado está 5 ciclos después (LAT). Las dos salidas van registradas: la
-// BSRAM en modo bypass y la lógica detrás de ella fallaban en el silicio por
-// encima de 100 MHz aunque nextpnr diera más (fails.md, F-11).
+// Segmentado en orden (ADR 0014): una instrucción presenta sus operandos al
+// multiplicador y el producto llega LAT = 5 ciclos después. La instrucción no
+// espera a su producto: lo deja en la línea de retiro y el secuenciador pasa a
+// la siguiente. El retiro aplica los productos al ACC en el orden del programa.
+// Solo espera la instrucción que lee el ACC (o a24) hasta que el retiro se vacía,
+// y la que lee un registro recién escrito por WRAX. El microcódigo llega por
+// una cola de búsqueda continua. Las dos salidas del multiplicador y de la
+// BSRAM van registradas: en modo bypass fallaban en el silicio por encima de
+// 100 MHz aunque nextpnr diera más (fails.md, F-11).
 // Con más de GRUPO_MEM bloques, la memoria va segmentada y sus lecturas tardan 4
 // ciclos más (LAT_MEM): su dirección llegaba a bloques de todo el chip en un
 // solo ciclo y el silicio fallaba según la colocación (fails.md, F-15).
@@ -74,8 +77,9 @@ module nucleo #(
     localparam [3:0] LAT_MEM   = LAT + EXTRA_MEM;
 
     // ── Estado ────────────────────────────────────────────────────────────
-    localparam [2:0] E_PARADO = 3'd0, E_LFO = 3'd1, E_LEER = 3'd2, E_DECO = 3'd3,
-                     E_EJEC = 3'd4, E_FIN = 3'd5, E_BORRAR = 3'd6, E_ESCR = 3'd7;
+    // E_LEER decodifica la cabeza de la cola en cuanto no hay dependencia.
+    localparam [2:0] E_PARADO = 3'd0, E_LFO = 3'd1, E_LEER = 3'd2,
+                     E_EJEC = 3'd4, E_FIN = 3'd5, E_BORRAR = 3'd6;
     reg [2:0]  estado;
     reg [11:0] pc;
     reg [4:0]  paso;
@@ -87,16 +91,31 @@ module nucleo #(
     reg [53:0] ins;
     reg [15:0] cuenta;
     reg [15:0] borrar;
-    // Lectura adelantada del microcódigo: pc_mc es la dirección que se lee y
-    // `edad`, los ciclos que lleva presentada (la palabra sale de la BSRAM a los
-    // 3 y de ins_leida a los 4). Al decodificar pc se pide pc + 1: si no hay
-    // salto, la siguiente ya está.
+    // Búsqueda continua del microcódigo: pc_mc es la siguiente dirección que se
+    // pide. La palabra pedida en t sale de ins_leida en t+4 (`vuelo` sigue las
+    // cuatro en camino) y entra en la cola. La cabeza de la cola va en un
+    // registro aparte: de ella salen la decodificación, el LFO elegido y los
+    // candidatos del banco. `ocup` cuenta las palabras pedidas y aún no
+    // decodificadas; no pasa de COLA. Un salto o una muestra nueva vacían todo.
+    // Con 4 basta: se decodifica como mucho una instrucción cada 2 ciclos y la
+    // cola se llena mientras una instrucción espera a su dependencia.
+    localparam integer COLA = 4;
     reg [11:0] pc_mc;
-    reg [2:0]  edad;
-    reg        escr;
+    reg [3:0]  vuelo;
+    reg [2:0]  ocup;
+    (* ram_style = "logic" *)   // en BSRAM no cabe: todas están ocupadas
+    reg [53:0] cola [0:3];
+    reg [1:0]  cola_esc, cola_lec;
+    reg [2:0]  cola_n;
+    reg [53:0] cabeza;
+    reg        cab_v, cab_vieja;   // cab_vieja: la cabeza lleva al menos un ciclo
+    reg        cab_lee_acc, cab_lee_reg;
+    reg        vaciar;             // la orden de vaciar, desde el secuenciador
+    reg [11:0] destino;
+    wire       tomar;              // la decodificación consume la cabeza
 
     assign ocupado   = (estado != E_PARADO);
-    assign traza_pc  = pc;
+    assign traza_pc  = acc_pc;   // el pc de la siguiente a la que escribió el ACC
     assign traza_acc = acc;
 
     wire [5:0]         op = ins[53:48];
@@ -106,7 +125,7 @@ module nucleo #(
     /* verilator lint_on UNUSEDSIGNAL */
     wire signed [17:0] cf = ins[35:18];
     wire [17:0]        ad = ins[17:0];
-    // Operandos registrados en E_DECO (timing a 100 MHz): R, depth y el LFO
+    // Operandos registrados al decodificar (timing a 100 MHz): R, depth y el LFO
     // elegido. Los LFO no cambian mientras corre el programa.
     reg  signed [23:0] r_d, dep_d, tri_d, ven_d, actual_d;
     reg         [23:0] fase_d;
@@ -114,14 +133,36 @@ module nucleo #(
     reg         [14:0] exc_d;
 
     // ── Microcódigo: 2 048 × 54 en BSRAM, lectura en 3 ciclos ─────────────
-    // bsram_pipe: bloques con registro de salida (F-11). E_LEER espera a la
-    // palabra. Escrito como array, una parte salía en SPX9 (hold, Fase 04).
-    // La palabra se registra otra vez junto a la decodificación: el
-    // multiplexor del banco de registros (64:1) no arranca de un cable que
-    // cruza el chip. Con la lectura adelantada no cuesta ciclos: E_LEER pasa a
-    // E_DECO un ciclo después de que la palabra salga (fails.md, F-15).
+    // bsram_pipe: bloques con registro de salida (F-11). Escrito como array,
+    // una parte salía en SPX9 (hold, Fase 04). La palabra se registra en
+    // ins_leida y otra vez en la cabeza de la cola: el multiplexor del banco de
+    // registros (64:1) no arranca de un cable que cruza el chip (fails.md, F-15).
     wire [53:0] ins_bsram;
     reg  [53:0] ins_leida;
+    wire        pedir = (ocup < 3'(COLA)) && !vaciar;
+    wire        llega = vuelo[3];
+    wire        cargar_cab = (!cab_v || tomar) && cola_n != 3'd0;
+    always @(posedge clk) begin
+        if (rst || vaciar) begin
+            pc_mc <= rst ? 12'd0 : destino;
+            vuelo <= 4'd0; ocup <= 3'd0;
+            cola_esc <= 2'd0; cola_lec <= 2'd0; cola_n <= 3'd0;
+            cab_v <= 1'b0; cab_vieja <= 1'b0;
+        end else begin
+            vuelo <= {vuelo[2:0], pedir};
+            if (pedir) pc_mc <= pc_mc + 1'b1;
+            ocup <= ocup + {2'd0, pedir} - {2'd0, tomar};
+            if (llega) begin cola[cola_esc] <= ins_leida; cola_esc <= cola_esc + 1'b1; end
+            cola_n <= cola_n + {2'd0, llega} - {2'd0, cargar_cab};
+            cab_vieja <= cab_v && !tomar;
+            if (cargar_cab) begin
+                cabeza <= cola[cola_lec]; cola_lec <= cola_lec + 1'b1;
+                cab_lee_acc <= lee_acc_f(cola[cola_lec][53:48]);
+                cab_lee_reg <= lee_reg_f(cola[cola_lec][53:48]);
+                cab_v <= 1'b1;
+            end else if (tomar) cab_v <= 1'b0;
+        end
+    end
     bsram_pipe #(.PALABRAS(2048), .ANCHO(54)) u_microcodigo (
         .clk(clk), .we(prog_we), .dir_w(prog_dir), .dato_w(prog_dato),
         .dir_r(pc_mc[10:0]), .dato_r(ins_bsram)
@@ -129,17 +170,18 @@ module nucleo #(
     always @(posedge clk) ins_leida <= ins_bsram;
 
     // Banco de registros en dos niveles (fails.md, F-15): en cada ciclo se
-    // registran los 8 candidatos con los 3 bit bajos del índice; E_DECO elige
-    // uno con los 3 altos. E_LEER dura al menos un ciclo con ins_leida ya
-    // válida y no escribe en el banco, así que los candidatos están al día.
+    // registran los 8 candidatos con los 3 bit bajos del índice de la cabeza; la
+    // decodificación elige uno con los 3 altos. Valen si la cabeza lleva un ciclo
+    // (cab_vieja) y ningún WRAX ha escrito el banco en los dos últimos (reg_edad).
     reg signed [23:0] candidato [0:7];
     integer g;
     always @(posedge clk)
-        for (g = 0; g < 8; g = g + 1) candidato[g] <= regs[{3'(g), ins_leida[44:42]}];
+        for (g = 0; g < 8; g = g + 1) candidato[g] <= regs[{3'(g), cabeza[44:42]}];
 
     // ── a24 = ACC redondeado y saturado a dato, registrado ────────────────
-    // El ACC solo cambia al final de una instrucción; E_LEER y E_DECO dan tiempo
-    // a que a24 esté al día cuando empieza la siguiente.
+    // Una instrucción que lee el ACC se decodifica con el retiro vacío
+    // (pendientes = 0), un ciclo después de la última escritura del ACC; en
+    // E_EJEC, a24 ya está al día.
     wire signed [23:0] a24_c;
     acc_a_dato u_a24 (.acc(acc), .dato(a24_c));
     reg  signed [23:0] a24;
@@ -172,14 +214,28 @@ module nucleo #(
     // Con borrar_abs directo, el modo iba un ciclo por delante de la dirección y
     // quedaban sin borrar la última palabra circular y la última absoluta.
     reg                borrar_abs, mabs_borrar;
-    // Predecodificación (Fase 07): E_DECO registra la clase de la instrucción y
+    // Predecodificación (Fase 07): la decodificación registra la clase de la instrucción y
     // unas banderas. Con 18 instrucciones, decidir en E_EJEC desde el op de 6 bit
     // alargaba el camino de control (de 155 a 121 MHz según nextpnr).
     localparam [2:0] C_SIMPLE = 3'd0, C_RDA = 3'd1, C_CLIP = 3'd2, C_CHO = 3'd3,
                      C_SKP = 3'd4, C_RDAA = 3'd5, C_OTRA = 3'd6;
     reg [2:0] clase;
     reg es_rdfx, es_rdax_maxx, es_mulx, es_wra_wrap, es_wrax, es_wraa, es_rdaa;
-    wire [5:0] op_leido = ins_leida[53:48];
+    wire [5:0] op_leido = cabeza[53:48];
+    // Dependencias de la cabeza: lee el ACC o a24, o lee el banco de registros.
+    // MAXX y ABSA leen |ACC| en la primera etapa del retiro.
+    // Se calculan al cargar la cabeza y van registradas (cab_lee_*): decidir la
+    // decodificación desde el op de la cabeza fallaba en el silicio a 125 MHz.
+    function automatic lee_acc_f(input [5:0] o);
+        lee_acc_f = (o == WRA) || (o == WRAP) || (o == WRAX) || (o == RDFX) ||
+                    (o == MULX) || (o == SOF) || (o == CLIP) || (o == SKP) ||
+                    (o == WRAA) || (o == MAXX) || (o == 6'd15);   // ABSA
+    endfunction
+    function automatic lee_reg_f(input [5:0] o);
+        lee_reg_f = (o == RDAX) || (o == MAXX) || (o == RDFX) || (o == MULX) ||
+                    (o == 6'd13) ||   // LDAX
+                    (o == RDAA) || (o == WRAA) || (o == CHO);
+    endfunction
     wire               mabs_r = es_rdaa;
     wire               mabs_w = es_wraa | mabs_borrar;
     wire        [14:0] idx_abs = ad[14:0] + r_d[22:8];
@@ -203,10 +259,10 @@ module nucleo #(
     lfo_banco u_lfo (
         .clk(clk), .rst(rst), .tipos(cfg_lfo_tipos), .avanzar(lfo_avanzar),
         .rates({regs[LFO_BASE + 6], regs[LFO_BASE + 4], regs[LFO_BASE + 2], regs[LFO_BASE]}),
-        .listo(lfo_listo), .sel(ins_leida[43:42]), .media(ins_leida[37]),
+        .listo(lfo_listo), .sel(cabeza[43:42]), .media(cabeza[37]),
         .fase_sel(lfo_fase), .tri_sel(lfo_tri), .ven_sel(lfo_ven), .actual_sel(lfo_actual)
     );
-    wire [1:0]         sel_leida = ins_leida[43:42];
+    wire [1:0]         sel_leida = cabeza[43:42];
 
     // ── Tabla Hermite (1 ciclo) ───────────────────────────────────────────
     reg  [7:0]  frac;
@@ -225,13 +281,42 @@ module nucleo #(
     // Todas las entradas del multiplicador salen de registros: con aritmética
     // delante, el multiplexor de `ma` era el camino crítico (fails.md, F-11).
     always @(posedge clk) dif <= {a24[23], a24} - {r_d[23], r_d};
+    // ── Retiro (ADR 0014) ─────────────────────────────────────────────────
+    // La instrucción que presenta su último producto en t pone `empujar`; en
+    // t+1 la línea toma su código, el único operando que la ALU necesita (LR en
+    // WRAP, D en SOF, R en las demás) y el pc de la siguiente (para la traza). Ninguno cambia en t+1: la
+    // siguiente decodificación los cambia al final de ese ciclo. Llegan al final
+    // de la línea (LAT-1 etapas) en t+LAT, junto al producto: la ALU registra la
+    // primera etapa y en t+LAT+1 escribe el ACC.
+    // LDAX, CLR y ABSA también pasan por la línea, sin producto: el orden de
+    // las escrituras del ACC es siempre el del programa.
+    reg               empujar;
+    localparam integer ETAPAS = 32'(LAT) - 1;
+    reg  [ETAPAS-1:0] ret_v;
+    reg  [5:0]        ret_op   [0:ETAPAS-1];
+    reg  signed [23:0] ret_x   [0:ETAPAS-1];
+    reg  [11:0]       ret_pc   [0:ETAPAS-1];
+    wire signed [23:0] operando = (op == WRAP) ? lr : (op == SOF) ? {6'd0, ad} : r_d;
+    reg               ret2_v;
+    reg  [11:0]       ret2_pc, acc_pc;
+    reg  [2:0]        pendientes;   // empujadas y aún sin escribir en el ACC
+    integer j;
+    always @(posedge clk) begin
+        ret_v <= rst ? {ETAPAS{1'b0}} : {ret_v[ETAPAS-2:0], empujar};
+        ret_op[0] <= op; ret_x[0] <= operando; ret_pc[0] <= pc;
+        for (j = 1; j < ETAPAS; j = j + 1) begin
+            ret_op[j] <= ret_op[j-1]; ret_x[j] <= ret_x[j-1]; ret_pc[j] <= ret_pc[j-1];
+        end
+        ret2_v  <= ret_v[ETAPAS-1] & ~rst;
+        ret2_pc <= ret_pc[ETAPAS-1];
+    end
     wire signed [47:0] acc_alu;
-    // Salida de la ALU registrada: E_ESCR la escribe en el ACC un ciclo después
-    // (la ALU entera en el mismo ciclo que el ACC era camino crítico, F-11).
-    reg  signed [47:0] alu_r;
-    always @(posedge clk) alu_r <= acc_alu;
+    // Dos etapas: la primera elige los operandos (lee el ACC); la segunda suma y
+    // satura y su salida va directa al ACC. Entre dos empujes hay al menos 2
+    // ciclos, así que la etapa 1 de un retiro ve el ACC del anterior.
     alu #(.REGISTRADA(1)) u_alu (
-        .clk(clk), .op(op), .acc(acc), .p(p), .lr(lr), .r(r_d), .addr(ad), .acc_sig(acc_alu)
+        .clk(clk), .op(ret_op[ETAPAS-1]), .acc(acc), .p(p), .lr(ret_x[ETAPAS-1]),
+        .r(ret_x[ETAPAS-1]), .addr(ret_x[ETAPAS-1][17:0]), .acc_sig(acc_alu)
     );
     wire signed [23:0] curva;
     curva_fin u_curva (.tres_x(tres_x), .p(p), .y(curva));
@@ -275,9 +360,25 @@ module nucleo #(
     reg        [63:0] esc_mascara;
     reg signed [23:0] esc_dato;
 
+    // ── Decodificación ────────────────────────────────────────────────────
+    // La cabeza se decodifica si no espera a nada: con `lee_acc`, a que el
+    // retiro se vacíe (y a que no haya un empuje en este ciclo); con `lee_reg`,
+    // a candidatos al día. El programa acaba igual: retiro vacío y banco escrito.
+    reg  [1:0] reg_edad;   // ciclos desde la última escritura del banco por WRAX
+    wire       retiro_vacio = (pendientes == 3'd0) && !empujar;
+    // fin_prog va registrado: llega un ciclo tarde, pero E_LEER no lo mira hasta
+    // un ciclo después de cambiar pc (la ejecución dura al menos un ciclo).
+    reg        fin_prog;
+    always @(posedge clk) fin_prog <= (pc == cfg_instrucciones);
+    wire       sin_dep  = (!cab_lee_acc || retiro_vacio) &&
+                          (!cab_lee_reg || (cab_vieja && reg_edad == 2'd2));
+    assign tomar = (estado == E_LEER) && !vaciar && !fin_prog && cab_v && sin_dep;
+
     integer i;
     always @(posedge clk) begin
         fin         <= 1'b0;
+        empujar     <= 1'b0;
+        vaciar      <= 1'b0;
         mwe         <= 1'b0;
         mavanzar    <= 1'b0;
         lfo_avanzar <= 1'b0;
@@ -287,7 +388,7 @@ module nucleo #(
             estado <= E_BORRAR; borrar <= 16'd0; borrar_abs <= 1'b0;
             clase <= C_OTRA; es_rdfx <= 1'b0; es_rdax_maxx <= 1'b0; es_mulx <= 1'b0;
             es_wra_wrap <= 1'b0; es_wrax <= 1'b0; es_wraa <= 1'b0; es_rdaa <= 1'b0;
-            escr <= 1'b0; pc_mc <= 12'd0; edad <= 3'd0;
+            pendientes <= 3'd0; reg_edad <= 2'd2; acc_pc <= 12'd0; destino <= 12'd0;
             pc <= 12'd0; paso <= 5'd0; espera <= 4'd0;
             primera <= 1'b1; acc <= 48'sd0; lr <= 24'sd0; ins <= 54'd0;
             dac_l <= 24'sd0; dac_r <= 24'sd0; ciclos <= 16'd0; cuenta <= 16'd0;
@@ -295,8 +396,9 @@ module nucleo #(
         end else begin
             for (i = 0; i < 64; i = i + 1) if (esc_mascara[i]) regs[i] <= esc_dato;
             if (estado != E_PARADO && estado != E_BORRAR) cuenta <= cuenta + 1'b1;
-            // edad vuelve a 0 en el mismo flanco en que cambia pc_mc (más abajo).
-            if (edad != 3'd4) edad <= edad + 1'b1;
+            pendientes <= pendientes + {2'd0, empujar} - {2'd0, ret2_v};
+            if (ret2_v) begin acc <= acc_alu; acc_pc <= ret2_pc; end
+            if (reg_edad != 2'd2) reg_edad <= reg_edad + 1'b1;
             case (estado)
             E_BORRAR: begin   // primero la memoria circular; después, la región absoluta
                 mwe <= 1'b1; mdir_w <= {1'b0, borrar}; mdato_w <= 24'sd0; mabs_borrar <= borrar_abs;
@@ -313,17 +415,15 @@ module nucleo #(
                 for (i = 0; i < 6; i = i + 1) regs[POT_BASE + i] <= pots_t[24*i +: 24];
                 regs[SW] <= sw_t;
                 lfo_avanzar <= 1'b1;
-                acc <= 48'sd0; lr <= 24'sd0; pc <= 12'd0; cuenta <= 16'd1;
+                acc <= 48'sd0; acc_pc <= 12'd0; lr <= 24'sd0; pc <= 12'd0; cuenta <= 16'd1;
+                vaciar <= 1'b1; destino <= 12'd0;   // la cola se llena durante E_LFO
                 estado <= E_LFO;
             end
             E_LFO: if (lfo_listo) estado <= E_LEER;
-            E_LEER: begin
-                if (pc == cfg_instrucciones) estado <= E_FIN;
-                else if (pc_mc != pc) begin pc_mc <= pc; edad <= 3'd0; end   // salto
-                else if (edad == 3'd4) estado <= E_DECO;     // ins_leida ya es la de pc
-            end
-            E_DECO: begin
-                ins <= ins_leida;
+            E_LEER: if (fin_prog) begin
+                if (retiro_vacio && reg_edad == 2'd2) estado <= E_FIN;
+            end else if (tomar) begin
+                ins <= cabeza;
                 case (op_leido)
                     RDAX, MAXX, WRA, WRAX, WRAP, RDFX, MULX, SOF, WRAA: clase <= C_SIMPLE;
                     RDA:     clase <= C_RDA;
@@ -340,8 +440,8 @@ module nucleo #(
                 es_wrax      <= (op_leido == WRAX);
                 es_wraa      <= (op_leido == WRAA);
                 es_rdaa      <= (op_leido == RDAA);
-                pc_mc <= pc + 1'b1; edad <= 3'd0;            // adelantar la siguiente
-                r_d      <= candidato[ins_leida[47:45]];
+                pc <= pc + 1'b1;   // pc: la siguiente a decodificar
+                r_d      <= candidato[cabeza[47:45]];
                 dep_d    <= regs[6'd43 + {3'd0, sel_leida, 1'b0}];   // lfoN_depth = 42 + 2N + 1
                 fase_d   <= lfo_fase;
                 tri_d    <= lfo_tri;
@@ -371,10 +471,10 @@ module nucleo #(
                         if (es_wraa) begin
                             mwe <= 1'b1; mdir_w <= {2'b00, idx_abs}; mdato_w <= a24;
                         end
-                        if (es_wrax) begin esc_mascara <= 64'd1 << rg; esc_dato <= a24; end
-                        paso <= 5'd1; espera <= LAT - 1'b1;
-                    end else begin
-                        estado <= E_ESCR;
+                        if (es_wrax) begin
+                            esc_mascara <= 64'd1 << rg; esc_dato <= a24; reg_edad <= 2'd0;
+                        end
+                        empujar <= 1'b1; estado <= E_LEER;
                     end
                 C_RDA:
                     case (paso)
@@ -382,9 +482,9 @@ module nucleo #(
                     5'd1: begin
                         lr <= mdato_r;
                         ma <= a27({mdato_r[23], mdato_r}); mb <= b36({{7{cf[17]}}, cf});
-                        paso <= 5'd2; espera <= LAT - 1'b1;
+                        empujar <= 1'b1; estado <= E_LEER;
                     end
-                    default: begin estado <= E_ESCR; end
+                    default: estado <= E_LEER;
                     endcase
                 C_CLIP:
                     case (paso)
@@ -400,8 +500,8 @@ module nucleo #(
                     end
                     5'd2: begin y_clip <= curva; paso <= 5'd3; end
                     default: begin   // ACC = curva_suave(a24) << 16
-                        acc <= {{8{y_clip[23]}}, y_clip, 16'd0};
-                        pc <= pc + 1'b1; estado <= E_LEER;
+                        acc <= {{8{y_clip[23]}}, y_clip, 16'd0}; acc_pc <= pc;
+                        estado <= E_LEER;
                     end
                     endcase
                 C_CHO:
@@ -475,15 +575,15 @@ module nucleo #(
                         end else begin
                             lr <= v_r;
                             ma <= a27({v_r[23], v_r}); mb <= b36({{7{cf[17]}}, cf});
-                            paso <= 5'd19; espera <= LAT - 1'b1;
+                            empujar <= 1'b1; estado <= E_LEER;
                         end
                     end
                     5'd18: begin   // v = (v · ventana) >> 23
                         lr <= p50[46:23];
                         ma <= a27(p_23); mb <= b36({{7{cf[17]}}, cf});
-                        paso <= 5'd19; espera <= LAT - 1'b1;
+                        empujar <= 1'b1; estado <= E_LEER;
                     end
-                    default: begin estado <= E_ESCR; end
+                    default: estado <= E_LEER;
                     endcase
                 C_RDAA:
                     case (paso)
@@ -502,27 +602,22 @@ module nucleo #(
                     5'd31: begin   // LR = v; ACC += v·C
                         lr <= v_abs;
                         ma <= a27({v_abs[23], v_abs}); mb <= b36({{7{cf[17]}}, cf});
-                        paso <= 5'd19; espera <= LAT - 1'b1;
+                        empujar <= 1'b1; estado <= E_LEER;
                     end
-                    default: estado <= E_ESCR;
+                    default: estado <= E_LEER;
                     endcase
-                C_SKP: begin
-                    pc <= pc + 12'd1 + (saltar ? ad[11:0] : 12'd0);
+                C_SKP: begin   // pc ya apunta a la siguiente
+                    if (saltar) begin
+                        pc <= pc + ad[11:0];
+                        vaciar <= 1'b1; destino <= pc + ad[11:0];
+                    end
                     estado <= E_LEER;
                 end
-                default: begin   // NOP, LDAX, CLR, ABSA
-                    estado <= E_ESCR;
+                default: begin   // NOP, LDAX, CLR, ABSA: sin producto
+                    empujar <= (op != 6'd0);
+                    estado <= E_LEER;
                 end
                 endcase
-            end
-            E_ESCR: begin   // la ALU tiene dos etapas y alu_r una más: 2 ciclos
-                if (escr) begin
-                    escr <= 1'b0;
-                    acc <= alu_r;
-                    pc <= pc + 1'b1; estado <= E_LEER;
-                end else begin
-                    escr <= 1'b1;
-                end
             end
             E_FIN: begin
                 mavanzar <= 1'b1;

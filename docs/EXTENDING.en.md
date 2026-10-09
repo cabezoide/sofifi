@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/EXTENDING.md sha=3b5545c20179 estado=al_dia -->
+<!-- i18n: fuente=docs/EXTENDING.md sha=ae7161e5953f estado=al_dia -->
 # How to extend
 
 This guide gives the steps for each type of part. Sometimes an addition makes
@@ -48,7 +48,7 @@ Thus the change must have its own ADR or an update of ADR 0009 (Spanish).
 2. Write the handler in `model/sofifi/domain/nucleo.py`. Register it in `MANEJADORES`.
 3. Add the mnemonic and its operands in `model/sofifi/domain/ensamblador.py`.
 4. The contracts in `model/tests/nucleo_test.py` and `model/tests/ensamblador_test.py` fail if one of the three steps is missing.
-5. Add its cost in RTL cycles in `CICLOS_RTL` (`model/sofifi/domain/coste.py`). Add one line in `MUESTRA_COSTE` (`sim/nucleo/nucleo_test.py`). The simulation measures the cost and compares it with the table.
+5. Add its execution cycles in `DURACION` (`model/sofifi/domain/coste.py`). If it reads the ACC or the bank, also add it to `LEE_ACC` or `LEE_REGISTRO`. Add one line in `MUESTRA_COSTE` (`sim/nucleo/nucleo_test.py`). The simulation requires the same cycles as the timing model, alone and next to each instruction (ADR 0014, Spanish).
 
 ## An RTL module
 

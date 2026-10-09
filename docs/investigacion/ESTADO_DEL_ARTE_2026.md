@@ -81,6 +81,7 @@ En número, SOFIFI ya supera a los pedales de reverb dedicados y queda por debaj
 
 - El hall usa 1 585 de 2 048 ciclos y el granular, 1 896. Dos efectos así no caben en un núcleo.
 - Un segundo núcleo ocuparía casi otra mitad del chip: hoy `nucleo_placa` usa 11 097 de 23 040 LUT4 (`docs/ratchets.yaml`, RAT-11). Antes hay que reducir la espera de unos 14 ciclos por instrucción (`docs/arquitectura_fpga.md`, «Próximo cambio previsto»).
+  - Actualización 2026-10-08: no cabe (ADR 0013) y la persona propietaria decidió seguir sin él. El núcleo segmentado (ADR 0014) gasta 1,6 veces menos ciclos; ahora limita más la memoria.
 - La calidad no se demuestra con una huella. Hace falta una prueba de escucha con personas y un criterio de aceptación escrito antes de escuchar.
 
 **Actualización 2026-10-08: dos efectos a la vez.** Se midió el coste de más núcleos [V] (ADR 0013). Con 2 núcleos, yosys da 13 112 LUT4 antes de colocar y nextpnr no encuentra una colocación legal; con 3, 19 046 LUT4. Dos efectos a la vez se hacen con cadenas: el compositor une dos programas en uno. Hoy hay 24 cadenas en `presets/cadenas.toml`: 18 caben y 6 esperan la SDRAM, porque solo les falta memoria.

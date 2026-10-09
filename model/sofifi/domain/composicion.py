@@ -37,7 +37,7 @@ from dataclasses import dataclass
 from fractions import Fraction
 
 from sofifi.domain.cadena import Cadena, Eslabon, Modo, PotFisico, Recursos
-from sofifi.domain.coste import CICLOS_FIJOS_RTL, ciclos_instruccion_rtl
+from sofifi.domain.coste import ciclos_secuencia
 from sofifi.domain.ensamblador import ErrorEnsamblado, Incluir, ensamblar, expandir, piezas
 from sofifi.domain.isa import NOMBRES_REGISTRO, NUM_REGS_GENERALES, Instruccion, Op, Programa
 from sofifi.domain.lfo import NUM_LFOS
@@ -224,7 +224,7 @@ def recursos(cadena: Cadena, textos: Mapping[str, str], incluir: Incluir | None 
     """Lo que gasta la cadena, aunque no quepa en el núcleo."""
     plan = _plan(cadena, textos, incluir, contar=True)
     p = piezas(plan.texto)
-    ciclos = CICLOS_FIJOS_RTL + sum(ciclos_instruccion_rtl(i) for i in p.instrucciones)
+    ciclos = ciclos_secuencia(p.instrucciones, p.lfos)
     return Recursos(
         len(p.instrucciones),
         ciclos,

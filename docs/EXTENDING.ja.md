@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/EXTENDING.md sha=3b5545c20179 estado=al_dia -->
+<!-- i18n: fuente=docs/EXTENDING.md sha=ae7161e5953f estado=al_dia -->
 # 拡張の方法
 
 部品の種類ごとの手順です。何かを追加するときにこのリストにない箇所を変更する必要があれば、リストが不完全です。同じ PR で修正してください。
@@ -35,7 +35,7 @@
 2. `model/sofifi/domain/nucleo.py` にハンドラーを書き、`MANEJADORES` に登録してください。
 3. `model/sofifi/domain/ensamblador.py` にニーモニックとオペランドを追加してください。
 4. 3 つの手順のどれかが欠けていれば、`model/tests/nucleo_test.py` と `model/tests/ensamblador_test.py` の契約テストが失敗します。
-5. RTL のサイクルコストを `CICLOS_RTL`（`model/sofifi/domain/coste.py`）に追加し、`MUESTRA_COSTE`（`sim/nucleo/nucleo_test.py`）に 1 行追加してください。シミュレーションがコストを測定し、表と比較します。
+5. 実行サイクルを `DURACION`（`model/sofifi/domain/coste.py`）に追加してください。ACC かバンクを読む場合は、`LEE_ACC` か `LEE_REGISTRO` にも追加してください。`MUESTRA_COSTE`（`sim/nucleo/nucleo_test.py`）に 1 行追加してください。シミュレーションは、単独でも各命令の隣でも、タイミングモデルと同じサイクル数を求めます（ADR 0014、スペイン語）。
 
 ## RTL モジュール
 

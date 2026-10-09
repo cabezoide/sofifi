@@ -29,6 +29,7 @@ Se añade una entrada nueva cuando un fallo está diagnosticado y resuelto. Las 
 | F-21 | 07 | En marea, el LFO de software se quedaba pegado en +1 | resuelto antes de publicar |
 | F-22 | 07 | El shoegaze sonaba cinco veces más fuerte que el plate | resuelto antes de publicar |
 | F-23 | 07 | Una cadena con saturación sonaba seis veces más fuerte que el plate | resuelto antes de publicar |
+| F-24 | 07 | La cola del microcódigo se llevó la última BSRAM | resuelto |
 
 ---
 
@@ -259,3 +260,11 @@ Se añade una entrada nueva cuando un fallo está diagnosticado y resuelto. Las 
 - **Causa raíz:** la lección de F-22 se aplicó al programa `shoegaze`, pero no había ninguna prueba de nivel para las cadenas. Un programa que va bien solo puede ir mal en una cadena.
 - **Resolución:** «nivel» a 0,1 en esa cadena y ganancia 0,2 en «Sustain en la placa». Nueva prueba `ninguna_cadena_salta_de_volumen`: con una nota suave y una fuerte, ninguna cadena suena más del doble que el plate.
 - **Lección:** una regla que sale de un fallo se convierte en prueba. Si se queda en una nota, el mismo fallo vuelve por otro camino.
+
+## F-24 · La cola del microcódigo se llevó la última BSRAM
+
+- **Síntoma:** con el núcleo segmentado (ADR 0014), nextpnr paraba: «no BELs remaining to implement cell type 'DP'». La simulación pasaba.
+- **Diagnóstico:** el informe de recursos daba 56 BSRAM de 56. Una de más salía de la cola de búsqueda del microcódigo (8 × 54 bit).
+- **Causa raíz:** Yosys convierte en BSRAM cualquier array con lectura por índice, aunque sea pequeño. En `hil_nucleo` la captura ya usa todas las BSRAM libres.
+- **Resolución:** `(* ram_style = "logic" *)` en la cola. Después, la segunda vuelta la bajó a 4 palabras.
+- **Lección:** un array nuevo en el RTL lleva su `ram_style` desde el principio. En este chip, cada BSRAM es memoria de retardo.

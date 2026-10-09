@@ -124,16 +124,16 @@ mediciones:
     no_dice: "La primera síntesis daba 70 MHz y 104 violaciones de hold. Se llegó aquí registrando operandos, partiendo CLIP y sacando las ROM de la BSRAM. La cifra de nextpnr no sirve para comparar dos rutados: en la Fase 07, hil_nucleo bajó de 157 a 144 MHz y la placa mejoró (F-19)."
   - id: MED-11
     caracteristica: M-08
-    nombre: Ciclos por muestra del núcleo RTL con el programa más largo (hall)
-    valor: 1578
-    unidad: ciclos de 2 048 (reverse 431, lofi 620, cinta 658, plate 1 195, freeze 1 313, cloud 1 356, swell 1 467, shimmer 1 514)
+    nombre: Ciclos por muestra del núcleo RTL con el programa más largo (chorale)
+    valor: 1185
+    unidad: ciclos de 2 048 (plate 783, hall 856, cloud 900, shimmer 1 030, sostenido 1 156; la cadena más cara, 1 270)
     umbral: 2048
     direccion: menor_mejor
-    fecha: 2026-10-07
+    fecha: 2026-10-08
     caduca_en_dias: 180
-    como: "sim/nucleo/nucleo_test.py (registra el máximo de la salida `ciclos`)"
-    entorno: "núcleo multiciclo con lectura adelantada y memoria segmentada (F-15): unos 14 ciclos por instrucción"
-    no_dice: "Fase 05: 1 601 (unos 13 ciclos por instrucción); Fase 04: 840. El ADR 0009 cuenta 1 ciclo por instrucción; el coste real de cada instrucción está en model/sofifi/domain/coste.py (RDAX 10, RDA 19, CHO 52), y la simulación lo comprueba. La espera al resultado de cada instrucción es lo que más cuesta."
+    como: "sim/nucleo/nucleo_test.py (registra el máximo de la salida `ciclos` y exige que sea igual a model/sofifi/domain/coste.py en los programas sin SKP)"
+    entorno: "núcleo segmentado en orden (ADR 0014): solo espera por dependencias"
+    no_dice: "Fase 07 (multiciclo, unos 14 ciclos por instrucción): hall 1 578, chorale 1 942. Fase 05: 1 601 para el shimmer; Fase 04: 840. El ADR 0009 cuenta 1 ciclo por instrucción; el coste real depende de las dependencias entre instrucciones."
   - id: MED-12
     caracteristica: M-06
     nombre: Muestras por segundo medidas en la placa
@@ -162,26 +162,26 @@ mediciones:
     caracteristica: M-08
     nombre: Frecuencia máxima real del núcleo en la placa, con el mismo rutado
     valor: 125
-    unidad: MHz con todas las capturas correctas (3 de 3); a 133,3 MHz, 1 de 1; a 120 MHz, 3 de 3
+    unidad: MHz con todas las capturas correctas (3 de 3); a 133,3 MHz, 2 de 2; a 120 MHz, 3 de 3
     umbral: 120
     direccion: mayor_mejor
     fecha: 2026-10-08
     caduca_en_dias: 90
-    como: ".venv/bin/python scripts/margen_reloj.py --mdiv 24 --divisores 12 10 --repeticiones 4 (y --mdiv 20 --divisores 8 para 125 MHz)"
-    entorno: "mismo JSON rutado que da 144 MHz en nextpnr; Fase 07 con RDAA y WRAA, escritura del banco en dos etapas (F-19); temperatura ambiente sin medir"
-    no_dice: "Solo el plate (el looper, en MED-15). 133,3 MHz con una sola captura no es margen. No se midió con la placa caliente. Fase 06: 120 MHz (125 MHz, 3 de 4); Fase 05: 106,25 MHz."
+    como: ".venv/bin/python scripts/margen_reloj.py --divisores 8 7 6 (y --mdiv 24 --divisores 10, --mdiv 20 --divisores 8)"
+    entorno: "núcleo segmentado (ADR 0014), mismo JSON rutado que da 110 MHz en nextpnr; plate; temperatura ambiente sin medir"
+    no_dice: "Solo el plate (el looper, en MED-15). No se midió con la placa caliente. La primera versión del núcleo segmentado fallaba a 125 MHz (reenvío del ACC y saturación con comparaciones). Fase 07 multiciclo: 125 MHz y 133,3 MHz 1 de 1; Fase 06: 120 MHz; Fase 05: 106,25 MHz."
   - id: MED-15
     caracteristica: M-08
     nombre: Capturas del looper en la placa idénticas al modelo (RDAA y WRAA en el silicio)
     valor: 125
-    unidad: MHz con todas las capturas correctas (2 de 2); a 100 y 114,3 MHz, 2 de 2; a 120 MHz, 3 de 3
+    unidad: MHz con todas las capturas correctas (2 de 2); a 100 MHz, 2 de 2; a 120 MHz, 3 de 3
     umbral: 100
     direccion: mayor_mejor
     fecha: 2026-10-08
     caduca_en_dias: 90
-    como: "make synth TOP=hil_looper && .venv/bin/python scripts/margen_reloj.py --base hil_looper --programa looper (y --mdiv 24 --divisores 10, --mdiv 20 --divisores 8)"
-    entorno: "Tang Primer 25K; hil_nucleo con la ROM del looper (120 MHz según nextpnr); el estímulo graba de 1 024 a 2 047 y hace overdub de 3 072 a 3 327; pots a 0,5: 1× y al revés"
-    no_dice: "Una sola combinación de mandos (1×, al revés, realimentación 0,5); ½× y 2× solo en simulación. No se midió con la placa caliente."
+    como: ".venv/bin/python scripts/margen_reloj.py --base hil_looper --programa looper (y --mdiv 24 --divisores 10, --mdiv 20 --divisores 8)"
+    entorno: "núcleo segmentado (ADR 0014); hil_nucleo con la ROM del looper (112 MHz según nextpnr); el estímulo graba de 1 024 a 2 047 y hace overdub de 3 072 a 3 327; pots a 0,5: 1× y al revés"
+    no_dice: "Una sola combinación de mandos (1×, al revés, realimentación 0,5); ½× y 2× solo en simulación. No se midió con la placa caliente. Fase 07 multiciclo: 125 MHz, 2 de 2."
   - id: MED-16
     caracteristica: M-08
     nombre: Programas y cadenas en la placa idénticos al modelo
