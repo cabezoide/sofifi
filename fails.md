@@ -440,3 +440,19 @@ Las pruebas acústicas de los programas nuevos encontraron cuatro fallos antes d
 - **Resolución:** si nextpnr solo falla el reloj, `scripts/fpga.sh` prueba las semillas 2, 3 y 4 (`SEMILLAS_PNR`). El primer intento no cambia, y el script dice qué semilla cierra.
 - **Los recursos no son ruido:** `nucleo_placa` sube de 11 709 a 11 982 LUT4 y de 1 208 a 1 242 ALU. Yosys poda en ese top los bits que la ROM nunca usa. La constante nueva usa el bit 15 del campo D (RAT-11 y RAT-12).
 - **Lección:** un fallo de reloj tras un cambio que no toca la lógica es ruido de colocación. El margen real se mide en la placa (ADR 0011).
+
+## F-34 · Scripts que hacían algo distinto de lo que se pedía
+
+Al documentar los scripts (PR #58) aparecieron seis comportamientos inesperados. Ninguno cambiaba un resultado publicado.
+
+| Script | Síntoma | Resolución |
+|---|---|---|
+| `check_*` | ignoraban sus argumentos: `check_optimizacion.py --help` sintetizaba todos los tops | `scripts/sin_opciones.py`: `--help` imprime la ayuda; otro argumento da el código 2 |
+| `capturar_infografia.py` | sin chrome-headless-shell, solo imprimía la ayuda | dice qué falta y cómo instalarlo |
+| `margen_reloj.py` | si faltaba `prueba_pll.fs`, la excepción del `finally` tapaba el resultado | lo comprueba antes de tocar la placa; la recarga final solo avisa |
+| `hil_lote.py` | un nombre que se colgaba paraba todo el lote | grupo de procesos propio; a los 20 min lo mata entero y anota «TIEMPO AGOTADO» |
+| `rtl-lint` | no revisaba `rtl/sd/` módulo a módulo | entra en la lista de módulos sueltos |
+| CLI `sofifi` | solo funcionaba desde la raíz del repositorio | busca la raíz hacia arriba desde el directorio actual |
+
+- **Causa:** cada script se escribió para el caso normal. Nadie probaba sus entradas incorrectas.
+- **Lección:** al documentar un script, ejecuta también su `--help` y un argumento incorrecto. Un `finally` que puede fallar tapa lo que había antes.

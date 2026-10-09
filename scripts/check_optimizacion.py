@@ -35,6 +35,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from sin_opciones import exigir_sin_opciones
+
 ROOT = Path(__file__).resolve().parent.parent
 TOPS = ROOT / "rtl" / "top" / "tops.txt"
 
@@ -119,4 +121,5 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    exigir_sin_opciones(__doc__)
     sys.exit(main())

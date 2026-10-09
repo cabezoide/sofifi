@@ -27,7 +27,9 @@ se reprograma con la FPGA enviando a caudal alto (F-02).
 
 Necesita la placa, la UART en ``/dev/ttyUSB1``, ``build/<base>.pnr.json`` y
 ``build/prueba_pll.fs``. Escribe los bitstreams en ``build/exp/``.
-Salida: 0 si todas las capturas a 100 MHz coinciden con el modelo; 1 si no.
+Salida: 0 si todas las capturas a 100 MHz coinciden con el modelo; 1 si no;
+2 si falta ``build/prueba_pll.fs`` (no toca la placa). Si al final no puede
+cargar prueba_pll, solo avisa: la medida ya está impresa.
 """
 
 from __future__ import annotations
@@ -102,6 +104,11 @@ def main(argv: list[str] | None = None) -> int:
         "--traza", action="store_true", help="si falla, localiza la primera instrucción mal"
     )
     args = ap.parse_args(argv)
+    # Se comprueba antes de tocar la placa: el finally la necesita (F-02).
+    reposo = RAIZ / "build" / "prueba_pll.fs"
+    if not reposo.exists():
+        print(f"falta build/{reposo.name}: antes, make synth TOP=prueba_pll", file=sys.stderr)
+        return 2
     todo_bien_a_100 = True
     try:
         for divisor in args.divisores:
@@ -124,7 +131,11 @@ def main(argv: list[str] | None = None) -> int:
             if mhz == 100 and correctas != args.repeticiones:
                 todo_bien_a_100 = False
     finally:
-        cargar(RAIZ / "build" / "prueba_pll.fs")
+        # Un fallo aquí no debe tapar la medida ni la excepción que llegue.
+        try:
+            cargar(reposo)
+        except (OSError, subprocess.CalledProcessError) as exc:
+            print(f"aviso: no se pudo cargar {reposo.name}: {exc}", file=sys.stderr)
     return 0 if todo_bien_a_100 else 1
 
 

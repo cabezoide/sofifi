@@ -6,7 +6,7 @@ La cabecera o el docstring de cada script tiene el detalle completo. Los scripts
 
 ## Antes de empezar
 
-- Ejecuta todo desde la raíz del repositorio. La CLI `sofifi` busca `programas/` y `presets/` en el directorio actual.
+- Ejecuta los scripts desde la raíz del repositorio. La CLI `sofifi` funciona desde cualquier carpeta: busca hacia arriba la primera con `programas/` y `presets/banco.toml`.
 - Crea el entorno una vez con `make install`. El entorno instala el modelo, las herramientas de la compuerta y la cadena EDA en `.venv`.
 - Instala el hook una vez con `make hooks`.
 - Para trabajar con la placa, instala la regla udev de `scripts/udev/99-tang-primer-25k.rules`. Su cabecera da los comandos.
@@ -37,7 +37,7 @@ La tabla sigue el orden de ejecución de la lista `JOBS` de `scripts/ci_local.sh
 | `i18n` | dura | Cada traducción existe y su sello es honesto (ADR 0007). | `scripts/check_i18n.py` |
 | `cierre` | dura | README e infografías declaran la versión, y las capturas están al día. | `scripts/check_cierre.py` |
 | `model` | dura | Estilo, formato, tipos y pruebas del modelo. | `ruff check`, `ruff format --check`, `mypy` y `pytest -n auto` |
-| `rtl-lint` | dura | Lint de cada top de `rtl/top/tops.txt` y de cada módulo de `rtl/comun/`, `rtl/primitivas/` y `rtl/nucleo/`. | `verilator --lint-only -Wall -DSIMULACION` |
+| `rtl-lint` | dura | Lint de cada top de `rtl/top/tops.txt` y de cada módulo de `rtl/comun/`, `rtl/primitivas/`, `rtl/nucleo/` y `rtl/sd/`. | `verilator --lint-only -Wall -DSIMULACION` |
 | `sim` | dura | Los testbenches cocotb dan los mismos bits que el modelo (ADR 0003). | `pytest sim -n 4` |
 | `ratchets` | dura | Ninguna medida de `docs/ratchets.yaml` empeora su listón. | `scripts/check_ratchets.py` |
 | `shell-lint` | blanda | shellcheck sobre `scripts/*.sh` y `scripts/hooks/*`. | `shellcheck` |
@@ -126,7 +126,7 @@ El modelo bit-exact tiene la razón (ADR 0003). El timing se mide en la placa (A
 |---|---|---|---|
 | `make hil` | Escribe la ROM de un programa o una cadena, sintetiza `hil_programa`, lo carga y ejecuta `scripts/hil_nucleo.py`. | `make hil HIL=marea` | 0 si las 4 096 muestras coinciden |
 | `scripts/hil_nucleo.py` | Compara 4 096 muestras y el CRC-32 de la placa con el modelo. Con `--traza K0`, busca la primera instrucción distinta. | `.venv/bin/python scripts/hil_nucleo.py --programa plate` | 0 si todo coincide |
-| `scripts/hil_lote.py` | Ejecuta `make hil` para varios nombres y escribe build/hil_lote.csv. Tarda unos 4 minutos por nombre. | `.venv/bin/python scripts/hil_lote.py --todos` | 0 si todos coinciden |
+| `scripts/hil_lote.py` | Ejecuta `make hil` para varios nombres y escribe build/hil_lote.csv. Tarda unos 4 minutos por nombre. Un nombre que pasa de 20 minutos se anota como «TIEMPO AGOTADO». | `.venv/bin/python scripts/hil_lote.py --todos` | 0 si todos coinciden |
 | `scripts/margen_reloj.py` | Cambia solo el divisor del PLL del diseño ya rutado y repite la captura a cada frecuencia. | `.venv/bin/python scripts/margen_reloj.py --divisores 8 7 6` | 0 si 100 MHz pasa siempre |
 | `scripts/verificar_primitivas.py` | Comprueba los tops de prueba de las primitivas: `dsp`, `bsram`, `pll` y `fs`. | `.venv/bin/python scripts/verificar_primitivas.py dsp` | 0 si todas las líneas son correctas |
 
@@ -147,7 +147,7 @@ Qué top carga cada prueba:
 Notas:
 
 - `make hil` acepta un programa o una cadena que cabe en la memoria de `hil_nucleo`: 38 912 palabras. `sofifi rom` rechaza los demás.
-- `scripts/margen_reloj.py` necesita `build/<base>.pnr.json` y build/prueba_pll.fs. Al terminar carga `prueba_pll`, que envía poco por la UART.
+- `scripts/margen_reloj.py` necesita `build/<base>.pnr.json` y build/prueba_pll.fs. Sin build/prueba_pll.fs no toca la placa y da el código 2. Al terminar carga `prueba_pll`, que envía poco por la UART.
 - Todas estas herramientas leen `/dev/ttyUSB1` por defecto. Cambia el puerto con `--puerto`.
 
 ## 4. MicroSD
@@ -219,7 +219,7 @@ SOFIFI_MUESTRAS=4883 .venv/bin/python -m pytest sim/nucleo/nucleo_test.py
 ## Comportamientos que conviene conocer
 
 - `scripts/generar_demos.py` acepta `--readme`, `--help` o nada. Otro argumento da el código 2 y no regenera nada.
-- Los scripts `check_*` no leen argumentos. `scripts/check_optimizacion.py --help` sintetiza todos los tops.
+- Los scripts `check_*` no tienen opciones. Con `--help` imprimen su ayuda; con otro argumento dan el código 2 sin ejecutarse.
 - `scripts/informe_recursos.py` necesita la ruta del informe de nextpnr. Sin ella, muestra el uso y da el código 2.
-- `scripts/capturar_infografia.py` imprime su ayuda y sale con 1 si los argumentos no son correctos o si falta chrome-headless-shell.
+- `scripts/capturar_infografia.py` da el código 2 si los argumentos no son correctos. Si falta chrome-headless-shell, dice cómo instalarlo y da el código 1.
 - `scripts/ci_local.sh --help` y `scripts/fpga.sh` sin orden imprimen su cabecera.

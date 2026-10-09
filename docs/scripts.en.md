@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/scripts.md sha=35d6b1ed2f0c estado=al_dia -->
+<!-- i18n: fuente=docs/scripts.md sha=d373cf34432c estado=al_dia -->
 # Scripts and the `sofifi` CLI
 
 This guide describes each script in `scripts/` and each command of the `sofifi` CLI. It is organized by task. For each tool, it tells what the tool does, the typical command, what the tool needs, and which gate or phase uses it.
@@ -7,7 +7,7 @@ The header or the docstring of each script gives all the details. The Python scr
 
 ## Before you start
 
-- Run all commands from the root of the repository. The `sofifi` CLI looks for `programas/` and `presets/` in the current directory.
+- Run the scripts from the root of the repository. The `sofifi` CLI works from any folder: it looks up for the first folder with `programas/` and `presets/banco.toml`.
 - Make the environment one time with `make install`. It installs the model, the gate tools and the EDA tool chain in `.venv`.
 - Install the hook one time with `make hooks`.
 - To work with the board, install the udev rule `scripts/udev/99-tang-primer-25k.rules`. Its header gives the commands.
@@ -38,7 +38,7 @@ The table uses the run order of the `JOBS` list in `scripts/ci_local.sh`. The cl
 | `i18n` | hard | Each translation exists and its stamp is honest (ADR 0007). | `scripts/check_i18n.py` |
 | `cierre` | hard | The READMEs and the infographics show the version, and the screenshots are current. | `scripts/check_cierre.py` |
 | `model` | hard | Style, format, types and tests of the model. | `ruff check`, `ruff format --check`, `mypy` and `pytest -n auto` |
-| `rtl-lint` | hard | Lint of each top in `rtl/top/tops.txt` and of each module in `rtl/comun/`, `rtl/primitivas/` and `rtl/nucleo/`. | `verilator --lint-only -Wall -DSIMULACION` |
+| `rtl-lint` | hard | Lint of each top in `rtl/top/tops.txt` and of each module in `rtl/comun/`, `rtl/primitivas/`, `rtl/nucleo/` and `rtl/sd/`. | `verilator --lint-only -Wall -DSIMULACION` |
 | `sim` | hard | The cocotb testbenches give the same bits as the model (ADR 0003). | `pytest sim -n 4` |
 | `ratchets` | hard | No measurement in `docs/ratchets.yaml` becomes worse than its limit. | `scripts/check_ratchets.py` |
 | `shell-lint` | soft | shellcheck on `scripts/*.sh` and `scripts/hooks/*`. | `shellcheck` |
@@ -127,7 +127,7 @@ The bit-exact model is the reference (ADR 0003). Timing is measured on the board
 |---|---|---|---|
 | `make hil` | Writes the ROM of a program or a chain, synthesizes `hil_programa`, loads it and runs `scripts/hil_nucleo.py`. | `make hil HIL=marea` | 0 if the 4 096 samples agree |
 | `scripts/hil_nucleo.py` | Compares 4 096 samples and the CRC-32 from the board with the model. With `--traza K0`, it finds the first instruction that is different. | `.venv/bin/python scripts/hil_nucleo.py --programa plate` | 0 if all agree |
-| `scripts/hil_lote.py` | Runs `make hil` for many names and writes build/hil_lote.csv. Each name takes approximately 4 minutes. | `.venv/bin/python scripts/hil_lote.py --todos` | 0 if all agree |
+| `scripts/hil_lote.py` | Runs `make hil` for many names and writes build/hil_lote.csv. Each name takes approximately 4 minutes. A name that takes more than 20 minutes is recorded as «TIEMPO AGOTADO» (time-out). | `.venv/bin/python scripts/hil_lote.py --todos` | 0 if all agree |
 | `scripts/margen_reloj.py` | Changes only the PLL divider of the routed design and repeats the capture at each frequency. | `.venv/bin/python scripts/margen_reloj.py --divisores 8 7 6` | 0 if 100 MHz always passes |
 | `scripts/verificar_primitivas.py` | Checks the test tops of the primitives: `dsp`, `bsram`, `pll` and `fs`. | `.venv/bin/python scripts/verificar_primitivas.py dsp` | 0 if all lines are correct |
 
@@ -148,7 +148,7 @@ Which top each test loads:
 Notes:
 
 - `make hil` accepts a program or a chain that fits in the memory of `hil_nucleo`: 38 912 words. `sofifi rom` refuses the others.
-- `scripts/margen_reloj.py` needs `build/<base>.pnr.json` and build/prueba_pll.fs. At the end, it loads `prueba_pll`, which sends little data on the UART.
+- `scripts/margen_reloj.py` needs `build/<base>.pnr.json` and build/prueba_pll.fs. Without build/prueba_pll.fs, it does not touch the board and gives exit code 2. At the end, it loads `prueba_pll`, which sends little data on the UART.
 - All these tools read `/dev/ttyUSB1` by default. Change the port with `--puerto`.
 
 ## 4. MicroSD
@@ -220,7 +220,7 @@ SOFIFI_MUESTRAS=4883 .venv/bin/python -m pytest sim/nucleo/nucleo_test.py
 ## Behaviors to know
 
 - `scripts/generar_demos.py` accepts `--readme`, `--help` or no argument. Any other argument gives exit code 2 and makes no demo.
-- The `check_*` scripts do not read arguments. `scripts/check_optimizacion.py --help` synthesizes all the tops.
+- The `check_*` scripts have no options. With `--help`, they print their help. With a different argument, they give exit code 2 and do not run.
 - `scripts/informe_recursos.py` needs the path of the nextpnr report. Without it, it shows the usage and gives exit code 2.
-- `scripts/capturar_infografia.py` prints its help and exits with 1 if the arguments are not correct or if chrome-headless-shell is missing.
+- `scripts/capturar_infografia.py` gives exit code 2 if the arguments are not correct. If chrome-headless-shell is missing, it tells how to install it and gives exit code 1.
 - `scripts/ci_local.sh --help` and `scripts/fpga.sh` without a command print their header.

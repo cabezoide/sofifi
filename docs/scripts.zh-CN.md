@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/scripts.md sha=35d6b1ed2f0c estado=al_dia -->
+<!-- i18n: fuente=docs/scripts.md sha=d373cf34432c estado=al_dia -->
 # 脚本与 `sofifi` 命令行工具
 
 本指南说明 `scripts/` 中的每个脚本和 `sofifi` 命令行工具的每条命令。内容按任务组织。每个工具都说明：做什么、典型命令、需要什么、属于哪个检查门或阶段。
@@ -7,7 +7,7 @@
 
 ## 开始之前
 
-- 所有命令都在仓库根目录运行。`sofifi` 在当前目录中查找 `programas/` 和 `presets/`。
+- 脚本在仓库根目录运行。`sofifi` 可在任意文件夹运行：它向上查找第一个包含 `programas/` 和 `presets/banco.toml` 的文件夹。
 - 用 `make install` 创建一次环境。它把模型、检查门工具和 EDA 工具链装进 `.venv`。
 - 用 `make hooks` 安装一次钩子。
 - 要使用开发板，先安装 udev 规则 `scripts/udev/99-tang-primer-25k.rules`。其文件头给出命令。
@@ -38,7 +38,7 @@
 | `i18n` | 硬 | 每份译文都存在，且其印章真实（ADR 0007）。 | `scripts/check_i18n.py` |
 | `cierre` | 硬 | README 和信息图声明正确版本，截图为最新。 | `scripts/check_cierre.py` |
 | `model` | 硬 | 模型的风格、格式、类型和测试。 | `ruff check`、`ruff format --check`、`mypy` 和 `pytest -n auto` |
-| `rtl-lint` | 硬 | 对 `rtl/top/tops.txt` 中每个顶层以及 `rtl/comun/`、`rtl/primitivas/`、`rtl/nucleo/` 中每个模块做 lint。 | `verilator --lint-only -Wall -DSIMULACION` |
+| `rtl-lint` | 硬 | 对 `rtl/top/tops.txt` 中每个顶层以及 `rtl/comun/`、`rtl/primitivas/`、`rtl/nucleo/`、`rtl/sd/` 中每个模块做 lint。 | `verilator --lint-only -Wall -DSIMULACION` |
 | `sim` | 硬 | cocotb 测试平台与模型给出相同的比特（ADR 0003）。 | `pytest sim -n 4` |
 | `ratchets` | 硬 | `docs/ratchets.yaml` 中的任何度量都不比其门槛更差。 | `scripts/check_ratchets.py` |
 | `shell-lint` | 软 | 对 `scripts/*.sh` 和 `scripts/hooks/*` 运行 shellcheck。 | `shellcheck` |
@@ -127,7 +127,7 @@ BL616 调试器提供两个端口：`/dev/ttyUSB0` 是 JTAG，`/dev/ttyUSB1` 是
 |---|---|---|---|
 | `make hil` | 生成一个程序或链的 ROM，综合 `hil_programa`，加载并运行 `scripts/hil_nucleo.py`。 | `make hil HIL=marea` | 4 096 个样本全部一致时为 0 |
 | `scripts/hil_nucleo.py` | 将开发板的 4 096 个样本和 CRC-32 与模型比较。使用 `--traza K0` 时，找出第一条不一致的指令。 | `.venv/bin/python scripts/hil_nucleo.py --programa plate` | 全部一致时为 0 |
-| `scripts/hil_lote.py` | 对多个名字运行 `make hil`，并写入 build/hil_lote.csv。每个名字约需 4 分钟。 | `.venv/bin/python scripts/hil_lote.py --todos` | 全部一致时为 0 |
+| `scripts/hil_lote.py` | 对多个名字运行 `make hil`，并写入 build/hil_lote.csv。每个名字约需 4 分钟。超过 20 分钟的名字记为“TIEMPO AGOTADO”（超时）。 | `.venv/bin/python scripts/hil_lote.py --todos` | 全部一致时为 0 |
 | `scripts/margen_reloj.py` | 只修改已布线设计的 PLL 分频，并在每个频率重复采集。 | `.venv/bin/python scripts/margen_reloj.py --divisores 8 7 6` | 100 MHz 始终通过时为 0 |
 | `scripts/verificar_primitivas.py` | 检查原语测试顶层：`dsp`、`bsram`、`pll` 和 `fs`。 | `.venv/bin/python scripts/verificar_primitivas.py dsp` | 所有行都正确时为 0 |
 
@@ -148,7 +148,7 @@ BL616 调试器提供两个端口：`/dev/ttyUSB0` 是 JTAG，`/dev/ttyUSB1` 是
 说明：
 
 - `make hil` 接受能放进 `hil_nucleo` 存储器的程序或链：38 912 个字。`sofifi rom` 拒绝其余的。
-- `scripts/margen_reloj.py` 需要 `build/<base>.pnr.json` 和 build/prueba_pll.fs。结束时它加载 `prueba_pll`，该顶层通过 UART 发送的数据很少。
+- `scripts/margen_reloj.py` 需要 `build/<base>.pnr.json` 和 build/prueba_pll.fs。没有 build/prueba_pll.fs 时，它不操作开发板并返回退出码 2。结束时它加载 `prueba_pll`，该顶层通过 UART 发送的数据很少。
 - 这些工具默认读取 `/dev/ttyUSB1`。用 `--puerto` 更改端口。
 
 ## 4. microSD
@@ -220,7 +220,7 @@ SOFIFI_MUESTRAS=4883 .venv/bin/python -m pytest sim/nucleo/nucleo_test.py
 ## 需要了解的行为
 
 - `scripts/generar_demos.py` 接受 `--readme`、`--help` 或不带参数。其他参数返回退出码 2，不生成任何演示。
-- `check_*` 脚本不读取参数。`scripts/check_optimizacion.py --help` 会综合所有顶层。
+- `check_*` 脚本没有选项。带 `--help` 时打印帮助；带其他参数时返回退出码 2，且不运行。
 - `scripts/informe_recursos.py` 需要 nextpnr 报告的路径。没有它时，显示用法并返回退出码 2。
-- 参数不正确或缺少 chrome-headless-shell 时，`scripts/capturar_infografia.py` 打印帮助并以 1 退出。
+- 参数不正确时，`scripts/capturar_infografia.py` 返回退出码 2。缺少 chrome-headless-shell 时，它说明安装方法并返回退出码 1。
 - `scripts/ci_local.sh --help` 以及不带命令的 `scripts/fpga.sh` 会打印其文件头。
