@@ -62,6 +62,8 @@ Todo corre en **un solo dominio de reloj de 100 MHz** (ADR 0005). La única exce
 | Cargador de programa | `rtl/comun/carga_programa.v` | ~30 LUT | instrucciones + 1 ciclos |
 | Traza del núcleo (solo HIL) | `rtl/top/hil_nucleo.v`, orden `T` | ~150 flip-flops | graba (pc, ACC) en la captura |
 | Programa del HIL | parámetro `PROGRAMA` de `hil_nucleo`; tops `hil_looper` y `hil_programa` | una ROM en lógica | plate por defecto; el looper prueba `RDAA` y `WRAA`; `hil_programa` lleva la ROM que escribe `sofifi rom` (`make hil HIL=NOMBRE`) |
+| Controlador SD | `rtl/sd/sd_spi.v` | ~930 flip-flops y ~390 ALU con el cargador (yosys) | SPI modo 0: 400 kHz al arrancar y 12,5 MHz al leer; bloques de 512 bytes con CMD17; solo lee |
+| Cargador del banco | `rtl/sd/cargador.v`, `rtl/sd/carga_sd.v` | (en la fila anterior) | dos pasadas: comprueba magia, límites, códigos y CRC-32 sin tocar el núcleo; después para el núcleo, escribe y vuelve a comprobar el CRC (Fase 08) |
 
 ## Presupuesto (top `hil_nucleo`, núcleo segmentado, ADR 0014)
 

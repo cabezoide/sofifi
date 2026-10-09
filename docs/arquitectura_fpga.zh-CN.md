@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/arquitectura_fpga.md sha=4bbfca227440 estado=al_dia -->
+<!-- i18n: fuente=docs/arquitectura_fpga.md sha=5656d20a0cf5 estado=al_dia -->
 # FPGA 架构
 
 本文说明 FPGA 内部有什么、各部分如何连接，以及设计在各阶段如何变化。每个阶段结束时更新本文；每个改动 FPGA 模块的 PR 也要更新本文。各组件的简明说明见 `SBOM.zh-CN.md`；塑造了设计的故障见 `fails.zh-CN.md`。
@@ -63,6 +63,8 @@ flowchart LR
 | 程序加载器 | `rtl/comun/carga_programa.v` | ~30 LUT | 指令数 + 1 个周期 |
 | 核心跟踪（仅 HIL） | `rtl/top/hil_nucleo.v`，命令 `T` | ~150 个触发器 | 把 (pc, ACC) 记录到捕获中 |
 | HIL 的程序 | `hil_nucleo` 的参数 `PROGRAMA`；顶层 `hil_looper` 和 `hil_programa` | 一个逻辑实现的 ROM | 默认是 plate；looper 用来测试 `RDAA` 和 `WRAA`；`hil_programa` 使用 `sofifi rom` 写出的 ROM（`make hil HIL=名称`） |
+| SD 控制器 | `rtl/sd/sd_spi.v` | 与加载器合计约 930 个触发器和约 390 个 ALU（yosys） | SPI 模式 0：启动时 400 kHz，读取时 12.5 MHz；用 CMD17 读 512 字节的块；只读 |
+| 存储库加载器 | `rtl/sd/cargador.v`、`rtl/sd/carga_sd.v` | （见上一行） | 两遍：先检查魔数、范围、操作码和 CRC-32，不改动核心；然后停止核心、写入并再次检查 CRC（第 08 阶段） |
 
 ## 预算（顶层 `hil_nucleo`，流水线核心，ADR 0014）
 
