@@ -1,4 +1,4 @@
-<!-- i18n: fuente=fails.md sha=315971f54bc6 estado=al_dia -->
+<!-- i18n: fuente=fails.md sha=cf031779fc00 estado=al_dia -->
 # Failures and their resolution
 
 This is the record of the failures found in the project. Each entry has a symptom, a diagnosis, a root cause, a resolution and a lesson. The record helps us not to repeat them. It also explains why the design is as it is.
@@ -35,6 +35,7 @@ Add a new entry when a failure is diagnosed and resolved. Do not rewrite the ent
 | F-26 | 08 | Four fixed-point traps in batch 9 of the catalogue | resolved before publication |
 | F-27 | 08 | Small constants, control loops and a blind fingerprint in batch 10 | resolved before publication |
 | F-28 | 08 | The minimum speed of phaser and filtro was 0, and three traps in batch 11 | resolved |
+| F-29 | 08 | Five modulation and level traps in batch 12 | resolved before publication |
 
 ---
 
@@ -345,3 +346,26 @@ The acoustic tests of the new programs found four failures before publication.
   - **Symptom:** the output saturated without input.
   - **Resolution:** a `clr` at the start of the branch.
 - **Lesson:** a rule that a person can forget goes in the assembler. Design a feedback loop with its worst gain, not with the average.
+
+## F-29 · Five modulation and level traps in batch 12
+
+- **The `media` option of CHO does not invert a SIN LFO** (`dimension`).
+  - **Symptom:** the L + R sum wobbled the same as each channel: there was no antiphase.
+  - **Cause:** `media` only moves the RAMP and the window by half a turn; the sine does not change. The model and the RTL agree.
+  - **Resolution:** two SIN LFOs with the same speed; the second line uses a negative `depth`.
+- **A chorus centred at 8 ms makes a comb with the dry signal** (`orilla`).
+  - **Symptom:** at 196 Hz the level fell to 0.22 times that of the plate.
+  - **Cause:** the dry signal and the voice at 50 % cancelled near 187 Hz.
+  - **Resolution:** the delay goes from 3 to 15 ms.
+- **An asymmetric triangle LFO stays at the edge** (`vibe`).
+  - **Symptom:** with the rise faster than the fall, the sweep stopped at +1.
+  - **Cause:** the fall step did not move the LFO out of the edge zone, and the direction changed on each sample.
+  - **Resolution:** the edge is checked on tri·direction. `comun/lfo_triangulo.sasm` does not change.
+- **A register shared by two filters erases their state** (`baldosa`).
+  - **Symptom:** with decay at maximum, the tail fell 36 dB in 0.4 s.
+  - **Cause:** the allpass wrote its output into the register of the low-pass filter.
+  - **Resolution:** each filter has its own register.
+- **A compressor and an expander that do not match** (`eco_casero`).
+  - **Symptom:** each note started with a peak of 2.4 times, and with feedback at maximum the loop went out of control.
+  - **Resolution:** both use the same mean detector, and the compressor uses feedback (1/envelope without division).
+- **Lesson:** test a modulation effect on the mono sum and at low frequencies, not only on one channel. Each filter state needs its own register.

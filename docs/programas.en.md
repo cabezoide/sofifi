@@ -1,16 +1,17 @@
-<!-- i18n: fuente=docs/programas.md sha=1da30ae9ea85 estado=al_dia -->
+<!-- i18n: fuente=docs/programas.md sha=0430f9a27658 estado=al_dia -->
 <!-- GENERADO por `sofifi catalogo` desde programas/*.sasm. No se edita a mano:
      model/tests/catalogo_test.py lo compara con su generador. -->
 
 # Core programs
 
-69 programs and 552 presets. Each program is a text file in `programas/`; the presets are in `presets/banco.toml`. Program and preset names are in Spanish.
+75 programs and 600 presets. Each program is a text file in `programas/`; the presets are in `presets/banco.toml`. Program and preset names are in Spanish.
 The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/coste.py`). The memory has 43,008 words.
 
 ## Reverb
 
 | Program | What it does | Knobs | Presets | Instructions | Cycles | Memory |
 |---|---|---|---|---|---|---|
+| `baldosa` | Dirty reverb of two crossed echoes, dark and grainy, like a tiled bathroom. | 0: time<br>1: decay<br>2: mix<br>3: modulation<br>4: tone<br>5: sample rate | 8 | 152 | 1,145 | 8,258 |
 | `blackhole` | A giant hall with a decay of tens of seconds. | 0: decay<br>1: damping<br>2: mix | 8 | 140 | 883 | 40,882 |
 | `bloom` | The reverb grows slowly after each note, like a flower that opens. | 0: decay<br>1: damping<br>2: mix<br>3: bloom time | 8 | 84 | 637 | 23,520 |
 | `chorale` | The plate tail sings a vowel, from "a" to "i". | 0: decay<br>1: damping<br>2: mix<br>3: vowel | 8 | 160 | 1,192 | 37,439 |
@@ -46,7 +47,9 @@ The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/co
 | `cinta` | Tape echo from 0.18 to 0.85 s with wow, flutter and saturation. | 0: time<br>1: feedback<br>2: mix<br>3: wow and flutter | 8 | 50 | 484 | 41,600 |
 | `dados` | Four echoes with random times and octaves; sw rolls the dice again. | 0: time<br>1: feedback<br>2: mix<br>3: probability<br>4: tone<br>5: width | 8 | 239 | 1,620 | 38,260 |
 | `delay` | Clean digital echo from 20 to 690 ms, with tone in the feedback. | 0: time<br>1: feedback<br>2: mix<br>3: tone | 8 | 38 | 309 | 33,749 |
+| `deriva` | An echo that drifts: the time jumps at random and glides to the new value. | 0: time<br>1: depth<br>2: mix<br>3: rate<br>4: glide<br>5: feedback | 8 | 128 | 969 | 33,796 |
 | `ducking` | An echo that moves back while you play and comes back in the silences. | 0: time<br>1: feedback<br>2: mix<br>3: ducking | 8 | 51 | 394 | 33,749 |
+| `eco_casero` | Home-built chip echo: clean at short times; dark, grainy and pumping when you make it longer. | 0: time<br>1: feedback<br>2: mix<br>3: dirt<br>4: modulation<br>5: tone | 8 | 124 | 1,002 | 41,492 |
 | `enjambre` | A swarm of eight short echoes: it closes into a reverb or opens into single echoes. | 0: spread<br>1: feedback<br>2: mix<br>3: diffusion<br>4: tone<br>5: drift | 8 | 199 | 1,377 | 42,820 |
 | `estelar` | Echo with a phaser inside the loop: each repeat sweeps more and the tail swirls. | 0: time<br>1: feedback<br>2: mix<br>3: depth<br>4: rate<br>5: resonance | 8 | 123 | 830 | 33,749 |
 | `lata` | Oil can echo: short, murky and liquid, with a vibrato tied to the time. | 0: time<br>1: feedback<br>2: mix<br>3: depth<br>4: tone<br>5: oil | 8 | 90 | 768 | 18,931 |
@@ -64,10 +67,13 @@ The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/co
 | `armonico` | The lows and the highs pulse in opposite phase; with pot2, an echo after them. | 0: rate<br>1: depth<br>2: echo<br>3: frequency<br>4: shape<br>5: width | 8 | 125 | 847 | 17,101 |
 | `chorus` | Three voices with moving delays. | 0: rate<br>1: depth<br>2: mix | 8 | 42 | 416 | 1,101 |
 | `desplazador` | Echo that shifts its frequency on each pass: the tail goes up or down in a spiral. | 0: frequency shift<br>1: time<br>2: mix<br>3: feedback<br>4: tone<br>5: width | 8 | 110 | 864 | 33,767 |
+| `dimension` | A chorus that makes the stereo wide and adds body, but the pitch does not wobble. | 0: mode<br>1: rate<br>2: mix<br>3: depth<br>4: crossfeed<br>5: tone | 8 | 94 | 795 | 505 |
 | `flanger` | A very short moving delay with feedback: sweeping combs. | 0: rate<br>1: depth<br>2: mix<br>3: feedback | 8 | 31 | 266 | 247 |
+| `orilla` | Slow random chorus with a low-pass gate that closes with each note. | 0: rate<br>1: depth<br>2: mix<br>3: smoothing<br>4: low-pass gate<br>5: sensitivity | 8 | 147 | 1,078 | 736 |
 | `phaser` | Four allpass filters with a moving coefficient: sweeping notches. | 0: rate<br>1: depth<br>2: mix<br>3: feedback | 8 | 80 | 521 | 1 |
 | `slicer` | It cuts the sound into rhythmic pulses, like a gate that opens and closes. | 0: rate<br>1: depth<br>2: duty cycle<br>3: smoothing | 8 | 37 | 262 | 1 |
 | `tremolo` | The volume goes up and down; with pot2, from one side to the other. | 0: rate<br>1: depth<br>2: pan | 8 | 43 | 325 | 1 |
+| `vibe` | Lamp vibe: four unequal phase stages with a sweep that rises fast and falls slowly. | 0: rate<br>1: depth<br>2: mix<br>3: feedback<br>4: shape<br>5: tone | 8 | 125 | 830 | 1 |
 | `vibrato` | The pitch goes up and down. | 0: rate<br>1: depth<br>2: mix | 8 | 27 | 240 | 125 |
 
 ## Pitch

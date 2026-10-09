@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=47259b28233f estado=al_dia -->
+<!-- i18n: fuente=README.md sha=6397a1cc2fda estado=al_dia -->
 # SOFIFI — Soundscapes On FPGA: Integrated Filters & Impulses
 
 *In Spanish: Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada.*
@@ -17,9 +17,9 @@ custom DSP core executes.
 
 | Item | Status |
 |---|---|
-| Library | **69 programs and 552 presets** in 8 families (Phase 07) |
+| Library | **75 programs and 600 presets** in 8 families (Phase 07) |
 | Two effects at the same time | **24 chains**: 18 fit today and 6 wait for the SDRAM (`presets/cadenas.toml`, ADR 0013) |
-| Match with the model | all 69 programs and the 18 chains that fit give in the RTL the same bits as the model (simulation) |
+| Match with the model | all 75 programs and the 18 chains that fit give in the RTL the same bits as the model (simulation) |
 | Board | the plate and the looper give on the silicon the same bits as the model, from 100 to 125 MHz (Phase 07) |
 | Next | program load from the microSD (Phase 08) |
 | Audio with a guitar | **not yet**: the I2S codec is missing (Phase 11) |
@@ -137,8 +137,8 @@ the board and the microSD card are sufficient.
 
 | Document | Contents |
 |---|---|
-| `docs/programas.en.md` | the 69 programs: what they do, knobs, presets and cost |
-| `presets/banco.toml` | the 552 presets |
+| `docs/programas.en.md` | the 75 programs: what they do, knobs, presets and cost |
+| `presets/banco.toml` | the 600 presets |
 | `docs/arquitectura_fpga.en.md` | the FPGA architecture and how it changes in each phase |
 | `schematics/` | a PDF schematic of each RTL module, generated from the Verilog |
 | `docs/EXTENDING.en.md` | how to add an effect, an instruction, an RTL module or a gate |

@@ -34,6 +34,7 @@ Se añade una entrada nueva cuando un fallo está diagnosticado y resuelto. Las 
 | F-26 | 08 | Cuatro trampas del punto fijo en el lote 9 del catálogo | resuelto antes de publicar |
 | F-27 | 08 | Constantes pequeñas, bucles de control y una huella ciega en el lote 10 | resuelto antes de publicar |
 | F-28 | 08 | La velocidad mínima de phaser y filtro era 0, y tres trampas del lote 11 | resuelto |
+| F-29 | 08 | Cinco trampas de modulación y de nivel en el lote 12 | resuelto antes de publicar |
 
 ---
 
@@ -344,3 +345,26 @@ Las pruebas acústicas de los programas nuevos encontraron cuatro fallos antes d
   - **Síntoma:** la salida se saturaba sin entrada.
   - **Resolución:** un `clr` al principio de la rama.
 - **Lección:** una regla que una persona puede olvidar va en el ensamblador. Un bucle de realimentación se diseña con su ganancia peor, no con la media.
+
+## F-29 · Cinco trampas de modulación y de nivel en el lote 12
+
+- **La opción `media` de CHO no invierte un LFO SIN** (`dimension`).
+  - **Síntoma:** la suma L + R ondulaba igual que cada canal: la antifase no existía.
+  - **Causa:** `media` solo desplaza media vuelta la RAMP y la ventana; el seno no cambia. El modelo y el RTL coinciden.
+  - **Resolución:** dos LFO SIN con la misma velocidad; la segunda línea usa un `depth` negativo.
+- **Un chorus centrado en 8 ms hace un peine con la señal seca** (`orilla`).
+  - **Síntoma:** a 196 Hz el nivel caía a 0,22 veces el del plate.
+  - **Causa:** el seco y la voz al 50 % se cancelaban cerca de 187 Hz.
+  - **Resolución:** el retardo recorre de 3 a 15 ms.
+- **Un LFO triangular asimétrico se queda en el borde** (`vibe`).
+  - **Síntoma:** con la subida más rápida que la bajada, el barrido se paraba en +1.
+  - **Causa:** el paso de bajada no sacaba al LFO de la zona del borde, y el sentido cambiaba en cada muestra.
+  - **Resolución:** el borde se comprueba sobre tri·sentido. `comun/lfo_triangulo.sasm` no cambia.
+- **Un registro compartido entre dos filtros borra su estado** (`baldosa`).
+  - **Síntoma:** con decay al máximo, la cola caía 36 dB en 0,4 s.
+  - **Causa:** el allpass escribía su salida en el registro del paso bajo.
+  - **Resolución:** cada filtro tiene su registro.
+- **Un compresor y un expansor que no casan** (`eco_casero`).
+  - **Síntoma:** cada nota empezaba con un pico de 2,4 veces y, con la realimentación al máximo, el bucle se desbocaba.
+  - **Resolución:** los dos usan el mismo detector de media, y el compresor es de realimentación (1/envolvente sin división).
+- **Lección:** un efecto de modulación se prueba en la suma mono y a frecuencias graves, no solo en un canal. Cada estado de un filtro necesita su propio registro.

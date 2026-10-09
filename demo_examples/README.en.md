@@ -1,4 +1,4 @@
-<!-- i18n: fuente=demo_examples/README.md sha=125069f26b99 estado=al_dia -->
+<!-- i18n: fuente=demo_examples/README.md sha=52ab78dd5e15 estado=al_dia -->
 # demo_examples
 
 A synthetic guitar (an Em9 arpeggio, Karplus-Strong strings) through each core program, with the bit-exact model. Generate them again with `.venv/bin/python scripts/generar_demos.py`: the audio is the same each time.
@@ -75,6 +75,12 @@ A synthetic guitar (an Em9 arpeggio, Karplus-Strong strings) through each core p
 | `demo_aureo.ogg` | `aureo` | slope 0.60 · feedback 0.60 · mix 0.45 · tone 0.60 · width 0.90 · diffusion 0.40 | 2.50 → 5.00 s |
 | `demo_estelar.ogg` | `estelar` | time 0.45 · feedback 0.75 · mix 0.45 · depth 0.90 · rate 0.25 · resonance 0.40 | — |
 | `demo_lata.ogg` | `lata` | time 0.35 · feedback 0.55 · mix 0.45 · depth 0.60 · tone 0.40 · oil 0.50 | 3.00 → 3.60 s |
+| `demo_deriva.ogg` | `deriva` | time 0.45 · depth 0.50 · mix 0.45 · rate 0.35 · glide 0.40 · feedback 0.50 | — |
+| `demo_dimension.ogg` | `dimension` | mode 0.65 · rate 0.50 · mix 0.50 · depth 0.60 · crossfeed 0.90 · tone 0.70 | — |
+| `demo_vibe.ogg` | `vibe` | rate 0.25 · depth 0.80 · mix 0.00 · feedback 0.30 · shape 0.70 · tone 0.35 | 2.00 → 4.00 s |
+| `demo_orilla.ogg` | `orilla` | rate 0.35 · depth 0.55 · mix 0.50 · smoothing 0.50 · low-pass gate 0.80 · sensitivity 0.50 | 3.00 → 3.80 s |
+| `demo_baldosa.ogg` | `baldosa` | time 0.55 · decay 0.70 · mix 0.45 · modulation 0.50 · tone 0.40 · sample rate 0.30 | 2.60 → 3.40 s |
+| `demo_eco_casero.ogg` | `eco_casero` | time 0.75 · feedback 0.55 · mix 0.45 · dirt 0.80 · modulation 0.30 · tone 0.30 | — |
 | `demo_cadena_eco_y_muelle.ogg` | Eco y muelle: `delay` → `spring` | pot0 0.55 · pot1 0.40 · pot2 0.35 · pot3 0.60 · pot4 0.40 · pot5 0.00 | — |
 | `demo_cadena_flor_al_reves.ogg` | Flor al revés: `reverse` → `bloom` | pot0 0.60 · pot1 0.40 · pot2 0.50 · pot3 0.80 · pot4 0.55 · pot5 0.40 | — |
 | `demo_cadena_organo_infinito.ogg` | Órgano infinito: `octava` → `infinite` | pot0 0.60 · pot1 0.40 · pot2 0.00 · pot3 0.10 · pot4 0.50 · pot5 0.00 | — |

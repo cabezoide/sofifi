@@ -266,6 +266,12 @@ HUELLAS = {
     "aureo": "b37c1ef65aa15d37",
     "estelar": "242f16d0f4d88c1f",
     "lata": "cb68c7361a96cbf2",
+    "deriva": "5c798be92e83ff9c",
+    "dimension": "a7cdea079acda5fe",
+    "vibe": "0c7f0ee69c2aa48a",
+    "orilla": "812d3e15876a73d4",
+    "baldosa": "86ed66834c97f6f2",
+    "eco_casero": "25b6f54977c7f911",
 }
 
 
@@ -295,6 +301,9 @@ SEGUNDOS_HUELLA = {
     "aureo": 0.5,
     "estelar": 0.8,
     "lata": 0.5,
+    "deriva": 0.5,
+    "orilla": 0.6,
+    "eco_casero": 0.6,
 }
 # Con pot3 = 0,5, dinamica no actúa y da los mismos bits que freeze sin pulsar.
 POTS_HUELLA = {"dinamica": ("0.5", "0.3", "0.5", "0.9")}
@@ -327,6 +336,8 @@ CON_TONO = {
     "arco",
     "acople",
     "dinamica",
+    "vibe",
+    "eco_casero",
 }
 
 

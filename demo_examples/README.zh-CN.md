@@ -1,4 +1,4 @@
-<!-- i18n: fuente=demo_examples/README.md sha=125069f26b99 estado=al_dia -->
+<!-- i18n: fuente=demo_examples/README.md sha=52ab78dd5e15 estado=al_dia -->
 # demo_examples
 
 一段合成吉他（Em9 琶音，Karplus-Strong 弦模型）经内核的每个程序处理，使用逐位精确模型。可用 `.venv/bin/python scripts/generar_demos.py` 重新生成，每次得到的音频都相同。
@@ -75,6 +75,12 @@
 | `demo_aureo.ogg` | `aureo` | 斜率 0.60 · 反馈 0.60 · 干湿比 0.45 · 音色 0.60 · 宽度 0.90 · 扩散 0.40 | 2.50 → 5.00 s |
 | `demo_estelar.ogg` | `estelar` | 时间 0.45 · 反馈 0.75 · 干湿比 0.45 · 深度 0.90 · 速度 0.25 · 谐振 0.40 | — |
 | `demo_lata.ogg` | `lata` | 时间 0.35 · 反馈 0.55 · 干湿比 0.45 · 深度 0.60 · 音色 0.40 · 油 0.50 | 3.00 → 3.60 s |
+| `demo_deriva.ogg` | `deriva` | 时间 0.45 · 深度 0.50 · 干湿比 0.45 · 速度 0.35 · 滑音 0.40 · 反馈 0.50 | — |
+| `demo_dimension.ogg` | `dimension` | 模式 0.65 · 速度 0.50 · 干湿比 0.50 · 深度 0.60 · 交叉混合 0.90 · 音色 0.70 | — |
+| `demo_vibe.ogg` | `vibe` | 速度 0.25 · 深度 0.80 · 干湿比 0.00 · 反馈 0.30 · 波形 0.70 · 音色 0.35 | 2.00 → 4.00 s |
+| `demo_orilla.ogg` | `orilla` | 速度 0.35 · 深度 0.55 · 干湿比 0.50 · 平滑 0.50 · 低通门 0.80 · 灵敏度 0.50 | 3.00 → 3.80 s |
+| `demo_baldosa.ogg` | `baldosa` | 时间 0.55 · 衰减 0.70 · 干湿比 0.45 · 调制 0.50 · 音色 0.40 · 采样率 0.30 | 2.60 → 3.40 s |
+| `demo_eco_casero.ogg` | `eco_casero` | 时间 0.75 · 反馈 0.55 · 干湿比 0.45 · 脏污 0.80 · 调制 0.30 · 音色 0.30 | — |
 | `demo_cadena_eco_y_muelle.ogg` | Eco y muelle: `delay` → `spring` | pot0 0.55 · pot1 0.40 · pot2 0.35 · pot3 0.60 · pot4 0.40 · pot5 0.00 | — |
 | `demo_cadena_flor_al_reves.ogg` | Flor al revés: `reverse` → `bloom` | pot0 0.60 · pot1 0.40 · pot2 0.50 · pot3 0.80 · pot4 0.55 · pot5 0.40 | — |
 | `demo_cadena_organo_infinito.ogg` | Órgano infinito: `octava` → `infinite` | pot0 0.60 · pot1 0.40 · pot2 0.00 · pot3 0.10 · pot4 0.50 · pot5 0.00 | — |

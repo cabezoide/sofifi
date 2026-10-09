@@ -1,4 +1,4 @@
-<!-- i18n: fuente=demo_examples/README.md sha=125069f26b99 estado=al_dia -->
+<!-- i18n: fuente=demo_examples/README.md sha=52ab78dd5e15 estado=al_dia -->
 # demo_examples
 
 合成ギター（Em9 のアルペジオ、Karplus-Strong の弦）を、ビット精度のモデルでコアの各プログラムに通したものです。`.venv/bin/python scripts/generar_demos.py` で再生成でき、毎回同じ音声になります。
@@ -75,6 +75,12 @@
 | `demo_aureo.ogg` | `aureo` | 傾き 0.60 · フィードバック 0.60 · ミックス 0.45 · トーン 0.60 · 幅 0.90 · 拡散 0.40 | 2.50 → 5.00 s |
 | `demo_estelar.ogg` | `estelar` | タイム 0.45 · フィードバック 0.75 · ミックス 0.45 · 深さ 0.90 · 速さ 0.25 · レゾナンス 0.40 | — |
 | `demo_lata.ogg` | `lata` | タイム 0.35 · フィードバック 0.55 · ミックス 0.45 · 深さ 0.60 · トーン 0.40 · オイル 0.50 | 3.00 → 3.60 s |
+| `demo_deriva.ogg` | `deriva` | タイム 0.45 · 深さ 0.50 · ミックス 0.45 · 速さ 0.35 · グライド 0.40 · フィードバック 0.50 | — |
+| `demo_dimension.ogg` | `dimension` | モード 0.65 · 速さ 0.50 · ミックス 0.50 · 深さ 0.60 · クロスフィード 0.90 · トーン 0.70 | — |
+| `demo_vibe.ogg` | `vibe` | 速さ 0.25 · 深さ 0.80 · ミックス 0.00 · フィードバック 0.30 · 波形 0.70 · トーン 0.35 | 2.00 → 4.00 s |
+| `demo_orilla.ogg` | `orilla` | 速さ 0.35 · 深さ 0.55 · ミックス 0.50 · スムージング 0.50 · ローパスゲート 0.80 · 感度 0.50 | 3.00 → 3.80 s |
+| `demo_baldosa.ogg` | `baldosa` | タイム 0.55 · ディケイ 0.70 · ミックス 0.45 · モジュレーション 0.50 · トーン 0.40 · サンプリング周波数 0.30 | 2.60 → 3.40 s |
+| `demo_eco_casero.ogg` | `eco_casero` | タイム 0.75 · フィードバック 0.55 · ミックス 0.45 · 汚れ 0.80 · モジュレーション 0.30 · トーン 0.30 | — |
 | `demo_cadena_eco_y_muelle.ogg` | Eco y muelle: `delay` → `spring` | pot0 0.55 · pot1 0.40 · pot2 0.35 · pot3 0.60 · pot4 0.40 · pot5 0.00 | — |
 | `demo_cadena_flor_al_reves.ogg` | Flor al revés: `reverse` → `bloom` | pot0 0.60 · pot1 0.40 · pot2 0.50 · pot3 0.80 · pot4 0.55 · pot5 0.40 | — |
 | `demo_cadena_organo_infinito.ogg` | Órgano infinito: `octava` → `infinite` | pot0 0.60 · pot1 0.40 · pot2 0.00 · pot3 0.10 · pot4 0.50 · pot5 0.00 | — |
