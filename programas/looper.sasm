@@ -18,7 +18,8 @@
 ; La cabeza `pos` usa el formato de RDAA: una muestra vale 2^-15 en el
 ; registro (15 bit de entero y 8 de fracción). `largo` = 0 quiere decir que no
 ; hay loop. Con ½× la lectura interpola entre dos muestras; el overdub escribe
-; en la parte entera.
+; en la parte entera. La celda `largo` guarda una copia de la celda 0: así la
+; interpolación de la última muestra mira el principio del loop.
 ;
 ; pot0 = nivel           (0 → solo seco · 1 → loop a nivel completo)
 ; pot1 = velocidad       (0 → ½× · 0,5 → 1× · 1 → 2×)
@@ -31,6 +32,7 @@ equ  largo  reg2            ; longitud del loop; 0 = sin loop
 equ  u      reg3            ; una muestra: 2^-15
 equ  vel    reg4            ; avance por muestra
 equ  y      reg5            ; salida del loop
+equ  cero   reg6            ; siempre 0: la celda 0 del loop
 
 ; ── inicialización (solo la primera muestra) ─────────────────────────
         skp   run, inicio
@@ -82,6 +84,8 @@ con_loop_o_no:
         wraa  pos, 0                    ; overdub
 avanzar:
         clr
+        rdaa  cero, 1.0
+        wraa  largo, 0                  ; celda largo = celda 0
         rdax  pos, 1.0
         rdax  vel, 1.0
         wrax  pos, 1.0

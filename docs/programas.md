@@ -126,7 +126,7 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 | Programa | Qué hace | Mandos | Presets | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|---|
 | `erosion` | Bucle de cinta que se desgasta en cada vuelta: pierde agudos y nivel y gana wow, grano y saturación. | 0: erosión<br>1: damping<br>2: mezcla<br>3: modulación<br>4: nivel<br>5: duración | 8 | 161 | 1 043 | 32 769 |
-| `looper` | Micro-looper de 0,67 s con overdub, ½×, 2× y reverse. | 0: nivel<br>1: velocidad<br>2: sentido<br>3: realimentación | 8 | 85 | 549 | 32 769 |
+| `looper` | Micro-looper de 0,67 s con overdub, ½×, 2× y reverse. | 0: nivel<br>1: velocidad<br>2: sentido<br>3: realimentación | 8 | 87 | 576 | 32 769 |
 | `mosaico` | Bucle sonido sobre sonido de 0,67 s que suena a la vez a ½×, 1× y 2×. | 0: octava baja<br>1: nivel<br>2: mezcla<br>3: octava alta<br>4: realimentación<br>5: difusión | 8 | 144 | 1 064 | 34 662 |
 | `relevo` | Freeze de dos capas: cada pisada congela un acorde nuevo y lo funde sobre el anterior, con bend y vibrato. | 0: tiempo<br>1: afinación<br>2: mezcla<br>3: vibrato<br>4: tono<br>5: nivel | 8 | 197 | 1 438 | 34 140 |
 | `resbalon` | Una cabeza libre resbala sobre lo que acabas de tocar, de −2× a 2×, sin grabar. | 0: velocidad<br>1: realimentación<br>2: mezcla<br>3: duración<br>4: tono<br>5: tiempo | 8 | 119 | 865 | 32 769 |
@@ -149,7 +149,7 @@ Una cadena une dos programas en uno, en serie (→) o en paralelo (‖), sin cam
 | Eco y resonancia | `delay` ‖ `resonador` | 870 | 33 749 | 27 | 1 | cabe |
 | Flor al revés | `reverse` → `bloom` | 930 | 39 908 | 17 | 1 | cabe |
 | Fuzz en la nube | `saturacion` → `cloud` | 1 248 | 42 814 | 16 | 4 | cabe |
-| Loop filtrado | `looper` → `filtro` | 991 | 32 769 | 22 | 0 | cabe |
+| Loop filtrado | `looper` → `filtro` | 1 018 | 32 769 | 23 | 0 | cabe |
 | Octavas en flor | `octava` ‖ `bloom` | 953 | 27 620 | 18 | 2 | cabe |
 | Placa que tiembla | `tremolo` → `plate` | 1 109 | 37 439 | 14 | 2 | cabe |
 | Shimmer con vibrato | `vibrato` → `shimmer` | 1 243 | 41 664 | 18 | 4 | cabe |

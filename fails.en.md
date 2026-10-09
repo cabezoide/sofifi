@@ -1,4 +1,4 @@
-<!-- i18n: fuente=fails.md sha=89eb25efb688 estado=al_dia -->
+<!-- i18n: fuente=fails.md sha=89f1e6883b89 estado=al_dia -->
 # Failures and their resolution
 
 This is the record of the failures found in the project. Each entry has a symptom, a diagnosis, a root cause, a resolution and a lesson. The record helps us not to repeat them. It also explains why the design is as it is.
@@ -399,7 +399,7 @@ The acoustic tests of the new programs found four failures before publication.
 - **A write head with a period of 32,767** (`compas`).
   - **Symptom:** a read `wp − d` that crosses the wrap reads a delay that is one sample short.
   - **Cause:** RDAA masks to 32,768 samples, and the head goes back to 0 at 32,767.
-  - **Resolution:** the head goes through [0, 1) with a period of exactly 32,768. `looper` and `granular` use the old wrap: we must still check them.
+  - **Resolution:** the head goes through [0, 1) with a period of exactly 32,768. `granular` already had a period of 32,768 (checked in F-32). `looper` had a different failure: see F-32.
 - **The attack detector triggers many times on a low note** (`swell_ritmico`).
   - **Cause:** the peak falls 8 % between half periods, and the rule "peak > 1.5·slow + threshold" crosses 0 many times.
   - **Resolution:** a dead time of approximately 60 ms after each attack.
@@ -409,3 +409,35 @@ The acoustic tests of the new programs found four failures before publication.
 - **A coefficient that a knob changes cannot go in RDFX** (`semilla`).
   - **Resolution:** the low-pass uses MULX with a register, as in `cloud`.
 - **Lesson:** a loop with transposition needs a path without transposition. A head that wraps has the period of the mask.
+
+## F-32 · The inverted dry signal of the mix and the wrap of the looper at ½×
+
+- **`comun/mezcla.sasm` gives the dry signal inverted when the mix is at maximum.**
+  - **Symptom:** with pot2 = 1, the output had the dry signal at −60 dB with the phase inverted.
+  - **Cause:** `sof 1.0, 0.999` gives kdry = 0.999 − pot2, which is −0.001 when pot2 = 1.
+  - **Resolution:** `sof 1.0, 1.0`. D of SOF is S2.15 and gets to 1.0. The fingerprints of 74 programs change.
+- **At ½×, the looper interpolates the last sample with a cell that is not in the loop** (`looper`).
+  - **Symptom:** at ½×, the sample between the end and the start of the loop was M[L−1]/2, not (M[L−1] + M[0])/2. This was a click on each pass.
+  - **Cause:** RDAA interpolates between cell L−1 and cell L. Cell L is not in the loop.
+  - **Resolution:** on each sample, the program copies cell 0 into cell L (RDAA and WRAA, 2 instructions).
+- **F-31 said that the wrap of `granular` was incorrect.**
+  - **Cause:** the review read the comparison with 32,767 as the end of the wrap. The head writes cell 32,767 before it goes back to 0.
+  - **Resolution:** the model shows that `granular` writes all 32,768 cells. Nothing changes.
+- **Lesson:** a read that interpolates needs the cell after the end of the loop. Check a statement from a subagent with the model before you record it.
+
+## F-33 · The nextpnr clock result depends on the seed
+
+- **Symptom:** after a change to one constant in the ROM of `plate`, `nucleo_placa` did not close timing: 95.41 MHz for 100.
+- **Cause:** the nextpnr placement depends on the seed. With the same netlist, we measured these values:
+
+  | Seed | Fmax |
+  |---|---|
+  | default | 95.41 MHz |
+  | 1 | 98.77 MHz |
+  | 2 | 109.41 MHz |
+  | 3 | 112.10 MHz |
+  | 4 | 107.99 MHz |
+
+- **Resolution:** if nextpnr fails only the clock, `scripts/fpga.sh` tries seeds 2, 3 and 4 (`SEMILLAS_PNR`). The first try does not change, and the script tells which seed closes timing.
+- **The resources are not noise:** `nucleo_placa` goes from 11,709 to 11,982 LUT4 and from 1,208 to 1,242 ALU. In that top, Yosys removes the bits that the ROM never uses. The new constant uses bit 15 of the D field (RAT-11 and RAT-12).
+- **Lesson:** a clock failure after a change that does not touch the logic is placement noise. Measure the real margin on the board (ADR 0011).

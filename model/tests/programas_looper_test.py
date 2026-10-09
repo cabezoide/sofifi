@@ -74,3 +74,12 @@ def test_overdub_suma_o_reemplaza() -> None:
         energia_vieja = sum(abs(a) for a in UNA_VUELTA)
         energia = sum(abs(a) for a in despues)
         assert (energia > 1.2 * energia_vieja) == (realimentacion == "1")
+
+
+def test_medio_interpola_la_vuelta_con_el_principio() -> None:
+    # A ½×, la muestra entre la última y la primera es su media (F-32).
+    y = tocar(X, "0", "0", ((0, L),))
+    m = UNA_VUELTA
+    i = next(k for k in range(3 * L, 7 * L) if y[k] == m[-1] and y[k - 2] == m[-2])
+    assert abs(y[i + 1] - (m[-1] + m[0]) // 2) <= 1
+    assert y[i + 2] == m[0]

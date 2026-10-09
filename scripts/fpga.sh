@@ -22,10 +22,21 @@ case "$orden" in
     cd "$ROOT/build"
     "$BIN/yowasp-yosys" -q -l "$nombre.yosys.log" \
       -p "read_verilog -sv ${fuentes[*]}; synth_gowin -top $nombre -family gw5a -nolutram ${SYNTH_OPCIONES:-} -json $nombre.synth.json"
-    "$BIN/yowasp-nextpnr-himbaechel-gowin" -q -l "$nombre.pnr.log" \
-      --json "$nombre.synth.json" --write "$nombre.pnr.json" --top "$nombre" \
-      --device GW5A-LV25MG121NES --vopt cst="$CST" --vopt sspi_as_gpio \
-      --freq "$FREQ_MHZ" --report "$nombre.informe.json"
+    # La colocación de nextpnr depende de la semilla: el mismo netlist da de
+    # 95 a 112 MHz (F-33). Si solo falla el reloj, se prueba la semilla siguiente.
+    cerrado=""
+    for semilla in "" ${SEMILLAS_PNR:-2 3 4}; do
+      if "$BIN/yowasp-nextpnr-himbaechel-gowin" -q -l "$nombre.pnr.log" \
+        --json "$nombre.synth.json" --write "$nombre.pnr.json" --top "$nombre" \
+        --device GW5A-LV25MG121NES --vopt cst="$CST" --vopt sspi_as_gpio \
+        --freq "$FREQ_MHZ" --report "$nombre.informe.json" ${semilla:+--seed "$semilla"}; then
+        cerrado=1
+        [[ -z "$semilla" ]] || echo "$nombre: el reloj cierra con la semilla $semilla de nextpnr"
+        break
+      fi
+      grep -q "FAIL at" "$nombre.pnr.log" || exit 1   # otro error: no se reintenta
+    done
+    [[ -n "$cerrado" ]] || { echo "$nombre: ninguna semilla de nextpnr cierra el reloj" >&2; exit 1; }
     "$BIN/gowin_pack" --sspi_as_gpio --cpu_as_gpio -d GW5A-25A -o "$nombre.fs" "$nombre.pnr.json"
     "$ROOT/.venv/bin/python" "$ROOT/scripts/informe_recursos.py" "$nombre.informe.json" > "${nombre}_recursos.json"
     cat "${nombre}_recursos.json"

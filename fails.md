@@ -398,7 +398,7 @@ Las pruebas acústicas de los programas nuevos encontraron cuatro fallos antes d
 - **Una cabeza de escritura con periodo 32 767** (`compas`).
   - **Síntoma:** una lectura `wp − d` que cruza la vuelta lee un retardo una muestra corto.
   - **Causa:** RDAA enmascara a 32 768 muestras, y la cabeza vuelve a 0 en 32 767.
-  - **Resolución:** la cabeza recorre [0, 1) con periodo 32 768 exacto. `looper` y `granular` usan la vuelta antigua: queda pendiente comprobarlos.
+  - **Resolución:** la cabeza recorre [0, 1) con periodo 32 768 exacto. `granular` ya tenía periodo 32 768 (comprobado en F-32). `looper` tenía otro fallo: ver F-32.
 - **El detector de ataques dispara varias veces en una nota grave** (`swell_ritmico`).
   - **Causa:** el pico cae un 8 % entre semiperiodos y la regla «pico > 1,5·lenta + umbral» cruza el 0 varias veces.
   - **Resolución:** un tiempo muerto de unos 60 ms tras cada ataque.
@@ -408,3 +408,35 @@ Las pruebas acústicas de los programas nuevos encontraron cuatro fallos antes d
 - **Un coeficiente que cambia con un mando no cabe en RDFX** (`semilla`).
   - **Resolución:** el paso bajo usa MULX con un registro, como `cloud`.
 - **Lección:** un lazo con transposición necesita un camino sin transponer. Una cabeza que da la vuelta tiene el periodo de la máscara.
+
+## F-32 · El seco invertido de la mezcla y la vuelta del looper a ½×
+
+- **`comun/mezcla.sasm` devuelve el seco invertido con la mezcla al máximo.**
+  - **Síntoma:** con pot2 = 1, la salida tenía el seco a −60 dB con la fase invertida.
+  - **Causa:** `sof 1.0, 0.999` da kdry = 0,999 − pot2, que vale −0,001 con pot2 = 1.
+  - **Resolución:** `sof 1.0, 1.0`. D de SOF es S2.15 y llega a 1,0. Cambian las huellas de 74 programas.
+- **El looper a ½× interpola la última muestra con una celda ajena** (`looper`).
+  - **Síntoma:** a ½×, la muestra entre el final y el principio del loop valía M[L−1]/2 y no (M[L−1] + M[0])/2. Era un clic en cada vuelta.
+  - **Causa:** RDAA interpola entre la celda L−1 y la celda L. La celda L no es del loop.
+  - **Resolución:** en cada muestra, el programa copia la celda 0 en la celda L (RDAA y WRAA, 2 instrucciones).
+- **F-31 daba por mala la vuelta de `granular`.**
+  - **Causa:** la revisión leyó la comparación con 32 767 como el final de la vuelta. La cabeza escribe la celda 32 767 antes de volver a 0.
+  - **Resolución:** el modelo comprueba que `granular` escribe las 32 768 celdas. No cambia nada.
+- **Lección:** una lectura que interpola necesita la celda siguiente al final del bucle. Una afirmación de un subagente se comprueba con el modelo antes de anotarla.
+
+## F-33 · El reloj de nextpnr depende de la semilla
+
+- **Síntoma:** tras cambiar una constante de la ROM de `plate`, `nucleo_placa` dejó de cerrar: 95,41 MHz para 100.
+- **Causa:** la colocación de nextpnr depende de la semilla. Con el mismo netlist se midió esto:
+
+  | Semilla | Fmax |
+  |---|---|
+  | por defecto | 95,41 MHz |
+  | 1 | 98,77 MHz |
+  | 2 | 109,41 MHz |
+  | 3 | 112,10 MHz |
+  | 4 | 107,99 MHz |
+
+- **Resolución:** si nextpnr solo falla el reloj, `scripts/fpga.sh` prueba las semillas 2, 3 y 4 (`SEMILLAS_PNR`). El primer intento no cambia, y el script dice qué semilla cierra.
+- **Los recursos no son ruido:** `nucleo_placa` sube de 11 709 a 11 982 LUT4 y de 1 208 a 1 242 ALU. Yosys poda en ese top los bits que la ROM nunca usa. La constante nueva usa el bit 15 del campo D (RAT-11 y RAT-12).
+- **Lección:** un fallo de reloj tras un cambio que no toca la lógica es ruido de colocación. El margen real se mide en la placa (ADR 0011).

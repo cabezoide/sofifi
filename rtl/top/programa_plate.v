@@ -42,7 +42,7 @@ module programa_plate (
             11'd15: palabra = 54'h05040000000000;
             11'd16: palabra = 54'h04980400000000;
             11'd17: palabra = 54'h05080c00000000;
-            11'd18: palabra = 54'h09000400007fdf;
+            11'd18: palabra = 54'h09000400008000;
             11'd19: palabra = 54'h050c0000000000;
             11'd20: palabra = 54'h04800200000000;
             11'd21: palabra = 54'h04840200000000;

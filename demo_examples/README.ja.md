@@ -87,11 +87,11 @@
 | `demo_tartamudeo.ogg` | `tartamudeo` | スレッショルド 0.30 · 長さ 0.45 · ミックス 0.50 · リピート回数 0.60 | — |
 | `demo_dos_ecos.ogg` | `dos_ecos` | タイム 0.85 · フィードバック 0.60 · ミックス 0.50 · 比率 0.90 · バランス 0.50 · 拡散 0.70 | 4.00 → 6.00 s |
 | `demo_viento.ogg` | `viento` | 速さ 0.50 · レゾナンス 0.60 · ミックス 0.50 · 感度 0.70 · 周波数 0.50 · レベル 0.40 | 2.50 → 3.50 s |
-| `demo_compas.ogg` | `compas` | タイム 0.60 · フィードバック 0.45 · ミックス 0.45 · subdivisión 0.10 · segunda toma 1.00 · トーン 0.70 | 0.50 → 0.55 s, 1.00 → 1.05 s |
+| `demo_compas.ogg` | `compas` | タイム 0.60 · フィードバック 0.45 · ミックス 0.45 · 音符分割 0.10 · セカンドタップ 1.00 · トーン 0.70 | 0.50 → 0.55 s, 1.00 → 1.05 s |
 | `demo_espiral.ogg` | `espiral` | 音程 0.92 · 第2声部 0.08 · ミックス 0.55 · タイム 0.40 · フィードバック 0.70 · ディケイ 0.60 | 3.00 → 4.50 s |
 | `demo_swell_ritmico.ogg` | `swell_ritmico` | 立ち上がり 0.40 · 波形 0.20 · ミックス 0.50 · ディケイ 0.70 · ドリフト 0.40 · 感度 0.50 | 0.00 → 0.05 s, 0.22 → 0.27 s |
-| `demo_semilla.ogg` | `semilla` | ディケイ 0.80 · ダンピング 0.35 · ミックス 0.50 · semilla 0.60 · densidad 0.80 · モジュレーション 0.45 | 4.00 → 6.50 s |
-| `demo_arpegio.ogg` | `arpegio` | 速さ 0.45 · notas 1.00 · ミックス 0.50 · モード 0.00 · エコー 0.40 · ディケイ 0.60 | 3.00 → 5.00 s |
+| `demo_semilla.ogg` | `semilla` | ディケイ 0.80 · ダンピング 0.35 · ミックス 0.50 · シード 0.60 · 密度 0.80 · モジュレーション 0.45 | 4.00 → 6.50 s |
+| `demo_arpegio.ogg` | `arpegio` | 速さ 0.45 · 音数 1.00 · ミックス 0.50 · モード 0.00 · エコー 0.40 · ディケイ 0.60 | 3.00 → 5.00 s |
 | `demo_cadena_eco_y_muelle.ogg` | Eco y muelle: `delay` → `spring` | pot0 0.55 · pot1 0.40 · pot2 0.35 · pot3 0.60 · pot4 0.40 · pot5 0.00 | — |
 | `demo_cadena_flor_al_reves.ogg` | Flor al revés: `reverse` → `bloom` | pot0 0.60 · pot1 0.40 · pot2 0.50 · pot3 0.80 · pot4 0.55 · pot5 0.40 | — |
 | `demo_cadena_organo_infinito.ogg` | Órgano infinito: `octava` → `infinite` | pot0 0.60 · pot1 0.40 · pot2 0.00 · pot3 0.10 · pot4 0.50 · pot5 0.00 | — |
