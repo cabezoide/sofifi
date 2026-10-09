@@ -1,4 +1,8 @@
 # SPDX-License-Identifier: MIT
-# Instalar: sudo cp scripts/udev/99-tang-primer-25k.rules /etc/udev/rules.d/ && sudo udevadm control --reload && sudo udevadm trigger
-# Tang Primer 25K: depurador integrado (emula FT2232) para openFPGALoader
+# Tang Primer 25K: depurador integrado (emula FT2232) para openFPGALoader.
+# Da acceso al USB de la placa sin sudo (make prog y scripts/fpga.sh prog).
+# Instalar una vez:
+#   sudo cp scripts/udev/99-tang-primer-25k.rules /etc/udev/rules.d/
+#   sudo udevadm control --reload && sudo udevadm trigger
+# El acceso llega por el grupo plugdev o por la sesión local (uaccess).
 SUBSYSTEM=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", MODE="0664", GROUP="plugdev", TAG+="uaccess"

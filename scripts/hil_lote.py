@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: MIT
 """Prueba en la placa una lista de programas y cadenas, uno detrás de otro.
 
+Cuándo: al añadir un lote de programas al catálogo, o para repetir la prueba
+de todo el catálogo en el silicio.
+
 Uso::
 
     .venv/bin/python scripts/hil_lote.py --todos          # todo lo que cabe en hil_nucleo
@@ -11,6 +14,9 @@ comparación con el modelo) y escribe una fila en ``build/hil_lote.csv``:
 nombre, resultado, muestras iguales, ciclos por muestra en la placa y MHz que
 da nextpnr. Cada nombre tarda unos 4 minutos. Los que no caben en la memoria de
 hil_nucleo se saltan con ``--todos``.
+
+Necesita la placa, la UART en ``/dev/ttyUSB1`` y la cadena EDA del ``.venv``.
+Salida: 0 si todos son iguales al modelo; 1 si alguno no lo es.
 """
 
 from __future__ import annotations
@@ -73,7 +79,11 @@ def probar(nombre: str) -> dict[str, str]:
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("nombres", nargs="*")
+    ap.add_argument(
+        "nombres",
+        nargs="*",
+        help="programas (programas/NOMBRE.sasm) o cadenas (presets/cadenas.toml)",
+    )
     ap.add_argument("--todos", action="store_true", help="todo lo que cabe en hil_nucleo")
     args = ap.parse_args(argv)
     nombres = caben() if args.todos else args.nombres

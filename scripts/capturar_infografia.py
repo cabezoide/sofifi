@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: MIT
 """Captura una sección de una infografía como PNG a escala 2 (para el README).
 
+Cuándo: al cerrar una fase, después de actualizar las infografías (paso 4 de
+``CLAUDE.md``). La compuerta ``cierre`` falla si una captura es antigua.
+
 Uso::
 
     .venv/bin/python scripts/capturar_infografia.py \\
@@ -13,11 +16,15 @@ infografía actual.
 
 La sección es el ``id`` de un hijo directo de ``.envoltorio`` (``portada``,
 ``porque``, ``ruta``). Solo biblioteca estándar y chrome-headless-shell (caché
-de Playwright):
+de Playwright, ``~/.cache/ms-playwright``):
 
 1. Una copia de la página oculta las demás secciones.
 2. Un primer paso de Chrome (``--dump-dom``) mide la altura de la sección.
 3. El segundo paso captura una ventana de 1 080 px de ancho y esa altura, a escala 2.
+
+Escribe los PNG y ``docs/img/capturas.json``. Salida: 0 bien; 1 argumentos
+incorrectos o falta chrome-headless-shell (en los dos casos imprime esta
+ayuda).
 """
 
 from __future__ import annotations

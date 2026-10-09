@@ -1,5 +1,18 @@
 # SPDX-License-Identifier: MIT
-"""Extrae del informe JSON de nextpnr el uso de recursos y la frecuencia alcanzada."""
+"""Extrae del informe JSON de nextpnr el uso de recursos y la frecuencia alcanzada.
+
+Cuándo: lo llama ``scripts/fpga.sh synth`` al final de cada síntesis. No se
+llama a mano.
+
+Uso::
+
+    .venv/bin/python scripts/informe_recursos.py build/<top>.informe.json
+
+Lee el informe de nextpnr y escribe en la salida estándar un JSON con dos
+claves: ``recursos`` (celdas usadas y disponibles) y ``relojes`` (MHz
+alcanzados y objetivo). ``fpga.sh`` lo guarda en ``build/<top>_recursos.json``.
+El argumento es obligatorio. Salida: 0 bien.
+"""
 
 from __future__ import annotations
 

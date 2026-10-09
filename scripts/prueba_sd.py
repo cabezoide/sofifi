@@ -1,16 +1,23 @@
 # SPDX-License-Identifier: MIT
 """Prueba de la microSD en la placa (Fase 08): carga ranuras y las compara con el modelo.
 
+Cuándo: Fase 08, para probar el lector de la microSD con una tarjeta real.
+
 Uso (antes, escribir la imagen en la tarjeta: docs/microsd.md)::
 
     make prog TOP=prueba_sd
     .venv/bin/python scripts/prueba_sd.py --imagen build/banco.img
+    .venv/bin/python scripts/prueba_sd.py --imagen build/banco.img --ranuras 0 1
 
 Pide el estado a rtl/top/prueba_sd.v ('S'): qué revisión del PMOD TF respondió
 y el código de error de sd_spi. Después carga cada ranura ('L' + 2 bytes) y
 compara las instrucciones, la memoria y el CRC-32 del microcódigo escrito con lo
-que lee el modelo de la misma imagen (sofifi.domain.banco). Termina con código
-0 si todas coinciden.
+que lee el modelo de la misma imagen (sofifi.domain.banco). Una ranura fuera
+del banco debe dar el motivo 4.
+
+Necesita la placa, el PMOD TF en J6, la tarjeta con la imagen y la UART en
+``/dev/ttyUSB1``. No escribe ficheros. Salida: 0 si todas las ranuras
+coinciden; 1 si alguna no coincide o no responde el PMOD TF.
 """
 
 from __future__ import annotations
@@ -65,8 +72,10 @@ def crc_microcodigo(palabras: list[int]) -> int:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--imagen", type=Path, required=True, help="la imagen escrita en la tarjeta")
-    ap.add_argument("--puerto", default="/dev/ttyUSB1")
-    ap.add_argument("--ranuras", type=int, nargs="*", help="por defecto, todas")
+    ap.add_argument(
+        "--puerto", default="/dev/ttyUSB1", help="UART de la FPGA (por defecto: %(default)s)"
+    )
+    ap.add_argument("--ranuras", type=int, nargs="*", help="números de ranura; por defecto, todas")
     args = ap.parse_args(argv)
     imagen = args.imagen.read_bytes()
     numero = leer_cabecera(imagen[:BLOQUE])

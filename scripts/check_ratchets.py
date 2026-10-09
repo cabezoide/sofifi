@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: MIT
 """Compuerta ``ratchets`` (SPEC_RAIZ §9.1, P4): las magnitudes no empeoran en silencio.
 
+Cuándo: trabajo duro de ``scripts/ci_local.sh``. Corre después de ``model``,
+porque lee ``.coverage.json``. ``make optimizacion`` lo corre tras la síntesis.
+
 Cada entrada de ``docs/ratchets.yaml`` nombra una ``medida`` de este módulo, un
 ``liston`` y una ``direccion``. Si la medida queda peor que el listón, rojo. Si
 mejora por encima de ``aviso_holgura``, aviso: hay que mover el listón para no
@@ -12,6 +15,14 @@ medición, después el objetivo), aunque no tengan listón.
 Además de las de ``MEDIDAS``, hay una medida por top y celda,
 ``recursos:<top>:<celda>`` (por ejemplo ``recursos:hola_uart:LUT4``), que lee
 ``build/<top>_recursos.json``: lo deja el trabajo ``optimizacion`` (ADR 0010).
+Sin ese fichero, el listón sale como ``NO CORRIÓ`` y no bloquea.
+
+Uso::
+
+    .venv/bin/python scripts/check_ratchets.py
+
+No tiene opciones y no escribe nada. Salida: 0 bien; 1 un listón empeora o una
+medida no se puede medir.
 """
 
 from __future__ import annotations

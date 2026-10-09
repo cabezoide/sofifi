@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: MIT
 """Mide en la placa el margen de reloj real del núcleo (ADR 0011, fails.md F-11).
 
+Cuándo: después de cambiar el núcleo o el top HIL. El timing se mide en la
+placa, no se cree a nextpnr (ADR 0011).
+
 nextpnr es optimista con el GW5A: un diseño que da 132 MHz en su análisis
 fallaba a 100 en el silicio. Este script cambia **solo** el divisor del PLL en el
 JSON ya rutado (la colocación y el rutado no cambian), vuelve a empaquetar,
@@ -10,15 +13,21 @@ frecuencia. La UART se escala con el reloj.
 Uso::
 
     make synth TOP=hil_nucleo
+    make synth TOP=prueba_pll
     .venv/bin/python scripts/margen_reloj.py                 # 100 y 114,3 MHz, 3 veces
     .venv/bin/python scripts/margen_reloj.py --divisores 8 7 6 --repeticiones 1
     .venv/bin/python scripts/margen_reloj.py --traza   # si falla, qué instrucción
+    .venv/bin/python scripts/margen_reloj.py --base hil_looper --programa looper
 
 Divisor del PLL → frecuencia, con el VCO de 800 MHz (``--mdiv 16``): 8 → 100 MHz,
 7 → 114,3 MHz, 6 → 133,3 MHz. Para puntos intermedios se cambia también el
 multiplicador del VCO: con ``--mdiv 20`` (1 000 MHz), 9 → 111,1 MHz, 8 → 125 MHz.
 Al terminar carga prueba_pll, que envía poco: el puente del BL616 se cuelga si
 se reprograma con la FPGA enviando a caudal alto (F-02).
+
+Necesita la placa, la UART en ``/dev/ttyUSB1``, ``build/<base>.pnr.json`` y
+``build/prueba_pll.fs``. Escribe los bitstreams en ``build/exp/``.
+Salida: 0 si todas las capturas a 100 MHz coinciden con el modelo; 1 si no.
 """
 
 from __future__ import annotations
@@ -75,10 +84,20 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--base", default="hil_nucleo", help="top ya rutado en build/")
     ap.add_argument("--programa", default="plate", help="el de la ROM del top: plate o looper")
-    ap.add_argument("--divisores", type=int, nargs="+", default=[8, 7])
+    ap.add_argument(
+        "--divisores",
+        type=int,
+        nargs="+",
+        default=[8, 7],
+        help="divisores del PLL (por defecto: 8 7)",
+    )
     ap.add_argument("--mdiv", type=int, default=16, help="VCO = 50 MHz × MDIV")
-    ap.add_argument("--repeticiones", type=int, default=3)
-    ap.add_argument("--puerto", default="/dev/ttyUSB1")
+    ap.add_argument(
+        "--repeticiones", type=int, default=3, help="capturas por frecuencia (por defecto: 3)"
+    )
+    ap.add_argument(
+        "--puerto", default="/dev/ttyUSB1", help="UART de la FPGA (por defecto: %(default)s)"
+    )
     ap.add_argument(
         "--traza", action="store_true", help="si falla, localiza la primera instrucción mal"
     )

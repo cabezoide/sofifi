@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: MIT
 """Compuerta ``i18n`` (ADR 0007): las traducciones no mienten sobre su frescura.
 
+Cuándo: trabajo duro de ``scripts/ci_local.sh`` (pre-push y ``make ci``).
+Se resella una traducción cada vez que se pone al día con su fuente.
+
 Cada documento traducido (``TRADUCIDOS``) tiene una traducción por idioma, y cada
 traducción empieza con un sello::
 
@@ -17,8 +20,12 @@ No comprueba la calidad de la traducción.
 
 Uso::
 
-    scripts/check_i18n.py                      # comprobar
-    scripts/check_i18n.py --sellar README.en.md  # resellar tras actualizar la traducción
+    .venv/bin/python scripts/check_i18n.py                         # comprobar
+    .venv/bin/python scripts/check_i18n.py --sellar README.en.md   # resellar
+
+``--sellar`` acepta un fichero por llamada. Escribe solo la primera línea de esa
+traducción. Salida: 0 bien; 1 hay errores o falta el sello; 2 argumentos
+incorrectos (imprime esta ayuda).
 """
 
 from __future__ import annotations
@@ -39,6 +46,7 @@ TRADUCIDOS = (
     "docs/programas.md",
     "docs/arquitectura_fpga.md",
     "docs/EXTENDING.md",
+    "docs/scripts.md",
     "BOM.md",
     "SBOM.md",
     "fails.md",

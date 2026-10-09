@@ -3,6 +3,11 @@
 #
 # Higiene de secretos (SPEC_RAIZ §8.2) sobre lo que git VERSIONA de verdad
 # (índice + no ignorados), no sobre el disco.
+# Cuándo: trabajo duro `secrets` de scripts/ci_local.sh (pre-push y make ci).
+# Comprueba: ficheros prohibidos (.env, claves, bases de datos), patrones de
+# credencial real y tamaño (1 MiB por fichero; 4 MiB por demo .ogg).
+# Uso: scripts/check_secrets_hygiene.sh   (sin opciones; no escribe nada)
+# Salida: 0 limpio; 1 si encuentra algo.
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 

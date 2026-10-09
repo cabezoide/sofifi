@@ -2,6 +2,9 @@
 # ruff: noqa: E501 — la tabla de textos de las guías (_GUIA) tiene frases largas
 """Genera ``schematics/``: un esquemático en PDF por cada módulo de ``rtl/``.
 
+Cuándo: después de cambiar un módulo RTL (ADR 0012). ``--comprobar`` es el
+trabajo blando ``esquematicos`` de ``scripts/ci_local.sh``.
+
 Los esquemáticos se generan desde el RTL; no se dibujan a mano. Por módulo:
 
 1. Yosys lee todo ``rtl/`` (con ``SIMULACION``, como el lint) y elabora el módulo
@@ -17,12 +20,17 @@ Los esquemáticos se generan desde el RTL; no se dibujan a mano. Por módulo:
 
 Uso::
 
+    make esquematicos                                     # npm install y regenera
     .venv/bin/python scripts/esquematicos.py              # regenera los que cambian
     .venv/bin/python scripts/esquematicos.py --todos      # regenera todos
     .venv/bin/python scripts/esquematicos.py --comprobar  # solo comprueba
 
 Requisitos: ``npm install`` en ``herramientas/esquematicos`` y chrome-headless-shell
-(caché de Playwright).
+(caché de Playwright). ``--comprobar`` no los necesita.
+
+Escribe ``schematics/<carpeta>/<módulo>.pdf``, ``schematics/README.md`` y sus tres
+traducciones selladas. Salida: 0 bien; 1 hay esquemáticos desactualizados
+(con ``--comprobar``) o faltan netlistsvg o Chrome.
 """
 
 from __future__ import annotations

@@ -1,6 +1,10 @@
 # SPDX-License-Identifier: MIT
 """Regenera ``demo_examples/``: una guitarra sintética y su paso por cada programa y cadena.
 
+Cuándo: después de cambiar un programa o una cadena que tiene demo. Si cambia
+el audio de un programa, cambia también su huella en
+``model/tests/programas_test.py``.
+
 La guitarra es un arpegio de Em9 con cuerdas Karplus-Strong y semilla fija. El
 núcleo es bit-exact y no hay remuestreo (la señal ya está a 48 828 Hz), así que
 el audio es determinista.
@@ -10,9 +14,15 @@ menos que un WAV. El códec da el mismo audio cada vez, pero el fichero cambia
 en su número de serie. Por eso un ``.ogg`` solo se reescribe si su audio cambia:
 regenerar sin cambios no toca git.
 
-Uso: ``.venv/bin/python scripts/generar_demos.py`` (unos 2 min en 8 núcleos;
-necesita ``pip install -e '.[demos]'``). Con ``--readme`` solo escribe las guías
-``demo_examples/README*.md``, en cuatro idiomas.
+Uso::
+
+    .venv/bin/python scripts/generar_demos.py            # guías y todas las demos
+    .venv/bin/python scripts/generar_demos.py --readme   # solo las guías
+
+Tarda unos 2 min en 8 núcleos. Necesita ``pip install -e '.[demos]'``
+(``make install`` lo incluye). Escribe ``demo_examples/*.ogg`` y las guías
+``demo_examples/README*.md`` en cuatro idiomas. No tiene ``--help``: un
+argumento distinto de ``--readme`` regenera todo. Salida: 0 bien.
 """
 
 from __future__ import annotations

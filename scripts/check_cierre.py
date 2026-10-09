@@ -4,6 +4,8 @@
 La persona propietaria la pidió el 2026-10-08 (ADR 0001, actualización). La
 versión del proyecto es la última fase cerrada de ``docs/fases/estado_fases.csv``.
 
+Cuándo: trabajo duro de ``scripts/ci_local.sh`` (pre-push y ``make ci``).
+
 Siempre comprueba:
 
 1. Los README de los cuatro idiomas declaran esa versión (`` `0.N` ``).
@@ -18,6 +20,13 @@ En la rama que cierra una fase (``estado_fases.csv`` cambia respecto de
 4. Ninguna traducción está declarada ``desactualizada`` (ADR 0007).
 5. ``docs/arquitectura_fpga.md`` tiene la sección de esa fase.
 6. La spec de la fase dice que está cerrada.
+
+Uso::
+
+    .venv/bin/python scripts/check_cierre.py
+
+No tiene opciones y no escribe nada. Necesita git (compara con ``origin/main``
+o ``main``). Salida: 0 bien; 1 hay errores (uno por línea).
 """
 
 from __future__ import annotations

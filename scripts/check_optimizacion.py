@@ -1,15 +1,27 @@
 # SPDX-License-Identifier: MIT
 """Compuerta ``optimizacion`` (ADR 0010): sintetiza cada top y busca lo que sobra.
 
+Cuándo: clase release de ``scripts/ci_local.sh``. Solo corre si se nombra:
+``make optimizacion`` (con ``ratchets``) antes de abrir cada PR, y
+``make release-check``. Tarda unos 3 minutos (``CLAUDE.md``).
+
 Para cada top de ``rtl/top/tops.txt`` ejecuta ``scripts/fpga.sh synth`` (que deja
 ``build/<top>_recursos.json``) y luego:
 
 - **bloquea** si algún reloj no alcanza su frecuencia objetivo;
-- imprime **pistas** para la segunda vuelta antes del PR. No bloquean: cada una
-  se optimiza o se justifica en la descripción del PR.
+- imprime **pistas** (líneas ``PISTA``) para la segunda vuelta antes del PR. No
+  bloquean: cada una se optimiza o se justifica en la descripción del PR.
 
 Los listones de recursos (que no empeoren) los aplica ``ratchets`` con las medidas
 ``recursos:<top>:<celda>``, que leen el JSON que deja este trabajo.
+
+Uso::
+
+    make optimizacion
+
+Necesita la cadena EDA del ``.venv`` (``make install``); no necesita la placa.
+No tiene opciones: cualquier argumento se ignora. Escribe en ``build/``.
+Salida: 0 si todos los relojes cierran; 1 si un top no sintetiza o no cierra.
 
 No comprueba que el diseño sea mínimo: las pistas son heurísticas, y un diseño
 sin pistas aún puede sobrar. Para eso está la segunda vuelta.
