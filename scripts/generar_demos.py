@@ -98,6 +98,13 @@ DEMOS: tuple[tuple[str, dict[int, str], tuple[tuple[float, float], ...], float],
     ("sostenido", {0: "0.2", 1: "0.3", 2: "0.5", 3: "0.3"}, (), 6.0),
     ("shoegaze", {0: "0.85", 1: "0.3", 2: "0.55", 3: "0.8"}, (), 5.0),
     ("bruma", {0: "0.7", 1: "0.55", 2: "0.5", 3: "1"}, (), 5.0),
+    ("armonico", {0: "0.3", 1: "0.75", 2: "0.35", 3: "0.5", 4: "0.1", 5: "0.8"}, (), 1.0),
+    ("arcoiris", {0: "0.79", 1: "0", 2: "0.5", 3: "0.3", 4: "0.75", 5: "0.6"}, ((2.5, 4.0),), 5.0),
+    ("tambor", {0: "0.55", 1: "0.5", 2: "0.45", 3: "0.85", 4: "0.4", 5: "0.6"}, ((3.5, 5.0),), 5.0),
+    ("mosaico", {0: "0.6", 1: "0.7", 2: "0.55", 3: "0.5", 4: "0.85", 5: "0.6"}, ((4.0, 8.0),), 6.0),
+    # Graba el arpegio entero y lo deja desgastarse vuelta a vuelta hasta la niebla.
+    ("erosion", {0: "0.25", 1: "0.6", 2: "0.65", 3: "0.7", 4: "1", 5: "1"}, ((0.0, 0.67),), 6.0),
+    ("desplazador", {0: "0.75", 1: "0.45", 2: "0.5", 3: "0.85", 4: "0.7", 5: "0.5"}, (), 6.0),
 )
 # Cadenas del banco (presets/cadenas.toml, ADR 0013), con sus pots: (nombre, cola en segundos).
 DEMOS_CADENAS: tuple[tuple[str, float], ...] = (

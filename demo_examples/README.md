@@ -56,6 +56,12 @@ Una guitarra sintética (arpegio de Em9, cuerdas Karplus-Strong) procesada por c
 | `demo_sostenido.ogg` | `sostenido` | capas 0,20 · damping 0,30 · mezcla 0,50 · captura 0,30 | — |
 | `demo_shoegaze.ogg` | `shoegaze` | decay 0,85 · damping 0,30 · mezcla 0,55 · saturación 0,80 | — |
 | `demo_bruma.ogg` | `bruma` | difusión 0,70 · realimentación 0,55 · mezcla 0,50 · cabezas 1,00 | — |
+| `demo_armonico.ogg` | `armonico` | velocidad 0,30 · profundidad 0,75 · eco 0,35 · frecuencia 0,50 · forma 0,10 · ancho 0,80 | — |
+| `demo_arcoiris.ogg` | `arcoiris` | intervalo 0,79 · segunda voz 0,00 · mezcla 0,50 · tiempo 0,30 · realimentación 0,75 · tono 0,60 | 2,50 → 4,00 s |
+| `demo_tambor.ogg` | `tambor` | velocidad 0,55 · realimentación 0,50 · mezcla 0,45 · cabezas 0,85 · edad 0,40 · tono 0,60 | 3,50 → 5,00 s |
+| `demo_mosaico.ogg` | `mosaico` | octava baja 0,60 · nivel 0,70 · mezcla 0,55 · octava alta 0,50 · realimentación 0,85 · difusión 0,60 | 4,00 → 8,00 s |
+| `demo_erosion.ogg` | `erosion` | erosión 0,25 · damping 0,60 · mezcla 0,65 · modulación 0,70 · nivel 1,00 · duración 1,00 | 0,00 → 0,67 s |
+| `demo_desplazador.ogg` | `desplazador` | desplazamiento 0,75 · tiempo 0,45 · mezcla 0,50 · realimentación 0,85 · tono 0,70 · ancho 0,50 | — |
 | `demo_cadena_eco_y_muelle.ogg` | Eco y muelle: `delay` → `spring` | pot0 0,55 · pot1 0,40 · pot2 0,35 · pot3 0,60 · pot4 0,40 · pot5 0,00 | — |
 | `demo_cadena_flor_al_reves.ogg` | Flor al revés: `reverse` → `bloom` | pot0 0,60 · pot1 0,40 · pot2 0,50 · pot3 0,80 · pot4 0,55 · pot5 0,40 | — |
 | `demo_cadena_organo_infinito.ogg` | Órgano infinito: `octava` → `infinite` | pot0 0,60 · pot1 0,40 · pot2 0,00 · pot3 0,10 · pot4 0,50 · pot5 0,00 | — |

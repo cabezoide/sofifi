@@ -1,4 +1,4 @@
-<!-- i18n: fuente=fails.md sha=2e3f3b481e49 estado=al_dia -->
+<!-- i18n: fuente=fails.md sha=a86581e83fcd estado=al_dia -->
 # Failures and their resolution
 
 This is the record of the failures found in the project. Each entry has a symptom, a diagnosis, a root cause, a resolution and a lesson. The record helps us not to repeat them. It also explains why the design is as it is.
@@ -32,6 +32,7 @@ Add a new entry when a failure is diagnosed and resolved. Do not rewrite the ent
 | F-23 | 07 | A chain with saturation was six times louder than the plate | resolved before publication |
 | F-24 | 07 | The microcode queue took the last BSRAM | resolved |
 | F-25 | 08 | Three failures of the SD controller, found in simulation | resolved before the board |
+| F-26 | 08 | Four fixed-point traps in batch 9 of the catalogue | resolved before publication |
 
 ---
 
@@ -283,3 +284,24 @@ Add a new entry when a failure is diagnosed and resolved. Do not rewrite the ent
   - **Cause:** the microcode blocks wrote over the saved bytes of the metadata.
   - **Resolution:** the loader saves only the bytes of the header and of the metadata.
 - **Lesson:** the card model in cocotb and the images from `sofifi banco` found the three failures before the board. Write constants of more than one byte in hexadecimal.
+
+## F-26 · Four fixed-point traps in batch 9 of the catalogue
+
+The acoustic tests of the new programs found four failures before publication.
+
+- **The FV-1-form allpass saturates with poles near 1** (`desplazador`).
+  - **Symptom:** the echo came out at one quarter of its level, and the opposite sideband fell only 31 dB.
+  - **Cause:** the RDA + WRAP form keeps a state that grows as 1/(1 − k). With k = 0.998, the 18-bit word saturates.
+  - **Resolution:** direct form I: each stage keeps its output and the next stage reads it as x[n−1]. The opposite sideband falls 64 dB.
+- **An RDAX coefficient larger than 1 saturates before SOF** (`desplazador`).
+  - **Symptom:** the width knob and the footswitch did nothing.
+  - **Cause:** SOF reads a24, the ACC saturated to [−1, 1). `rdax pot, -2.0` is already −1 before the addition.
+  - **Resolution:** `rdax pot, -1.0` and then `sof 1.999, 0.99999`.
+- **WRAX saturates the register below 1** (`arcoiris`).
+  - **Symptom:** a regeneration of 1.1 stayed at 0.99999 and the loop did not oscillate.
+  - **Resolution:** the gain larger than 1 goes in the coefficient (`rdax fb, 1.1`), not in a register.
+- **A fractional loop length stops the loop** (`erosion`).
+  - **Symptom:** with erosion 0, the loop lost treble and level on each pass.
+  - **Cause:** the read fell between two samples. The interpolation is a low-pass filter, and it applies once on each pass.
+  - **Resolution:** the length is rounded to whole samples. With erosion 0, the loop repeats bit for bit.
+- **Lesson:** in fixed point, the ACC and the registers saturate to [−1, 1). In a loop with feedback, a hidden filter is raised to the number of passes. The tests measure the level and the exact repetition, not only that «it makes a sound».

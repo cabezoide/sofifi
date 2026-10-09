@@ -1,0 +1,222 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: looper
+; resumen: Bucle sonido sobre sonido de 0,67 s que suena a la vez a ½×, 1× y 2×.
+; resumen.en: A 0.67 s sound-on-sound loop that plays at ½×, 1× and 2× at the same time.
+; resumen.zh-CN: 0.67 秒的声上叠声循环，同时以 ½×、1× 和 2× 播放。
+; resumen.ja: 0.67 秒のサウンド・オン・サウンドのループを ½×、1×、2× で同時に再生します。
+;
+; mosaico.sasm — pad de tres octavas en la región absoluta (RDAA y WRAA, ADR 0009).
+;
+; 1. La región absoluta es un bucle de 32 768 muestras (0,67 s). En cada muestra,
+;    la cabeza `w` lee lo que grabó hace una vuelta. Esa lectura es la voz 1×.
+; 2. La cabeza escribe en el mismo sitio la entrada más la voz 1× por la
+;    realimentación. Un paso bajo suave oscurece cada vuelta. Un CLIP limita la
+;    suma, así que el pad no satura aunque crezca.
+; 3. La voz 2× lee con un puntero que avanza dos muestras por cada una. La voz
+;    ½× lee con uno que avanza media muestra e interpola. Cada voz tiene una
+;    fase φ: la distancia de su cabeza A a la escritura, en vueltas.
+; 4. Una cabeza que va a otra velocidad cruza la escritura y salta. Por eso
+;    cada voz lee con dos cabezas a media vuelta. La ventana de la cabeza A es
+;    sin²(πφ) y la de la B, su complemento: la ganancia es constante y el salto
+;    cae donde la ventana vale 0. El seno sale sin tabla, como en granular.sasm.
+; 5. Las tres voces se suman y pasan por cuatro allpass cortos (dos por canal).
+;
+; Con `sw` pulsado, el bucle se congela: no se graba nada y las tres voces
+; repiten lo que hay.
+;
+; pot0 = octava baja      (nivel de la voz ½×: 0 → nada · 1 → nivel completo)
+; pot1 = nivel            (nivel de la voz 1×: 0 → nada · 1 → nivel completo)
+; pot2 = mezcla           (0 → seco · 1 → solo el pad)
+; pot3 = octava alta      (nivel de la voz 2×: 0 → nada · 1 → nivel completo)
+; pot4 = realimentación   (0 → 0,3: el pad dura unas vueltas · 1 → 0,98: casi infinito)
+; pot5 = difusión         (0 → voces nítidas · 1 → difusas)
+;
+; Diseño propio, a partir del principio de los loopers que apilan capas a
+; varias velocidades (ZOIA «Astral Temple» y «SOS tape looper», inspirados en el
+; modo Mosaic del Hologram Microcosm).
+
+equ  ka     0.6             ; difusión de cada allpass
+equ  kclip  2/3             ; CLIP tiene pendiente 1,5: esto la deja en 1
+
+equ  u      reg0            ; una muestra: 2^-15
+equ  uh     reg1            ; media muestra
+equ  h      reg2            ; 0,5: con -2,0 resta 1
+equ  hn     reg3            ; -0,5: con -2,0 suma 1
+equ  w      reg4            ; cabeza de escritura y de la voz 1×
+equ  f2     reg5            ; fase de la voz 2× (baja una muestra por muestra)
+equ  fm     reg6            ; fase de la voz ½× (sube media muestra por muestra)
+equ  pa     reg7            ; cabeza A
+equ  pb     reg8            ; cabeza B, a media vuelta de la A
+equ  t      reg9
+equ  tv     reg10
+equ  v1     reg11           ; voz 1×
+equ  voz    reg12           ; suma de las voces
+equ  lp     reg13           ; paso bajo de la realimentación
+equ  fb     reg14
+equ  s      reg15           ; salida de los allpass comunes
+equ  kwet   reg16
+equ  kdry   reg17
+
+mem  ap1    211
+mem  ap2    347
+mem  ap3    563
+mem  ap4    769
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 1/32768
+        wrax  u, 0.5
+        wrax  uh, 0
+        sof   0, 0.5
+        wrax  h, 0
+        sof   0, -0.5
+        wrax  hn, 0
+        sof   0, 0.25
+        wrax  f2, 0                     ; la voz 2× suena antes con φ = 0,25
+inicio:
+; ── mandos ───────────────────────────────────────────────────────────
+include  comun/mezcla.sasm
+        rdax  pot4, 0.68*kclip
+        sof   1.0, 0.3*kclip
+        wrax  fb, 0                     ; (0,3 a 0,98)·2/3
+; ── voz 1× y escritura: entrada + realimentación ─────────────────────
+        rdaa  w, 1.0                    ; lo grabado hace una vuelta
+        wrax  v1, 1.0
+        rdfx  lp, 0.6
+        wrax  lp, 1.0
+        mulx  fb
+        rdax  adcl, 0.25*kclip
+        rdax  adcr, 0.25*kclip
+        clip
+        wrax  t, 0
+        rdax  sw, 1.0
+        skp   zro, grabar
+        clr
+        skp   zro, avanzar_w            ; congelado: no se escribe
+grabar:
+        rdax  t, 1.0
+        wraa  w, 0
+avanzar_w:
+        clr
+        rdax  w, 1.0
+        rdax  u, 1.0
+        rdax  h, -2.0
+        skp   gez, w_listo
+        rdax  hn, -2.0
+w_listo:
+        wrax  w, 0
+; ── voz 2×: φ baja una muestra, la cabeza avanza dos ─────────────────
+        rdax  f2, 1.0
+        rdax  u, -1.0
+        skp   gez, f2_listo
+        rdax  hn, -2.0
+f2_listo:
+        wrax  f2, 0
+        rdax  w, 1.0
+        rdax  f2, -1.0
+        wrax  pa, 1.0                   ; pa = w − φ: RDAA lo toma módulo 1
+        skp   neg, f2_suma
+        sof   1.0, -0.5
+        wrax  pb, 0
+        skp   zro, f2_ventana
+f2_suma:
+        sof   1.0, 0.5
+        wrax  pb, 0
+f2_ventana:
+        rdax  f2, 1.0
+        wrax  t, -1.0
+        sof   1.0, 32767/32768          ; 1 − φ
+        mulx  t
+        wrax  t, 1.0
+        rdax  t, 1.0
+        rdax  t, 1.0
+        rdax  t, 1.0                    ; p = 4φ(1 − φ)
+        wrax  t, 0.225
+        sof   1.0, 0.775
+        mulx  t                         ; ≈ sin(πφ)
+        wrax  t, 1.0
+        mulx  t
+        wrax  t, 0                      ; ventana de A
+        rdaa  pb, 1.0
+        wrax  tv, -1.0
+        rdaa  pa, 1.0
+        mulx  t
+        rdax  tv, 1.0
+        mulx  pot3
+        wrax  voz, 0
+; ── voz ½×: φ sube media muestra, la cabeza avanza media ─────────────
+        rdax  fm, 1.0
+        rdax  uh, 1.0
+        rdax  h, -2.0
+        skp   gez, fm_listo
+        rdax  hn, -2.0
+fm_listo:
+        wrax  fm, 0
+        rdax  w, 1.0
+        rdax  fm, -1.0
+        wrax  pa, 1.0
+        skp   neg, fm_suma
+        sof   1.0, -0.5
+        wrax  pb, 0
+        skp   zro, fm_ventana
+fm_suma:
+        sof   1.0, 0.5
+        wrax  pb, 0
+fm_ventana:
+        rdax  fm, 1.0
+        wrax  t, -1.0
+        sof   1.0, 32767/32768
+        mulx  t
+        wrax  t, 1.0
+        rdax  t, 1.0
+        rdax  t, 1.0
+        rdax  t, 1.0
+        wrax  t, 0.225
+        sof   1.0, 0.775
+        mulx  t
+        wrax  t, 1.0
+        mulx  t
+        wrax  t, 0
+        rdaa  pb, 1.0
+        wrax  tv, -1.0
+        rdaa  pa, 1.0
+        mulx  t
+        rdax  tv, 1.0
+        mulx  pot0
+        rdax  voz, 1.0
+        wrax  voz, 0
+        rdax  v1, 1.0
+        mulx  pot1
+        rdax  voz, 1.0
+        wrax  voz, 0
+; ── difusión y salida ────────────────────────────────────────────────
+        rdax  voz, 1.0
+        rda   ap1#, ka
+        wrap  ap1, -ka
+        rda   ap2#, ka
+        wrap  ap2, -ka
+        wrax  s, 1.0
+        rda   ap3#, ka
+        wrap  ap3, -ka
+        rdax  voz, -1.0
+        mulx  pot5
+        rdax  voz, 1.0
+        mulx  kwet
+        wrax  t, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  t, 1.0
+        wrax  dacl, 0
+        rdax  s, 1.0
+        rda   ap4#, ka
+        wrap  ap4, -ka
+        rdax  voz, -1.0
+        mulx  pot5
+        rdax  voz, 1.0
+        mulx  kwet
+        wrax  t, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  t, 1.0
+        wrax  dacr, 0

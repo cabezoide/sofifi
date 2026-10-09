@@ -1,4 +1,4 @@
-<!-- i18n: fuente=demo_examples/README.md sha=652d4c2773fe estado=al_dia -->
+<!-- i18n: fuente=demo_examples/README.md sha=a6d916286d67 estado=al_dia -->
 # demo_examples
 
 A synthetic guitar (an Em9 arpeggio, Karplus-Strong strings) through each core program, with the bit-exact model. Generate them again with `.venv/bin/python scripts/generar_demos.py`: the audio is the same each time.
@@ -57,6 +57,12 @@ A synthetic guitar (an Em9 arpeggio, Karplus-Strong strings) through each core p
 | `demo_sostenido.ogg` | `sostenido` | layers 0.20 · damping 0.30 · mix 0.50 · capture 0.30 | — |
 | `demo_shoegaze.ogg` | `shoegaze` | decay 0.85 · damping 0.30 · mix 0.55 · saturation 0.80 | — |
 | `demo_bruma.ogg` | `bruma` | diffusion 0.70 · feedback 0.55 · mix 0.50 · heads 1.00 | — |
+| `demo_armonico.ogg` | `armonico` | rate 0.30 · depth 0.75 · echo 0.35 · frequency 0.50 · shape 0.10 · width 0.80 | — |
+| `demo_arcoiris.ogg` | `arcoiris` | interval 0.79 · second voice 0.00 · mix 0.50 · time 0.30 · feedback 0.75 · tone 0.60 | 2.50 → 4.00 s |
+| `demo_tambor.ogg` | `tambor` | rate 0.55 · feedback 0.50 · mix 0.45 · heads 0.85 · age 0.40 · tone 0.60 | 3.50 → 5.00 s |
+| `demo_mosaico.ogg` | `mosaico` | lower octave 0.60 · level 0.70 · mix 0.55 · upper octave 0.50 · feedback 0.85 · diffusion 0.60 | 4.00 → 8.00 s |
+| `demo_erosion.ogg` | `erosion` | erosion 0.25 · damping 0.60 · mix 0.65 · modulation 0.70 · level 1.00 · length 1.00 | 0.00 → 0.67 s |
+| `demo_desplazador.ogg` | `desplazador` | frequency shift 0.75 · time 0.45 · mix 0.50 · feedback 0.85 · tone 0.70 · width 0.50 | — |
 | `demo_cadena_eco_y_muelle.ogg` | Eco y muelle: `delay` → `spring` | pot0 0.55 · pot1 0.40 · pot2 0.35 · pot3 0.60 · pot4 0.40 · pot5 0.00 | — |
 | `demo_cadena_flor_al_reves.ogg` | Flor al revés: `reverse` → `bloom` | pot0 0.60 · pot1 0.40 · pot2 0.50 · pot3 0.80 · pot4 0.55 · pot5 0.40 | — |
 | `demo_cadena_organo_infinito.ogg` | Órgano infinito: `octava` → `infinite` | pot0 0.60 · pot1 0.40 · pot2 0.00 · pot3 0.10 · pot4 0.50 · pot5 0.00 | — |

@@ -3,7 +3,7 @@
 
 # Programas del núcleo
 
-51 programas y 408 presets. Cada programa es un fichero de texto en `programas/`; los presets están en `presets/banco.toml`.
+57 programas y 456 presets. Cada programa es un fichero de texto en `programas/`; los presets están en `presets/banco.toml`.
 Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste.py`). La memoria es de 43 008 palabras.
 
 ## Reverb
@@ -45,12 +45,15 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 | `lluvia` | Seis ecos irregulares que se deshacen en allpass: una lluvia de notas. | 0: difusión<br>1: realimentación<br>2: mezcla | 8 | 46 | 364 | 35 385 |
 | `pingpong` | Eco estéreo que salta de un lado a otro. | 0: tiempo<br>1: realimentación<br>2: mezcla | 8 | 38 | 353 | 40 874 |
 | `reverse` | Eco invertido en granos de 0,17 s. | 0: tono<br>1: realimentación<br>2: mezcla | 8 | 34 | 301 | 16 388 |
+| `tambor` | Eco de tambor magnético de cuatro cabezas: un ritmo que sale de las cabezas encendidas. | 0: velocidad<br>1: realimentación<br>2: mezcla<br>3: cabezas<br>4: edad<br>5: tono | 8 | 173 | 1 328 | 37 656 |
 
 ## Modulación
 
 | Programa | Qué hace | Mandos | Presets | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|---|
+| `armonico` | Los graves y los agudos laten en contrafase; con pot2, un eco detrás. | 0: velocidad<br>1: profundidad<br>2: eco<br>3: frecuencia<br>4: forma<br>5: ancho | 8 | 125 | 847 | 17 101 |
 | `chorus` | Tres voces con retardos que se mueven. | 0: velocidad<br>1: profundidad<br>2: mezcla | 8 | 42 | 416 | 1 101 |
+| `desplazador` | Eco que desplaza su frecuencia en cada vuelta: la cola sube o baja en espiral. | 0: desplazamiento<br>1: tiempo<br>2: mezcla<br>3: realimentación<br>4: tono<br>5: ancho | 8 | 110 | 864 | 33 767 |
 | `flanger` | Retardo muy corto y móvil con realimentación: peines que barren. | 0: velocidad<br>1: profundidad<br>2: mezcla<br>3: realimentación | 8 | 31 | 266 | 247 |
 | `phaser` | Cuatro allpass con coeficiente móvil: muescas que barren. | 0: velocidad<br>1: profundidad<br>2: mezcla<br>3: realimentación | 8 | 79 | 513 | 1 |
 | `slicer` | Corta el sonido en pulsos rítmicos, como una puerta que abre y cierra. | 0: velocidad<br>1: profundidad<br>2: ciclo<br>3: suavizado | 8 | 37 | 262 | 1 |
@@ -61,6 +64,7 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 
 | Programa | Qué hace | Mandos | Presets | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|---|
+| `arcoiris` | Dos voces transpuestas en un bucle que regenera y llega a autooscilar. | 0: intervalo<br>1: segunda voz<br>2: mezcla<br>3: tiempo<br>4: realimentación<br>5: tono | 8 | 76 | 693 | 12 345 |
 | `armonizador` | Una voz a −12, −7, −5, +5, +7 o +12 semitonos, con realimentación. | 0: intervalo<br>1: realimentación<br>2: mezcla | 8 | 55 | 450 | 4 100 |
 | `doblador` | Dos voces desafinadas unos cents, una a cada lado: ensancha el sonido. | 0: desafinación<br>2: mezcla | 8 | 32 | 346 | 1 028 |
 | `escalera` | Eco en el que cada repetición sube o baja un intervalo: una escalera. | 0: intervalo<br>1: realimentación<br>2: mezcla<br>3: tiempo | 8 | 67 | 582 | 39 313 |
@@ -95,7 +99,9 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 
 | Programa | Qué hace | Mandos | Presets | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|---|
+| `erosion` | Bucle de cinta que se desgasta en cada vuelta: pierde agudos y nivel y gana wow, grano y saturación. | 0: erosión<br>1: damping<br>2: mezcla<br>3: modulación<br>4: nivel<br>5: duración | 8 | 161 | 1 043 | 32 769 |
 | `looper` | Micro-looper de 0,67 s con overdub, ½×, 2× y reverse. | 0: nivel<br>1: velocidad<br>2: sentido<br>3: realimentación | 8 | 85 | 549 | 32 769 |
+| `mosaico` | Bucle sonido sobre sonido de 0,67 s que suena a la vez a ½×, 1× y 2×. | 0: octava baja<br>1: nivel<br>2: mezcla<br>3: octava alta<br>4: realimentación<br>5: difusión | 8 | 144 | 1 064 | 34 662 |
 
 ## Cadenas
 

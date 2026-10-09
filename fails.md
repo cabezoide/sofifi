@@ -31,6 +31,7 @@ Se añade una entrada nueva cuando un fallo está diagnosticado y resuelto. Las 
 | F-23 | 07 | Una cadena con saturación sonaba seis veces más fuerte que el plate | resuelto antes de publicar |
 | F-24 | 07 | La cola del microcódigo se llevó la última BSRAM | resuelto |
 | F-25 | 08 | Tres fallos del controlador SD, encontrados en simulación | resuelto antes de la placa |
+| F-26 | 08 | Cuatro trampas del punto fijo en el lote 9 del catálogo | resuelto antes de publicar |
 
 ---
 
@@ -282,3 +283,24 @@ Se añade una entrada nueva cuando un fallo está diagnosticado y resuelto. Las 
   - **Causa:** los bloques de microcódigo sobrescribían los bytes guardados de los metadatos.
   - **Resolución:** solo se guardan los bytes de la cabecera y de los metadatos.
 - **Lección:** el modelo de tarjeta en cocotb y las imágenes de `sofifi banco` encontraron los tres fallos antes de la placa. Las constantes de varios bytes van en hexadecimal.
+
+## F-26 · Cuatro trampas del punto fijo en el lote 9 del catálogo
+
+Las pruebas acústicas de los programas nuevos encontraron cuatro fallos antes de publicar.
+
+- **El allpass de la forma FV-1 se satura con polos cerca de 1** (`desplazador`).
+  - **Síntoma:** el eco salía a una cuarta parte de su nivel, y la banda contraria solo caía 31 dB.
+  - **Causa:** la forma RDA + WRAP guarda un estado que crece como 1/(1 − k). Con k = 0,998, la palabra de 18 bit se satura.
+  - **Resolución:** forma directa I: cada etapa guarda su salida y la siguiente la lee como x[n−1]. La banda contraria cae 64 dB.
+- **Un coeficiente de RDAX mayor que 1 satura antes de SOF** (`desplazador`).
+  - **Síntoma:** el mando de ancho y el footswitch no hacían nada.
+  - **Causa:** SOF lee a24, el ACC saturado a [−1, 1). `rdax pot, -2.0` ya vale −1 antes de sumar.
+  - **Resolución:** `rdax pot, -1.0` y después `sof 1.999, 0.99999`.
+- **WRAX satura el registro por debajo de 1** (`arcoiris`).
+  - **Síntoma:** una regeneración de 1,1 se quedaba en 0,99999 y el bucle no autooscilaba.
+  - **Resolución:** la ganancia mayor que 1 va en el coeficiente (`rdax fb, 1.1`), no en un registro.
+- **Una longitud de bucle fraccionaria apaga el bucle** (`erosion`).
+  - **Síntoma:** con erosión 0, el bucle perdía agudos y nivel en cada vuelta.
+  - **Causa:** la lectura caía entre dos muestras. La interpolación es un paso bajo, y se aplica una vez por vuelta.
+  - **Resolución:** la longitud se redondea a muestras enteras. Con erosión 0, el bucle se repite bit a bit.
+- **Lección:** en el punto fijo, el ACC y los registros saturan a [−1, 1). En un bucle con realimentación, un filtro escondido se eleva al número de vueltas. Las pruebas miden el nivel y la repetición exacta, no solo que «suena».

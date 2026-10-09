@@ -1,0 +1,181 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: modulación
+; resumen: Los graves y los agudos laten en contrafase; con pot2, un eco detrás.
+; resumen.en: The lows and the highs pulse in opposite phase; with pot2, an echo after them.
+; resumen.zh-CN: 低音与高音反相起伏；配合 pot2，后面加一层回声。
+; resumen.ja: 低音と高音が逆位相で揺れます。pot2 で後ろにエコーを加えます。
+;
+; armonico.sasm — Trémolo armónico con eco ligero. Diseño propio.
+;
+; El trémolo normal mueve todo el volumen. Este divide la señal en dos bandas
+; y mueve cada banda al revés que la otra. Cuando los graves suben, los agudos
+; bajan. El sonido gira como un phaser lento.
+;
+; Cada muestra:
+;   1. El LFO triangular por software (comun/lfo_triangulo.sasm) avanza.
+;   2. La forma s mezcla dos curvas: CLIP del triángulo (casi senoidal) y CLIP
+;      del triángulo por cuatro (casi cuadrada). pot4 elige la mezcla.
+;   3. Ganancias: graves × (1 − prof·(1 + s)/2), agudos × (1 − prof·(1 − s)/2).
+;      A la derecha, s se multiplica por kpan = 1 − 2·pot5: con pot5 = 1 los
+;      graves de un lado laten contra los del otro.
+;   4. El cruce: graves = dos paso bajo de un polo en cascada; agudos = dos
+;      paso alto de un polo en cascada, con el mismo coeficiente k. Los graves
+;      caen antes (0,64·f_c) y los agudos después (1,55·f_c). La suma no es
+;      plana: deja un hueco en f_c que se mueve con el LFO.
+;   5. Una ganancia de 1 + prof/2 compensa el volumen que el trémolo quita.
+;   6. Eco de 350 ms con un paso bajo en la realimentación (0,45); a la
+;      derecha también sale una lectura a 260 ms. pot2 da su nivel.
+;
+; pot0 = velocidad     (0 → 0,2 Hz · 1 → 8 Hz; curva cuadrática)
+; pot1 = profundidad   (0 → nada · 1 → cada banda llega al silencio)
+; pot2 = eco           (0 → sin eco · 1 → eco a 0,8)
+; pot3 = frecuencia    (cruce: 0 → 300 Hz · 1 → 1 500 Hz)
+; pot4 = forma         (0 → suave · 1 → casi cuadrada)
+; pot5 = ancho         (0 → mono · 1 → los dos lados en contrafase)
+; sw   = mientras se pisa, media velocidad
+;
+; Diseño propio, a partir del principio del trémolo armónico de los
+; amplificadores de los 60 (PedalPCB «Pendulum», FV-1 «Starfield+»): dos
+; bandas con cortes distintos y un LFO que las mueve en contrafase.
+
+equ  tri      reg0
+equ  dir      reg1
+equ  vel      reg2
+equ  s        reg3
+equ  kpan     reg4
+equ  k        reg5
+equ  x        reg6
+equ  la       reg7
+equ  lb       reg8
+equ  ha       reg9
+equ  hb       reg10
+equ  agu      reg11
+equ  gbl      reg12
+equ  gal      reg13
+equ  gbr      reg14
+equ  gar      reg15
+equ  mk       reg16
+equ  sl       reg17
+equ  sr       reg18
+equ  lpe      reg19
+equ  ew       reg20
+equ  m        reg21
+equ  t        reg22
+equ  h1       reg23
+
+mem  dl    17100
+
+; ── controles ────────────────────────────────────────────────────────
+        rdax  sw, -0.5                  ; m = 1 − sw/2
+        sof   1.0, 0.99997
+        wrax  m, 0
+        rdax  pot5, 1.0                 ; kpan = 1 − 2·pot5 (en SOF)
+        sof   -1.99998, 0.99997
+        wrax  kpan, 0
+        rdax  pot1, 0.25                ; mk = (1 + prof/2)/2
+        sof   1.0, 0.5
+        wrax  mk, 0
+        rdax  pot0, 1.0                 ; vel = 4f/fs, f = 0,2 + 7,8·pot0²
+        mulx  pot0
+        sof   0.975, 0.025
+        mulx  m
+        wrax  t, 0
+        rdax  t, 4*8/48828.125
+        wrax  vel, 0
+        rdax  pot3, 1.0                 ; k = 0,038 + 0,137·pot3²
+        mulx  pot3
+        sof   0.137, 0.038
+        wrax  k, 0
+; ── 1 y 2. LFO y forma ───────────────────────────────────────────────
+include  comun/lfo_triangulo.sasm
+        clip                            ; curva suave
+        wrax  s, 0
+        rdax  tri, 1.99                 ; curva casi cuadrada
+        sof   1.99, 0
+        clip
+        rdax  s, -1.0
+        mulx  pot4
+        rdax  s, 1.0
+        wrax  s, 1.0
+; ── 3. ganancias ─────────────────────────────────────────────────────
+        sof   0.5, 0.5                  ; graves izquierda
+        mulx  pot1
+        sof   -1.0, 0.99997
+        wrax  gbl, 0
+        rdax  s, -0.5                   ; agudos izquierda
+        sof   1.0, 0.5
+        mulx  pot1
+        sof   -1.0, 0.99997
+        wrax  gal, 0
+        rdax  s, 1.0
+        mulx  kpan
+        wrax  t, 0.5                    ; graves derecha
+        sof   1.0, 0.5
+        mulx  pot1
+        sof   -1.0, 0.99997
+        wrax  gbr, 0
+        rdax  t, -0.5                   ; agudos derecha
+        sof   1.0, 0.5
+        mulx  pot1
+        sof   -1.0, 0.99997
+        wrax  gar, 0
+; ── 4. cruce ─────────────────────────────────────────────────────────
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wrax  x, 1.0
+        rdax  la, -1.0                  ; la = la + k·(x − la)
+        mulx  k
+        rdax  la, 1.0
+        wrax  la, 1.0
+        rdax  lb, -1.0                  ; lb = lb + k·(la − lb): graves
+        mulx  k
+        rdax  lb, 1.0
+        wrax  lb, 0
+        rdax  x, 1.0                    ; ha = ha + k·(x − ha)
+        rdax  ha, -1.0
+        mulx  k
+        rdax  ha, 1.0
+        wrax  ha, -1.0
+        rdax  x, 1.0                    ; h1 = x − ha
+        wrax  h1, 1.0
+        rdax  hb, -1.0                  ; hb = hb + k·(h1 − hb)
+        mulx  k
+        rdax  hb, 1.0
+        wrax  hb, -1.0
+        rdax  h1, 1.0                   ; agudos = h1 − hb
+        wrax  agu, 0
+; ── 5. bandas y compensación ─────────────────────────────────────────
+        rdax  lb, 1.0
+        mulx  gbl
+        wrax  t, 0
+        rdax  agu, 1.0
+        mulx  gal
+        rdax  t, 1.0
+        mulx  mk
+        sof   1.99, 0
+        wrax  sl, 0
+        rdax  lb, 1.0
+        mulx  gbr
+        wrax  t, 0
+        rdax  agu, 1.0
+        mulx  gar
+        rdax  t, 1.0
+        mulx  mk
+        sof   1.99, 0
+        wrax  sr, 0
+; ── 6. eco ───────────────────────────────────────────────────────────
+        rda   dl#, 1.0
+        rdfx  lpe, 0.35
+        wrax  lpe, 0.45
+        rdax  sl, 0.5
+        rdax  sr, 0.5
+        wra   dl, 0
+        rdax  lpe, 0.8
+        mulx  pot2
+        rdax  sl, 1.0
+        wrax  dacl, 0
+        rda   dl + 12700, 0.6
+        mulx  pot2
+        rdax  sr, 1.0
+        wrax  dacr, 0
