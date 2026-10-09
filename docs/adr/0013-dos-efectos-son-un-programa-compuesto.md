@@ -49,3 +49,21 @@ Opción 4 ahora; la opción 3, después, si las cadenas piden más ciclos.
 - **Por qué es seguro:** los programas de una cadena corren uno detrás de otro. Un registro temporal no lleva nada de un programa al siguiente, porque cada uno lo escribe antes de leerlo. El análisis sigue todos los caminos de los `SKP`: si un salto puede evitar la escritura, el registro es persistente.
 - **Contrato:** no cambia. En serie, la cadena da los mismos bits que dos pasadas; la prueba añade dos parejas con muchos temporales (`filtro` y luego `resonador`, `compresor` y luego `freeze_givens`).
 - **Resultado:** las parejas que no caben por registros bajan de 904 a 300.
+
+## Actualización 2026-10-09 · La opción 3 ya está hecha
+
+- **Qué cambió:** la opción 3 (quitar las esperas del núcleo) es el ADR 0014, aceptado el 2026-10-09. El núcleo solo espera cuando una instrucción depende de otra.
+- **Efecto en las cadenas:** con los 51 programas de entonces, las parejas en serie que caben pasaron de 790 a 1 312 de 2 550 (ADR 0014).
+- **Medida de hoy (86 programas):** caben 2 611 de las 7 310 parejas en serie. Una pareja puede pasarse en varios límites a la vez:
+
+  | Límite que se pasa | Parejas |
+  |---|---|
+  | memoria | 3 590 |
+  | ciclos | 1 684 |
+  | registros | 1 616 |
+  | LFOs | 1 200 |
+  | región absoluta | 156 |
+
+- **Consecuencia:** la memoria limita más que los ciclos. La palanca siguiente es la SDRAM (punto 24 de la hoja de ruta), no otro cambio del núcleo.
+- **La decisión no cambia:** dos efectos a la vez siguen siendo un programa compuesto. El segundo núcleo sigue descartado en la 25K: la persona propietaria lo confirmó el 2026-10-08.
+- **Cómo se midió:** cada pareja ordenada de programas distintos, en serie, con `recursos()` de `model/sofifi/domain/composicion.py` y los mandos en los pots físicos.
