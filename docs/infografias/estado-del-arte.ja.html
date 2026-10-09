@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/infografias/estado-del-arte.html sha=20d1ffac2c04 estado=al_dia -->
+<!-- i18n: fuente=docs/infografias/estado-del-arte.html sha=6a1bc012093d estado=al_dia -->
 <!-- SPDX-License-Identifier: MIT -->
 <title>SOFIFI 対 大手</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -83,6 +83,17 @@ td.gana{color:var(--laton)}
 .rasgo.lider p{color:#4b2a2e}
 .rasgo.lider h3{font-size:clamp(30px,4.4vw,44px)}
 
+/* Criterios frente a Eventide */
+.criterios{min-width:600px}
+.criterios tbody th{width:190px}
+.comunidad{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:center;margin-top:26px;padding:16px 18px;border:1px solid var(--linea);border-left:3px solid var(--laton);background:var(--caja-2)}
+.comunidad b{font-family:var(--f-titulo);font-size:64px;font-weight:900;line-height:.9;color:var(--laton)}
+.comunidad p{margin:0;font-size:15.5px;color:var(--hueso-2)}
+.estado{display:block;margin-top:6px;font-family:var(--f-dato);font-size:12px;letter-spacing:.04em;color:var(--laton)}
+.estado::before{content:"✔ "}
+.estado.no{color:var(--led)}
+.estado.no::before{content:"✕ "}
+
 footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;color:var(--hueso-2)}
 
 @media (max-width:760px){
@@ -100,14 +111,14 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 <div class="envoltorio">
 
 <header class="portada">
-  <div class="etiqueta">2026 年の技術動向 · SOFIFI フェーズ 03</div>
-  <h1>決め手はメモリー、<span>演算も厳しい</span></h1>
-  <p class="tesis">RTL で測ると、shimmer はメモリーの 97 % とサイクルの 74 % を使う。SOFIFI を唯一無二にする機能は、命令をほとんど使わない。</p>
+  <div class="etiqueta">2026 年の技術動向 · 2026-10-09 更新</div>
+  <h1>決め手はメモリー、<span>演算には余裕</span></h1>
+  <p class="tesis">shimmer はメモリーの 97 % を使うが、サイクルは半分だけ。パイプライン化したコアはサイクルを 1.6 分の 1 に減らした：今の限界はメモリーだ。</p>
   <div class="medidor">
     <div class="fila">
-      <div class="nombre">サイクル<small>shimmer：1 サンプルあたり 2,048 中 1,514</small></div>
-      <div class="pista" role="img" aria-label="73.9 パーセント"><i style="width:73.9%"></i></div>
-      <div class="pct ok">73.9 %</div>
+      <div class="nombre">サイクル<small>shimmer：1 サンプルあたり 2,048 中 1,037</small></div>
+      <div class="pista" role="img" aria-label="50.6 パーセント"><i style="width:50.6%"></i></div>
+      <div class="pct ok">50.6 %</div>
     </div>
     <div class="fila">
       <div class="nombre">メモリー<small>shimmer：43,008 ワード中 41,539</small></div>
@@ -115,7 +126,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
       <div class="pct mal">96.6 %</div>
     </div>
   </div>
-  <div class="pie-medidor">サイクルは RTL で測定（MED-11、フェーズ 06）。メモリーは <span class="dato">sofifi asm programas/shimmer.sasm</span> で測定。フェーズ 03 では 1 命令 1 サイクルで数えていた（ADR 0009）：120、5.9 %。</div>
+  <div class="pie-medidor">サイクルとメモリーは <span class="dato">sofifi catalogo</span>（<span class="dato">docs/programas.md</span>）から。パイプライン化したコア（ADR 0014）での値。フェーズ 06 のマルチサイクルのコアでは 1,514 サイクルだった。</div>
 </header>
 
 <section>
@@ -135,9 +146,9 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
       </tr></thead>
       <tbody>
         <tr><th>オーディオメモリー</th><td class="col-sofifi pierde">BSRAM に 0.88 s</td><td>非公開</td><td>60 s のルーパー <span class="marca">V</span></td><td>10 s の IR <span class="marca">V</span></td></tr>
-        <tr><th>プリセット</th><td class="col-sofifi">microSD で実質無制限（フェーズ 08）</td><td>ペダル本体に 2 <span class="marca">V</span></td><td>16 <span class="marca">V</span></td><td>300 <span class="marca">V</span></td></tr>
+        <tr><th>プリセット</th><td class="col-sofifi">バンクに 688；microSD から読み込む予定（フェーズ 08、進行中）</td><td>ペダル本体に 2 <span class="marca">V</span></td><td>16 <span class="marca">V</span></td><td>300 <span class="marca">V</span></td></tr>
         <tr><th>MIDI</th><td class="col-sofifi pierde">フェーズ 09 で TRS タイプ A。ハードウェアは未実装</td><td>あり <span class="marca">V</span></td><td>DIN In/Out/Thru <span class="marca">V</span></td><td>DIN と USB-C <span class="marca">V</span></td></tr>
-        <tr><th>象徴的なアイデア</th><td class="col-sofifi">エネルギーを失わずに変調する freeze（計画）<span class="marca">INF</span></td><td>常に聴いているマイクロルーパー <span class="marca">V</span></td><td>グラニュラーフレーズ <span class="marca">V</span></td><td>Cloud と 2 つのエンジン <span class="marca">V</span></td></tr>
+        <tr><th>象徴的なアイデア</th><td class="col-sofifi gana">エネルギーを失わずに変調する freeze：<span class="dato">freeze_givens</span></td><td>常に聴いているマイクロルーパー <span class="marca">V</span></td><td>グラニュラーフレーズ <span class="marca">V</span></td><td>Cloud と 2 つのエンジン <span class="marca">V</span></td></tr>
         <tr><th>プラットフォーム</th><td class="col-sofifi gana">オープンな FPGA、プログラムごとに固定サイクル</td><td>非公開</td><td>非公開</td><td>800 MHz のトライコア ARM <span class="marca">V</span></td></tr>
         <tr><th>ユーザープログラム</th><td class="col-sofifi gana">オープン、Python の bit-exact モデル付き</td><td colspan="3">調査したメーカーはどこもプリセット形式を公開していない <span class="marca">INF</span></td></tr>
       </tbody>
@@ -147,33 +158,64 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 
 <section>
   <div class="cabeza">
-    <div class="etiqueta">ロードマップ · フェーズ 06</div>
+    <div class="etiqueta">ヘッドライナー · 2026-10-09 更新</div>
+    <h2>Eventide との比較：数ではもう勝っている</h2>
+    <p>H9 Gen 2 と H90 を「超える」ための 8 つの基準。SOFIFI は 3 つで勝つ。音質とギターでの音は、まだ測れない。</p>
+  </div>
+  <div class="tabla-caja">
+    <table class="criterios">
+      <thead><tr>
+        <th></th>
+        <th class="col-sofifi">SOFIFI<small>バージョン 0.7</small></th>
+        <th>H9 Gen 2 · H90<small>Eventide · 599〜999 USD <span class="marca">?</span></small></th>
+      </tr></thead>
+      <tbody>
+        <tr><th>アルゴリズム</th><td class="col-sofifi gana">8 ファミリーで 86 プログラム</td><td>H9 Gen 2 で 74 <span class="marca">?</span></td></tr>
+        <tr><th>プリセット</th><td class="col-sofifi pierde">688</td><td>1,000 以上 <span class="marca">?</span></td></tr>
+        <tr><th>2 つのエフェクトを同時に</th><td class="col-sofifi">24 本のチェーン：今 18 本が収まり、6 本は SDRAM 待ち（ADR 0013）</td><td>H90 はプリセットごとに 2 つのアルゴリズムをつなぐ <span class="marca">?</span></td></tr>
+        <tr><th>メモリー</th><td class="col-sofifi pierde">0.88 s（ループは 0.67 s）；SDRAM がない</td><td>数秒のディレイ <span class="marca">?</span></td></tr>
+        <tr><th>ギターで鳴る</th><td class="col-sofifi pierde">いいえ：コーデック、ノブ、OLED がない（フェーズ 09〜11）</td><td>はい</td></tr>
+        <tr><th>知覚される音質</th><td class="col-sofifi pierde">未測定：ABX ブラインドテストが必要</td><td>市場の基準</td></tr>
+        <tr><th>価格</th><td class="col-sofifi gana">BOM 約 125 USD、ケースなし</td><td>599〜999 USD <span class="marca">?</span></td></tr>
+        <tr><th>オープンで検証できる</th><td class="col-sofifi gana">はい、ビット単位で（ADR 0003）</td><td>いいえ</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="comunidad">
+    <b>35</b>
+    <p>個のプログラムはコミュニティのアイデアから生まれた（第 9〜14 バッチ）：DIY フォーラム、ZOIA、FV-1、スペイン語のフォーラム。各エフェクトの原理だけを、自分の言葉で使う（ADR 0002）。</p>
+  </div>
+</section>
+
+<section>
+  <div class="cabeza">
+    <div class="etiqueta">ロードマップ · フェーズ 06、完了</div>
     <h2>最もよく聴こえるものが、最も安い</h2>
-    <p>最近の研究（Aalto、DAFx 2020-2026）から 4 つの改良。すべてプログラムで実現し、ISA は変えない。バーは推定最大コストを 2,048 命令の予算に対して示す。</p>
+    <p>最近の研究（Aalto、DAFx 2020-2026）から 4 つの改良。すべてプログラムで実現し、ISA は変えない。フェーズ 06 でそのうち 3 つを公開した。バーは推定最大コストを 1 サンプルあたり 2,048 に対して示す。</p>
   </div>
   <div class="costes">
     <div class="coste">
-      <div><h3>フィルター付きランダム変調</h3><p>金属的な鳴りを抑える Lexicon 224 の手法。変調するライン 1 本あたり。</p></div>
+      <div><h3>フィルター付きランダム変調</h3><p>金属的な鳴りを抑える Lexicon 224 の手法。変調するライン 1 本あたり。<span class="estado">完了：<span class="dato">plate_vivo</span></span></p></div>
       <div class="pista" role="img" aria-label="最大 4 / 2,048"><i style="width:.2%;min-width:3px"></i></div>
       <div class="cifra">3-4 <span class="marca">INF</span></div>
     </div>
     <div class="coste">
-      <div><h3>freeze に Givens 行列</h3><p>freeze がエネルギーを失わずに変調する。フェーズ 01 で測定した不具合を直す。</p></div>
+      <div><h3>freeze に Givens 行列</h3><p>freeze がエネルギーを失わずに変調する。フェーズ 01 で測定した不具合を直す。<span class="estado">完了：<span class="dato">freeze_givens</span></span></p></div>
       <div class="pista" role="img" aria-label="最大 20 / 2,048"><i style="width:1%"></i></div>
       <div class="cifra">+10-20 <span class="marca">INF</span></div>
     </div>
     <div class="coste">
-      <div><h3>アタック検出</h3><p>Swell、ducking、auto-freeze：聴くペダル。</p></div>
+      <div><h3>アタック検出</h3><p>Swell、ducking、auto-freeze：聴くペダル。<span class="estado">完了：<span class="dato">swell</span>、<span class="dato">ducking</span>、<span class="dato">sostenido</span></span></p></div>
       <div class="pista" role="img" aria-label="最大 50 / 2,048"><i style="width:2.4%"></i></div>
       <div class="cifra">&lt; 50 <span class="marca">INF</span></div>
     </div>
     <div class="coste">
-      <div><h3>無着色 FDN と velvet noise</h3><p>少ないラインでより密なテール。velvet noise：演算量を 50 % 以上削減 <span class="marca">V</span>。</p></div>
+      <div><h3>無着色 FDN と velvet noise</h3><p>少ないラインでより密なテール。velvet noise：演算量を 50 % 以上削減 <span class="marca">V</span>。<span class="estado no">不採用：24 タップでは allpass より密度が低い（F-17）</span></p></div>
       <div class="pista" role="img" aria-label="最大 220 / 2,048"><i style="width:10.7%"></i></div>
       <div class="cifra">100-220 <span class="marca">INF</span></div>
     </div>
   </div>
-  <div class="escala"><span>0</span><span>1 サンプルあたり 2,048 命令</span></div>
+  <div class="escala"><span>0</span><span>1 サンプルあたり 2,048</span></div>
 </section>
 
 <section>
@@ -185,14 +227,14 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
   <div class="rasgos">
     <div class="rasgo lider"><h3>bit-exact モデル付きのオープンなプログラム</h3><p>エフェクトをアセンブリで書き、PC で試聴する。ペダルでもビット単位で同じ音が鳴る（ADR 0003、ADR 0006）。</p></div>
     <div class="rasgo"><h3>CPU によるクラックルはゼロ</h3><p>各プログラムのサイクル数は固定。MOD Dwarf のユーザーは CPU 100 % でクラックルが出ると報告している <span class="marca">V</span>。</p></div>
-    <div class="rasgo"><h3>読めるプリセット</h3><p>microSD 上のテキストファイルで、全状態を含む。バージョン管理も共有もできる。</p></div>
+    <div class="rasgo"><h3>読めるプリセット</h3><p>テキストファイルで、全状態を含む。バージョン管理も共有もできる。<span class="dato">sofifi banco</span> は CRC 付きの microSD バンクをもう書き出せる（フェーズ 08）。</p></div>
     <div class="rasgo"><h3>第 2 レイヤーが見える</h3><p>OLED が各ノブの機能をスペイン語、英語、中国語、日本語で表示する。ラベルのない機能はよくある不満だ <span class="marca">?</span>。</p></div>
-    <div class="rasgo"><h3>FV-1 互換</h3><p>SpinASM トランスレーターでそのライブラリを取り込める。2026 年にオープンな FV-1 エミュレーターが公開された <span class="marca">V</span>。</p></div>
+    <div class="rasgo"><h3>FV-1 互換</h3><p>アセンブラーはすでに SpinASM に近い構文を使う。トランスレーターがあればそのライブラリを取り込める（計画）。2026 年にオープンな FV-1 エミュレーターが公開された <span class="marca">V</span>。</p></div>
   </div>
 </section>
 
 <footer>
-  出典：<span class="dato">docs/investigacion/ESTADO_DEL_ARTE_2026.md</span>（スペイン語）。5 つの調査テーマ（市場、古典的な arXiv、ニューラル系 arXiv、インタラクション、プラットフォーム）に基づく。マーク：V 一次情報源で確認済み · ? 疑わしいまたは二次情報 · INF 推論。価格と仕様は Chase Bliss、Hologram、Strymon のページから。サイクルとメモリーは 2026-10-07 にリポジトリで測定。
+  出典：<span class="dato">docs/investigacion/ESTADO_DEL_ARTE_2026.md</span>（スペイン語）。5 つの調査テーマ（市場、古典的な arXiv、ニューラル系 arXiv、インタラクション、プラットフォーム）に基づく。マーク：V 一次情報源で確認済み · ? 疑わしいまたは二次情報 · INF 推論。価格と仕様は Chase Bliss、Hologram、Strymon のページから。Eventide との比較：「Para superar a los Eventide」の節と 2026-10-09 の更新；コミュニティのアイデア：「Ideas de la comunidad」の表。サイクル、メモリー、プログラム、チェーンは 2026-10-09 にリポジトリで集計（<span class="dato">sofifi catalogo</span>、<span class="dato">sofifi cadenas</span>）。
 </footer>
 
 </div>

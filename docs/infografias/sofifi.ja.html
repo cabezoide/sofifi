@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/infografias/sofifi.html sha=bedb5b700437 estado=al_dia -->
+<!-- i18n: fuente=docs/infografias/sofifi.html sha=ff0fda233f2b estado=al_dia -->
 <!-- SPDX-License-Identifier: MIT -->
 <title>SOFIFI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -87,6 +87,8 @@ th{font-family:var(--f-dato);font-size:11.5px;letter-spacing:.12em;text-transfor
 td{font-family:var(--f-dato);font-variant-numeric:tabular-nums;font-size:15px}
 td:first-child{font-family:var(--f-titulo);font-size:24px;font-weight:800;text-transform:uppercase}
 tr:last-child td{border-bottom:0}
+tr.compuesta td{border-top:2px solid var(--laton)}
+tr.compuesta .barra i{background:repeating-linear-gradient(90deg,var(--laton) 0 50%,var(--hueso) 50% 100%)}
 .barra{height:8px;background:#1b0709;border-radius:4px;overflow:hidden;min-width:80px}
 .barra i{display:block;height:100%;background:var(--laton)}
 
@@ -140,6 +142,11 @@ tr:last-child td{border-bottom:0}
 .frente td{font-size:14.5px;vertical-align:top}
 .gana{color:var(--laton);font-weight:600}
 .gana::before{content:"▲ ";font-size:10px;vertical-align:1px}
+.eventide{margin-top:22px}
+.confianza{font-family:var(--f-dato);font-size:10.5px;letter-spacing:.06em;color:var(--hueso-2);border:1px solid var(--linea);padding:0 4px;border-radius:3px;white-space:nowrap;font-weight:400}
+.gana .confianza{color:var(--hueso-2)}
+.nota{margin:14px 0 0;font-size:15px;color:var(--hueso-2)}
+.nota::before{content:"◆ ";color:var(--laton)}
 .aviso{margin:22px 0 0;padding:14px 16px;border-left:3px solid var(--led);background:#22090d;font-size:15.5px}
 .aviso b{font-family:var(--f-titulo);font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;color:var(--led)}
 
@@ -171,7 +178,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
   <div class="pedal" role="img" aria-label="ペダルの表面：OLED ディスプレイ、6 個のノブ、2 個のフットスイッチ">
     <div class="oled">
       <b>HALL</b> · Catedral<br>
-      137 instr · 1,585 / 2,048 サイクル<br>
+      137 instr · 863 / 2,048 サイクル<br>
       fs 48,828 Hz · freeze OFF
     </div>
     <div class="mandos">
@@ -199,12 +206,12 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
     <div class="razon fuerte">
       <span class="num">0</span>
       <h3>ビットの差</h3>
-      <p>シミュレーションでは、<span class="dato">45</span> 個すべてのプログラムで RTL の出力がモデルとビット単位で一致します。ボード上では、plate（9 回中 9 回のキャプチャ、MED-13）と looper（MED-15）が一致しました。</p>
+      <p>シミュレーションでは、<span class="dato">86</span> 個すべてのプログラムと、収まる <span class="dato">18</span> 本のチェーンで、RTL の出力がモデルとビット単位で一致します。ボード上では <span class="dato">50</span> 件中 <span class="dato">50</span> 件が一致：プログラム <span class="dato">41</span> 個とチェーン <span class="dato">9</span> 本（MED-16）。</p>
     </div>
     <div class="razon">
-      <span class="num">45</span>
+      <span class="num">86</span>
       <h3>テキストで書くエフェクト</h3>
-      <p>リバーブ、ディレイ、モジュレーション、ピッチ、ダイナミクス、フィルター、テクスチャ、ルーパー。プリセットは <span class="dato">360</span> 個です。各エフェクトは <span class="dato">25</span>〜<span class="dato">188</span> 命令の <span class="dato">.sasm</span> ファイルです。新しいエフェクトはハードウェアに触れません。</p>
+      <p>リバーブからルーパーまで 8 ファミリー。プリセットは <span class="dato">688</span> 個です。各エフェクトは <span class="dato">25</span>〜<span class="dato">239</span> 命令の <span class="dato">.sasm</span> ファイルです。新しいエフェクトはハードウェアに触れません。</p>
     </div>
     <div class="razon">
       <span class="num">MIT</span>
@@ -217,44 +224,59 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
     <table class="frente">
       <thead><tr><th>Spin FV-1 との比較</th><th>SOFIFI</th><th>FV-1（DIY の基準）</th></tr></thead>
       <tbody>
-        <tr><td>1 サンプルあたりの命令数</td><td class="gana">マイクロコードで最大 2,048；hall は 137 命令で 2,048 サイクル中 1,585 サイクルを使用</td><td>128</td></tr>
+        <tr><td>1 サンプルあたりの演算量</td><td class="gana">2,048 サイクル；hall は 137 命令で 863 サイクルを使用</td><td>128 命令</td></tr>
         <tr><td>サンプリング周波数</td><td class="gana">48,828 Hz</td><td>約 32 kHz</td></tr>
         <tr><td>ディレイメモリ</td><td>43,008 ワード、0.88 s</td><td class="gana">32,768 ワード、約 1 s</td></tr>
         <tr><td>中身を読める</td><td class="gana">はい：モデル、RTL、テスト</td><td>いいえ：チップは非公開。プログラムは読める</td></tr>
-        <tr><td>プログラムライブラリ</td><td>独自プログラム 45 個とプリセット 360 個</td><td class="gana">Spin とコミュニティのライブラリ、ビジュアルエディタ（SpinCAD）付き</td></tr>
+        <tr><td>プログラムライブラリ</td><td>独自プログラム 86 個、プリセット 688 個、チェーン 24 本</td><td class="gana">Spin とコミュニティのライブラリ、ビジュアルエディタ（SpinCAD）付き</td></tr>
         <tr><td>すぐに弾ける</td><td>まだ</td><td class="gana">はい、多くのペダルで</td></tr>
       </tbody>
     </table>
   </div>
-  <p class="aviso"><b>現時点では、まだギターで鳴りません。</b>I2S オーディオはフェーズ 11、ノブはフェーズ 09 で入ります。ハードウェアが足りないためです。それまでは、デモでエフェクトを聴けます。デモはビット精度のモデルから生成しています。</p>
+
+  <div class="tabla-caja eventide">
+    <table class="frente">
+      <thead><tr><th>Eventide H9 Gen 2 との比較</th><th>SOFIFI</th><th>H9 Gen 2</th></tr></thead>
+      <tbody>
+        <tr><td>アルゴリズム</td><td class="gana">8 ファミリーで 86 プログラム</td><td>74 <span class="confianza">?</span></td></tr>
+        <tr><td>プリセット</td><td>688</td><td class="gana">1,000 以上 <span class="confianza">?</span></td></tr>
+        <tr><td>2 つのエフェクトを同時に</td><td>24 本のチェーン：今 18 本が収まり、6 本は SDRAM 待ち（ADR 0013）</td><td>H90 はプリセットごとに 2 つのアルゴリズムをつなぐ <span class="confianza">?</span></td></tr>
+        <tr><td>価格</td><td class="gana">BOM 約 125 USD、ケースなし</td><td>599 USD <span class="confianza">?</span></td></tr>
+        <tr><td>検証できる</td><td class="gana">はい、ビット単位で（ADR 0003）</td><td>いいえ：アルゴリズムは非公開</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="nota">86 プログラムのうち 35 個は、コミュニティのアイデアから生まれました：DIY フォーラムとパッチのリポジトリ（第 9〜14 バッチ）。各エフェクトの原理だけを使います（ADR 0002）。</p>
+  <p class="aviso"><b>現時点では、まだギターで鳴りません。</b>I2S オーディオはフェーズ 11、ノブはフェーズ 09 で入ります。ハードウェアが足りないためです。フェーズ 08（microSD のプログラムバンク）は進行中です。それまでは、デモでエフェクトを聴けます。デモはビット精度のモデルから生成しています。</p>
 </section>
 
 <section>
   <div class="cabeza">
     <div class="etiqueta">音の仕組み</div>
     <h2>エフェクトは回路ではなく、プログラム</h2>
-    <p>コアは固定です。変わるのは、コアが実行するマイクロコードだけです。新しいプリセットに RTL の変更は要りません（ADR 0006）。</p>
+    <p>コアは固定です。変わるのは、コアが実行するマイクロコードだけです。新しいプリセットに RTL の変更は要りません（ADR 0006）。2 つのエフェクトを同時に使うのがチェーンです：コンポーザーが 2 つのプログラムを 1 つにまとめます（ADR 0013）。</p>
   </div>
   <div class="cadena">
     <div class="eslabon"><h3>入力</h3><p>ギターから I2S ADC（PCM1808）へ</p></div>
-    <div class="eslabon nucleo"><h3>コア</h3><p>1 サンプルあたり <span class="dato">2,048</span> 命令、<span class="dato">48</span> ビットのアキュムレータ</p></div>
+    <div class="eslabon nucleo"><h3>コア</h3><p>1 サンプルあたり <span class="dato">2,048</span> サイクル。パイプライン化：命令が別の命令に依存するときだけ待ちます（ADR 0014）。</p></div>
     <div class="eslabon"><h3>リミッター</h3><p>RTL に固定。どのプログラムも回避できません。</p></div>
     <div class="eslabon"><h3>出力</h3><p>I2S DAC（PCM5102A）</p></div>
   </div>
-  <p class="cola">microSD はプログラムを保存します。ディレイメモリには使いません。250 ms の書き込みピークがあるためです（ADR 0004）。オーディオは FPGA の BSRAM に置きます：<span class="dato laton">43,008</span> ワード、約 <span class="dato laton">0.88 s</span>。ルーパーとグラニュラーは、そのうち <span class="dato laton">32,768</span> ワードを絶対アドレスで使います。ループは移動しません（ADR 0009）。</p>
+  <p class="cola">microSD はプログラムバンクを保存する予定です（フェーズ 08、進行中）。ディレイメモリには使いません。250 ms の書き込みピークがあるためです（ADR 0004）。オーディオは FPGA の BSRAM に置きます：<span class="dato laton">43,008</span> ワード、約 <span class="dato laton">0.88 s</span>。ルーパーとグラニュラーは、そのうち <span class="dato laton">32,768</span> ワードを絶対アドレスで使います。ループは移動しません（ADR 0009）。</p>
 
   <div class="tabla-caja">
     <table>
       <thead><tr><th>ファミリー</th><th>プログラム</th><th>例</th><th>サイクル（2,048 中）</th><th>サイクル使用率</th></tr></thead>
       <tbody>
-        <tr><td>リバーブ</td><td>17</td><td>hall · 8 ライン FDN</td><td>1,585</td><td><div class="barra" aria-label="77 %"><i style="width:77%"></i></div></td></tr>
-        <tr><td>ディレイ</td><td>7</td><td>cinta · 0.18〜0.85 s</td><td>665</td><td><div class="barra" aria-label="32 %"><i style="width:32%"></i></div></td></tr>
-        <tr><td>モジュレーション</td><td>6</td><td>phaser · 4 段</td><td>802</td><td><div class="barra" aria-label="39 %"><i style="width:39%"></i></div></td></tr>
-        <tr><td>ピッチ</td><td>4</td><td>escalera · 上昇するエコー</td><td>799</td><td><div class="barra" aria-label="39 %"><i style="width:39%"></i></div></td></tr>
-        <tr><td>ダイナミクス</td><td>3</td><td>compresor</td><td>596</td><td><div class="barra" aria-label="29 %"><i style="width:29%"></i></div></td></tr>
-        <tr><td>フィルター</td><td>3</td><td>autowah</td><td>464</td><td><div class="barra" aria-label="23 %"><i style="width:23%"></i></div></td></tr>
-        <tr><td>テクスチャ</td><td>4</td><td>granular · 4 グレイン</td><td>1,896</td><td><div class="barra" aria-label="93 %"><i style="width:93%"></i></div></td></tr>
-        <tr><td>ルーパー</td><td>1</td><td>looper · 0.67 s、オーバーダブ</td><td>809</td><td><div class="barra" aria-label="40 %"><i style="width:40%"></i></div></td></tr>
+        <tr><td>リバーブ</td><td>26</td><td>hall · 8 ライン FDN</td><td>863</td><td><div class="barra" aria-label="42 %"><i style="width:42%"></i></div></td></tr>
+        <tr><td>ディレイ</td><td>21</td><td>cinta · 0.18〜0.85 s</td><td>484</td><td><div class="barra" aria-label="24 %"><i style="width:24%"></i></div></td></tr>
+        <tr><td>モジュレーション</td><td>11</td><td>phaser · 4 段</td><td>521</td><td><div class="barra" aria-label="25 %"><i style="width:25%"></i></div></td></tr>
+        <tr><td>ピッチ</td><td>8</td><td>escalera · 上昇するエコー</td><td>582</td><td><div class="barra" aria-label="28 %"><i style="width:28%"></i></div></td></tr>
+        <tr><td>ダイナミクス</td><td>6</td><td>compresor</td><td>394</td><td><div class="barra" aria-label="19 %"><i style="width:19%"></i></div></td></tr>
+        <tr><td>フィルター</td><td>3</td><td>autowah</td><td>295</td><td><div class="barra" aria-label="14 %"><i style="width:14%"></i></div></td></tr>
+        <tr><td>テクスチャ</td><td>5</td><td>granular · 4 グレイン</td><td>1,209</td><td><div class="barra" aria-label="59 %"><i style="width:59%"></i></div></td></tr>
+        <tr><td>ルーパー</td><td>6</td><td>looper · 0.67 s、オーバーダブ</td><td>576</td><td><div class="barra" aria-label="28 %"><i style="width:28%"></i></div></td></tr>
+        <tr class="compuesta"><td>チェーン</td><td>24（18 が収まる）</td><td>Eco y muelle · delay → spring</td><td>1,149</td><td><div class="barra" aria-label="56 %"><i style="width:56%"></i></div></td></tr>
       </tbody>
     </table>
   </div>
@@ -267,16 +289,19 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
     <p>Python のモデルが出力の全ビットを定義します。RTL はサンプルごとに一致しなければなりません。許容誤差はゼロです（ADR 0003）。</p>
   </div>
   <div class="pruebas">
-    <div class="terminal" aria-label="UART 経由のボードの実際の出力">
-      <span class="p">$ make prog &amp;&amp; make uart</span><br>
-      SOFIFI 0000003F<br>
-      SOFIFI 00000040<br>
-      SOFIFI 00000041<br>
-      <span class="ok"># 平均周期：1 メッセージあたり 1.0001 s</span>
+    <div class="terminal" aria-label="ボードの実際の結果：プログラムとチェーンをモデルと比較">
+      <span class="p">$ scripts/hil_lote.py --todos</span><br>
+      <span class="p">$ cut -d';' -f1-3 build/hil_lote.csv</span><br>
+      plate;igual;4096/4096<br>
+      chorale;igual;4096/4096<br>
+      Eco y muelle;igual;4096/4096<br>
+      Cuerdas en ola;igual;4096/4096<br>
+      <span class="ok"># 50 / 50 がモデルと一致（MED-16）</span>
     </div>
     <div class="cifras">
-      <div class="cifra"><b>9 / 9</b><span>plate のキャプチャが、100 MHz の実チップ上でモデルとビット単位で一致（MED-13）。</span></div>
-      <div class="cifra"><b>125 MHz</b><span>ボード上でエラーなし（3 / 3）：動作周波数 100 MHz に対し 25 % のマージン（MED-14）。</span></div>
+      <div class="cifra"><b>50 / 50</b><span>プログラムとチェーンが、100 MHz の実チップ上でモデルとビット単位で一致（MED-16）。</span></div>
+      <div class="cifra"><b>1.6×</b><span>パイプライン化したコアで、サイクルが平均でこの倍率だけ減少。hall は 2,048 中 863 に（ADR 0014）。</span></div>
+      <div class="cifra"><b>125 MHz</b><span>パイプライン化したコアでエラーなし（3 / 3）；133.3 MHz で 2 / 2。動作周波数は 100 MHz（MED-14）。</span></div>
     </div>
   </div>
   <div class="reglas">
@@ -290,7 +315,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
   <div class="cabeza">
     <div class="etiqueta">ツアー</div>
     <h2>13 フェーズ。8 つ完了。足りないものは最後に。</h2>
-    <p>フェーズ 08 までは、ボードと microSD だけで足ります。今は入手できないハードウェアは、フェーズ 09〜12 に回します。</p>
+    <p>フェーズ 08 までは、ボードと microSD だけで足ります。フェーズ 08 にはバンク、SPI リーダー、ローダーがあり、シミュレーションで検証済みです。実カードでのテストが残っています。今は入手できないハードウェアは、フェーズ 09〜12 に回します。</p>
   </div>
   <ol class="ruta">
     <li class="fase cerrada"><span class="n">00</span><span class="t">スターターキットとゲート</span><span class="h">完了</span></li>
@@ -301,17 +326,17 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
     <li class="fase cerrada"><span class="n">05</span><span class="t">UART で検証したコア</span><span class="h">完了</span></li>
     <li class="fase cerrada"><span class="n">06</span><span class="t">プログラムライブラリ</span><span class="h">完了</span></li>
     <li class="fase cerrada"><span class="n">07</span><span class="t">マイクロルーパーとグラニュラー</span><span class="h">完了</span></li>
-    <li class="fase siguiente"><span class="n">08</span><span class="t">microSD からの読み込み</span><span class="h">次</span></li>
+    <li class="fase siguiente"><span class="n">08</span><span class="t">microSD からの読み込み</span><span class="h">進行中 · 実カードのテスト待ち</span></li>
     <li class="fase falta"><span class="n">09</span><span class="t">物理コントロール</span><span class="h">MCP3208 が必要</span></li>
     <li class="fase falta"><span class="n">10</span><span class="t">4 言語の OLED インターフェース</span><span class="h">OLED が必要</span></li>
     <li class="fase falta"><span class="n">11</span><span class="t">I2S オーディオ</span><span class="h">コーデックが必要</span></li>
     <li class="fase falta"><span class="n">12</span><span class="t">統合とリミッター</span><span class="h">上記すべてが必要</span></li>
   </ol>
-  <div class="leyenda"><span><i class="c"></i>完了</span><span><i class="s"></i>次</span><span><i class="f"></i>ハードウェア不足</span></div>
+  <div class="leyenda"><span><i class="c"></i>完了</span><span><i class="s"></i>進行中</span><span><i class="f"></i>ハードウェア不足</span></div>
 </section>
 
 <footer>
-  数値は 2026-10-08 にリポジトリ上で集計：プログラム、プリセット、命令、サイクルは <span class="dato">sofifi catalogo</span>（<span class="dato">docs/programas.ja.md</span>）；ボード上のキャプチャとマージンは MED-13〜MED-15（<span class="dato">docs/mediciones.yaml</span>）；UART の出力は <span class="dato">scripts/leer_uart.py</span>（MED-03）；プリミティブは <span class="dato">scripts/verificar_primitivas.py</span>（MED-06〜MED-08）；フェーズは <span class="dato">docs/fases/</span>。「SOFIFI を選ぶ理由」：RTL とモデルの一致は <span class="dato">sim/nucleo/nucleo_test.py</span> と MED-13；FV-1 のデータは <span class="dato">docs/investigacion/INVESTIGACION.md</span> [V]。公開ドキュメントと技術ドキュメントはスペイン語、英語、簡体字中国語、日本語で提供；OLED のインターフェースもフェーズ 10 で同じ 4 言語に対応します（ADR 0007）。MIT ライセンス。
+  数値は 2026-10-09 にリポジトリ上で集計：プログラム、プリセット、命令、サイクルは <span class="dato">sofifi catalogo</span>（<span class="dato">docs/programas.ja.md</span>）；チェーンは <span class="dato">sofifi cadenas</span>；ボード上のキャプチャとマージンは MED-14〜MED-16（<span class="dato">docs/mediciones.yaml</span>、<span class="dato">build/hil_lote.csv</span>）；パイプライン化したコアは ADR 0014；プリミティブは <span class="dato">scripts/verificar_primitivas.py</span>（MED-06〜MED-08）；フェーズは <span class="dato">docs/fases/</span>。「SOFIFI を選ぶ理由」：RTL とモデルの一致は <span class="dato">sim/nucleo/nucleo_test.py</span> と MED-16；FV-1 のデータは <span class="dato">docs/investigacion/INVESTIGACION.md</span> [V]；H9 Gen 2 のデータとコミュニティのバッチは <span class="dato">docs/investigacion/ESTADO_DEL_ARTE_2026.md</span> [?]。公開ドキュメントと技術ドキュメントはスペイン語、英語、簡体字中国語、日本語で提供；OLED のインターフェースもフェーズ 10 で同じ 4 言語に対応します（ADR 0007）。MIT ライセンス。
 </footer>
 
 </div>
