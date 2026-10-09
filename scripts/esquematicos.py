@@ -108,7 +108,9 @@ def _descripcion(texto: str) -> str:
         parrafo.append(limpia)
     frase = " ".join(parrafo)
     corte = frase.find(". ")
-    return frase if corte < 0 else frase[: corte + 1]
+    frase = frase if corte < 0 else frase[: corte + 1]
+    # Una cabecera que presenta una lista acaba en «:»; en la tabla, la frase cierra.
+    return frase[:-1] + "." if frase.endswith(":") else frase
 
 
 def modulos() -> list[Modulo]:

@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/scripts.md sha=4619672bc6bc estado=al_dia -->
+<!-- i18n: fuente=docs/scripts.md sha=35d6b1ed2f0c estado=al_dia -->
 # スクリプトと `sofifi` CLI
 
 このガイドは、`scripts/` の各スクリプトと `sofifi` CLI の各コマンドを説明します。内容は作業ごとにまとめています。各ツールについて、何をするか、典型的なコマンド、必要なもの、どのゲートまたはフェーズで使うかを示します。
@@ -219,8 +219,8 @@ SOFIFI_MUESTRAS=4883 .venv/bin/python -m pytest sim/nucleo/nucleo_test.py
 
 ## 知っておくべき動作
 
-- `scripts/generar_demos.py` には `--help` がありません。`--readme` 以外の引数を渡すと、すべてのデモを作り直します。
+- `scripts/generar_demos.py` は `--readme`、`--help`、または引数なしを受け付けます。それ以外の引数では終了コード 2 を返し、デモを作りません。
 - `check_*` スクリプトは引数を読みません。`scripts/check_optimizacion.py --help` はすべてのトップを合成します。
-- `scripts/informe_recursos.py` には nextpnr レポートのパスが必要です。ないと失敗します。
+- `scripts/informe_recursos.py` には nextpnr レポートのパスが必要です。ないと使い方を表示し、終了コード 2 を返します。
 - 引数が正しくないとき、または chrome-headless-shell がないとき、`scripts/capturar_infografia.py` はヘルプを表示して 1 で終了します。
 - `scripts/ci_local.sh --help` と、コマンドなしの `scripts/fpga.sh` はヘッダーを表示します。

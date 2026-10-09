@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/scripts.md sha=4619672bc6bc estado=al_dia -->
+<!-- i18n: fuente=docs/scripts.md sha=35d6b1ed2f0c estado=al_dia -->
 # Scripts and the `sofifi` CLI
 
 This guide describes each script in `scripts/` and each command of the `sofifi` CLI. It is organized by task. For each tool, it tells what the tool does, the typical command, what the tool needs, and which gate or phase uses it.
@@ -219,8 +219,8 @@ SOFIFI_MUESTRAS=4883 .venv/bin/python -m pytest sim/nucleo/nucleo_test.py
 
 ## Behaviors to know
 
-- `scripts/generar_demos.py` has no `--help`. An argument that is not `--readme` makes all the demos again.
+- `scripts/generar_demos.py` accepts `--readme`, `--help` or no argument. Any other argument gives exit code 2 and makes no demo.
 - The `check_*` scripts do not read arguments. `scripts/check_optimizacion.py --help` synthesizes all the tops.
-- `scripts/informe_recursos.py` needs the path of the nextpnr report. Without it, it fails.
+- `scripts/informe_recursos.py` needs the path of the nextpnr report. Without it, it shows the usage and gives exit code 2.
 - `scripts/capturar_infografia.py` prints its help and exits with 1 if the arguments are not correct or if chrome-headless-shell is missing.
 - `scripts/ci_local.sh --help` and `scripts/fpga.sh` without a command print their header.

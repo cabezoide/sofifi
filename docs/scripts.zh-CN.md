@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/scripts.md sha=4619672bc6bc estado=al_dia -->
+<!-- i18n: fuente=docs/scripts.md sha=35d6b1ed2f0c estado=al_dia -->
 # 脚本与 `sofifi` 命令行工具
 
 本指南说明 `scripts/` 中的每个脚本和 `sofifi` 命令行工具的每条命令。内容按任务组织。每个工具都说明：做什么、典型命令、需要什么、属于哪个检查门或阶段。
@@ -219,8 +219,8 @@ SOFIFI_MUESTRAS=4883 .venv/bin/python -m pytest sim/nucleo/nucleo_test.py
 
 ## 需要了解的行为
 
-- `scripts/generar_demos.py` 没有 `--help`。任何不是 `--readme` 的参数都会重新生成所有演示。
+- `scripts/generar_demos.py` 接受 `--readme`、`--help` 或不带参数。其他参数返回退出码 2，不生成任何演示。
 - `check_*` 脚本不读取参数。`scripts/check_optimizacion.py --help` 会综合所有顶层。
-- `scripts/informe_recursos.py` 需要 nextpnr 报告的路径。没有它会失败。
+- `scripts/informe_recursos.py` 需要 nextpnr 报告的路径。没有它时，显示用法并返回退出码 2。
 - 参数不正确或缺少 chrome-headless-shell 时，`scripts/capturar_infografia.py` 打印帮助并以 1 退出。
 - `scripts/ci_local.sh --help` 以及不带命令的 `scripts/fpga.sh` 会打印其文件头。

@@ -218,8 +218,8 @@ SOFIFI_MUESTRAS=4883 .venv/bin/python -m pytest sim/nucleo/nucleo_test.py
 
 ## Comportamientos que conviene conocer
 
-- `scripts/generar_demos.py` no tiene `--help`. Un argumento distinto de `--readme` regenera todas las demos.
+- `scripts/generar_demos.py` acepta `--readme`, `--help` o nada. Otro argumento da el código 2 y no regenera nada.
 - Los scripts `check_*` no leen argumentos. `scripts/check_optimizacion.py --help` sintetiza todos los tops.
-- `scripts/informe_recursos.py` necesita la ruta del informe de nextpnr. Sin ella, falla.
+- `scripts/informe_recursos.py` necesita la ruta del informe de nextpnr. Sin ella, muestra el uso y da el código 2.
 - `scripts/capturar_infografia.py` imprime su ayuda y sale con 1 si los argumentos no son correctos o si falta chrome-headless-shell.
 - `scripts/ci_local.sh --help` y `scripts/fpga.sh` sin orden imprimen su cabecera.

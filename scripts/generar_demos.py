@@ -21,8 +21,8 @@ Uso::
 
 Tarda unos 2 min en 8 núcleos. Necesita ``pip install -e '.[demos]'``
 (``make install`` lo incluye). Escribe ``demo_examples/*.ogg`` y las guías
-``demo_examples/README*.md`` en cuatro idiomas. No tiene ``--help``: un
-argumento distinto de ``--readme`` regenera todo. Salida: 0 bien.
+``demo_examples/README*.md`` en cuatro idiomas. Acepta ``--readme``, ``--help`` o nada.
+Otro argumento no regenera nada. Salida: 0 bien; 2 si la opción es desconocida.
 """
 
 from __future__ import annotations
@@ -362,6 +362,13 @@ def guias() -> dict[Path, str]:
 
 
 def main() -> int:
+    if sys.argv[1:] in (["-h"], ["--help"]):
+        print(__doc__)
+        return 0
+    if sys.argv[1:] not in ([], ["--readme"]):
+        opciones = " ".join(sys.argv[1:])
+        print(f"opción desconocida: {opciones}; uso: --readme o nada", file=sys.stderr)
+        return 2
     for ruta, texto in guias().items():
         ruta.write_text(texto, encoding="utf-8")
     if sys.argv[1:] == ["--readme"]:
