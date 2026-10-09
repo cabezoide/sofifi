@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=9346c0f671b2 estado=al_dia -->
+<!-- i18n: fuente=README.md sha=0f404692c52a estado=al_dia -->
 # SOFIFI — FPGA 上のイマーシブな波形とフィルターのシンセサイザー
 
 *英語名: Soundscapes On FPGA: Integrated Filters & Impulses。スペイン語名: Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada。*
@@ -17,7 +17,7 @@ DSP コアが実行します。
 
 | 項目 | 状況 |
 |---|---|
-| ライブラリ | 8 つのファミリーに **86 のプログラムと 688 のプリセット**（フェーズ 07） |
+| ライブラリ | 8 つのファミリーに **86 のプログラムと 1,032 のプリセット**（フェーズ 07） |
 | 2 つのエフェクトを同時に | **24 のチェーン**：18 は現在収まり、6 は SDRAM 待ち（`presets/cadenas.toml`、ADR 0013） |
 | モデルとの一致（シミュレーション） | 86 のプログラムすべてと収まる 18 のチェーンが、RTL でモデルと同じビットを出力 |
 | モデルとの一致（ボード） | 50 中 50：41 のプログラムと 9 のチェーン。フェーズ 07 のコアで実施（MED-16、2026-10-08） |
@@ -131,7 +131,7 @@ microSD カードだけで足ります。
 | ドキュメント | 内容 |
 |---|---|
 | `docs/programas.ja.md` | 86 のプログラム：働き、ノブ、プリセット、コスト |
-| `presets/banco.toml` | 688 のプリセット |
+| `presets/banco.toml` | 1,032 のプリセット |
 | `docs/arquitectura_fpga.ja.md` | FPGA のアーキテクチャと、フェーズごとの変化 |
 | `schematics/` | 各 RTL モジュールの PDF 回路図。Verilog から生成 |
 | `presets/cadenas.toml` | 2 つのプログラムからなる 24 のチェーン |

@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/EXTENDING.md sha=3bfc3280c871 estado=al_dia -->
+<!-- i18n: fuente=docs/EXTENDING.md sha=24e37a7d6593 estado=al_dia -->
 # 拡張の方法
 
 部品の種類ごとの手順です。何かを追加するときにこのリストにない箇所を変更する必要があれば、リストが不完全です。同じ PR で修正してください。
@@ -21,7 +21,7 @@
    すべての `.sasm` を走査します。何かが欠けていれば失敗します。
 7. ノブに新しい名前がある場合は、`MANDOS`（`model/sofifi/services/catalogo_textos.py`）に
    その翻訳を追加してください。`model/tests/catalogo_test.py` がこれを求めます。
-8. プリセットを 5 個以上追加してください（「プリセット」の節）。
+8. プリセットを 12 個以上追加してください（「プリセット」の節）。
 9. `sofifi catalogo` で、カタログを 4 言語で再生成してください。
 10. `DEMOS`（`scripts/generar_demos.py`）にデモを追加してください。スクリプトを実行します。
     スクリプトは `.ogg` とガイド `demo_examples/README*.md` を書きます。
@@ -48,7 +48,8 @@
 1. `presets/banco.toml` のプログラムのテーブルに、`"Nombre" = [pot0, pot1, …]` の行を
    1 行追加してください。値は 0 から 1 までです。使わないノブは 0 にします。
 2. プリセットを聴いてください：`sofifi render programas/<programa>.sasm entrada.wav salida.wav --preset "Nombre"`。
-3. `sofifi catalogo` でカタログを再生成してください：カタログはプリセットの数を数えます。
+3. レベルを測ってください：`.venv/bin/python scripts/medir_presets.py <programa>`。SATURA や FUERTE が出るプリセットがあってはいけません。
+4. `sofifi catalogo` でカタログを再生成してください：カタログはプリセットの数を数えます。
    `model/tests/presets_test.py` がプログラム、ノブ、範囲を確認します。
 
 ## チェーン（2 つのプログラムを 1 つに）

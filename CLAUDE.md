@@ -13,7 +13,7 @@ por capa y el detalle que un agente necesita para trabajar sin releer todo.
 | Documentación | `make docs` |
 | RTL | `scripts/ci_local.sh rtl-lint` · `make sim` (cocotb sobre verilator, del `.venv`) |
 | Núcleo | `SOFIFI_MUESTRAS=4883 pytest sim/nucleo/nucleo_test.py` (aceptación; la compuerta usa 1 000) · `sofifi tablas` regenera ROM y programas |
-| Programas | `sofifi asm` (ciclos del RTL) · `sofifi catalogo` (docs/programas.md y sus traducciones) · `sofifi presets` · `sofifi render --preset NOMBRE` |
+| Programas | `sofifi asm` (ciclos del RTL) · `sofifi catalogo` (docs/programas.md y sus traducciones) · `sofifi presets` · `sofifi render --preset NOMBRE` · `scripts/medir_presets.py [PROGRAMA...]` (nivel de cada preset, ~3 min) |
 | Demos | `.venv/bin/python scripts/generar_demos.py` (unos 2 min; reescribe solo los `.ogg` cuyo audio cambia y las guías) |
 | Cadenas | `sofifi cadenas` (coste y si caben) · `sofifi componer NOMBRE salida.sasm` · `sofifi cadena NOMBRE entrada.wav salida.wav` (ADR 0013) |
 | MicroSD | `sofifi banco salida.img [NOMBRE...]` (sin nombres, todo lo que cabe) · `sofifi banco --leer salida.img` (comprueba CRC y límites) · en la placa: `make prog TOP=prueba_sd` y `.venv/bin/python scripts/prueba_sd.py --imagen build/banco.img` (Fase 08; guía en `docs/microsd.md`) |

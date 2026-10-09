@@ -23,7 +23,7 @@ Un efecto es un programa, no un módulo RTL (ADR 0006).
    recorren todos los `.sasm` y fallan si falta algo.
 7. Si un mando tiene un nombre nuevo, añadir su traducción en `MANDOS`
    (`model/sofifi/services/catalogo_textos.py`). `model/tests/catalogo_test.py` lo exige.
-8. Añadir al menos 5 presets (sección «Un preset»).
+8. Añadir al menos 12 presets (sección «Un preset»).
 9. Regenerar el catálogo en los cuatro idiomas con `sofifi catalogo`.
 10. Añadir la demo en `DEMOS` (`scripts/generar_demos.py`). Ejecutar el script:
     escribe el `.ogg` y las guías `demo_examples/README*.md`.
@@ -50,7 +50,8 @@ Un preset es el mismo programa con otros mandos y un nombre.
 1. Añadir una línea `"Nombre" = [pot0, pot1, …]` en la tabla del programa, en
    `presets/banco.toml`. Los valores van de 0 a 1; un mando sin usar vale 0.
 2. Escuchar el preset: `sofifi render programas/<programa>.sasm entrada.wav salida.wav --preset "Nombre"`.
-3. Regenerar el catálogo con `sofifi catalogo`: el catálogo cuenta los presets.
+3. Medir su nivel: `.venv/bin/python scripts/medir_presets.py <programa>`. Ningún preset debe dar SATURA ni FUERTE.
+4. Regenerar el catálogo con `sofifi catalogo`: el catálogo cuenta los presets.
    `model/tests/presets_test.py` comprueba el programa, los mandos y los rangos.
 
 ## Una cadena (dos programas en uno)

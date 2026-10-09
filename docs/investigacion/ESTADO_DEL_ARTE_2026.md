@@ -80,7 +80,7 @@ En número, SOFIFI ya supera a los pedales de reverb dedicados y queda por debaj
 **Actualización 2026-10-09.** Tres criterios cambian:
 
 - **Algoritmos:** 86 programas, por encima de los 74 del H9 Gen 2 [?]. Salen de las ideas de la comunidad (lotes 9 a 14).
-- **Presets:** 688; faltan unos 320 para pasar de 1 000.
+- **Presets:** 1 032, doce por programa. Pasan de 1 000: a la par con el H9 Gen 2 [?]. Cada preset se mide con `scripts/medir_presets.py`.
 - **Dos efectos a la vez:** las cadenas (ADR 0013) y el núcleo segmentado (ADR 0014) dejaban 1 312 parejas en serie que caben con los 51 programas de entonces. Ahora limita la memoria.
 
 **Lo más difícil son dos efectos a la vez y la calidad** [INF]:

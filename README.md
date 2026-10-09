@@ -16,7 +16,7 @@ texto que ejecuta un núcleo DSP propio.
 
 | Qué | Estado |
 |---|---|
-| Biblioteca | **86 programas y 688 presets** en 8 familias (Fase 07) |
+| Biblioteca | **86 programas y 1 032 presets** en 8 familias (Fase 07) |
 | Dos efectos a la vez | **24 cadenas**: 18 caben hoy y 6 esperan la SDRAM (`presets/cadenas.toml`, ADR 0013) |
 | Igualdad con el modelo, en simulación | los 86 programas y las 18 cadenas que caben dan en el RTL los mismos bits que el modelo |
 | Igualdad con el modelo, en la placa | 50 de 50: 41 programas y 9 cadenas, con el núcleo de la Fase 07 (MED-16, 2026-10-08) |
@@ -139,7 +139,7 @@ Fase 08 bastan la placa y la microSD.
 | Documento | Qué contiene |
 |---|---|
 | `docs/programas.md` | los 86 programas: qué hacen, mandos, presets y coste |
-| `presets/banco.toml` | los 688 presets |
+| `presets/banco.toml` | los 1 032 presets |
 | `docs/arquitectura_fpga.md` | la arquitectura del FPGA y cómo cambia en cada fase |
 | `schematics/` | un esquemático PDF de cada módulo RTL, generado desde el Verilog |
 | `presets/cadenas.toml` | las 24 cadenas de dos programas |

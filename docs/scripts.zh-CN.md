@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/scripts.md sha=d373cf34432c estado=al_dia -->
+<!-- i18n: fuente=docs/scripts.md sha=baeca6d7c17e estado=al_dia -->
 # 脚本与 `sofifi` 命令行工具
 
 本指南说明 `scripts/` 中的每个脚本和 `sofifi` 命令行工具的每条命令。内容按任务组织。每个工具都说明：做什么、典型命令、需要什么、属于哪个检查门或阶段。
@@ -171,6 +171,7 @@ microSD 存储程序，不做音频延迟（ADR 0004）。完整步骤以及关�
 | `scripts/capturar_infografia.py` | 把信息图的各节截成 PNG，并在 `docs/img/capturas.json` 中记录其哈希。 | `.venv/bin/python scripts/capturar_infografia.py --todas` | 关闭一个阶段时（检查门 `cierre`）。 |
 | `scripts/esquematicos.py` | 在 `schematics/` 中为每个 RTL 模块生成一个 PDF。 | `make esquematicos` | 修改 RTL 模块之后（ADR 0012）。 |
 | `scripts/generar_demos.py` | 重新生成 `demo_examples/` 中的 Ogg 演示及其说明。 | `.venv/bin/python scripts/generar_demos.py` | 修改带演示的程序之后。 |
+| `scripts/medir_presets.py` | 用模型测量每个预设的电平：饱和、超过 +6 dB 或无声时发出警告。 | `.venv/bin/python scripts/medir_presets.py plate` | 添加预设或修改程序之后。整个预设库约需 3 分钟。 |
 | `sofifi catalogo` | 重新生成程序、预设和链的目录。 | `.venv/bin/sofifi catalogo` | 修改程序、预设或链之后。 |
 
 需求：
