@@ -3,7 +3,7 @@
 
 # Programas del núcleo
 
-63 programas y 504 presets. Cada programa es un fichero de texto en `programas/`; los presets están en `presets/banco.toml`.
+69 programas y 552 presets. Cada programa es un fichero de texto en `programas/`; los presets están en `presets/banco.toml`.
 Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste.py`). La memoria es de 43 008 palabras.
 
 ## Reverb
@@ -39,14 +39,20 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 
 | Programa | Qué hace | Mandos | Presets | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|---|
+| `aureo` | Catorce ecos en la serie de Fibonacci, alternados entre izquierda y derecha, que se espesan en una reverb chasqueante. | 0: inclinación<br>1: realimentación<br>2: mezcla<br>3: tono<br>4: ancho<br>5: difusión | 8 | 141 | 1 096 | 42 259 |
 | `bbd` | Eco analógico oscuro: cada repetición pierde agudos y se satura. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: modulación | 8 | 44 | 408 | 14 674 |
 | `bruma` | Eco de cuatro cabezas que se difumina en cada vuelta hasta volverse reverb. | 0: difusión<br>1: realimentación<br>2: mezcla<br>3: cabezas | 8 | 53 | 536 | 41 553 |
 | `cinta` | Eco de cinta de 0,18 a 0,85 s con wow, flutter y saturación. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: wow y flutter | 8 | 50 | 484 | 41 600 |
+| `dados` | Cuatro ecos con tiempos y octavas al azar; sw tira los dados otra vez. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: probabilidad<br>4: tono<br>5: ancho | 8 | 239 | 1 620 | 38 260 |
 | `delay` | Eco digital limpio de 20 a 690 ms, con tono en la realimentación. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: tono | 8 | 38 | 309 | 33 749 |
 | `ducking` | Eco que se aparta mientras se toca y aparece en los silencios. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: ducking | 8 | 51 | 394 | 33 749 |
+| `enjambre` | Un enjambre de ocho ecos cortos: se junta en reverb o se abre en ecos sueltos. | 0: dispersión<br>1: realimentación<br>2: mezcla<br>3: difusión<br>4: tono<br>5: deriva | 8 | 199 | 1 377 | 42 820 |
+| `estelar` | Eco con un phaser dentro del lazo: cada repetición barre más y la cola gira. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: profundidad<br>4: velocidad<br>5: resonancia | 8 | 123 | 830 | 33 749 |
+| `lata` | Eco de lata de aceite: corto, turbio y líquido, con un vibrato atado al tiempo. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: profundidad<br>4: tono<br>5: aceite | 8 | 90 | 768 | 18 931 |
 | `lluvia` | Seis ecos irregulares que se deshacen en allpass: una lluvia de notas. | 0: difusión<br>1: realimentación<br>2: mezcla | 8 | 46 | 364 | 35 385 |
 | `oscilador` | Eco que oscila solo con un techo de nivel; el tiempo afina el tono. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: suavizado<br>4: tono<br>5: nivel | 8 | 86 | 614 | 24 678 |
 | `pingpong` | Eco estéreo que salta de un lado a otro. | 0: tiempo<br>1: realimentación<br>2: mezcla | 8 | 38 | 353 | 40 874 |
+| `probabilidad` | Ocho ecos que suenan o callan por sorteo: reverb cambiante o patrón que no se repite. | 0: tiempo<br>1: probabilidad<br>2: mezcla<br>3: realimentación<br>4: tono<br>5: suavizado | 8 | 220 | 1 450 | 34 456 |
 | `reverse` | Eco invertido en granos de 0,17 s. | 0: tono<br>1: realimentación<br>2: mezcla | 8 | 34 | 301 | 16 388 |
 | `tambor` | Eco de tambor magnético de cuatro cabezas: un ritmo que sale de las cabezas encendidas. | 0: velocidad<br>1: realimentación<br>2: mezcla<br>3: cabezas<br>4: edad<br>5: tono | 8 | 173 | 1 328 | 37 656 |
 
@@ -58,7 +64,7 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 | `chorus` | Tres voces con retardos que se mueven. | 0: velocidad<br>1: profundidad<br>2: mezcla | 8 | 42 | 416 | 1 101 |
 | `desplazador` | Eco que desplaza su frecuencia en cada vuelta: la cola sube o baja en espiral. | 0: desplazamiento<br>1: tiempo<br>2: mezcla<br>3: realimentación<br>4: tono<br>5: ancho | 8 | 110 | 864 | 33 767 |
 | `flanger` | Retardo muy corto y móvil con realimentación: peines que barren. | 0: velocidad<br>1: profundidad<br>2: mezcla<br>3: realimentación | 8 | 31 | 266 | 247 |
-| `phaser` | Cuatro allpass con coeficiente móvil: muescas que barren. | 0: velocidad<br>1: profundidad<br>2: mezcla<br>3: realimentación | 8 | 79 | 513 | 1 |
+| `phaser` | Cuatro allpass con coeficiente móvil: muescas que barren. | 0: velocidad<br>1: profundidad<br>2: mezcla<br>3: realimentación | 8 | 80 | 521 | 1 |
 | `slicer` | Corta el sonido en pulsos rítmicos, como una puerta que abre y cierra. | 0: velocidad<br>1: profundidad<br>2: ciclo<br>3: suavizado | 8 | 37 | 262 | 1 |
 | `tremolo` | El volumen sube y baja; con pot2, de un lado a otro. | 0: velocidad<br>1: profundidad<br>2: panorama | 8 | 43 | 325 | 1 |
 | `vibrato` | El tono sube y baja. | 0: velocidad<br>1: profundidad<br>2: mezcla | 8 | 27 | 240 | 125 |
@@ -99,7 +105,7 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 |---|---|---|---|---|---|---|
 | `ancho` | Ensancha el estéreo de una guitarra mono y ajusta el tono graves-agudos. | 0: ancho<br>1: tilt | 8 | 26 | 185 | 636 |
 | `autowah` | Wah automático: cuanto más fuerte se toca, más sube el filtro. | 0: sensibilidad<br>1: resonancia<br>2: mezcla | 8 | 43 | 295 | 1 |
-| `filtro` | Filtro paso bajo resonante que sube y baja solo, con un LFO. | 0: velocidad<br>1: resonancia<br>2: mezcla<br>3: profundidad | 8 | 60 | 394 | 1 |
+| `filtro` | Filtro paso bajo resonante que sube y baja solo, con un LFO. | 0: velocidad<br>1: resonancia<br>2: mezcla<br>3: profundidad | 8 | 61 | 402 | 1 |
 
 ## Looper
 
@@ -126,7 +132,7 @@ Una cadena une dos programas en uno, en serie (→) o en paralelo (‖), sin cam
 | Eco y resonancia | `delay` ‖ `resonador` | 870 | 33 749 | 27 | 1 | cabe |
 | Flor al revés | `reverse` → `bloom` | 930 | 39 908 | 17 | 1 | cabe |
 | Fuzz en la nube | `saturacion` → `cloud` | 1 248 | 42 814 | 16 | 4 | cabe |
-| Loop filtrado | `looper` → `filtro` | 983 | 32 769 | 22 | 0 | cabe |
+| Loop filtrado | `looper` → `filtro` | 991 | 32 769 | 22 | 0 | cabe |
 | Octavas en flor | `octava` ‖ `bloom` | 953 | 27 620 | 18 | 2 | cabe |
 | Placa que tiembla | `tremolo` → `plate` | 1 109 | 37 439 | 14 | 2 | cabe |
 | Shimmer con vibrato | `vibrato` → `shimmer` | 1 243 | 41 664 | 18 | 4 | cabe |

@@ -1,10 +1,10 @@
-<!-- i18n: fuente=docs/programas.md sha=6d48aa58bcd0 estado=al_dia -->
+<!-- i18n: fuente=docs/programas.md sha=1da30ae9ea85 estado=al_dia -->
 <!-- GENERADO por `sofifi catalogo` desde programas/*.sasm. No se edita a mano:
      model/tests/catalogo_test.py lo compara con su generador. -->
 
 # Core programs
 
-63 programs and 504 presets. Each program is a text file in `programas/`; the presets are in `presets/banco.toml`. Program and preset names are in Spanish.
+69 programs and 552 presets. Each program is a text file in `programas/`; the presets are in `presets/banco.toml`. Program and preset names are in Spanish.
 The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/coste.py`). The memory has 43,008 words.
 
 ## Reverb
@@ -40,14 +40,20 @@ The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/co
 
 | Program | What it does | Knobs | Presets | Instructions | Cycles | Memory |
 |---|---|---|---|---|---|---|
+| `aureo` | Fourteen echoes on the Fibonacci series, alternating left and right, that thicken into a clicking reverb. | 0: slope<br>1: feedback<br>2: mix<br>3: tone<br>4: width<br>5: diffusion | 8 | 141 | 1,096 | 42,259 |
 | `bbd` | Dark analog echo: each repeat loses treble and saturates. | 0: time<br>1: feedback<br>2: mix<br>3: modulation | 8 | 44 | 408 | 14,674 |
 | `bruma` | A four-head echo that blurs on each turn until it becomes a reverb. | 0: diffusion<br>1: feedback<br>2: mix<br>3: heads | 8 | 53 | 536 | 41,553 |
 | `cinta` | Tape echo from 0.18 to 0.85 s with wow, flutter and saturation. | 0: time<br>1: feedback<br>2: mix<br>3: wow and flutter | 8 | 50 | 484 | 41,600 |
+| `dados` | Four echoes with random times and octaves; sw rolls the dice again. | 0: time<br>1: feedback<br>2: mix<br>3: probability<br>4: tone<br>5: width | 8 | 239 | 1,620 | 38,260 |
 | `delay` | Clean digital echo from 20 to 690 ms, with tone in the feedback. | 0: time<br>1: feedback<br>2: mix<br>3: tone | 8 | 38 | 309 | 33,749 |
 | `ducking` | An echo that moves back while you play and comes back in the silences. | 0: time<br>1: feedback<br>2: mix<br>3: ducking | 8 | 51 | 394 | 33,749 |
+| `enjambre` | A swarm of eight short echoes: it closes into a reverb or opens into single echoes. | 0: spread<br>1: feedback<br>2: mix<br>3: diffusion<br>4: tone<br>5: drift | 8 | 199 | 1,377 | 42,820 |
+| `estelar` | Echo with a phaser inside the loop: each repeat sweeps more and the tail swirls. | 0: time<br>1: feedback<br>2: mix<br>3: depth<br>4: rate<br>5: resonance | 8 | 123 | 830 | 33,749 |
+| `lata` | Oil can echo: short, murky and liquid, with a vibrato tied to the time. | 0: time<br>1: feedback<br>2: mix<br>3: depth<br>4: tone<br>5: oil | 8 | 90 | 768 | 18,931 |
 | `lluvia` | Six irregular echoes that dissolve in allpass filters: a rain of notes. | 0: diffusion<br>1: feedback<br>2: mix | 8 | 46 | 364 | 35,385 |
 | `oscilador` | Echo that oscillates by itself under a level ceiling; the time tunes the pitch. | 0: time<br>1: feedback<br>2: mix<br>3: smoothing<br>4: tone<br>5: level | 8 | 86 | 614 | 24,678 |
 | `pingpong` | A stereo echo that jumps from one side to the other. | 0: time<br>1: feedback<br>2: mix | 8 | 38 | 353 | 40,874 |
+| `probabilidad` | Eight echoes that play or stay silent by chance: a changing reverb or a pattern that never repeats. | 0: time<br>1: probability<br>2: mix<br>3: feedback<br>4: tone<br>5: smoothing | 8 | 220 | 1,450 | 34,456 |
 | `reverse` | Reversed echo in grains of 0.17 s. | 0: tone<br>1: feedback<br>2: mix | 8 | 34 | 301 | 16,388 |
 | `tambor` | A four-head magnetic drum echo: a rhythm that comes from the heads that are on. | 0: rate<br>1: feedback<br>2: mix<br>3: heads<br>4: age<br>5: tone | 8 | 173 | 1,328 | 37,656 |
 
@@ -59,7 +65,7 @@ The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/co
 | `chorus` | Three voices with moving delays. | 0: rate<br>1: depth<br>2: mix | 8 | 42 | 416 | 1,101 |
 | `desplazador` | Echo that shifts its frequency on each pass: the tail goes up or down in a spiral. | 0: frequency shift<br>1: time<br>2: mix<br>3: feedback<br>4: tone<br>5: width | 8 | 110 | 864 | 33,767 |
 | `flanger` | A very short moving delay with feedback: sweeping combs. | 0: rate<br>1: depth<br>2: mix<br>3: feedback | 8 | 31 | 266 | 247 |
-| `phaser` | Four allpass filters with a moving coefficient: sweeping notches. | 0: rate<br>1: depth<br>2: mix<br>3: feedback | 8 | 79 | 513 | 1 |
+| `phaser` | Four allpass filters with a moving coefficient: sweeping notches. | 0: rate<br>1: depth<br>2: mix<br>3: feedback | 8 | 80 | 521 | 1 |
 | `slicer` | It cuts the sound into rhythmic pulses, like a gate that opens and closes. | 0: rate<br>1: depth<br>2: duty cycle<br>3: smoothing | 8 | 37 | 262 | 1 |
 | `tremolo` | The volume goes up and down; with pot2, from one side to the other. | 0: rate<br>1: depth<br>2: pan | 8 | 43 | 325 | 1 |
 | `vibrato` | The pitch goes up and down. | 0: rate<br>1: depth<br>2: mix | 8 | 27 | 240 | 125 |
@@ -100,7 +106,7 @@ The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/co
 |---|---|---|---|---|---|---|
 | `ancho` | Makes a mono guitar wide in stereo and tilts the tone between bass and treble. | 0: width<br>1: tilt | 8 | 26 | 185 | 636 |
 | `autowah` | Automatic wah: the harder you play, the higher the filter goes. | 0: sensitivity<br>1: resonance<br>2: mix | 8 | 43 | 295 | 1 |
-| `filtro` | A resonant low-pass filter that goes up and down by itself, with an LFO. | 0: rate<br>1: resonance<br>2: mix<br>3: depth | 8 | 60 | 394 | 1 |
+| `filtro` | A resonant low-pass filter that goes up and down by itself, with an LFO. | 0: rate<br>1: resonance<br>2: mix<br>3: depth | 8 | 61 | 402 | 1 |
 
 ## Looper
 
@@ -127,7 +133,7 @@ A chain joins two programs into one, in series (→) or in parallel (‖), with 
 | Eco y resonancia | `delay` ‖ `resonador` | 870 | 33,749 | 27 | 1 | fits |
 | Flor al revés | `reverse` → `bloom` | 930 | 39,908 | 17 | 1 | fits |
 | Fuzz en la nube | `saturacion` → `cloud` | 1,248 | 42,814 | 16 | 4 | fits |
-| Loop filtrado | `looper` → `filtro` | 983 | 32,769 | 22 | 0 | fits |
+| Loop filtrado | `looper` → `filtro` | 991 | 32,769 | 22 | 0 | fits |
 | Octavas en flor | `octava` ‖ `bloom` | 953 | 27,620 | 18 | 2 | fits |
 | Placa que tiembla | `tremolo` → `plate` | 1,109 | 37,439 | 14 | 2 | fits |
 | Shimmer con vibrato | `vibrato` → `shimmer` | 1,243 | 41,664 | 18 | 4 | fits |

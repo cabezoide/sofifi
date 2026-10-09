@@ -1,4 +1,4 @@
-<!-- i18n: fuente=demo_examples/README.md sha=4baa1149f9a8 estado=al_dia -->
+<!-- i18n: fuente=demo_examples/README.md sha=125069f26b99 estado=al_dia -->
 # demo_examples
 
 A synthetic guitar (an Em9 arpeggio, Karplus-Strong strings) through each core program, with the bit-exact model. Generate them again with `.venv/bin/python scripts/generar_demos.py`: the audio is the same each time.
@@ -69,6 +69,12 @@ A synthetic guitar (an Em9 arpeggio, Karplus-Strong strings) through each core p
 | `demo_oscilador.ogg` | `oscilador` | time 0.12 · feedback 0.70 · mix 0.50 · smoothing 0.70 · tone 0.40 · level 0.20 | 2.00 → 4.00 s |
 | `demo_dinamica.ogg` | `dinamica` | decay 0.75 · damping 0.30 · mix 0.45 · depth 0.85 · threshold 0.10 · rate 0.10 | — |
 | `demo_acople.ogg` | `acople` | time 0.00 · interval 0.00 · mix 1.00 · rise time 0.15 · tone 0.55 · level 1.00 | — |
+| `demo_enjambre.ogg` | `enjambre` | spread 0.40 · feedback 0.70 · mix 0.50 · diffusion 0.60 · tone 0.60 · drift 0.40 | 2.00 → 4.00 s |
+| `demo_probabilidad.ogg` | `probabilidad` | time 0.75 · probability 0.50 · mix 0.45 · feedback 0.60 · tone 0.70 · smoothing 0.40 | 3.00 → 5.00 s |
+| `demo_dados.ogg` | `dados` | time 0.70 · feedback 0.60 · mix 0.50 · probability 0.40 · tone 0.60 · width 0.70 | 1.50 → 1.60 s, 3.00 → 3.10 s |
+| `demo_aureo.ogg` | `aureo` | slope 0.60 · feedback 0.60 · mix 0.45 · tone 0.60 · width 0.90 · diffusion 0.40 | 2.50 → 5.00 s |
+| `demo_estelar.ogg` | `estelar` | time 0.45 · feedback 0.75 · mix 0.45 · depth 0.90 · rate 0.25 · resonance 0.40 | — |
+| `demo_lata.ogg` | `lata` | time 0.35 · feedback 0.55 · mix 0.45 · depth 0.60 · tone 0.40 · oil 0.50 | 3.00 → 3.60 s |
 | `demo_cadena_eco_y_muelle.ogg` | Eco y muelle: `delay` → `spring` | pot0 0.55 · pot1 0.40 · pot2 0.35 · pot3 0.60 · pot4 0.40 · pot5 0.00 | — |
 | `demo_cadena_flor_al_reves.ogg` | Flor al revés: `reverse` → `bloom` | pot0 0.60 · pot1 0.40 · pot2 0.50 · pot3 0.80 · pot4 0.55 · pot5 0.40 | — |
 | `demo_cadena_organo_infinito.ogg` | Órgano infinito: `octava` → `infinite` | pot0 0.60 · pot1 0.40 · pot2 0.00 · pot3 0.10 · pot4 0.50 · pot5 0.00 | — |

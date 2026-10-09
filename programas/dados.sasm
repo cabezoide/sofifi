@@ -1,0 +1,350 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: delay
+; resumen: Cuatro ecos con tiempos y octavas al azar; sw tira los dados otra vez.
+; resumen.en: Four echoes with random times and octaves; sw rolls the dice again.
+; resumen.zh-CN: 四个回声，时间和八度随机；sw 重新掷骰子。
+; resumen.ja: 時間とオクターブがランダムな 4 つのエコー。sw でサイコロを振り直す。
+;
+; dados.sasm — un eco impredecible pero musical.
+;
+; 1. La entrada y la realimentación se escriben en la región absoluta (WRAA).
+;    La cabeza `w` avanza una palabra por muestra y da la vuelta a 32 768.
+; 2. Cuatro tomas leen la línea (RDAA). La toma i cae en su cuarto del
+;    tiempo máximo: d_i = dmax·(0,1 + 0,225·(i + r_i)). Así los cuatro ecos
+;    nunca coinciden. r_i es un número al azar en [0, 1).
+; 3. Cada toma tiene otro número al azar, q_i. Si q_i < pot3, la toma pasa
+;    por una voz de octava: las tomas 0 y 2 por la voz A, la 1 y la 3 por la
+;    voz B. Cada voz sube o baja una octava según la tirada (r1 y r2).
+; 4. Las voces de octava son pitch shifters de doble tap (CHO con rampa).
+; 5. La toma más larga pasa por un paso bajo y dos allpass y vuelve a la
+;    línea. Cada vuelta repite el dibujo de los cuatro ecos, más oscuro.
+;
+; El azar sale de un generador congruencial: x ← frac(5x + c), con c impar
+; (el de granular.sasm). Corre en cada muestra. Al pisar sw (flanco de
+; subida), las ocho muestras siguientes pasan x por un registro de
+; desplazamiento (r0..r3, q0..q3): una tirada nueva. Al arrancar, el programa
+; tira los dados una vez. Cada tiempo llega a su valor nuevo con un paso
+; bajo (RDFX, ~40 ms): el cambio desliza el tono un momento, sin clic.
+;
+; pot0 = tiempo           (tiempo máximo: 0 → 0,1 s · 1 → 0,64 s)
+; pot1 = realimentación   (0 → cuatro ecos · 1 → 0,95 por vuelta)
+; pot2 = mezcla           (0 → seco · 1 → solo ecos)
+; pot3 = probabilidad     (de octava por eco: 0 → nunca · 1 → siempre)
+; pot4 = tono             (de la realimentación: 0 → oscuro, ≈ 1,2 kHz · 1 → limpio)
+; pot5 = ancho            (0 → mono · 1 → ecos 0 y 2 a la izquierda, 1 y 3 a la derecha)
+; sw   = tirar los dados  (cada pisada sortea tiempos y octavas nuevos)
+;
+; Diseño propio, a partir del principio del parche «Rain Delay» de ZOIA y de
+; los programas FV-1 con control de azar («Greenwood», «Johnny»).
+
+equ  vw     2048                ; ventana de las voces de octava
+
+equ  c      reg0                ; incremento del generador (impar)
+equ  x      reg1                ; número al azar en [0, 1)
+equ  h      reg2                ; 0,5: con -2,0 resta 1
+equ  hn     reg3                ; -0,5: con -2,0 suma 1
+equ  w      reg4                ; cabeza de escritura
+equ  cnt    reg5                ; muestras que quedan de tirada
+equ  prev   reg6                ; sw de la muestra anterior
+equ  r0     reg7                ; tiempos
+equ  r1     reg8
+equ  r2     reg9
+equ  r3     reg10
+equ  q0     reg11               ; octavas
+equ  q1     reg12
+equ  q2     reg13
+equ  q3     reg14
+equ  d0     reg15               ; tiempos suavizados
+equ  d1     reg16
+equ  d2     reg17
+equ  d3     reg18
+equ  dmax   reg19
+equ  tmp    reg20
+equ  nora   reg21               ; tomas 0 y 2 sin octava
+equ  norb   reg29               ; tomas 1 y 3 sin octava
+equ  oa     reg22               ; tomas 0 y 2 con octava
+equ  ob     reg23               ; tomas 1 y 3 con octava
+equ  side   reg24               ; tomas pares − tomas impares
+equ  lp     reg25
+equ  fb     reg26
+equ  kwet   reg27
+equ  kdry   reg28
+
+mem  pu     vw + 3
+mem  pd     vw + 3
+mem  ap1    557
+mem  ap2    829
+
+lfo  0  ramp vw
+lfo  1  ramp vw
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 1/32768
+        sof   1/256, 0.381958           ; c ≈ 0,382 + 2^-23: el último bit lo hace impar
+        wrax  c, 0
+        sof   0, 0.5
+        wrax  h, 0
+        sof   0, -0.5
+        wrax  hn, 0
+        sof   0, 8/1024
+        wrax  cnt, 0                    ; la primera tirada, al arrancar
+inicio:
+; ── mandos ───────────────────────────────────────────────────────────
+include  comun/mezcla.sasm
+        rdax  r1, 1.0                   ; la voz A sube si r1 ≥ 0,5
+        sof   1.0, -0.5
+        skp   neg, a_baja
+        sof   0, -1/1024                ; +12 con ventana de 2 048
+        wrax  lfo0_rate, 0
+        skp   zro, voz_b
+a_baja:
+        sof   0, 1/2048                 ; −12
+        wrax  lfo0_rate, 0
+voz_b:
+        rdax  r2, 1.0                   ; la voz B sube si r2 ≥ 0,5
+        sof   1.0, -0.5
+        skp   neg, b_baja
+        sof   0, -1/1024
+        wrax  lfo1_rate, 0
+        skp   zro, sigue
+b_baja:
+        sof   0, 1/2048
+        wrax  lfo1_rate, 0
+sigue:
+        rdax  pot0, 0.8
+        sof   1.0, 0.15
+        wrax  dmax, 0                   ; 0,15 a 0,95 de 32 768 muestras
+; ── x ← frac(5x + c), exacto en 23 bit ───────────────────────────────
+        rdax  x, 1.25
+        rdax  x, 1.25
+        rdax  x, 1.25
+        rdax  x, 1.25
+        rdax  c, 1.0                    ; [0, 6)
+        rdax  h, -2.0
+        rdax  h, -2.0
+        rdax  h, -2.0
+        rdax  h, -2.0
+        skp   gez, menos_2
+        rdax  hn, -2.0
+        rdax  hn, -2.0
+        rdax  hn, -2.0
+        rdax  hn, -2.0
+menos_2:
+        rdax  h, -2.0
+        rdax  h, -2.0
+        skp   gez, menos_1
+        rdax  hn, -2.0
+        rdax  hn, -2.0
+menos_1:
+        rdax  h, -2.0
+        skp   gez, guardar_x
+        rdax  hn, -2.0
+guardar_x:
+        wrax  x, 0
+; ── flanco de subida de sw: ocho muestras de tirada ─────────────────
+        rdax  sw, 1.0
+        rdax  prev, -1.0
+        sof   1.0, -0.25
+        skp   neg, sin_flanco
+        sof   0, 8/1024
+        wrax  cnt, 0
+sin_flanco:
+        clr
+        rdax  sw, 1.0
+        wrax  prev, 0
+        rdax  cnt, 1.0
+        sof   1.0, -1/1024
+        skp   neg, sin_tirada
+        wrax  cnt, 0
+        rdax  q2, 1.0                   ; x entra por r0 y sale por q3
+        wrax  q3, 0
+        rdax  q1, 1.0
+        wrax  q2, 0
+        rdax  q0, 1.0
+        wrax  q1, 0
+        rdax  r3, 1.0
+        wrax  q0, 0
+        rdax  r2, 1.0
+        wrax  r3, 0
+        rdax  r1, 1.0
+        wrax  r2, 0
+        rdax  r0, 1.0
+        wrax  r1, 0
+        rdax  x, 1.0
+        wrax  r0, 0
+sin_tirada:
+        clr
+        wrax  nora, 0
+        wrax  norb, 0
+        wrax  oa, 0
+        wrax  ob, 0
+; ── toma 0 (voz de octava A) ──────────────────────────────────────
+toma_0:
+        rdax  r0, 0.225               ; dmax·(0,1 + 0,225·(0 + r0))
+        rdax  h, 0.2
+        mulx  dmax
+        rdfx  d0, 0.0005
+        wrax  d0, -1.0
+        rdax  w, 1.0
+        wrax  tmp, 0
+        rdaa  tmp, 0.25
+        wrax  tmp, 0
+        rdax  q0, 1.0
+        rdax  pot3, -1.0
+        skp   gez, sin_octava_0
+        clr
+        rdax  tmp, 1.0
+        rdax  oa, 1.0
+        wrax  oa, 0
+        skp   zro, toma_1
+sin_octava_0:
+        clr
+        rdax  tmp, 1.0
+        rdax  nora, 1.0
+        wrax  nora, 0
+; ── toma 1 (voz de octava B) ──────────────────────────────────────
+toma_1:
+        rdax  r1, 0.225
+        rdax  h, 0.65
+        mulx  dmax
+        rdfx  d1, 0.0005
+        wrax  d1, -1.0
+        rdax  w, 1.0
+        wrax  tmp, 0
+        rdaa  tmp, 0.25
+        wrax  tmp, 0
+        rdax  q1, 1.0
+        rdax  pot3, -1.0
+        skp   gez, sin_octava_1
+        clr
+        rdax  tmp, 1.0
+        rdax  ob, 1.0
+        wrax  ob, 0
+        skp   zro, toma_2
+sin_octava_1:
+        clr
+        rdax  tmp, 1.0
+        rdax  norb, 1.0
+        wrax  norb, 0
+; ── toma 2 (voz de octava A) ──────────────────────────────────────
+toma_2:
+        rdax  r2, 0.225
+        rdax  h, 1.1
+        mulx  dmax
+        rdfx  d2, 0.0005
+        wrax  d2, -1.0
+        rdax  w, 1.0
+        wrax  tmp, 0
+        rdaa  tmp, 0.25
+        wrax  tmp, 0
+        rdax  q2, 1.0
+        rdax  pot3, -1.0
+        skp   gez, sin_octava_2
+        clr
+        rdax  tmp, 1.0
+        rdax  oa, 1.0
+        wrax  oa, 0
+        skp   zro, toma_3
+sin_octava_2:
+        clr
+        rdax  tmp, 1.0
+        rdax  nora, 1.0
+        wrax  nora, 0
+; ── toma 3 (voz de octava B; también alimenta la realimentación) ──
+toma_3:
+        rdax  r3, 0.225
+        rdax  h, 1.55
+        mulx  dmax
+        rdfx  d3, 0.0005
+        wrax  d3, -1.0
+        rdax  w, 1.0
+        wrax  tmp, 0
+        rdaa  tmp, 0.25
+        wrax  tmp, 1.0
+        wrax  fb, 0                     ; la toma más larga cierra el bucle
+        rdax  q3, 1.0
+        rdax  pot3, -1.0
+        skp   gez, sin_octava_3
+        clr
+        rdax  tmp, 1.0
+        rdax  ob, 1.0
+        wrax  ob, 0
+        skp   zro, bucle
+sin_octava_3:
+        clr
+        rdax  tmp, 1.0
+        rdax  norb, 1.0
+        wrax  norb, 0
+; ── bucle: la toma 3 pasa por el paso bajo y dos allpass ─────────────
+bucle:
+        rdax  fb, 1.0
+        rdax  lp, -1.0
+        wrax  tmp, 0
+        rdax  pot4, 0.8
+        sof   1.0, 0.15
+        mulx  tmp
+        rdax  lp, 1.0
+        wrax  lp, 1.9                   ; 3,8 × la toma: ganancia 0,95 en el bucle
+        rdax  lp, 1.9
+        rda   ap1#, 0.5
+        wrap  ap1, -0.5
+        rda   ap2#, 0.5
+        wrap  ap2, -0.5
+        wrax  fb, 0
+; ── voces de octava ──────────────────────────────────────────────────
+        rdax  oa, 1.0
+        rdax  nora, 1.0
+        rdax  ob, -1.0
+        rdax  norb, -1.0
+        wrax  side, 0
+        rdax  oa, 1.0
+        wra   pu, 0
+        rdax  ob, 1.0
+        wra   pd, 0
+        cho   pu + 1, 1.0, lfo0, na
+        cho   pu + 1, 1.0, lfo0, na|media
+        cho   pd + 1, 1.0, lfo1, na
+        cho   pd + 1, 1.0, lfo1, na|media
+        rdax  nora, 1.0
+        rdax  norb, 1.0
+        wrax  tmp, 0                    ; los cuatro ecos
+; ── escritura: entrada + realimentación ──────────────────────────────
+        rdax  fb, 1.0
+        mulx  pot1
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wraa  w, 0
+        rdax  w, 1.0
+        sof   1.0, -32767/32768
+        skp   neg, avanzar_w
+        clr
+        wrax  w, 0                      ; w = 32 767 muestras: vuelve a 0
+        skp   zro, salida
+avanzar_w:
+        clr
+        rdax  w, 1.0
+        sof   1.0, 1/32768
+        wrax  w, 0
+; ── salida: los ecos a 1,5 veces su escala, y el ancho ───────────────
+salida:
+        rdax  side, 1.0
+        mulx  pot5
+        wrax  oa, 0
+        rdax  tmp, 1.5
+        rdax  oa, 1.5
+        mulx  kwet
+        wrax  side, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  side, 1.0
+        wrax  dacl, 0
+        rdax  tmp, 1.5
+        rdax  oa, -1.5
+        mulx  kwet
+        wrax  side, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  side, 1.0
+        wrax  dacr, 0

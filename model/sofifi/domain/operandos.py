@@ -46,9 +46,20 @@ def instruccion(
     def valor(texto: str) -> Fraction:
         return Expresion(texto, simbolos, n).evaluar()
 
+    def no_cero(v: Fraction, entero: int, que: str, frac: int) -> int:
+        """Un valor distinto de 0 que se redondea a 0 es casi siempre un fallo (F-28)."""
+        if entero == 0 and v != 0:
+            raise ErrorEnsamblado(
+                n,
+                f"{que} {float(v):.3g} se redondea a 0 (el paso es {2.0**-frac:.3g}):"
+                " escálalo y divide después",
+            )
+        return entero
+
     def c(texto: str) -> int:
         try:
-            return coef(valor(texto))
+            v = valor(texto)
+            return no_cero(v, coef(v), "coeficiente", 16)
         except ValueError as exc:
             if isinstance(exc, ErrorEnsamblado):
                 raise
@@ -85,7 +96,8 @@ def instruccion(
     if op is Op.SOF:
         esperar(2)
         try:
-            d = cuantizar(valor(args[1]), 15, COEF_BITS, "D de sof")
+            v = valor(args[1])
+            d = no_cero(v, cuantizar(v, 15, COEF_BITS, "D de sof"), "D de sof", 15)
         except ErrorEnsamblado:
             raise
         except ValueError as exc:

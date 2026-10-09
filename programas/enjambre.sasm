@@ -1,0 +1,275 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: delay
+; resumen: Un enjambre de ocho ecos cortos: se junta en reverb o se abre en ecos sueltos.
+; resumen.en: A swarm of eight short echoes: it closes into a reverb or opens into single echoes.
+; resumen.zh-CN: 由八个短回声组成的蜂群：可聚成混响，也可散成独立回声。
+; resumen.ja: 8 つの短いエコーの群れ。集まればリバーブ、広がれば個々のエコー。
+;
+; enjambre.sasm — multitap de dispersión variable en la región absoluta
+; (RDAA y WRAA, ADR 0009).
+;
+; 1. La entrada y la realimentación se escriben en un anillo de 32 768
+;    muestras. La cabeza `w` avanza una muestra cada vez.
+; 2. Ocho tomas leen el anillo en w − D·rᵢ. D es la dispersión. Las
+;    proporciones rᵢ van de 0,13 a 1 y no son armónicas (casi geométricas).
+; 3. Con D pequeña, los ocho ecos caen en pocos milisegundos y se funden en
+;    una reverb. Con D grande, se separan en ecos sueltos.
+; 4. Mientras se pisa el footswitch, las proporciones pasan a k/8: los ecos
+;    caen en corcheas de D. El cambio es una rampa de 42 ms.
+; 5. Las tomas impares van a la izquierda y las pares a la derecha, con
+;    signos alternos en cada lado. Cada lado pasa por dos allpass (difusión)
+;    y un paso bajo (tono).
+; 6. La toma más larga vuelve al anillo por otros dos allpass y otro paso
+;    bajo (realimentación). Así la ganancia del bucle no pasa de 0,98 en
+;    ninguna frecuencia. Una curva suave limita además lo que vuelve.
+; 7. La deriva mueve D con el azar lento (comun/azar_lento.sasm). Un
+;    limitador de pendiente frena el cambio: el tono oscila menos de un 1,5 %.
+;
+; La posición de cada toma está en un registro. Así, un solo producto mueve
+; las ocho tomas a la vez; no hace falta un LFO por toma.
+; Diseño propio, a partir del principio de los «enjambres de retardos cortos»
+; (PedalPCB Deflector y EarthQuaker Afterneath): un mando junta o separa las
+; líneas y otro fija la realimentación.
+;
+; pot0 = dispersión       (0 → 10 ms, reverb · 1 → 600 ms, ecos sueltos)
+; pot1 = realimentación   (0 → ocho ecos · 1 → cola larga)
+; pot2 = mezcla           (0 → seco · 1 → solo enjambre)
+; pot3 = difusión         (0 → ecos nítidos · 1 → ecos difuminados)
+; pot4 = tono             (0 → oscuro, 1,2 kHz · 1 → brillante)
+; pot5 = deriva           (0 → quieto · 1 → D vaga un ±10 %)
+; sw   = mientras se pisa, los ecos caen en proporciones rítmicas (k/8)
+
+equ  ka       0.6               ; coeficiente de los allpass
+
+equ  w        reg0              ; cabeza de escritura (formato de RDAA)
+equ  d        reg1              ; dispersión efectiva
+equ  e        reg2              ; d·swl: cuánto se acerca a las proporciones rítmicas
+equ  swl      reg3              ; footswitch con rampa
+equ  off      reg4              ; deriva relativa, con pendiente limitada
+equ  eps      reg5              ; paso máximo de la deriva: 2^-21
+equ  p1       reg6
+equ  p2       reg7
+equ  p3       reg8
+equ  p4       reg9
+equ  p5       reg10
+equ  p6       reg11
+equ  p7       reg12
+equ  p8       reg13
+equ  sa       reg14             ; tomas impares: la izquierda
+equ  sb       reg15             ; tomas pares: la derecha
+equ  lpl      reg16
+equ  lpr      reg17
+equ  kt       reg18             ; coeficiente del paso bajo
+equ  kwet     reg19
+equ  kdry     reg20
+equ  xlog     reg21
+equ  cuenta_az reg22
+equ  azar     reg23
+equ  tmp      reg24
+equ  objetivo reg25
+equ  t        reg26
+equ  krf      reg27             ; realimentación
+equ  lpf      reg28             ; paso bajo de la realimentación
+
+mem  apl1  1103
+mem  apl2  1693
+mem  apr1  1213
+mem  apr2  1831
+mem  apf1  1597
+mem  apf2  2609
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio_muestra
+        sof   0, 1/32768
+        sof   1/64, 0
+        wrax  eps, 0                    ; 2^-21
+inicio_muestra:
+; ── mandos ───────────────────────────────────────────────────────────
+include  comun/mezcla.sasm
+        rdax  pot4, 0.85
+        sof   1.0, 0.14
+        wrax  kt, 0                     ; 0,14 → 1,2 kHz · 0,99 → abierto
+        rdax  pot1, -1.0
+        sof   1.0, 0.999
+        wrax  krf, 1.0
+        mulx  krf
+        sof   -0.98, 0.98
+        wrax  krf, 0                    ; 0,98·(1 − (1 − pot1)²)
+include  comun/azar_lento.sasm
+; ── deriva: off sigue al objetivo a 2^-21 por muestra como mucho ─────
+        rdax  azar, 1.0
+        sof   1.0, -0.5
+        mulx  pot5
+        sof   0.2, 0
+        wrax  objetivo, 1.0             ; ±0,1·pot5
+        rdax  off, -1.0
+        rdax  eps, -1.0
+        skp   gez, deriva_sube
+        rdax  eps, 1.0
+        rdax  eps, 1.0
+        skp   neg, deriva_baja
+        clr
+        rdax  objetivo, 1.0
+        wrax  off, 0
+        skp   zro, dispersion
+deriva_sube:
+        clr
+        rdax  off, 1.0
+        rdax  eps, 1.0
+        wrax  off, 0
+        skp   zro, dispersion
+deriva_baja:
+        clr
+        rdax  off, 1.0
+        rdax  eps, -1.0
+        wrax  off, 0
+; ── dispersión: d = (0,0149 + 0,8792·pot0²)·(1 + off) ────────────────
+dispersion:
+        rdax  pot0, 1.0
+        mulx  pot0
+        sof   0.8792, 0.0149            ; 488 a 29 297 muestras
+        wrax  d, 1.0
+        mulx  off
+        rdax  d, 1.0
+        wrax  d, 0
+; ── footswitch: rampa lineal de 2 048 muestras ───────────────────────
+        rdax  sw, 1.0
+        skp   zro, sw_baja
+        clr
+        rdax  swl, 1.0
+        sof   1.0, 1/2048
+        wrax  swl, 0
+        skp   zro, sw_hecho
+sw_baja:
+        rdax  swl, 1.0
+        sof   1.0, -1/2048
+        skp   gez, sw_guardar
+        clr
+sw_guardar:
+        wrax  swl, 0
+sw_hecho:
+        rdax  d, 1.0
+        mulx  swl
+        wrax  e, 0
+; ── posiciones: pᵢ = w − d·aᵢ − e·bᵢ, con bᵢ = k/8 − aᵢ ──────────────
+        rdax  w, 1.0
+        rdax  d, -0.13
+        rdax  e, 0.005
+        wrax  p1, 0
+        rdax  w, 1.0
+        rdax  d, -0.181
+        rdax  e, -0.069
+        wrax  p2, 0
+        rdax  w, 1.0
+        rdax  d, -0.237
+        rdax  e, -0.138
+        wrax  p3, 0
+        rdax  w, 1.0
+        rdax  d, -0.322
+        rdax  e, -0.178
+        wrax  p4, 0
+        rdax  w, 1.0
+        rdax  d, -0.413
+        rdax  e, -0.212
+        wrax  p5, 0
+        rdax  w, 1.0
+        rdax  d, -0.561
+        rdax  e, -0.189
+        wrax  p6, 0
+        rdax  w, 1.0
+        rdax  d, -0.739
+        rdax  e, -0.136
+        wrax  p7, 0
+        rdax  w, 1.0
+        rdax  d, -1.0
+        wrax  p8, 0
+; ── tomas: las primeras suenan más ───────────────────────────────────
+        rdaa  p1, 0.16
+        rdaa  p3, -0.14
+        rdaa  p5, 0.12
+        rdaa  p7, -0.10
+        wrax  sa, 0
+        rdaa  p2, 0.15
+        rdaa  p4, -0.13
+        rdaa  p6, 0.11
+        rdaa  p8, -0.09
+        wrax  sb, 0
+; ── izquierda: tomas impares → difusión → tono ───────────────────────
+        rdax  sa, 1.0
+        wrax  t, 1.0
+        rda   apl1#, ka
+        wrap  apl1, -ka
+        rda   apl2#, ka
+        wrap  apl2, -ka
+        rdax  t, -1.0
+        mulx  pot3
+        rdax  t, 1.0                    ; t + pot3·(allpass(t) − t)
+        rdax  lpl, -1.0
+        mulx  kt
+        rdax  lpl, 1.0
+        wrax  lpl, 0
+; ── derecha: tomas pares → difusión → tono ───────────────────────────
+        rdax  sb, 1.0
+        wrax  t, 1.0
+        rda   apr1#, ka
+        wrap  apr1, -ka
+        rda   apr2#, ka
+        wrap  apr2, -ka
+        rdax  t, -1.0
+        mulx  pot3
+        rdax  t, 1.0
+        rdax  lpr, -1.0
+        mulx  kt
+        rdax  lpr, 1.0
+        wrax  lpr, 0
+; ── escritura: entrada + realimentación limitada ─────────────────────
+        rdaa  p8, 1.0                   ; la toma más larga, a ganancia 1
+        wrax  t, 1.0
+        rda   apf1#, ka
+        wrap  apf1, -ka
+        rda   apf2#, ka
+        wrap  apf2, -ka
+        rdax  t, -1.0
+        mulx  pot3
+        rdax  t, 1.0
+        rdax  lpf, -1.0
+        mulx  kt
+        rdax  lpf, 1.0
+        wrax  lpf, 1.0
+        mulx  krf
+        clip                            ; (3x − x³)/2: pendiente 1,5 en el origen
+        sof   0.6667, 0                 ; ganancia 1 en pequeña señal; ≤ 0,67
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wraa  w, 0
+; ── avance de la cabeza: vuelve a 0 tras 32 767 ──────────────────────
+        rdax  w, 1.0
+        sof   1.0, -32767/32768
+        skp   neg, avanzar_w
+        clr
+        wrax  w, 0
+        skp   zro, salida
+avanzar_w:
+        clr
+        rdax  w, 1.0
+        sof   1.0, 1/32768
+        wrax  w, 0
+; ── salida: el enjambre ×4 sobre el seco ─────────────────────────────
+salida:
+        rdax  lpl, 1.99
+        rdax  lpl, 1.99
+        mulx  kwet
+        wrax  t, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  t, 1.0
+        wrax  dacl, 0
+        rdax  lpr, 1.99
+        rdax  lpr, 1.99
+        mulx  kwet
+        wrax  t, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  t, 1.0
+        wrax  dacr, 0

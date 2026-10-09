@@ -1,4 +1,4 @@
-<!-- i18n: fuente=fails.md sha=1d92f42b4246 estado=al_dia -->
+<!-- i18n: fuente=fails.md sha=315971f54bc6 estado=al_dia -->
 # Failures and their resolution
 
 This is the record of the failures found in the project. Each entry has a symptom, a diagnosis, a root cause, a resolution and a lesson. The record helps us not to repeat them. It also explains why the design is as it is.
@@ -34,6 +34,7 @@ Add a new entry when a failure is diagnosed and resolved. Do not rewrite the ent
 | F-25 | 08 | Three failures of the SD controller, found in simulation | resolved before the board |
 | F-26 | 08 | Four fixed-point traps in batch 9 of the catalogue | resolved before publication |
 | F-27 | 08 | Small constants, control loops and a blind fingerprint in batch 10 | resolved before publication |
+| F-28 | 08 | The minimum speed of phaser and filtro was 0, and three traps in batch 11 | resolved |
 
 ---
 
@@ -326,3 +327,21 @@ The acoustic tests of the new programs found four failures before publication.
   - **Cause:** the fingerprint test sets pot3 = 0.5, which in `dinamica` is «no dynamics»: the program is then a plate with the CLIP tank, the same as `freeze` without the footswitch.
   - **Resolution:** `POTS_HUELLA` gives `dinamica` a depth of 0.9, with a note of 0.6 s.
 - **Lesson:** long time constants do not fit in one instruction: build them. A control loop needs a floor. A fingerprint is useful only if the stimulus and the knobs get to the effect.
+
+## F-28 · The minimum speed of phaser and filtro was 0, and three traps in batch 11
+
+- **A constant that rounds to 0** (`phaser` and `filtro`, published in Phase 06).
+  - **Symptom:** with pot0 = 0, the sweep did not go at 0.05 Hz: it stopped. The author of `estelar` saw it when writing the same calculation.
+  - **Cause:** `sof 1.0, 4*0.05/fs` asks for a D of 4·10⁻⁶. The step of D is 1/32,768 ≈ 3·10⁻⁵, and the value rounded to 0 without a warning.
+  - **Resolution:** the speed is calculated ×64 and then divided (`sof 1/64, 0`). **The assembler now rejects** a coefficient or a D that is not 0 and rounds to 0. When it assembled the 63 programs, only `filtro` failed.
+- **Feedback from the sum of many taps does not work** (`enjambre`, `probabilidad`, `dados`).
+  - **Symptom:** the tail died in less than 0.5 s, or the loop oscillated and saturated.
+  - **Cause:** the sum of N taps has gain peaks of N at some frequencies and a much lower average gain.
+  - **Resolution:** the loop comes from one tap only, the longest.
+- **The cost counts all the SKP branches** (`probabilidad`, `dados`).
+  - **Symptom:** a counter for each tap or a three-way choice used more than 2,000 cycles.
+  - **Resolution:** one counter only, or two ways for each tap.
+- **An SKP that does not jump leaves the comparison in the ACC** (`dados`).
+  - **Symptom:** the output saturated without input.
+  - **Resolution:** a `clr` at the start of the branch.
+- **Lesson:** a rule that a person can forget goes in the assembler. Design a feedback loop with its worst gain, not with the average.

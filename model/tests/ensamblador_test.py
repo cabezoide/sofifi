@@ -178,3 +178,12 @@ def test_programa_fv1_suena_equivalente_a_su_semantica() -> None:
     ref = _referencia_float(x)
     assert max(abs(a - b) for a, b in zip(y, ref, strict=True)) < 1e-4
     assert DACL == 34
+
+
+def test_un_valor_que_se_redondea_a_cero_es_un_error() -> None:
+    """F-28: una velocidad mínima de 0,05 Hz (4·0,05/fs) se perdía en el D de SOF."""
+    with pytest.raises(ErrorEnsamblado, match="se redondea a 0"):
+        ensamblar("sof 1.0, 4*0.05/48828.125\n", "x")
+    with pytest.raises(ErrorEnsamblado, match="se redondea a 0"):
+        ensamblar("rdax adcl, 0.000005\n", "x")
+    ensamblar("sof 1.0, 0\nrdax adcl, 0\nsof 1.0, 64*4*0.05/48828.125\n", "x")  # 0 sí vale

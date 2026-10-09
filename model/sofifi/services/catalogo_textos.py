@@ -22,6 +22,7 @@ FAMILIAS: dict[str, tuple[str, str, str, str]] = {
 }
 
 MANDOS: dict[str, tuple[str, str, str]] = {
+    "aceite": ("oil", "油", "オイル"),
     "afinación": ("tuning", "调音", "チューニング"),
     "ancho": ("width", "宽度", "幅"),
     "apertura": ("bloom time", "绽放时间", "開く時間"),
@@ -35,9 +36,11 @@ MANDOS: dict[str, tuple[str, str, str]] = {
     "compresión": ("compression", "压缩", "圧縮"),
     "damping": ("damping", "阻尼", "ダンピング"),
     "decay": ("decay", "衰减", "ディケイ"),
+    "deriva": ("drift", "漂移", "ドリフト"),
     "desafinación": ("detune", "失谐", "デチューン"),
     "desplazamiento": ("frequency shift", "移频", "周波数シフト"),
     "difusión": ("diffusion", "扩散", "拡散"),
+    "dispersión": ("spread", "离散度", "広がり"),
     "ducking": ("ducking", "闪避", "ダッキング"),
     "duración": ("length", "时长", "長さ"),
     "eco": ("echo", "回声", "エコー"),
@@ -49,6 +52,7 @@ MANDOS: dict[str, tuple[str, str, str]] = {
     "frecuencia": ("frequency", "频率", "周波数"),
     "ganancia": ("gain", "增益", "ゲイン"),
     "giro": ("rotation", "旋转", "回転"),
+    "inclinación": ("slope", "斜率", "傾き"),
     "intervalo": ("interval", "音程", "音程"),
     "mezcla": ("mix", "干湿比", "ミックス"),
     "modulación": ("modulation", "调制", "モジュレーション"),
@@ -57,6 +61,7 @@ MANDOS: dict[str, tuple[str, str, str]] = {
     "octava alta": ("upper octave", "高八度", "上のオクターブ"),
     "octava baja": ("lower octave", "低八度", "下のオクターブ"),
     "panorama": ("pan", "声像", "パン"),
+    "probabilidad": ("probability", "概率", "確率"),
     "profundidad": ("depth", "深度", "深さ"),
     "realimentación": ("feedback", "反馈", "フィードバック"),
     "resonancia": ("resonance", "谐振", "レゾナンス"),

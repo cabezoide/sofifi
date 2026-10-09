@@ -210,7 +210,7 @@ HUELLAS = {
     "swell": "627e231396b504fa",
     "chorus": "751ad4420cef058d",
     "flanger": "cb4159f30e5bed32",
-    "phaser": "f56d3cf9add10ab7",
+    "phaser": "868caee9709ff46b",
     "tremolo": "1b6fc45fd6e309e6",
     "vibrato": "82980fc514ddf04c",
     "armonizador": "b09fcc26a86dbd5b",
@@ -231,7 +231,7 @@ HUELLAS = {
     "pingpong": "628f30ffda3cd500",
     "autowah": "411f7e3d60c07677",
     "compresor": "2e17d632f953623c",
-    "filtro": "ff8a6846cc9478cf",
+    "filtro": "d26927c6bc96874b",
     "puerta": "62aed0a4198303de",
     "saturacion": "afe17ca65691cfc1",
     "ancho": "c4b73a1ac2872ead",
@@ -260,6 +260,12 @@ HUELLAS = {
     "oscilador": "8e906592fdb882c9",
     "dinamica": "e9753e942a929dcc",
     "acople": "a82c064a0ae3a4ac",
+    "enjambre": "59281a83b3a959b8",
+    "probabilidad": "12ddebfb6a20aba4",
+    "dados": "a091f56f21267750",
+    "aureo": "b37c1ef65aa15d37",
+    "estelar": "242f16d0f4d88c1f",
+    "lata": "cb68c7361a96cbf2",
 }
 
 
@@ -283,11 +289,18 @@ SEGUNDOS_HUELLA = {
     "violin": 0.6,
     "oscilador": 0.3,
     "dinamica": 0.6,
+    "enjambre": 0.2,
+    "probabilidad": 0.5,
+    "dados": 0.4,
+    "aureo": 0.5,
+    "estelar": 0.8,
+    "lata": 0.5,
 }
 # Con pot3 = 0,5, dinamica no actúa y da los mismos bits que freeze sin pulsar.
 POTS_HUELLA = {"dinamica": ("0.5", "0.3", "0.5", "0.9")}
 # Sin footswitch, el looper solo deja pasar la señal seca: graba los primeros 0,1 s.
 TRAMOS_SW = {
+    "dados": ((int(0.15 * FS), int(0.2 * FS)),),
     "acople": ((0, int(0.3 * FS)),),
     "looper": ((0, int(0.1 * FS)),),
     "erosion": ((0, int(0.1 * FS)),),
