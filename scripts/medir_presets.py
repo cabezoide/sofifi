@@ -6,13 +6,18 @@ Cuándo: después de añadir presets o de cambiar un programa que tiene presets.
 No está en la compuerta: medir los 1 032 presets cuesta unos 1 000 s de CPU
 (unos 3 minutos con 6 procesos).
 
-Para cada preset, el modelo procesa una nota de 196 Hz (amplitud 0,5) durante
-0,6 s y 0,4 s de cola, con los mandos del preset. Con ``--sw``, el pulsador se
-pisa de 0,05 a 0,5 s. El script compara la salida con la entrada:
+Para cada preset, el modelo procesa un rasgueo de 0,6 s y 0,4 s de cola, con
+los mandos del preset. El rasgueo son las seis cuerdas al aire (mi2 a mi4), con
+seis armónicos cada una, que entran cada 10 ms y se apagan en unos 0,4 s. Su
+pico es 0,5. Una sola nota engaña: un chorus o un flanger tiene un nulo de
+peine en una frecuencia, y un wah puede quedar fuera de su banda (F-36).
+Con ``--sw``, el pulsador se pisa de 0,05 a 0,5 s. El script compara la salida con la entrada:
 
 - **SATURA:** más del 1 % de las muestras de un canal llegan a |x| ≥ 0,99.
-- **FUERTE:** el RMS de salida pasa de +6 dB sobre el de la entrada.
-- **SILENCIO:** el RMS de salida queda por debajo de −40 dB. Es un aviso, no un
+- **FUERTE:** el nivel de salida pasa de +6 dB sobre el de la entrada. El nivel
+  es el RMS máximo en ventanas de 50 ms: el RMS de toda la prueba castigaría a
+  los efectos que sostienen la nota, que no suenan más fuertes.
+- **SILENCIO:** el nivel de salida queda por debajo de −40 dB. Es un aviso, no un
   fallo: un swell lento o un looper sin grabar empiezan en silencio.
 
 Uso::
@@ -44,19 +49,39 @@ from sofifi.services.render import procesar
 RAIZ = Path(__file__).resolve().parent.parent
 FS = FS_WAV
 ESCALA = float(1 << 23)
-NOTA_HZ, NOTA_S, COLA_S, AMPLITUD = 196, 0.6, 0.4, 0.5
+CUERDAS_HZ = (82.41, 110.0, 146.83, 196.0, 246.94, 329.63)
+ARMONICOS, NOTA_S, COLA_S, PICO, CAIDA_S, RASGUEO_S = 6, 0.6, 0.4, 0.5, 0.4, 0.01
+VENTANA_S = 0.05
 SW = (0.05, 0.5)
 
 
 def nota() -> tuple[int, ...]:
-    """La nota de prueba, como en model/tests/acustica.py, y su cola en silencio."""
-    w = 2 * math.pi * NOTA_HZ / FS
-    tono = tuple(dato(str(round(AMPLITUD * math.sin(w * k), 6))) for k in range(int(NOTA_S * FS)))
-    return tono + (0,) * int(COLA_S * FS)
+    """El rasgueo de prueba, normalizado a pico PICO, y su cola en silencio."""
+    n = int(NOTA_S * FS)
+    suma = [0.0] * n
+    for c, f in enumerate(CUERDAS_HZ):
+        inicio = int(c * RASGUEO_S * FS)
+        for k in range(inicio, n):
+            t = (k - inicio) / FS
+            caida = math.exp(-t / CAIDA_S)
+            suma[k] += caida * sum(
+                math.sin(2 * math.pi * f * h * t) / h for h in range(1, ARMONICOS + 1)
+            )
+    escala = PICO / max(abs(v) for v in suma)
+    rasgueo = tuple(dato(str(round(escala * v, 6))) for v in suma)
+    return rasgueo + (0,) * int(COLA_S * FS)
 
 
 def _rms(muestras: tuple[int, ...]) -> float:
-    return math.sqrt(sum(v * v for v in muestras) / len(muestras)) / ESCALA
+    """El RMS máximo en ventanas de 50 ms, en fondo de escala."""
+    n = int(VENTANA_S * FS)
+    return (
+        max(
+            math.sqrt(sum(v * v for v in muestras[k : k + n]) / n)
+            for k in range(0, len(muestras) - n + 1, n)
+        )
+        / ESCALA
+    )
 
 
 def medir(trabajo: tuple[str, str, tuple[Fraction, ...], bool]) -> tuple[str, list[str]]:

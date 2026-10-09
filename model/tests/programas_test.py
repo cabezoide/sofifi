@@ -233,7 +233,7 @@ HUELLAS = {
     "compresor": "c1ec599e4eb083b4",
     "filtro": "144daaedb3670221",
     "puerta": "62aed0a4198303de",
-    "saturacion": "7a154d94d4d1aabb",
+    "saturacion": "8998556dd93be35b",
     "ancho": "c4b73a1ac2872ead",
     "chorale": "fcc3db3fda551067",
     "resonador": "b538fd60d6f8d04b",

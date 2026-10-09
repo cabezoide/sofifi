@@ -471,3 +471,13 @@ Al documentar los scripts (PR #58) aparecieron seis comportamientos inesperados.
 
 - **Resolución:** se bajó un poco el decay, el nivel, la ganancia o la realimentación de cada uno. Todos quedan por debajo del 1 % y de +6 dB. `scripts/medir_presets.py` mide el banco entero.
 - **Lección:** un preset se mide, no solo se escucha una vez. Los extremos («Solo …», mezcla 1) son los que saturan.
+
+## F-36 · Una nota de prueba engaña: rarezas que no lo eran
+
+- **Síntoma:** al medir los presets con una nota de 196 Hz, `dimension` daba de −5 a −10 dB, `autowah` −23 dB y `flanger` hasta −14 dB. En `dimension`, bajar la mezcla bajaba el nivel.
+- **Causa:** una sola frecuencia. Un chorus con unos 8 ms de retardo tiene un nulo de peine cerca de 196 Hz: el seco y su copia llegan casi en contrafase (204°). Un wah barre por encima de 196 Hz, así que la nota queda fuera de su banda.
+- **Comprobación:** con la guitarra sintética de las demos, de banda ancha, `dimension` da de −2,5 a −5,6 dB, `autowah` de −4,6 a +5,7 dB, y `flanger`, `ancho` y `blackhole` quedan cerca de 0 dB.
+- **Resolución:** `scripts/medir_presets.py` usa un rasgueo de seis cuerdas con armónicos. El nivel es el RMS máximo en ventanas de 50 ms: el RMS de toda la prueba castigaba a los efectos que sostienen la nota.
+- **Rareza real: `saturacion`.** La etapa 1 multiplica por 1,999 antes de la etapa 2, y la salida llegaba casi al fondo de escala. Con ganancia ×1 y nivel 1, una nota fuerte salía +6 dB más alta. La salida se divide ahora por 2: el timbre no cambia y ese caso queda casi a 0 dB.
+- **Cabeceras corregidas:** `resonador` (pot3 multiplica la frecuencia por 1 − pot3/2: no es lineal en semitonos), `looper` y `granular` (su mando de velocidad o de intervalo tiene tres zonas) y `tambor` (le faltaba la línea `sw`).
+- **Lección:** mide un efecto con una señal de banda ancha. Antes de cambiar un programa por una medida rara, repítela con otra señal.

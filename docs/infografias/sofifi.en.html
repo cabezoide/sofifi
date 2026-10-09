@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/infografias/sofifi.html sha=d3b21f642e3d estado=al_dia -->
+<!-- i18n: fuente=docs/infografias/sofifi.html sha=455a97f901d3 estado=al_dia -->
 <!-- SPDX-License-Identifier: MIT -->
 <title>SOFIFI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -142,9 +142,6 @@ tr.compuesta .barra i{background:repeating-linear-gradient(90deg,var(--laton) 0 
 .frente td{font-size:14.5px;vertical-align:top}
 .gana{color:var(--laton);font-weight:600}
 .gana::before{content:"▲ ";font-size:10px;vertical-align:1px}
-.eventide{margin-top:22px}
-.confianza{font-family:var(--f-dato);font-size:10.5px;letter-spacing:.06em;color:var(--hueso-2);border:1px solid var(--linea);padding:0 4px;border-radius:3px;white-space:nowrap;font-weight:400}
-.gana .confianza{color:var(--hueso-2)}
 .nota{margin:14px 0 0;font-size:15px;color:var(--hueso-2)}
 .nota::before{content:"◆ ";color:var(--laton)}
 .aviso{margin:22px 0 0;padding:14px 16px;border-left:3px solid var(--led);background:#22090d;font-size:15.5px}
@@ -234,18 +231,6 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
     </table>
   </div>
 
-  <div class="tabla-caja eventide">
-    <table class="frente">
-      <thead><tr><th>Against the Eventide H9 Gen 2</th><th>SOFIFI</th><th>H9 Gen 2</th></tr></thead>
-      <tbody>
-        <tr><td>Algorithms</td><td class="gana">86 programs in 8 families</td><td>74 <span class="confianza">?</span></td></tr>
-        <tr><td>Presets</td><td>1,032</td><td>more than 1,000 <span class="confianza">?</span></td></tr>
-        <tr><td>Two effects at the same time</td><td>24 chains: 18 fit today and 6 wait for the SDRAM (ADR 0013)</td><td>the H90 chains two algorithms in each preset <span class="confianza">?</span></td></tr>
-        <tr><td>Price</td><td class="gana">approximately 125 USD of BOM, without enclosure</td><td>599 USD <span class="confianza">?</span></td></tr>
-        <tr><td>You can test it</td><td class="gana">yes, bit by bit (ADR 0003)</td><td>no: closed algorithms</td></tr>
-      </tbody>
-    </table>
-  </div>
   <p class="nota">35 of the 86 programs come from community ideas: DIY forums and patch repositories (batches 9 to 14). We use only the principle of each effect (ADR 0002).</p>
   <p class="aviso"><b>Today, it does not play with a guitar yet.</b> I2S audio comes in Phase 11 and the knobs in Phase 09: the hardware is missing. Phase 08 (program bank on the microSD) is in progress. Until then, you hear the effects in the demos. The demos come from the bit-exact model.</p>
 </section>
@@ -336,7 +321,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 </section>
 
 <footer>
-  Figures counted on the repository on 2026-10-09: programs, presets, instructions and cycles with <span class="dato">sofifi catalogo</span> (<span class="dato">docs/programas.en.md</span>); chains with <span class="dato">sofifi cadenas</span>; captures and margin on the board, MED-14 to MED-16 (<span class="dato">docs/mediciones.yaml</span>, <span class="dato">build/hil_lote.csv</span>); pipelined core, ADR 0014; primitives with <span class="dato">scripts/verificar_primitivas.py</span> (MED-06 to MED-08); phases from <span class="dato">docs/fases/</span>. "Why choose SOFIFI?": RTL-model equality from <span class="dato">sim/nucleo/nucleo_test.py</span> and MED-16; FV-1 data from <span class="dato">docs/investigacion/INVESTIGACION.md</span> [V]; H9 Gen 2 data and community batches from <span class="dato">docs/investigacion/ESTADO_DEL_ARTE_2026.md</span> [?]. Public and technical documentation in Spanish, English, Simplified Chinese and Japanese; the OLED interface will have the same four languages in Phase 10 (ADR 0007). MIT license.
+  Figures counted on the repository on 2026-10-09: programs, presets, instructions and cycles with <span class="dato">sofifi catalogo</span> (<span class="dato">docs/programas.en.md</span>); chains with <span class="dato">sofifi cadenas</span>; captures and margin on the board, MED-14 to MED-16 (<span class="dato">docs/mediciones.yaml</span>, <span class="dato">build/hil_lote.csv</span>); pipelined core, ADR 0014; primitives with <span class="dato">scripts/verificar_primitivas.py</span> (MED-06 to MED-08); phases from <span class="dato">docs/fases/</span>. "Why choose SOFIFI?": RTL-model equality from <span class="dato">sim/nucleo/nucleo_test.py</span> and MED-16; FV-1 data from <span class="dato">docs/investigacion/INVESTIGACION.md</span> [V]; community batches from <span class="dato">docs/investigacion/ESTADO_DEL_ARTE_2026.md</span> [?]. Public and technical documentation in Spanish, English, Simplified Chinese and Japanese; the OLED interface will have the same four languages in Phase 10 (ADR 0007). MIT license.
 </footer>
 
 </div>

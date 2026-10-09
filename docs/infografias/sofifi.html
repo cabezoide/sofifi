@@ -141,9 +141,6 @@ tr.compuesta .barra i{background:repeating-linear-gradient(90deg,var(--laton) 0 
 .frente td{font-size:14.5px;vertical-align:top}
 .gana{color:var(--laton);font-weight:600}
 .gana::before{content:"▲ ";font-size:10px;vertical-align:1px}
-.eventide{margin-top:22px}
-.confianza{font-family:var(--f-dato);font-size:10.5px;letter-spacing:.06em;color:var(--hueso-2);border:1px solid var(--linea);padding:0 4px;border-radius:3px;white-space:nowrap;font-weight:400}
-.gana .confianza{color:var(--hueso-2)}
 .nota{margin:14px 0 0;font-size:15px;color:var(--hueso-2)}
 .nota::before{content:"◆ ";color:var(--laton)}
 .aviso{margin:22px 0 0;padding:14px 16px;border-left:3px solid var(--led);background:#22090d;font-size:15.5px}
@@ -233,18 +230,6 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
     </table>
   </div>
 
-  <div class="tabla-caja eventide">
-    <table class="frente">
-      <thead><tr><th>Frente al Eventide H9 Gen 2</th><th>SOFIFI</th><th>H9 Gen 2</th></tr></thead>
-      <tbody>
-        <tr><td>Algoritmos</td><td class="gana">86 programas en 8 familias</td><td>74 <span class="confianza">?</span></td></tr>
-        <tr><td>Presets</td><td>1 032</td><td>más de 1 000 <span class="confianza">?</span></td></tr>
-        <tr><td>Dos efectos a la vez</td><td>24 cadenas: 18 caben hoy y 6 esperan la SDRAM (ADR 0013)</td><td>el H90 encadena dos algoritmos por preset <span class="confianza">?</span></td></tr>
-        <tr><td>Precio</td><td class="gana">unos 125 USD de BOM, sin caja</td><td>599 USD <span class="confianza">?</span></td></tr>
-        <tr><td>Se puede comprobar</td><td class="gana">sí, bit a bit (ADR 0003)</td><td>no: algoritmos cerrados</td></tr>
-      </tbody>
-    </table>
-  </div>
   <p class="nota">35 de los 86 programas salen de ideas de la comunidad: foros DIY y repositorios de parches (lotes 9 a 14). Se usa solo el principio de cada efecto (ADR 0002).</p>
   <p class="aviso"><b>Hoy, aún no suena con guitarra.</b> El audio I2S llega en la Fase 11 y los mandos en la Fase 09: falta el hardware. La Fase 08 (banco en la microSD) está en curso. Hasta entonces, los efectos se escuchan en las demos, que salen del modelo bit-exact.</p>
 </section>
@@ -335,7 +320,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 </section>
 
 <footer>
-  Cifras contadas sobre el repositorio el 2026-10-09: programas, presets, instrucciones y ciclos con <span class="dato">sofifi catalogo</span> (<span class="dato">docs/programas.md</span>); cadenas con <span class="dato">sofifi cadenas</span>; capturas y margen en la placa, MED-14 a MED-16 (<span class="dato">docs/mediciones.yaml</span>, <span class="dato">build/hil_lote.csv</span>); núcleo segmentado, ADR 0014; primitivas con <span class="dato">scripts/verificar_primitivas.py</span> (MED-06 a MED-08); fases de <span class="dato">docs/fases/</span>. «¿Por qué escoger SOFIFI?»: igualdad RTL-modelo de <span class="dato">sim/nucleo/nucleo_test.py</span> y MED-16; datos del FV-1 de <span class="dato">docs/investigacion/INVESTIGACION.md</span> [V]; datos del H9 Gen 2 y lotes de la comunidad de <span class="dato">docs/investigacion/ESTADO_DEL_ARTE_2026.md</span> [?]. Documentación pública y técnica en español, inglés, chino simplificado y japonés; la interfaz de la OLED lo será en la Fase 10 (ADR 0007). Licencia MIT.
+  Cifras contadas sobre el repositorio el 2026-10-09: programas, presets, instrucciones y ciclos con <span class="dato">sofifi catalogo</span> (<span class="dato">docs/programas.md</span>); cadenas con <span class="dato">sofifi cadenas</span>; capturas y margen en la placa, MED-14 a MED-16 (<span class="dato">docs/mediciones.yaml</span>, <span class="dato">build/hil_lote.csv</span>); núcleo segmentado, ADR 0014; primitivas con <span class="dato">scripts/verificar_primitivas.py</span> (MED-06 a MED-08); fases de <span class="dato">docs/fases/</span>. «¿Por qué escoger SOFIFI?»: igualdad RTL-modelo de <span class="dato">sim/nucleo/nucleo_test.py</span> y MED-16; datos del FV-1 de <span class="dato">docs/investigacion/INVESTIGACION.md</span> [V]; lotes de la comunidad de <span class="dato">docs/investigacion/ESTADO_DEL_ARTE_2026.md</span> [?]. Documentación pública y técnica en español, inglés, chino simplificado y japonés; la interfaz de la OLED lo será en la Fase 10 (ADR 0007). Licencia MIT.
 </footer>
 
 </div>

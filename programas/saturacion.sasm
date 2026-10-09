@@ -14,7 +14,8 @@
 ; pot0 = ganancia   (0 → ×1 · 1 → ×16)
 ; pot1 = tono       (0 → oscuro · 1 → brillante)
 ; pot2 = mezcla     (0 → seco · 1 → solo saturado)
-; pot3 = nivel      (volumen de la saturación)
+; pot3 = nivel      (volumen de la saturación; con ganancia ×1 y nivel 1, una
+;                    nota fuerte sale a casi el mismo nivel que entra)
 
 equ  kwet     reg0
 equ  kdry     reg1
@@ -54,7 +55,7 @@ include  comun/mezcla.sasm
         rdax  lp2, -1.0
         mulx  ktono
         rdax  lp2, 1.0
-        wrax  lp2, 1.0
+        wrax  lp2, 0.5                  ; la mitad: compensa el ×1,999 de la etapa 1
         mulx  pot3
         mulx  kwet
         wrax  sal, 0
