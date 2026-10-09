@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/infografias/estado-del-arte.html sha=20d1ffac2c04 estado=al_dia -->
+<!-- i18n: fuente=docs/infografias/estado-del-arte.html sha=6a1bc012093d estado=al_dia -->
 <!-- SPDX-License-Identifier: MIT -->
 <title>SOFIFI 对阵大牌</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -83,6 +83,17 @@ td.gana{color:var(--laton)}
 .rasgo.lider p{color:#4b2a2e}
 .rasgo.lider h3{font-size:clamp(30px,4.4vw,44px)}
 
+/* Criterios frente a Eventide */
+.criterios{min-width:600px}
+.criterios tbody th{width:190px}
+.comunidad{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:center;margin-top:26px;padding:16px 18px;border:1px solid var(--linea);border-left:3px solid var(--laton);background:var(--caja-2)}
+.comunidad b{font-family:var(--f-titulo);font-size:64px;font-weight:900;line-height:.9;color:var(--laton)}
+.comunidad p{margin:0;font-size:15.5px;color:var(--hueso-2)}
+.estado{display:block;margin-top:6px;font-family:var(--f-dato);font-size:12px;letter-spacing:.04em;color:var(--laton)}
+.estado::before{content:"✔ "}
+.estado.no{color:var(--led)}
+.estado.no::before{content:"✕ "}
+
 footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;color:var(--hueso-2)}
 
 @media (max-width:760px){
@@ -100,14 +111,14 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 <div class="envoltorio">
 
 <header class="portada">
-  <div class="etiqueta">2026 技术现状 · SOFIFI 阶段 03</div>
-  <h1>瓶颈在存储，<span>算力也很紧</span></h1>
-  <p class="tesis">在 RTL 中实测，shimmer 占满 97 % 的存储和 74 % 的周期。让 SOFIFI 与众不同的功能，几乎不占指令。</p>
+  <div class="etiqueta">2026 技术现状 · 2026-10-09 更新</div>
+  <h1>瓶颈在存储，<span>算力已有余量</span></h1>
+  <p class="tesis">shimmer 占满 97 % 的存储，周期只用一半。流水线核心的周期减少到 1/1.6：现在的瓶颈是存储。</p>
   <div class="medidor">
     <div class="fila">
-      <div class="nombre">周期<small>shimmer：每个采样 2,048 中用 1,514</small></div>
-      <div class="pista" role="img" aria-label="百分之 73.9"><i style="width:73.9%"></i></div>
-      <div class="pct ok">73.9 %</div>
+      <div class="nombre">周期<small>shimmer：每个采样 2,048 中用 1,037</small></div>
+      <div class="pista" role="img" aria-label="百分之 50.6"><i style="width:50.6%"></i></div>
+      <div class="pct ok">50.6 %</div>
     </div>
     <div class="fila">
       <div class="nombre">存储<small>shimmer：43,008 个字中用 41,539</small></div>
@@ -115,7 +126,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
       <div class="pct mal">96.6 %</div>
     </div>
   </div>
-  <div class="pie-medidor">周期在 RTL 中实测（MED-11，阶段 06）；存储用 <span class="dato">sofifi asm programas/shimmer.sasm</span> 测得。阶段 03 时按每条指令 1 个周期计算（ADR 0009）：120，即 5.9 %。</div>
+  <div class="pie-medidor">周期和存储来自 <span class="dato">sofifi catalogo</span>（<span class="dato">docs/programas.md</span>），使用流水线核心（ADR 0014）。阶段 06 的多周期核心为 1,514 个周期。</div>
 </header>
 
 <section>
@@ -135,9 +146,9 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
       </tr></thead>
       <tbody>
         <tr><th>音频存储</th><td class="col-sofifi pierde">BSRAM 中 0.88 s</td><td>未公开</td><td>60 s 循环录音 <span class="marca">V</span></td><td>10 s IR <span class="marca">V</span></td></tr>
-        <tr><th>预设</th><td class="col-sofifi">microSD 上实际无上限（阶段 08）</td><td>效果器上 2 个 <span class="marca">V</span></td><td>16 <span class="marca">V</span></td><td>300 <span class="marca">V</span></td></tr>
+        <tr><th>预设</th><td class="col-sofifi">程序库中有 688 个；将由 microSD 加载（阶段 08，进行中）</td><td>效果器上 2 个 <span class="marca">V</span></td><td>16 <span class="marca">V</span></td><td>300 <span class="marca">V</span></td></tr>
         <tr><th>MIDI</th><td class="col-sofifi pierde">阶段 09 支持 TRS A 型；尚缺硬件</td><td>有 <span class="marca">V</span></td><td>DIN In/Out/Thru <span class="marca">V</span></td><td>DIN 与 USB-C <span class="marca">V</span></td></tr>
-        <tr><th>标志性创意</th><td class="col-sofifi">调制时不损失能量的 freeze（计划）<span class="marca">INF</span></td><td>始终在听的微型循环器 <span class="marca">V</span></td><td>颗粒乐句 <span class="marca">V</span></td><td>Cloud 与双引擎 <span class="marca">V</span></td></tr>
+        <tr><th>标志性创意</th><td class="col-sofifi gana">调制时不损失能量的 freeze：<span class="dato">freeze_givens</span></td><td>始终在听的微型循环器 <span class="marca">V</span></td><td>颗粒乐句 <span class="marca">V</span></td><td>Cloud 与双引擎 <span class="marca">V</span></td></tr>
         <tr><th>平台</th><td class="col-sofifi gana">开放 FPGA，每个程序周期固定</td><td>未公开</td><td>未公开</td><td>三核 ARM，800 MHz <span class="marca">V</span></td></tr>
         <tr><th>用户程序</th><td class="col-sofifi gana">开放，配有 Python bit-exact 模型</td><td colspan="3">所查厂商均未公开其预设格式 <span class="marca">INF</span></td></tr>
       </tbody>
@@ -147,33 +158,64 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 
 <section>
   <div class="cabeza">
-    <div class="etiqueta">路线图 · 阶段 06</div>
+    <div class="etiqueta">压轴 · 2026-10-09 更新</div>
+    <h2>对比 Eventide：数量上已经领先</h2>
+    <p>“超越” H9 Gen 2 和 H90 的八项标准。SOFIFI 赢下三项。音质和接吉他的声音目前还无法测量。</p>
+  </div>
+  <div class="tabla-caja">
+    <table class="criterios">
+      <thead><tr>
+        <th></th>
+        <th class="col-sofifi">SOFIFI<small>版本 0.7</small></th>
+        <th>H9 Gen 2 · H90<small>Eventide · 599 至 999 USD <span class="marca">?</span></small></th>
+      </tr></thead>
+      <tbody>
+        <tr><th>算法</th><td class="col-sofifi gana">86 个程序，8 个类别</td><td>H9 Gen 2 有 74 个 <span class="marca">?</span></td></tr>
+        <tr><th>预设</th><td class="col-sofifi pierde">688</td><td>超过 1,000 <span class="marca">?</span></td></tr>
+        <tr><th>同时运行两个效果</th><td class="col-sofifi">24 条链：现有 18 条可装入，6 条等待 SDRAM（ADR 0013）</td><td>H90 每个预设串联两个算法 <span class="marca">?</span></td></tr>
+        <tr><th>存储</th><td class="col-sofifi pierde">0.88 s（循环 0.67 s）；缺 SDRAM</td><td>数秒的延迟 <span class="marca">?</span></td></tr>
+        <tr><th>接吉他发声</th><td class="col-sofifi pierde">否：缺编解码器、旋钮和 OLED（阶段 09 至 11）</td><td>是</td></tr>
+        <tr><th>感知音质</th><td class="col-sofifi pierde">未测量：需要 ABX 盲测</td><td>市场标杆</td></tr>
+        <tr><th>价格</th><td class="col-sofifi gana">BOM 约 125 USD，不含外壳</td><td>599 至 999 USD <span class="marca">?</span></td></tr>
+        <tr><th>开放且可验证</th><td class="col-sofifi gana">是，逐位验证（ADR 0003）</td><td>否</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="comunidad">
+    <b>35</b>
+    <p>个程序来自社区的想法（第 9 至 14 批）：DIY 论坛、ZOIA、FV-1 和西班牙语论坛。只采用每个效果的原理，用自己的话描述（ADR 0002）。</p>
+  </div>
+</section>
+
+<section>
+  <div class="cabeza">
+    <div class="etiqueta">路线图 · 阶段 06，已完成</div>
     <h2>听感最强的，成本最低</h2>
-    <p>来自近期研究（Aalto，DAFx 2020-2026）的四项改进。全部是程序，不改变 ISA。条形表示估计的最高成本占 2,048 条指令预算的比例。</p>
+    <p>来自近期研究（Aalto，DAFx 2020-2026）的四项改进。全部是程序，不改变 ISA。阶段 06 发布了其中三项。条形表示估计的最高成本占每个采样 2,048 的比例。</p>
   </div>
   <div class="costes">
     <div class="coste">
-      <div><h3>滤波随机调制</h3><p>Lexicon 224 对付金属振铃的技巧。按每条被调制的延迟线计。</p></div>
+      <div><h3>滤波随机调制</h3><p>Lexicon 224 对付金属振铃的技巧。按每条被调制的延迟线计。<span class="estado">已完成：<span class="dato">plate_vivo</span></span></p></div>
       <div class="pista" role="img" aria-label="最多 4 / 2,048"><i style="width:.2%;min-width:3px"></i></div>
       <div class="cifra">3-4 <span class="marca">INF</span></div>
     </div>
     <div class="coste">
-      <div><h3>freeze 中的 Givens 矩阵</h3><p>freeze 调制时不损失能量。修正阶段 01 测得的一个故障。</p></div>
+      <div><h3>freeze 中的 Givens 矩阵</h3><p>freeze 调制时不损失能量。修正阶段 01 测得的一个故障。<span class="estado">已完成：<span class="dato">freeze_givens</span></span></p></div>
       <div class="pista" role="img" aria-label="最多 20 / 2,048"><i style="width:1%"></i></div>
       <div class="cifra">+10-20 <span class="marca">INF</span></div>
     </div>
     <div class="coste">
-      <div><h3>起音检测</h3><p>Swell、ducking 与 auto-freeze：一台会听的效果器。</p></div>
+      <div><h3>起音检测</h3><p>Swell、ducking 与 auto-freeze：一台会听的效果器。<span class="estado">已完成：<span class="dato">swell</span>、<span class="dato">ducking</span>、<span class="dato">sostenido</span></span></p></div>
       <div class="pista" role="img" aria-label="最多 50 / 2,048"><i style="width:2.4%"></i></div>
       <div class="cifra">&lt; 50 <span class="marca">INF</span></div>
     </div>
     <div class="coste">
-      <div><h3>无染色 FDN 与 velvet noise</h3><p>用更少的延迟线得到更密的尾音。velvet noise：运算量减少 50 % 以上 <span class="marca">V</span>。</p></div>
+      <div><h3>无染色 FDN 与 velvet noise</h3><p>用更少的延迟线得到更密的尾音。velvet noise：运算量减少 50 % 以上 <span class="marca">V</span>。<span class="estado no">已放弃：24 个抽头时不如 allpass 密（F-17）</span></p></div>
       <div class="pista" role="img" aria-label="最多 220 / 2,048"><i style="width:10.7%"></i></div>
       <div class="cifra">100-220 <span class="marca">INF</span></div>
     </div>
   </div>
-  <div class="escala"><span>0</span><span>每个采样 2,048 条指令</span></div>
+  <div class="escala"><span>0</span><span>每个采样 2,048</span></div>
 </section>
 
 <section>
@@ -185,14 +227,14 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
   <div class="rasgos">
     <div class="rasgo lider"><h3>开放程序，配 bit-exact 模型</h3><p>用汇编编写效果，在 PC 上试听，在效果器上的声音逐位相同（ADR 0003、ADR 0006）。</p></div>
     <div class="rasgo"><h3>零 CPU 爆音</h3><p>每个程序的周期数固定。MOD Dwarf 用户反映 CPU 达到 100 % 时出现爆音 <span class="marca">V</span>。</p></div>
-    <div class="rasgo"><h3>可读的预设</h3><p>microSD 上的文本文件，包含完整状态。可做版本管理，也可分享。</p></div>
+    <div class="rasgo"><h3>可读的预设</h3><p>文本文件，包含完整状态。可做版本管理，也可分享。<span class="dato">sofifi banco</span> 已能写出带 CRC 的 microSD 程序库（阶段 08）。</p></div>
     <div class="rasgo"><h3>第二层功能一目了然</h3><p>OLED 用西班牙语、英语、中文和日语显示每个旋钮的功能。功能没有标注是常见的抱怨 <span class="marca">?</span>。</p></div>
-    <div class="rasgo"><h3>兼容 FV-1</h3><p>SpinASM 翻译器可导入其程序库。2026 年出现了一个开源 FV-1 模拟器 <span class="marca">V</span>。</p></div>
+    <div class="rasgo"><h3>兼容 FV-1</h3><p>汇编器已采用类似 SpinASM 的语法。翻译器将能导入其程序库（计划）。2026 年出现了一个开源 FV-1 模拟器 <span class="marca">V</span>。</p></div>
   </div>
 </section>
 
 <footer>
-  来源：<span class="dato">docs/investigacion/ESTADO_DEL_ARTE_2026.md</span>（西班牙语），含五条研究线（市场、经典 arXiv、神经网络 arXiv、交互、平台）。标记：V 已在一手来源核实 · ? 存疑或二手 · INF 推断。价格与规格来自 Chase Bliss、Hologram 和 Strymon 的网页。周期与存储于 2026-10-07 在代码仓库上测得。
+  来源：<span class="dato">docs/investigacion/ESTADO_DEL_ARTE_2026.md</span>（西班牙语），含五条研究线（市场、经典 arXiv、神经网络 arXiv、交互、平台）。标记：V 已在一手来源核实 · ? 存疑或二手 · INF 推断。价格与规格来自 Chase Bliss、Hologram 和 Strymon 的网页。Eventide 对比：「Para superar a los Eventide」一节及其 2026-10-09 更新；社区想法：「Ideas de la comunidad」表。周期、存储、程序和链于 2026-10-09 在代码仓库上统计（<span class="dato">sofifi catalogo</span>、<span class="dato">sofifi cadenas</span>）。
 </footer>
 
 </div>

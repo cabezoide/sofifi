@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/infografias/estado-del-arte.html sha=20d1ffac2c04 estado=al_dia -->
+<!-- i18n: fuente=docs/infografias/estado-del-arte.html sha=6a1bc012093d estado=al_dia -->
 <!-- SPDX-License-Identifier: MIT -->
 <title>SOFIFI against the big names</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -83,6 +83,17 @@ td.gana{color:var(--laton)}
 .rasgo.lider p{color:#4b2a2e}
 .rasgo.lider h3{font-size:clamp(30px,4.4vw,44px)}
 
+/* Criterios frente a Eventide */
+.criterios{min-width:600px}
+.criterios tbody th{width:190px}
+.comunidad{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:center;margin-top:26px;padding:16px 18px;border:1px solid var(--linea);border-left:3px solid var(--laton);background:var(--caja-2)}
+.comunidad b{font-family:var(--f-titulo);font-size:64px;font-weight:900;line-height:.9;color:var(--laton)}
+.comunidad p{margin:0;font-size:15.5px;color:var(--hueso-2)}
+.estado{display:block;margin-top:6px;font-family:var(--f-dato);font-size:12px;letter-spacing:.04em;color:var(--laton)}
+.estado::before{content:"✔ "}
+.estado.no{color:var(--led)}
+.estado.no::before{content:"✕ "}
+
 footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;color:var(--hueso-2)}
 
 @media (max-width:760px){
@@ -100,14 +111,14 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 <div class="envoltorio">
 
 <header class="portada">
-  <div class="etiqueta">State of the art 2026 · SOFIFI phase 03</div>
-  <h1>Memory rules, <span>and compute is tight</span></h1>
-  <p class="tesis">Measured in the RTL, the shimmer fills 97 % of the memory and 74 % of the cycles. The features that will make SOFIFI unique cost almost no instructions.</p>
+  <div class="etiqueta">State of the art 2026 · updated on 2026-10-09</div>
+  <h1>Memory rules. <span>Compute has room now.</span></h1>
+  <p class="tesis">The shimmer fills 97 % of the memory and only half of the cycles. The pipelined core uses 1.6 times fewer cycles: now the memory is the limit.</p>
   <div class="medidor">
     <div class="fila">
-      <div class="nombre">Cycles<small>shimmer: 1,514 of 2,048 per sample</small></div>
-      <div class="pista" role="img" aria-label="73.9 percent"><i style="width:73.9%"></i></div>
-      <div class="pct ok">73.9 %</div>
+      <div class="nombre">Cycles<small>shimmer: 1,037 of 2,048 per sample</small></div>
+      <div class="pista" role="img" aria-label="50.6 percent"><i style="width:50.6%"></i></div>
+      <div class="pct ok">50.6 %</div>
     </div>
     <div class="fila">
       <div class="nombre">Memory<small>shimmer: 41,539 of 43,008 words</small></div>
@@ -115,7 +126,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
       <div class="pct mal">96.6 %</div>
     </div>
   </div>
-  <div class="pie-medidor">Cycles measured in the RTL (MED-11, Phase 06); memory with <span class="dato">sofifi asm programas/shimmer.sasm</span>. In Phase 03 we counted 1 cycle per instruction (ADR 0009): 120, 5.9 %.</div>
+  <div class="pie-medidor">Cycles and memory from <span class="dato">sofifi catalogo</span> (<span class="dato">docs/programas.md</span>), with the pipelined core (ADR 0014). With the multicycle core of phase 06, it was 1,514 cycles.</div>
 </header>
 
 <section>
@@ -135,9 +146,9 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
       </tr></thead>
       <tbody>
         <tr><th>Audio memory</th><td class="col-sofifi pierde">0.88 s in BSRAM</td><td>Not published</td><td>60 s looper <span class="marca">V</span></td><td>10 s IR <span class="marca">V</span></td></tr>
-        <tr><th>Presets</th><td class="col-sofifi">No practical limit on the microSD (phase 08)</td><td>2 on the pedal <span class="marca">V</span></td><td>16 <span class="marca">V</span></td><td>300 <span class="marca">V</span></td></tr>
+        <tr><th>Presets</th><td class="col-sofifi">688 in the bank; the microSD will load them (phase 08, in progress)</td><td>2 on the pedal <span class="marca">V</span></td><td>16 <span class="marca">V</span></td><td>300 <span class="marca">V</span></td></tr>
         <tr><th>MIDI</th><td class="col-sofifi pierde">TRS type A in phase 09; the hardware is missing</td><td>Yes <span class="marca">V</span></td><td>DIN In/Out/Thru <span class="marca">V</span></td><td>DIN and USB-C <span class="marca">V</span></td></tr>
-        <tr><th>Signature idea</th><td class="col-sofifi">Freeze that modulates and keeps its energy (plan) <span class="marca">INF</span></td><td>Micro-looper that always listens <span class="marca">V</span></td><td>Granular phrases <span class="marca">V</span></td><td>Cloud and two engines <span class="marca">V</span></td></tr>
+        <tr><th>Signature idea</th><td class="col-sofifi gana">Freeze that modulates and keeps its energy: <span class="dato">freeze_givens</span></td><td>Micro-looper that always listens <span class="marca">V</span></td><td>Granular phrases <span class="marca">V</span></td><td>Cloud and two engines <span class="marca">V</span></td></tr>
         <tr><th>Platform</th><td class="col-sofifi gana">Open FPGA, fixed cycles per program</td><td>Not published</td><td>Not published</td><td>Tri-core ARM at 800 MHz <span class="marca">V</span></td></tr>
         <tr><th>User programs</th><td class="col-sofifi gana">Open, with a bit-exact model in Python</td><td colspan="3">No manufacturer in this review publishes its preset format <span class="marca">INF</span></td></tr>
       </tbody>
@@ -147,33 +158,64 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 
 <section>
   <div class="cabeza">
-    <div class="etiqueta">Roadmap · Phase 06</div>
+    <div class="etiqueta">The headliner · update 2026-10-09</div>
+    <h2>Against the Eventide pedals: SOFIFI already wins on numbers</h2>
+    <p>Eight criteria to “beat” the H9 Gen 2 and the H90. SOFIFI wins in three. You cannot measure the quality and the sound with a guitar yet.</p>
+  </div>
+  <div class="tabla-caja">
+    <table class="criterios">
+      <thead><tr>
+        <th></th>
+        <th class="col-sofifi">SOFIFI<small>version 0.7</small></th>
+        <th>H9 Gen 2 · H90<small>Eventide · 599 to 999 USD <span class="marca">?</span></small></th>
+      </tr></thead>
+      <tbody>
+        <tr><th>Algorithms</th><td class="col-sofifi gana">86 programs in 8 families</td><td>74 in the H9 Gen 2 <span class="marca">?</span></td></tr>
+        <tr><th>Presets</th><td class="col-sofifi pierde">688</td><td>more than 1,000 <span class="marca">?</span></td></tr>
+        <tr><th>Two effects at the same time</th><td class="col-sofifi">24 chains: 18 fit today and 6 wait for the SDRAM (ADR 0013)</td><td>the H90 chains two algorithms in each preset <span class="marca">?</span></td></tr>
+        <tr><th>Memory</th><td class="col-sofifi pierde">0.88 s (0.67 s for loops); the SDRAM is missing</td><td>seconds of delay <span class="marca">?</span></td></tr>
+        <tr><th>Plays with a guitar</th><td class="col-sofifi pierde">no: the codec, the knobs and the OLED are missing (phases 09 to 11)</td><td>yes</td></tr>
+        <tr><th>Perceived quality</th><td class="col-sofifi pierde">not measured: a blind ABX test is necessary</td><td>market reference</td></tr>
+        <tr><th>Price</th><td class="col-sofifi gana">approximately 125 USD of BOM, without enclosure</td><td>599 to 999 USD <span class="marca">?</span></td></tr>
+        <tr><th>Open and testable</th><td class="col-sofifi gana">yes, bit by bit (ADR 0003)</td><td>no</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="comunidad">
+    <b>35</b>
+    <p>programs come from community ideas (batches 9 to 14): DIY forums, ZOIA, FV-1 and Spanish-language forums. We use only the principle of each effect, in our own words (ADR 0002).</p>
+  </div>
+</section>
+
+<section>
+  <div class="cabeza">
+    <div class="etiqueta">Roadmap · Phase 06, done</div>
     <h2>What you hear most costs least</h2>
-    <p>Four improvements from recent research (Aalto, DAFx 2020-2026). All of them are programs: they do not change the ISA. Each bar shows the maximum estimated cost against the budget of 2,048 instructions.</p>
+    <p>Four improvements from recent research (Aalto, DAFx 2020-2026). All of them are programs: they do not change the ISA. Phase 06 published three of them. Each bar shows the maximum estimated cost against 2,048 per sample.</p>
   </div>
   <div class="costes">
     <div class="coste">
-      <div><h3>Filtered random modulation</h3><p>The Lexicon 224 trick against metallic ringing. Cost for each modulated line.</p></div>
+      <div><h3>Filtered random modulation</h3><p>The Lexicon 224 trick against metallic ringing. Cost for each modulated line. <span class="estado">Done: <span class="dato">plate_vivo</span></span></p></div>
       <div class="pista" role="img" aria-label="up to 4 of 2,048"><i style="width:.2%;min-width:3px"></i></div>
       <div class="cifra">3-4 <span class="marca">INF</span></div>
     </div>
     <div class="coste">
-      <div><h3>Givens matrix in the freeze</h3><p>The freeze modulates and keeps its energy. This corrects a fault that phase 01 measured.</p></div>
+      <div><h3>Givens matrix in the freeze</h3><p>The freeze modulates and keeps its energy. This corrects a fault that phase 01 measured. <span class="estado">Done: <span class="dato">freeze_givens</span></span></p></div>
       <div class="pista" role="img" aria-label="up to 20 of 2,048"><i style="width:1%"></i></div>
       <div class="cifra">+10-20 <span class="marca">INF</span></div>
     </div>
     <div class="coste">
-      <div><h3>Attack detection</h3><p>Swell, ducking and auto-freeze: a pedal that listens.</p></div>
+      <div><h3>Attack detection</h3><p>Swell, ducking and auto-freeze: a pedal that listens. <span class="estado">Done: <span class="dato">swell</span>, <span class="dato">ducking</span>, <span class="dato">sostenido</span></span></p></div>
       <div class="pista" role="img" aria-label="up to 50 of 2,048"><i style="width:2.4%"></i></div>
       <div class="cifra">&lt; 50 <span class="marca">INF</span></div>
     </div>
     <div class="coste">
-      <div><h3>Colorless FDN and velvet noise</h3><p>A denser tail with fewer lines. Velvet noise: more than 50 % fewer operations <span class="marca">V</span>.</p></div>
+      <div><h3>Colorless FDN and velvet noise</h3><p>A denser tail with fewer lines. Velvet noise: more than 50 % fewer operations <span class="marca">V</span>. <span class="estado no">Rejected: with 24 taps it is less dense than the allpass filters (F-17)</span></p></div>
       <div class="pista" role="img" aria-label="up to 220 of 2,048"><i style="width:10.7%"></i></div>
       <div class="cifra">100-220 <span class="marca">INF</span></div>
     </div>
   </div>
-  <div class="escala"><span>0</span><span>2,048 instructions per sample</span></div>
+  <div class="escala"><span>0</span><span>2,048 per sample</span></div>
 </section>
 
 <section>
@@ -185,14 +227,14 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
   <div class="rasgos">
     <div class="rasgo lider"><h3>Open programs with a bit-exact model</h3><p>You write an effect in assembly and listen to it on the PC. It sounds the same on the pedal, bit for bit (ADR 0003, ADR 0006).</p></div>
     <div class="rasgo"><h3>Zero CPU crackles</h3><p>Each program has a fixed number of cycles. MOD Dwarf users report crackles when the CPU is at 100 % <span class="marca">V</span>.</p></div>
-    <div class="rasgo"><h3>Presets you can read</h3><p>Text files on the microSD, with the full state. You can put them under version control and share them.</p></div>
+    <div class="rasgo"><h3>Presets you can read</h3><p>Text files, with the full state. You can put them under version control and share them. <span class="dato">sofifi banco</span> already writes the microSD bank, with CRC (phase 08).</p></div>
     <div class="rasgo"><h3>The second layer, in view</h3><p>The OLED shows the function of each knob, in Spanish, English, Chinese and Japanese. Users often complain about functions without labels <span class="marca">?</span>.</p></div>
-    <div class="rasgo"><h3>FV-1 compatible</h3><p>A SpinASM translator brings in its library. An open FV-1 emulator came out in 2026 <span class="marca">V</span>.</p></div>
+    <div class="rasgo"><h3>FV-1 compatible</h3><p>The assembler already uses a SpinASM-like syntax. A translator would bring in its library (plan). An open FV-1 emulator came out in 2026 <span class="marca">V</span>.</p></div>
   </div>
 </section>
 
 <footer>
-  Source: <span class="dato">docs/investigacion/ESTADO_DEL_ARTE_2026.md</span> (Spanish), with five lines of research (market, classic arXiv, neural arXiv, interaction, platforms). Marks: V verified in a primary source · ? doubtful or secondary · INF inference. Prices and specifications come from the Chase Bliss, Hologram and Strymon pages. Cycles and memory measured on the repository on 2026-10-07.
+  Source: <span class="dato">docs/investigacion/ESTADO_DEL_ARTE_2026.md</span> (Spanish), with five lines of research (market, classic arXiv, neural arXiv, interaction, platforms). Marks: V verified in a primary source · ? doubtful or secondary · INF inference. Prices and specifications come from the Chase Bliss, Hologram and Strymon pages. Comparison with Eventide: section “Para superar a los Eventide” and its update of 2026-10-09; community ideas: table “Ideas de la comunidad”. Cycles, memory, programs and chains counted on the repository on 2026-10-09 (<span class="dato">sofifi catalogo</span>, <span class="dato">sofifi cadenas</span>).
 </footer>
 
 </div>

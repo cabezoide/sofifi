@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=f59dff3484d0 estado=al_dia -->
+<!-- i18n: fuente=README.md sha=9346c0f671b2 estado=al_dia -->
 # SOFIFI — 集成 FPGA 上的沉浸式波形与滤波合成器
 
 *英文名：Soundscapes On FPGA: Integrated Filters & Impulses；西班牙文名：Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada。*
@@ -18,9 +18,10 @@ FPGA（高云 GW5A-LV25）上。每个效果都是一个文本程序，由自研
 |---|---|
 | 程序库 | 8 个类别中共 **86 个程序与 688 个预设**（阶段 07） |
 | 同时运行两个效果 | **24 条链**：18 条现在可以装入，6 条等待 SDRAM（`presets/cadenas.toml`，ADR 0013） |
-| 与模型一致 | 86 个程序和 18 条可装入的链在 RTL 中的输出与模型逐位一致（仿真） |
-| 开发板 | plate 和循环器在芯片上以 100 至 125 MHz 运行，输出与模型逐位一致（阶段 07） |
-| 下一步 | 从 microSD 卡加载程序（阶段 08） |
+| 与模型一致（仿真） | 86 个程序和 18 条可装入的链在 RTL 中的输出与模型逐位一致 |
+| 与模型一致（开发板） | 50 项中 50 项一致：41 个程序和 9 条链，使用阶段 07 的核心（MED-16，2026-10-08） |
+| 核心 | 顺序流水线（ADR 0014）：周期数减少到原来的 1/1.6；在开发板上 125 MHz（3 次中 3 次）和 133.3 MHz（2 次中 2 次）无错误；工作频率为 100 MHz |
+| 进行中 | **阶段 08，microSD：**程序库、SD 控制器和顶层 `prueba_sd` 在仿真中工作正常。还缺少用真实存储卡的测试（`docs/microsd.md`，西班牙语） |
 | 接吉他发声 | **尚未实现**：缺少 I2S 编解码器（阶段 11） |
 
 ## 无需硬件即可试听效果
@@ -42,14 +43,14 @@ FPGA（高云 GW5A-LV25）上。每个效果都是一个文本程序，由自研
 
 | 类别 | 程序 |
 |---|---|
-| 混响 | plate, plate_vivo, hall, blackhole, cloud, bloom, spring, chorale, resonador, gated, reverb_inversa, infinite, freeze, freeze_givens, shimmer, shimmer_quinta, shimmer_energia |
-| 延迟 | delay, cinta, bbd, pingpong, lluvia, ducking, reverse |
-| 调制 | chorus, flanger, phaser, tremolo, vibrato, slicer |
-| 音高 | octava, armonizador, doblador, escalera |
-| 动态 | compresor, puerta, swell |
-| 滤波 | autowah, filtro, ancho |
-| 质感 | saturacion, lofi, ringmod, granular |
-| 循环器 | looper |
+| 混响（26） | plate, plate_vivo, hall, blackhole, cloud, bloom, spring, chorale, resonador, gated, reverb_inversa, infinite, freeze, freeze_givens, shimmer, shimmer_quinta, shimmer_energia, shimmer_grave, shimmer_escondido, ensemble, marea, shoegaze, sostenido, dinamica, baldosa, semilla |
+| 延迟（21） | delay, cinta, bbd, pingpong, lluvia, ducking, reverse, bruma, tambor, oscilador, enjambre, probabilidad, dados, aureo, estelar, lata, deriva, eco_casero, dos_ecos, frenada, compas |
+| 调制（11） | chorus, flanger, phaser, tremolo, vibrato, slicer, armonico, desplazador, dimension, orilla, vibe |
+| 音高（8） | octava, armonizador, doblador, escalera, arcoiris, acople, arpegio, espiral |
+| 动态（6） | compresor, puerta, swell, violin, arco, swell_ritmico |
+| 循环器（6） | looper, erosion, mosaico, relevo, resbalon, tartamudeo |
+| 质感（5） | saturacion, lofi, ringmod, granular, viento |
+| 滤波（3） | autowah, filtro, ancho |
 
 `docs/programas.zh-CN.md` 说明每个程序的作用、旋钮和开销，由 `sofifi catalogo` 生成。
 程序名和预设名为西班牙语。
@@ -64,7 +65,8 @@ FPGA（高云 GW5A-LV25）上。每个效果都是一个文本程序，由自研
   `RDAA` 和 `WRAA` 读写该区域（ADR 0009）。有了 SDRAM 之后，循环可以更长。
 - **fs = 48,828 Hz**：100 MHz 时钟正好为每个样本提供 2,048 个周期（ADR 0005）。
 - **Python 逐位精确参考模型**：RTL 必须逐样本给出与模型相同的位（ADR 0003）。
-- **实际开销**：每条指令在 RTL 中耗用 2 到 50 个周期。读取 ACC 的指令要等待上一条指令的结果（ADR 0014，西班牙语）。`sofifi asm` 会给出一个程序的周期数。
+- **实际开销**：核心是顺序流水线（ADR 0014，西班牙语）。一条指令只有在读取尚未就绪的结果（例如 ACC 的结果）时才等待。
+  一个程序耗用 2,048 个周期中的 185 到 1,620 个。`sofifi asm` 会给出一个程序的周期数。
 
 ![为什么选择 SOFIFI？可以阅读、修改并逐位验证；与 FV-1 相比，指令数和采样率更高，但目前还不能接吉他演奏](docs/img/zh-CN/porque.png)
 
@@ -89,6 +91,7 @@ make sim           # RTL 的 cocotb 测试平台
 make prog          # 综合 hola_uart 并加载到 Tang Primer 25K 的 SRAM
 make uart          # 读取调试器 UART（/dev/ttyUSB1），要求出现 "SOFIFI"
 make esquematicos  # 重新生成 RTL 的 PDF 原理图
+make hil HIL=hall  # 把一个程序或一条链加载到开发板，并与模型比较
 ```
 
 无需 sudo 编程开发板，需要 BL616 调试器的 udev 规则（`0403:6010`，`plugdev` 组）。
@@ -108,7 +111,7 @@ make esquematicos  # 重新生成 RTL 的 PDF 原理图
 | 部件 | 状态 |
 |---|---|
 | Tang Primer 25K + Dock | 已有 |
-| 64 GB microSD 卡（PMOD TF） | 已有 |
+| 64 GB microSD 卡和 Sipeed PMOD TF 模块 | 已有；还缺少在开发板上测试存储卡（阶段 08） |
 | I2S 编解码器（PCM1808 + PCM5102A 或 Digilent Pmod I2S2） | **缺少**（阶段 11） |
 | MCP3208 + 电位器 | 缺少（阶段 09；Dock 上的按键充当脚踏开关） |
 | 128×64 SSD1306 OLED | 缺少（阶段 10） |
@@ -127,10 +130,17 @@ make esquematicos  # 重新生成 RTL 的 PDF 原理图
 | `presets/banco.toml` | 688 个预设 |
 | `docs/arquitectura_fpga.zh-CN.md` | FPGA 架构及其在各阶段的变化 |
 | `schematics/` | 每个 RTL 模块的 PDF 原理图，由 Verilog 生成 |
-| `docs/EXTENDING.zh-CN.md` | 如何添加效果、指令、RTL 模块或检查门 |
+| `presets/cadenas.toml` | 24 条由两个程序组成的链 |
+| `docs/microsd.md` | 如何把程序库写入 microSD 卡并在开发板上测试（西班牙语） |
+| `docs/EXTENDING.zh-CN.md` | 如何添加程序、预设、链、指令、RTL 模块或检查门 |
 | `BOM.zh-CN.md` | 硬件采购清单，附链接 |
 | `SBOM.zh-CN.md` | 每个 FPGA 组件的作用以及构建它的工具 |
 | `fails.zh-CN.md` | 遇到的故障：现象、原因、解决方法与教训 |
+
+## 脚本
+
+`scripts/` 中的脚本用于构建、测试和测量本项目。指南
+[docs/scripts.md](docs/scripts.md) 说明每个脚本的作用、使用时机和选项。
 
 ## 语言
 

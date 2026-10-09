@@ -3,7 +3,9 @@
 #
 # Hook pre-push versionado (ADR 0001). NO mantiene su propia lista de trabajos:
 # delega en `ci_local.sh --no-soft`, que es la única definición de lo duro.
+# Se instala con make hooks (scripts/install_hooks.sh). git lo llama en cada push.
 # Escapes con nombre: `git push --no-verify` o `PREPUSH_SKIP=1 git push`.
+# Salida: la de ci_local.sh --no-soft; distinta de 0 cancela el push.
 set -euo pipefail
 
 if [[ "${PREPUSH_SKIP:-0}" == "1" ]]; then

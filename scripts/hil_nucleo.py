@@ -1,20 +1,30 @@
 # SPDX-License-Identifier: MIT
 """Verifica el núcleo en la placa contra el modelo (Fase 05, hardware-in-the-loop).
 
+Cuándo: después de cambiar el núcleo o un programa, para confirmar en el
+silicio la igualdad bit a bit con el modelo (ADR 0003, ADR 0011).
+
 Uso::
 
     make prog TOP=hil_nucleo
     .venv/bin/python scripts/hil_nucleo.py
 
+    make prog TOP=hil_looper
+    .venv/bin/python scripts/hil_nucleo.py --programa looper
+
     make hil HIL=marea    # cualquier programa o cadena: ROM, síntesis, carga y este script
 
 Envía 'C' a rtl/top/hil_nucleo.v, recibe las muestras capturadas a velocidad
 real, comprueba el CRC-32 y compara cada muestra con el modelo bit-exact
-procesando el mismo estímulo. Termina con código 0 si todas coinciden.
+procesando el mismo estímulo.
 
 Con ``--traza K0`` pide la traza del núcleo desde la muestra K0 (cada cambio del
 ACC, con su pc) y dice cuál es la primera instrucción que no coincide con el
 modelo. Sirve para localizar un fallo de timing en el silicio (fails.md, F-15).
+
+Necesita la placa cargada con el top correcto y la UART en ``/dev/ttyUSB1``.
+No escribe ficheros. Salida: 0 si las 4 096 muestras coinciden y el CRC es
+correcto (o si la traza coincide); 1 si no.
 """
 
 from __future__ import annotations
@@ -177,8 +187,15 @@ def capturar(puerto: str, espera: float, orden: bytes = b"C", baudios: int = 115
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--puerto", default="/dev/ttyUSB1")
-    ap.add_argument("--espera", type=float, default=30.0, help="segundos máximos")
+    ap.add_argument(
+        "--puerto", default="/dev/ttyUSB1", help="UART de la FPGA (por defecto: %(default)s)"
+    )
+    ap.add_argument(
+        "--espera",
+        type=float,
+        default=30.0,
+        help="segundos máximos de espera (por defecto: %(default)s)",
+    )
     ap.add_argument("--traza", type=int, metavar="K0", help="pide la traza desde la muestra K0")
     ap.add_argument(
         "--programa",

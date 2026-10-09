@@ -1,12 +1,14 @@
 # SPDX-License-Identifier: MIT
 """Comprueba en el PC lo que envían los tops de prueba de primitivas (Fase 03).
 
+Cuándo: Fase 03, y cada vez que cambie una primitiva de ``rtl/primitivas/``.
+
 Uso::
 
     make prog TOP=prueba_dsp && .venv/bin/python scripts/verificar_primitivas.py dsp
-    .venv/bin/python scripts/verificar_primitivas.py bsram --segundos 10
-    .venv/bin/python scripts/verificar_primitivas.py pll
-    .venv/bin/python scripts/verificar_primitivas.py fs      # prueba_fs: fs y UART RX
+    make prog TOP=prueba_bsram && .venv/bin/python scripts/verificar_primitivas.py bsram
+    make prog TOP=prueba_pll && .venv/bin/python scripts/verificar_primitivas.py pll
+    make prog TOP=prueba_fs && .venv/bin/python scripts/verificar_primitivas.py fs
 
 Cada top envía líneas "<etiqueta> <hexadecimal>":
 
@@ -19,7 +21,8 @@ Cada top envía líneas "<etiqueta> <hexadecimal>":
 - ``S``: muestras en un segundo (8). Se exige 48 828 o 48 829 (fs = 48 828,125 Hz).
 - ``R``: eco de cada byte enviado al empezar. Se exige el eco exacto y en orden.
 
-Termina con código 0 si todas las líneas son correctas y llegó al menos una.
+Necesita la placa y la UART en ``/dev/ttyUSB1``. No escribe ficheros.
+Salida: 0 si todas las líneas son correctas y llegó al menos una; 1 si no.
 """
 
 from __future__ import annotations
@@ -128,9 +131,17 @@ COMPROBADORES = {
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("prueba", choices=[*sorted(COMPROBADORES), "fs"])
-    ap.add_argument("--puerto", default="/dev/ttyUSB1")
-    ap.add_argument("--segundos", type=float, default=10.0)
+    ap.add_argument(
+        "prueba",
+        choices=[*sorted(COMPROBADORES), "fs"],
+        help="top cargado: prueba_bsram, prueba_dsp, prueba_pll o prueba_fs",
+    )
+    ap.add_argument(
+        "--puerto", default="/dev/ttyUSB1", help="UART de la FPGA (por defecto: %(default)s)"
+    )
+    ap.add_argument(
+        "--segundos", type=float, default=10.0, help="tiempo de lectura (por defecto: 10)"
+    )
     args = ap.parse_args(argv)
 
     if args.prueba == "fs":

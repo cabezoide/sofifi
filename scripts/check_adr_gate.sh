@@ -3,7 +3,12 @@
 #
 # adr-gate (SPEC_RAIZ §3.1): si el diff toca una sentinela estructural
 # (docs/adr/sentinelas.txt) y no toca ningún ADR, rojo.
+# Cuándo: trabajo duro de scripts/ci_local.sh (pre-push y make ci).
+# El diff va desde la base remota (upstream u origin/main) e incluye el árbol
+# de trabajo y los ficheros nuevos sin ignorar.
+# Uso: scripts/check_adr_gate.sh   (sin opciones; no escribe nada)
 # Escape consciente: ADR_GATE_ACK=1 ("revisé y ninguna decisión cambia").
+# Salida: 0 sin sentinelas, con ADR en el diff o con ADR_GATE_ACK=1; 1 si no.
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 

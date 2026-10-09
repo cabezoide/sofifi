@@ -13,15 +13,18 @@ por capa y el detalle que un agente necesita para trabajar sin releer todo.
 | Documentación | `make docs` |
 | RTL | `scripts/ci_local.sh rtl-lint` · `make sim` (cocotb sobre verilator, del `.venv`) |
 | Núcleo | `SOFIFI_MUESTRAS=4883 pytest sim/nucleo/nucleo_test.py` (aceptación; la compuerta usa 1 000) · `sofifi tablas` regenera ROM y programas |
-| Programas | `sofifi asm` (ciclos del RTL) · `sofifi catalogo` (docs/programas.md) · `sofifi presets` · `sofifi render --preset NOMBRE` |
+| Programas | `sofifi asm` (ciclos del RTL) · `sofifi catalogo` (docs/programas.md y sus traducciones) · `sofifi presets` · `sofifi render --preset NOMBRE` |
+| Demos | `.venv/bin/python scripts/generar_demos.py` (unos 2 min; reescribe solo los `.ogg` cuyo audio cambia y las guías) |
 | Cadenas | `sofifi cadenas` (coste y si caben) · `sofifi componer NOMBRE salida.sasm` · `sofifi cadena NOMBRE entrada.wav salida.wav` (ADR 0013) |
-| MicroSD | `sofifi banco salida.img [NOMBRE...]` (sin nombres, todo lo que cabe) · `sofifi banco --leer salida.img` (comprueba CRC y límites; Fase 08) |
-| Placa | `make synth` · `make prog` (SRAM) · `make uart` (lee `/dev/ttyUSB1`) |
-| Núcleo en placa | `make prog TOP=hil_nucleo` · `.venv/bin/python scripts/hil_nucleo.py` · margen: `scripts/margen_reloj.py` (ADR 0011). Looper: `TOP=hil_looper` y `--programa looper` (con `--base hil_looper` en el margen). Cualquier programa o cadena: `make hil HIL=NOMBRE`; todos: `scripts/hil_lote.py --todos` |
+| MicroSD | `sofifi banco salida.img [NOMBRE...]` (sin nombres, todo lo que cabe) · `sofifi banco --leer salida.img` (comprueba CRC y límites) · en la placa: `make prog TOP=prueba_sd` y `.venv/bin/python scripts/prueba_sd.py --imagen build/banco.img` (Fase 08; guía en `docs/microsd.md`) |
+| Placa | `make synth` · `make prog` (SRAM) · `make uart` (lee `/dev/ttyUSB1`). Si nextpnr solo falla el reloj, `scripts/fpga.sh` reintenta con las semillas 2, 3 y 4 (`SEMILLAS_PNR`, F-33) |
+| Núcleo en placa | `make prog TOP=hil_nucleo` · `.venv/bin/python scripts/hil_nucleo.py` · margen: `scripts/margen_reloj.py` (ADR 0011). Looper: `TOP=hil_looper` y `--programa looper` (con `--base hil_looper` en el margen). Cualquier programa o cadena: `make hil HIL=NOMBRE` (usa `sofifi rom`); todos: `scripts/hil_lote.py --todos` |
 | Primitivas | `make prog TOP=prueba_dsp` y `.venv/bin/python scripts/verificar_primitivas.py dsp` (también `bsram` y `pll`) |
 | Optimización | `make optimizacion` (síntesis de todos los tops, ~3 min; release, ADR 0010) |
 | Release | `make release-check` (síntesis de los tops con informe de recursos) |
 | Esquemáticos | `make esquematicos` (PDF por módulo RTL; `scripts/esquematicos.py --comprobar`) |
+
+La guía de todos los scripts, con sus opciones, está en [docs/scripts.md](docs/scripts.md).
 
 ## Reglas para el agente
 
@@ -87,6 +90,11 @@ Se aplica a documentación, comentarios, mensajes de commit y descripciones de P
 - Probar herramientas nuevas que lanzan subprocesos con `ulimit -u` y `timeout`.
 - Un top que envía a pleno caudal por la UART cuelga el puente del BL616 si el PC
   deja de leer, y hay que reconectar el USB. Limitar el caudal (`rtl/AGENTS.md`).
+- La Fmax de nextpnr cambia con la semilla de colocación: de 95 a 112 MHz con el
+  mismo netlist (F-33). Un fallo de reloj tras un cambio que no toca la lógica
+  es ruido. El margen real se mide en la placa (ADR 0011).
+- Un cambio en `programas/comun/` cambia las huellas de todos los programas que
+  lo incluyen, las demos y, si toca al plate o al looper, las ROM de `sofifi tablas` (F-32).
 
 ## Cómo extender
 

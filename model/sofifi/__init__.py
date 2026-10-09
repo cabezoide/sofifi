@@ -9,4 +9,5 @@ Capas (las dependencias apuntan hacia adentro; lo comprueba
 - ``adapters``: implementaciones de los puertos (WAV, volcados para el RTL).
 - ``services``: casos de uso que componen dominio y puertos.
 - ``cli``: entrada; único sitio que elige adaptadores (raíz de composición).
+  ``cli_argumentos`` describe sus órdenes y textos de ayuda, sin E/S.
 """

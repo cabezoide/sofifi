@@ -1,8 +1,18 @@
 # sim/AGENTS.md — testbenches (tiene precedencia en esta carpeta)
 
-Vacío en la versión 0.0. Aquí irán los testbenches cocotb (Python) sobre Verilator
-o Icarus. Cada uno alimenta el RTL con un estímulo y compara **muestra a muestra**
-contra el modelo de `model/sofifi/` (ADR 0003).
+Testbenches cocotb (Python) sobre Verilator. Cada uno alimenta el RTL con un
+estímulo y lo compara **muestra a muestra** con el modelo de `model/sofifi/`
+(ADR 0003).
+
+| Carpeta | Qué prueba |
+|---|---|
+| `sim/nucleo/` | el núcleo y sus bloques; `sim/nucleo/nucleo_test.py` recorre todos los programas y las cadenas que caben |
+| `sim/sd/` | el controlador SD y el cargador, con un modelo de tarjeta (`sim/sd/tarjeta_sd.py`) |
+| `sim/top/` | los tops `hil_nucleo` y `prueba_sd` |
+| `sim/comun/`, `sim/primitivas/` | UART, medidor de frecuencia y primitivas |
+
+`make sim` ejecuta todo. La prueba de aceptación del núcleo usa más muestras:
+`SOFIFI_MUESTRAS=4883 pytest sim/nucleo/nucleo_test.py`.
 
 ## Reglas
 

@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=f59dff3484d0 estado=al_dia -->
+<!-- i18n: fuente=README.md sha=9346c0f671b2 estado=al_dia -->
 # SOFIFI — Soundscapes On FPGA: Integrated Filters & Impulses
 
 *In Spanish: Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada.*
@@ -19,9 +19,10 @@ custom DSP core executes.
 |---|---|
 | Library | **86 programs and 688 presets** in 8 families (Phase 07) |
 | Two effects at the same time | **24 chains**: 18 fit today and 6 wait for the SDRAM (`presets/cadenas.toml`, ADR 0013) |
-| Match with the model | all 86 programs and the 18 chains that fit give in the RTL the same bits as the model (simulation) |
-| Board | the plate and the looper give on the silicon the same bits as the model, from 100 to 125 MHz (Phase 07) |
-| Next | program load from the microSD (Phase 08) |
+| Match with the model, in simulation | all 86 programs and the 18 chains that fit give in the RTL the same bits as the model |
+| Match with the model, on the board | 50 of 50: 41 programs and 9 chains, with the Phase 07 core (MED-16, 2026-10-08) |
+| Core | in-order pipeline (ADR 0014, Spanish): it uses 1.6 times fewer cycles; no errors on the board at 125 MHz (3 of 3) and at 133.3 MHz (2 of 2); it runs at 100 MHz |
+| In progress | **Phase 08, microSD:** the bank, the SD controller and the `prueba_sd` top work in simulation. The test with the real card is not done yet (`docs/microsd.md`) |
 | Audio with a guitar | **not yet**: the I2S codec is missing (Phase 11) |
 
 ## Listen to the effects without hardware
@@ -45,14 +46,14 @@ custom DSP core executes.
 
 | Family | Programs |
 |---|---|
-| Reverb | plate, plate_vivo, hall, blackhole, cloud, bloom, spring, chorale, resonador, gated, reverb_inversa, infinite, freeze, freeze_givens, shimmer, shimmer_quinta, shimmer_energia |
-| Delay | delay, cinta, bbd, pingpong, lluvia, ducking, reverse |
-| Modulation | chorus, flanger, phaser, tremolo, vibrato, slicer |
-| Pitch | octava, armonizador, doblador, escalera |
-| Dynamics | compresor, puerta, swell |
-| Filter | autowah, filtro, ancho |
-| Texture | saturacion, lofi, ringmod, granular |
-| Looper | looper |
+| Reverb (26) | plate, plate_vivo, hall, blackhole, cloud, bloom, spring, chorale, resonador, gated, reverb_inversa, infinite, freeze, freeze_givens, shimmer, shimmer_quinta, shimmer_energia, shimmer_grave, shimmer_escondido, ensemble, marea, shoegaze, sostenido, dinamica, baldosa, semilla |
+| Delay (21) | delay, cinta, bbd, pingpong, lluvia, ducking, reverse, bruma, tambor, oscilador, enjambre, probabilidad, dados, aureo, estelar, lata, deriva, eco_casero, dos_ecos, frenada, compas |
+| Modulation (11) | chorus, flanger, phaser, tremolo, vibrato, slicer, armonico, desplazador, dimension, orilla, vibe |
+| Pitch (8) | octava, armonizador, doblador, escalera, arcoiris, acople, arpegio, espiral |
+| Dynamics (6) | compresor, puerta, swell, violin, arco, swell_ritmico |
+| Looper (6) | looper, erosion, mosaico, relevo, resbalon, tartamudeo |
+| Texture (5) | saturacion, lofi, ringmod, granular, viento |
+| Filter (3) | autowah, filtro, ancho |
 
 `docs/programas.en.md` tells what each program does, which knobs it has and
 what it costs. `sofifi catalogo` generates it. The program and preset names
@@ -72,9 +73,10 @@ are in Spanish.
 - **fs = 48,828 Hz:** a 100 MHz clock gives exactly 2,048 cycles per sample (ADR 0005).
 - **Bit-exact reference model in Python.** The RTL must give the same bits as
   the model, sample by sample (ADR 0003).
-- **Real cost:** each instruction uses 2 to 50 cycles in the RTL. An
-  instruction that reads the ACC waits for the result of the previous one
-  (ADR 0014, Spanish). `sofifi asm` gives the cycles of a program.
+- **Real cost:** the core is an in-order pipeline (ADR 0014, Spanish). An
+  instruction waits only if it reads a result that is not ready yet, for
+  example the ACC. A program uses 185 to 1,620 of the 2,048 cycles. `sofifi asm`
+  gives the cycles of a program.
 
 ![Why choose SOFIFI? You can read it, change it and check it bit by bit; against the FV-1 it wins on instructions and sample rate, and it does not play with a guitar yet](docs/img/en/porque.png)
 
@@ -101,6 +103,7 @@ make sim           # cocotb testbenches of the RTL
 make prog          # synthesizes hola_uart and loads it into the SRAM of the Tang Primer 25K
 make uart          # reads the debugger UART (/dev/ttyUSB1) and requires "SOFIFI"
 make esquematicos  # generates again the PDF schematics of the RTL
+make hil HIL=hall  # loads a program or a chain into the board and compares it with the model
 ```
 
 To program the board without sudo, you need the udev rule of the BL616
@@ -121,7 +124,7 @@ If a tool is missing, the gate says it (`NO CORRIÓ`, "did not run"). It does no
 | Part | Status |
 |---|---|
 | Tang Primer 25K + Dock | available |
-| 64 GB microSD card (PMOD TF) | available |
+| 64 GB microSD card and Sipeed PMOD TF module | available; the card test on the board is not done yet (Phase 08) |
 | I2S codec (PCM1808 + PCM5102A or Digilent Pmod I2S2) | **missing** (Phase 11) |
 | MCP3208 + potentiometers | missing (Phase 09; the Dock buttons are the footswitches) |
 | 128×64 SSD1306 OLED | missing (Phase 10) |
@@ -141,10 +144,18 @@ the board and the microSD card are sufficient.
 | `presets/banco.toml` | the 688 presets |
 | `docs/arquitectura_fpga.en.md` | the FPGA architecture and how it changes in each phase |
 | `schematics/` | a PDF schematic of each RTL module, generated from the Verilog |
-| `docs/EXTENDING.en.md` | how to add an effect, an instruction, an RTL module or a gate |
+| `presets/cadenas.toml` | the 24 chains of two programs |
+| `docs/microsd.md` | how to write the program bank to the microSD and test it on the board (Spanish) |
+| `docs/EXTENDING.en.md` | how to add a program, a preset, a chain, an instruction, an RTL module or a gate |
 | `BOM.en.md` | hardware shopping list, with links |
 | `SBOM.en.md` | what each FPGA component does and which tools build it |
 | `fails.en.md` | the failures found: symptom, cause, resolution and lesson |
+
+## Scripts
+
+The scripts in `scripts/` build, test and measure the project. The guide
+[docs/scripts.md](docs/scripts.md) tells what each script does, when to use it
+and which options it has.
 
 ## Languages
 

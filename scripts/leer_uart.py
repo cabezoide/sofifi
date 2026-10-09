@@ -1,17 +1,23 @@
 # SPDX-License-Identifier: MIT
 """Lee la UART del depurador BL616 y comprueba que la placa habla (Fase 02).
 
+Cuándo: después de cargar un top, para saber si la placa envía datos.
+
 El BL616 expone dos puertos: el primero (``/dev/ttyUSB0``) es JTAG y el segundo
 (``/dev/ttyUSB1``) es la UART de la FPGA.
 
 Uso::
 
+    make prog TOP=hola_uart
     make uart                                        # 5 s en /dev/ttyUSB1, exige "SOFIFI"
     .venv/bin/python scripts/leer_uart.py --segundos 30 --puerto /dev/ttyUSB1
 
-Termina con código 0 si recibe al menos una línea con ``--esperar``. Con dos o más
-líneas de ``hola_uart`` estima además el periodo entre mensajes: es una medida
-gruesa del reloj de la placa (la marca de tiempo es la del PC).
+Imprime cada línea recibida. Con dos o más líneas de ``hola_uart`` estima
+además el periodo entre mensajes: es una medida gruesa del reloj de la placa
+(la marca de tiempo es la del PC).
+
+Necesita la placa por USB. No escribe ficheros. Salida: 0 si recibe al menos
+una línea con el texto de ``--esperar``; 1 si no.
 """
 
 from __future__ import annotations
@@ -50,9 +56,13 @@ def periodo_medio(lineas: list[tuple[float, str]]) -> float | None:
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--puerto", default="/dev/ttyUSB1")
-    ap.add_argument("--baudios", type=int, default=115_200)
-    ap.add_argument("--segundos", type=float, default=5.0)
+    ap.add_argument(
+        "--puerto", default="/dev/ttyUSB1", help="UART de la FPGA (por defecto: %(default)s)"
+    )
+    ap.add_argument("--baudios", type=int, default=115_200, help="por defecto: %(default)s")
+    ap.add_argument(
+        "--segundos", type=float, default=5.0, help="tiempo de lectura (por defecto: 5)"
+    )
     ap.add_argument("--esperar", default="SOFIFI", help="texto que debe aparecer")
     args = ap.parse_args(argv)
 

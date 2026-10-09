@@ -4,7 +4,14 @@
 # Cadena EDA abierta para la Tang Primer 25K (Fase 02):
 #   scripts/fpga.sh synth TOP.v [más .v]   → build/<top>.fs + build/<top>_recursos.json
 #   scripts/fpga.sh prog  build/<top>.fs   → carga en SRAM (se pierde al apagar)
-# Herramientas: yowasp-yosys, yowasp-nextpnr-himbaechel-gowin, gowin_pack, openfpgaloader.
+# Lo llaman make synth, make prog, make hil y scripts/check_optimizacion.py.
+# Herramientas (make install): yowasp-yosys, yowasp-nextpnr-himbaechel-gowin,
+# gowin_pack y openfpgaloader. prog necesita la placa por USB (scripts/udev/).
+# Variables: CST (restricciones), FREQ_MHZ (reloj; 100), SYNTH_OPCIONES (yosys)
+# y SEMILLAS_PNR (semillas de reintento de nextpnr; "2 3 4", F-33).
+# synth deja también en build/ <top>.yosys.log, <top>.pnr.log y <top>.informe.json.
+# Salida: 0 bien; distinta de 0 si una herramienta falla o ninguna semilla
+# cierra el reloj; 2 si el uso es incorrecto.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BIN="$ROOT/.venv/bin"
@@ -46,5 +53,5 @@ case "$orden" in
     "$BIN/openfpgaloader-cli" -b tangprimer25k "$1"
     ;;
   *)
-    sed -n '4,8p' "$0"; exit 2 ;;
+    sed -n '4,14p' "$0"; exit 2 ;;
 esac

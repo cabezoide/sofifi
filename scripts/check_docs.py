@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: MIT
 """Compuerta ``docs``: los mapas se contrastan contra el territorio (SPEC_RAIZ §3.3, P8).
 
+Cuándo: trabajo duro de ``scripts/ci_local.sh`` (pre-push y ``make ci``).
+También corre solo con ``make docs``.
+
 Subcomprobaciones:
 
 - ``rutas``: toda ruta citada entre comillas invertidas en los mapas existe.
@@ -12,6 +15,16 @@ Subcomprobaciones:
 - ``hook``: el pre-push delega en ``--no-soft`` y no tiene lista de trabajos propia.
 - ``registros``: los YAML de registro tienen los campos obligatorios e ids únicos.
 - ``mediciones``: ninguna medición ha caducado (P5).
+
+Los mapas son los ficheros de ``MAPAS``. Un documento fuera de esa lista no se
+comprueba.
+
+Uso::
+
+    .venv/bin/python scripts/check_docs.py
+
+No tiene opciones y no escribe nada. Salida: 0 si todo es coherente; 1 si hay
+errores (uno por línea).
 
 No comprueba que la prosa sea correcta, solo que lo que cita existe.
 """
@@ -36,6 +49,10 @@ MAPAS = [
     "CLAUDE.md",
     "SECURITY.md",
     "docs/EXTENDING.md",
+    "docs/scripts.md",
+    "docs/scripts.en.md",
+    "docs/scripts.zh-CN.md",
+    "docs/scripts.ja.md",
     "demo_examples/README.md",
     "docs/security/CUMPLIMIENTO.md",
     "model/AGENTS.md",

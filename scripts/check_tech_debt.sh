@@ -3,6 +3,10 @@
 #
 # Deuda cero (SPEC_RAIZ §3.7): un comentario que EMPIEZA por un marcador de
 # deuda es rojo. La palabra en medio de la prosa no cuenta.
+# Cuándo: trabajo duro `tech-debt` de scripts/ci_local.sh (pre-push y make ci).
+# Revisa .py, .sh, Verilog, YAML, .cst, .sdc, .sasm, el Makefile y los hooks.
+# Uso: scripts/check_tech_debt.sh   (sin opciones; no escribe nada)
+# Salida: 0 sin marcadores; 1 si hay alguno.
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 

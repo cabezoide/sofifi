@@ -1,15 +1,21 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: MIT
 #
-# LA compuerta local (ADR 0001). Única definición de qué trabajo es duro y cuál
-# blando: el hook pre-push delega aquí con --no-soft y no mantiene lista propia.
+# LA compuerta local (ADR 0001). Es la única definición de qué trabajo es duro,
+# blando o de release. El hook pre-push la llama con --no-soft y no tiene lista
+# propia. Guía de todos los trabajos: docs/scripts.md.
 #
 # Uso:
-#   scripts/ci_local.sh                 # todos los trabajos
-#   scripts/ci_local.sh --no-soft       # solo los duros (lo que corre el hook)
+#   scripts/ci_local.sh                 # duras y blandas (make ci)
+#   scripts/ci_local.sh --no-soft       # solo las duras (make ci-dura, el pre-push)
 #   scripts/ci_local.sh model docs      # solo los trabajos nombrados
-#   scripts/ci_local.sh --list          # lista trabajos y su clase
-#   scripts/ci_local.sh optimizacion    # los de clase release solo corren si se nombran
+#   scripts/ci_local.sh --list          # lista los trabajos y su clase
+#   scripts/ci_local.sh optimizacion    # un trabajo de release solo corre si se nombra
+#
+# Clases: una dura en rojo bloquea. Una blanda en rojo da WARN y no bloquea.
+# Un trabajo de release sintetiza; corre con make optimizacion (ADR 0010).
+# Necesita .venv (make install). Añade una línea a .ci_timing.log (no versionado).
+# Salida: 0 VERDE; 1 ROJO (una dura falla); 2 falta .venv o el trabajo no existe.
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -128,7 +134,7 @@ for arg in "$@"; do
   case "$arg" in
     --no-soft) NO_SOFT=1 ;;
     --list) for j in "${JOBS[@]}"; do echo "${j%%:*} (${j##*:})"; done; exit 0 ;;
-    -h|--help) sed -n '2,14p' "$0"; exit 0 ;;
+    -h|--help) sed -n '3,18p' "$0"; exit 0 ;;
     *) job_class "$arg" >/dev/null || { echo "trabajo desconocido: $arg" >&2; exit 2; }
        SELECTED+=("$arg") ;;
   esac

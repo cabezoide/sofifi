@@ -31,6 +31,7 @@ from sofifi.adapters.cadenas import (
 from sofifi.adapters.microsd import escribir_imagen, listar_imagen
 from sofifi.adapters.presets import leer_banco
 from sofifi.adapters.wav import FuenteWav, SumideroWav
+from sofifi.cli_argumentos import analizador
 from sofifi.domain.aritmetica import CICLOS_POR_MUESTRA, FS_WAV, dato
 from sofifi.domain.cadena import Cadena
 from sofifi.domain.composicion import componer, recursos
@@ -88,44 +89,7 @@ def _tramos(valores: list[str]) -> tuple[tuple[int, int], ...]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(prog="sofifi", description="Modelo bit-exact del núcleo SOFIFI")
-    sub = p.add_subparsers(dest="orden", required=True)
-    a = sub.add_parser("asm", help="ensambla a microcódigo (.hex + .json)")
-    a.add_argument("programa", type=Path)
-    a.add_argument("salida", type=Path)
-    sub.add_parser("tablas", help="regenera las tablas y programas en ROM del RTL")
-    sub.add_parser("catalogo", help="regenera docs/programas.md desde programas/*.sasm")
-    r = sub.add_parser("render", help="procesa un WAV con un programa")
-    r.add_argument("programa", type=Path)
-    r.add_argument("entrada", type=Path)
-    r.add_argument("salida", type=Path)
-    r.add_argument("--pot", action="append", default=[], metavar="potN=V")
-    r.add_argument("--freeze", action="append", default=[], metavar="INICIO:FIN", help="segundos")
-    r.add_argument("--cola", type=float, default=0.0, help="segundos de silencio al final")
-    r.add_argument(
-        "--preset", metavar="NOMBRE", help="mandos de presets/banco.toml (antes de --pot)"
-    )
-    pr = sub.add_parser("presets", help="lista los presets de presets/banco.toml")
-    pr.add_argument("programa", nargs="?", help="solo los de este programa")
-    sub.add_parser("cadenas", help="lista las cadenas de presets/cadenas.toml y si caben")
-    co = sub.add_parser("componer", help="escribe una cadena como un solo programa .sasm")
-    co.add_argument("nombre")
-    co.add_argument("salida", type=Path)
-    ca = sub.add_parser("cadena", help="procesa un WAV con una cadena")
-    ca.add_argument("nombre")
-    ca.add_argument("entrada", type=Path)
-    ca.add_argument("salida", type=Path)
-    ca.add_argument("--pot", action="append", default=[], metavar="potN=V")
-    ca.add_argument("--freeze", action="append", default=[], metavar="INICIO:FIN", help="segundos")
-    ca.add_argument("--cola", type=float, default=0.0, help="segundos de silencio al final")
-    ro = sub.add_parser("rom", help="ROM programa_hil de un programa o una cadena (make hil)")
-    ro.add_argument("nombre", help="programa (programas/NOMBRE.sasm) o cadena")
-    ro.add_argument("salida", type=Path)
-    ba = sub.add_parser("banco", help="banco de programas para la microSD (Fase 08)")
-    ba.add_argument("imagen", type=Path)
-    ba.add_argument("nombres", nargs="*", help="programas o cadenas; sin nombres, todo lo que cabe")
-    ba.add_argument("--leer", action="store_true", help="comprueba la imagen y lista su contenido")
-    args = p.parse_args(argv)
+    args = analizador().parse_args(argv)
     try:
         if args.orden == "banco":
             if args.leer:

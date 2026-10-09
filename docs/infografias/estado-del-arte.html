@@ -82,6 +82,17 @@ td.gana{color:var(--laton)}
 .rasgo.lider p{color:#4b2a2e}
 .rasgo.lider h3{font-size:clamp(30px,4.4vw,44px)}
 
+/* Criterios frente a Eventide */
+.criterios{min-width:600px}
+.criterios tbody th{width:190px}
+.comunidad{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:center;margin-top:26px;padding:16px 18px;border:1px solid var(--linea);border-left:3px solid var(--laton);background:var(--caja-2)}
+.comunidad b{font-family:var(--f-titulo);font-size:64px;font-weight:900;line-height:.9;color:var(--laton)}
+.comunidad p{margin:0;font-size:15.5px;color:var(--hueso-2)}
+.estado{display:block;margin-top:6px;font-family:var(--f-dato);font-size:12px;letter-spacing:.04em;color:var(--laton)}
+.estado::before{content:"✔ "}
+.estado.no{color:var(--led)}
+.estado.no::before{content:"✕ "}
+
 footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;color:var(--hueso-2)}
 
 @media (max-width:760px){
@@ -99,14 +110,14 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 <div class="envoltorio">
 
 <header class="portada">
-  <div class="etiqueta">Estado del arte 2026 · Fase 03 de SOFIFI</div>
-  <h1>La memoria manda, <span>y el cómputo aprieta</span></h1>
-  <p class="tesis">Medido en el RTL, el shimmer llena el 97 % de la memoria y el 74 % de los ciclos. Lo que hará única a SOFIFI casi no cuesta instrucciones.</p>
+  <div class="etiqueta">Estado del arte 2026 · al día el 2026-10-09</div>
+  <h1>La memoria manda. <span>El cómputo ya respira.</span></h1>
+  <p class="tesis">El shimmer llena el 97 % de la memoria y solo la mitad de los ciclos. El núcleo segmentado gasta 1,6 veces menos ciclos: ahora manda la memoria.</p>
   <div class="medidor">
     <div class="fila">
-      <div class="nombre">Ciclos<small>shimmer: 1&nbsp;514 de 2&nbsp;048 por muestra</small></div>
-      <div class="pista" role="img" aria-label="73,9 por ciento"><i style="width:73.9%"></i></div>
-      <div class="pct ok">73,9 %</div>
+      <div class="nombre">Ciclos<small>shimmer: 1&nbsp;037 de 2&nbsp;048 por muestra</small></div>
+      <div class="pista" role="img" aria-label="50,6 por ciento"><i style="width:50.6%"></i></div>
+      <div class="pct ok">50,6 %</div>
     </div>
     <div class="fila">
       <div class="nombre">Memoria<small>shimmer: 41&nbsp;539 de 43&nbsp;008 palabras</small></div>
@@ -114,7 +125,7 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
       <div class="pct mal">96,6 %</div>
     </div>
   </div>
-  <div class="pie-medidor">Ciclos medidos en el RTL (MED-11, Fase 06); memoria con <span class="dato">sofifi asm programas/shimmer.sasm</span>. En la Fase 03 se contaba 1 ciclo por instrucción (ADR 0009): 120, un 5,9 %.</div>
+  <div class="pie-medidor">Ciclos y memoria de <span class="dato">sofifi catalogo</span> (<span class="dato">docs/programas.md</span>), con el núcleo segmentado (ADR 0014). Con el núcleo multiciclo de la Fase 06 eran 1 514 ciclos.</div>
 </header>
 
 <section>
@@ -134,9 +145,9 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
       </tr></thead>
       <tbody>
         <tr><th>Memoria de audio</th><td class="col-sofifi pierde">0,88 s en BSRAM</td><td>No publicada</td><td>Looper de 60 s <span class="marca">V</span></td><td>IR de 10 s <span class="marca">V</span></td></tr>
-        <tr><th>Presets</th><td class="col-sofifi">Sin límite práctico en la microSD (Fase 08)</td><td>2 en el pedal <span class="marca">V</span></td><td>16 <span class="marca">V</span></td><td>300 <span class="marca">V</span></td></tr>
+        <tr><th>Presets</th><td class="col-sofifi">688 en el banco; la microSD los cargará (Fase 08, en curso)</td><td>2 en el pedal <span class="marca">V</span></td><td>16 <span class="marca">V</span></td><td>300 <span class="marca">V</span></td></tr>
         <tr><th>MIDI</th><td class="col-sofifi pierde">TRS tipo A en la Fase 09; falta el hardware</td><td>Sí <span class="marca">V</span></td><td>DIN In/Out/Thru <span class="marca">V</span></td><td>DIN y USB-C <span class="marca">V</span></td></tr>
-        <tr><th>Idea icónica</th><td class="col-sofifi">Freeze que modula sin perder energía (plan) <span class="marca">INF</span></td><td>Micro-looper que siempre escucha <span class="marca">V</span></td><td>Frases granulares <span class="marca">V</span></td><td>Cloud y dos motores <span class="marca">V</span></td></tr>
+        <tr><th>Idea icónica</th><td class="col-sofifi gana">Freeze que modula sin perder energía: <span class="dato">freeze_givens</span></td><td>Micro-looper que siempre escucha <span class="marca">V</span></td><td>Frases granulares <span class="marca">V</span></td><td>Cloud y dos motores <span class="marca">V</span></td></tr>
         <tr><th>Plataforma</th><td class="col-sofifi gana">FPGA abierta, ciclos fijos por programa</td><td>No publicada</td><td>No publicada</td><td>ARM tri-core a 800 MHz <span class="marca">V</span></td></tr>
         <tr><th>Programas propios</th><td class="col-sofifi gana">Abiertos, con modelo bit-exact en Python</td><td colspan="3">Ningún fabricante revisado publica su formato de preset <span class="marca">INF</span></td></tr>
       </tbody>
@@ -146,33 +157,64 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
 
 <section>
   <div class="cabeza">
-    <div class="etiqueta">Hoja de ruta · Fase 06</div>
+    <div class="etiqueta">El cabeza de cartel · actualización 2026-10-09</div>
+    <h2>Frente a los Eventide: ya gana en número</h2>
+    <p>Ocho criterios para «superar» al H9 Gen 2 y al H90. SOFIFI gana en tres. La calidad y el sonido con guitarra aún no se pueden medir.</p>
+  </div>
+  <div class="tabla-caja">
+    <table class="criterios">
+      <thead><tr>
+        <th></th>
+        <th class="col-sofifi">SOFIFI<small>versión 0.7</small></th>
+        <th>H9 Gen 2 · H90<small>Eventide · 599 a 999 USD <span class="marca">?</span></small></th>
+      </tr></thead>
+      <tbody>
+        <tr><th>Algoritmos</th><td class="col-sofifi gana">86 programas en 8 familias</td><td>74 en el H9 Gen 2 <span class="marca">?</span></td></tr>
+        <tr><th>Presets</th><td class="col-sofifi pierde">688</td><td>más de 1 000 <span class="marca">?</span></td></tr>
+        <tr><th>Dos efectos a la vez</th><td class="col-sofifi">24 cadenas: 18 caben hoy y 6 esperan la SDRAM (ADR 0013)</td><td>el H90 encadena dos algoritmos por preset <span class="marca">?</span></td></tr>
+        <tr><th>Memoria</th><td class="col-sofifi pierde">0,88 s (0,67 s para loops); falta la SDRAM</td><td>segundos de retardo <span class="marca">?</span></td></tr>
+        <tr><th>Suena con guitarra</th><td class="col-sofifi pierde">no: faltan el códec, los mandos y la OLED (Fases 09 a 11)</td><td>sí</td></tr>
+        <tr><th>Calidad percibida</th><td class="col-sofifi pierde">sin medir: falta una prueba ciega ABX</td><td>referencia del mercado</td></tr>
+        <tr><th>Precio</th><td class="col-sofifi gana">unos 125 USD de BOM, sin caja</td><td>599 a 999 USD <span class="marca">?</span></td></tr>
+        <tr><th>Abierto y comprobable</th><td class="col-sofifi gana">sí, bit a bit (ADR 0003)</td><td>no</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="comunidad">
+    <b>35</b>
+    <p>programas salen de ideas de la comunidad (lotes 9 a 14): foros DIY, ZOIA, FV-1 y foros en español. Se usa solo el principio de cada efecto, con palabras propias (ADR 0002).</p>
+  </div>
+</section>
+
+<section>
+  <div class="cabeza">
+    <div class="etiqueta">Hoja de ruta · Fase 06, hecha</div>
     <h2>Lo que más se oye es lo que menos cuesta</h2>
-    <p>Cuatro mejoras de la investigación reciente (Aalto, DAFx 2020-2026). Todas son programas: no cambian la ISA. Barra sobre el presupuesto de 2 048 instrucciones, con el coste máximo estimado.</p>
+    <p>Cuatro mejoras de la investigación reciente (Aalto, DAFx 2020-2026). Todas son programas: no cambian la ISA. La Fase 06 publicó tres. La barra da el coste máximo estimado sobre 2 048 por muestra.</p>
   </div>
   <div class="costes">
     <div class="coste">
-      <div><h3>Modulación aleatoria filtrada</h3><p>El truco del Lexicon 224 contra el anillo metálico. Por cada línea modulada.</p></div>
+      <div><h3>Modulación aleatoria filtrada</h3><p>El truco del Lexicon 224 contra el anillo metálico. Por cada línea modulada. <span class="estado">Hecho: <span class="dato">plate_vivo</span></span></p></div>
       <div class="pista" role="img" aria-label="hasta 4 de 2 048"><i style="width:.2%;min-width:3px"></i></div>
       <div class="cifra">3-4 <span class="marca">INF</span></div>
     </div>
     <div class="coste">
-      <div><h3>Matriz de Givens en el freeze</h3><p>El freeze modula sin perder energía. Corrige un fallo medido en la Fase 01.</p></div>
+      <div><h3>Matriz de Givens en el freeze</h3><p>El freeze modula sin perder energía. Corrige un fallo medido en la Fase 01. <span class="estado">Hecho: <span class="dato">freeze_givens</span></span></p></div>
       <div class="pista" role="img" aria-label="hasta 20 de 2 048"><i style="width:1%"></i></div>
       <div class="cifra">+10-20 <span class="marca">INF</span></div>
     </div>
     <div class="coste">
-      <div><h3>Detección de ataque</h3><p>Swell, ducking y auto-freeze: un pedal que escucha.</p></div>
+      <div><h3>Detección de ataque</h3><p>Swell, ducking y auto-freeze: un pedal que escucha. <span class="estado">Hecho: <span class="dato">swell</span>, <span class="dato">ducking</span>, <span class="dato">sostenido</span></span></p></div>
       <div class="pista" role="img" aria-label="hasta 50 de 2 048"><i style="width:2.4%"></i></div>
       <div class="cifra">&lt; 50 <span class="marca">INF</span></div>
     </div>
     <div class="coste">
-      <div><h3>FDN incolora y velvet noise</h3><p>Cola más densa con menos líneas. Velvet noise: más del 50 % menos operaciones <span class="marca">V</span>.</p></div>
+      <div><h3>FDN incolora y velvet noise</h3><p>Cola más densa con menos líneas. Velvet noise: más del 50 % menos operaciones <span class="marca">V</span>. <span class="estado no">Descartado: con 24 taps es menos denso que los allpass (F-17)</span></p></div>
       <div class="pista" role="img" aria-label="hasta 220 de 2 048"><i style="width:10.7%"></i></div>
       <div class="cifra">100-220 <span class="marca">INF</span></div>
     </div>
   </div>
-  <div class="escala"><span>0</span><span>2 048 instrucciones por muestra</span></div>
+  <div class="escala"><span>0</span><span>2 048 por muestra</span></div>
 </section>
 
 <section>
@@ -184,14 +226,14 @@ footer{margin-top:36px;font-family:var(--f-dato);font-size:12px;line-height:1.7;
   <div class="rasgos">
     <div class="rasgo lider"><h3>Programas abiertos con modelo bit-exact</h3><p>Escribes un efecto en ensamblador, lo escuchas en el PC y suena igual en el pedal, bit a bit (ADR 0003, ADR 0006).</p></div>
     <div class="rasgo"><h3>Cero crujidos por CPU</h3><p>Cada programa tiene un número fijo de ciclos. Los usuarios del MOD Dwarf describen crujidos con la CPU al 100 % <span class="marca">V</span>.</p></div>
-    <div class="rasgo"><h3>Presets que se leen</h3><p>Ficheros de texto en la microSD, con todo el estado. Se versionan y se comparten.</p></div>
+    <div class="rasgo"><h3>Presets que se leen</h3><p>Ficheros de texto, con todo el estado. Se versionan y se comparten. <span class="dato">sofifi banco</span> ya escribe el banco de la microSD, con CRC (Fase 08).</p></div>
     <div class="rasgo"><h3>La segunda capa, a la vista</h3><p>La OLED muestra qué hace cada mando, en español, inglés, chino y japonés. Las funciones sin rotular son una queja frecuente <span class="marca">?</span>.</p></div>
-    <div class="rasgo"><h3>Compatible con el FV-1</h3><p>Un traductor de SpinASM trae su biblioteca. En 2026 salió un emulador abierto del FV-1 <span class="marca">V</span>.</p></div>
+    <div class="rasgo"><h3>Compatible con el FV-1</h3><p>El ensamblador ya usa una sintaxis tipo SpinASM. Un traductor traería su biblioteca (plan). En 2026 salió un emulador abierto del FV-1 <span class="marca">V</span>.</p></div>
   </div>
 </section>
 
 <footer>
-  Fuente: <span class="dato">docs/investigacion/ESTADO_DEL_ARTE_2026.md</span>, con cinco líneas de investigación (mercado, arXiv clásico, arXiv neuronal, interacción, plataformas). Marcas: V verificado en fuente primaria · ? dudoso o secundario · INF inferencia. Precios y especificaciones de las páginas de Chase Bliss, Hologram y Strymon. Ciclos y memoria medidos sobre el repositorio el 2026-10-07.
+  Fuente: <span class="dato">docs/investigacion/ESTADO_DEL_ARTE_2026.md</span>, con cinco líneas de investigación (mercado, arXiv clásico, arXiv neuronal, interacción, plataformas). Marcas: V verificado en fuente primaria · ? dudoso o secundario · INF inferencia. Precios y especificaciones de las páginas de Chase Bliss, Hologram y Strymon. Comparación con Eventide: sección «Para superar a los Eventide» y su actualización 2026-10-09; ideas de la comunidad: tabla «Ideas de la comunidad». Ciclos, memoria, programas y cadenas contados sobre el repositorio el 2026-10-09 (<span class="dato">sofifi catalogo</span>, <span class="dato">sofifi cadenas</span>).
 </footer>
 
 </div>

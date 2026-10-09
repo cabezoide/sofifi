@@ -1,14 +1,23 @@
 # SPDX-License-Identifier: MIT
 """Compuerta ``licenses`` (ADR 0002, SPEC_RAIZ §8.2).
 
+Cuándo: trabajo duro de ``scripts/ci_local.sh`` (pre-push y ``make ci``).
+
 Comprueba tres cosas:
 
 1. Todo fichero fuente versionado declara ``SPDX-License-Identifier`` en sus
-   primeras líneas.
+   primeras líneas (``.py``, ``.sh``, ``.v``, ``.sv``, ``.vh``, ``.svh``,
+   ``.sasm`` y los hooks).
 2. Un fichero con licencia distinta de MIT está declarado en ``docs/terceros.yaml``
    con esa misma licencia.
 3. Ninguna entrada de ``docs/terceros.yaml`` con ``uso: portado`` tiene una licencia
    fuera de la lista permisiva: el copyleft se estudia, no se copia.
+
+Uso::
+
+    .venv/bin/python scripts/check_licenses.py
+
+No tiene opciones y no escribe nada. Salida: 0 bien; 1 hay errores.
 
 No comprueba que el código portado sea fiel a su origen ni que la atribución en
 ``NOTICE`` sea completa; eso es revisión humana del PR que porta.
