@@ -1,0 +1,209 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: textura
+; resumen: Ráfagas de ruido filtrado que silban al azar y soplan más fuerte cuando se toca.
+; resumen.en: Gusts of filtered noise that whistle at random and blow harder when you play.
+; resumen.zh-CN: 随机呼啸的滤波噪声阵风，弹奏时吹得更猛。
+; resumen.ja: ランダムに鳴る、フィルターをかけたノイズの突風。弾くと強く吹きます。
+;
+; viento.sasm — Un viento que acompaña a la guitarra. El ruido pasa por un
+; filtro pasa banda resonante. Un azar lento mueve el corte y la fuerza de
+; la ráfaga a la vez: la ráfaga fuerte silba más agudo, como el viento real.
+; La envolvente de la guitarra sube el nivel del viento.
+; Diseño propio, a partir del principio que propone un usuario de
+; Guitarristas.info: un efecto de modulación puede sonar a viento. Aquí el
+; viento sale de ruido, no de la guitarra.
+;
+; Cada muestra:
+;   1. Ruido: un generador congruencial r ← frac(5r + c), con c impar, como
+;      en granular.sasm. Su periodo es 2^23 muestras (172 s, medido).
+;   2. Azar lento: un contador baja a la velocidad de pot0. Al pasar por cero,
+;      el objetivo toma el valor de r. Dos pasos bajos en serie lo suavizan:
+;      su constante es 1/4 del intervalo entre saltos. El resultado es s.
+;   3. Filtro: el pasa banda de comun/svf.sasm. El corte es
+;      fmid·(0,35 + 1,3·s). La entrada se escala con la resonancia y con el
+;      corte medio para que el nivel cambie poco con pot1 y pot4.
+;   4. Nivel: 0,02 + 0,4·pot5 + 4·pot3·env + 0,5·sw, con techo en 1. La
+;      ráfaga lo multiplica por 0,25 + 0,75·s. env es un seguidor de picos
+;      con una caída de 0,4 s.
+;   5. Estéreo: dos allpass distintos en cada canal separan el viento.
+;
+; pot0 = velocidad     (0 → 0,4 ráfagas/s · 1 → 8 ráfagas/s; ley cuadrática)
+; pot1 = resonancia    (0 → soplo ancho, Q = 1 · 1 → silbido, Q = 20)
+; pot2 = mezcla        (0 → seco · 1 → solo viento)
+; pot3 = sensibilidad  (0 → el viento no sigue al toque · 1 → nivel al máximo con env = 0,25)
+; pot4 = frecuencia    (corte medio: 0 → 300 Hz · 1 → 3 kHz; ley cuadrática)
+; pot5 = nivel         (viento de fondo sin tocar: 0 → casi nada · 1 → 0,42)
+; sw   = viento fuerte mientras se pisa
+
+equ  ka    0.6                ; coeficiente de los allpass
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  x        reg2            ; entrada del filtro (nombre de comun/svf.sasm)
+equ  f        reg3
+equ  q        reg4
+equ  lp       reg5
+equ  bp       reg6
+equ  hp       reg7
+equ  qbp      reg8
+equ  h        reg9            ; 0,5: con -2,0 resta 1
+equ  hn       reg10           ; -0,5: con -2,0 suma 1
+equ  c        reg11           ; incremento del generador (impar)
+equ  r        reg12           ; ruido en [0, 1)
+equ  gq       reg13           ; ganancia de entrada del filtro
+equ  fmid     reg14
+equ  vel      reg15           ; paso del contador por muestra
+equ  k        reg16           ; constante de los pasos bajos del azar
+equ  cuenta   reg17
+equ  obj      reg18           ; objetivo del azar
+equ  s1       reg19
+equ  s        reg20           ; azar suavizado en [0, 1)
+equ  ent      reg21
+equ  env      reg22
+equ  nivel    reg23
+equ  viento   reg24
+equ  wl       reg25
+equ  wr       reg26
+equ  t        reg27
+
+mem  apl1  557
+mem  apl2  1301
+mem  apr1  743
+mem  apr2  1123
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, mandos
+        sof   0, 1/32768
+        wrax  t, 1/256                  ; ACC = 2^-23: el bit que hace impar a c
+        sof   1.0, 0.381958
+        wrax  c, 0
+        sof   0, 0.5
+        wrax  h, 0
+        sof   0, -0.5
+        wrax  hn, 0
+mandos:
+include  comun/mezcla.sasm
+        rdax  pot1, -0.95
+        sof   1.0, 0.99997
+        wrax  q, 0.85                   ; q = 1/Q: de 1 a 0,05
+        sof   1.0, 0.15
+        wrax  gq, 0                     ; 0,15 + 0,85·q: compensa la ganancia de Q
+        rdax  pot4, 1.0
+        mulx  pot4
+        wrax  t, 0.35
+        sof   1.0, 0.04
+        wrax  fmid, 0                   ; 2·sen(π·fc/fs): de 300 Hz a 3 kHz
+        rdax  t, -0.65
+        sof   1.0, 0.999
+        mulx  gq
+        wrax  gq, 0                     ; un corte alto deja pasar más ruido
+        rdax  pot0, 1.0
+        mulx  pot0
+        sof   7.6*64/48828, 0.4*64/48828
+        sof   1/64, 0
+        wrax  vel, 1.999
+        sof   1.999, 0
+        wrax  k, 0                      ; k = 4·vel
+; ── azar lento: un salto cuando el contador pasa por cero ────────────
+        rdax  cuenta, 1.0
+        rdax  vel, -1.0
+        wrax  cuenta, 1.0
+        skp   gez, suavizar
+        sof   1.0, 0.99997
+        wrax  cuenta, 0
+        rdax  r, 1.0
+        wrax  obj, 0
+suavizar:
+        clr
+        rdax  obj, 1.0
+        rdax  s1, -1.0
+        mulx  k
+        rdax  s1, 1.0
+        wrax  s1, 1.0
+        rdax  s, -1.0
+        mulx  k
+        rdax  s, 1.0
+        wrax  s, 0.65
+        sof   1.0, 0.175
+        mulx  fmid
+        sof   1.999, 0
+        wrax  f, 0                      ; fmid·(0,35 + 1,3·s): la ráfaga fuerte silba más agudo
+; ── nivel: fondo, toque y footswitch, por la fuerza de la ráfaga ────
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wrax  ent, 0
+        rdax  env, 0.99995
+        maxx  ent, 1.0
+        wrax  env, 1.0                  ; seguidor de picos, caída de 0,4 s
+        mulx  pot3
+        sof   1.999, 0
+        sof   1.999, 0
+        rdax  pot5, 0.4
+        rdax  sw, 0.5
+        sof   1.0, 0.02
+        wrax  nivel, 0                  ; WRAX satura: techo en 1
+        rdax  s, 0.75
+        sof   1.0, 0.25
+        mulx  nivel
+        wrax  nivel, 0
+; ── ruido: r ← frac(5r + c), exacto en 23 bit ────────────────────────
+        rdax  r, 1.25
+        rdax  r, 1.25
+        rdax  r, 1.25
+        rdax  r, 1.25
+        rdax  c, 1.0                    ; [0, 6)
+        rdax  h, -2.0
+        rdax  h, -2.0
+        rdax  h, -2.0
+        rdax  h, -2.0
+        skp   gez, menos_2
+        rdax  hn, -2.0
+        rdax  hn, -2.0
+        rdax  hn, -2.0
+        rdax  hn, -2.0
+menos_2:
+        rdax  h, -2.0
+        rdax  h, -2.0
+        skp   gez, menos_1
+        rdax  hn, -2.0
+        rdax  hn, -2.0
+menos_1:
+        rdax  h, -2.0
+        skp   gez, guardar_r
+        rdax  hn, -2.0
+guardar_r:
+        wrax  r, 1.0
+        sof   1.0, -0.5                 ; ruido centrado en [−0,5, 0,5)
+        mulx  gq
+        wrax  x, 0
+include  comun/svf.sasm
+        rdax  bp, 1.0
+        mulx  nivel
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        wrax  viento, 1.0               ; ×8
+; ── estéreo: dos allpass por canal ───────────────────────────────────
+        rda   apl1#, ka
+        wrap  apl1, -ka
+        rda   apl2#, ka
+        wrap  apl2, -ka
+        mulx  kwet
+        wrax  wl, 0
+        rdax  viento, 1.0
+        rda   apr1#, ka
+        wrap  apr1, -ka
+        rda   apr2#, ka
+        wrap  apr2, -ka
+        mulx  kwet
+        wrax  wr, 0
+; ── salida ───────────────────────────────────────────────────────────
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  wl, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  wr, 1.0
+        wrax  dacr, 0

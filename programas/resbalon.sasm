@@ -1,0 +1,199 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: looper
+; resumen: Una cabeza libre resbala sobre lo que acabas de tocar, de −2× a 2×, sin grabar.
+; resumen.en: A free read head slips over what you just played, from −2× to 2×, with no recording.
+; resumen.zh-CN: 一个自由读取头在你刚弹过的声音上滑行，从 −2× 到 2×，无需录音。
+; resumen.ja: 自由な再生ヘッドが今弾いた音の上を −2× から 2× で滑ります。録音は不要です。
+;
+; resbalon.sasm — cabeza de velocidad libre en la región absoluta (RDAA y WRAA, ADR 0009).
+;
+; 1. El búfer graba siempre. La cabeza `w` escribe la entrada y la
+;    realimentación en la región absoluta y da la vuelta a las 32 768 muestras.
+; 2. Dos cabezas leen detrás de `w`. La distancia de la cabeza A es
+;    d = d0 + φ·L, con φ en [0, 1) y L la ventana. La cabeza B va a media
+;    ventana de la A.
+; 3. Con la velocidad v, la distancia cambia (1 − v) muestras por muestra. Así,
+;    φ avanza (1 − v)/L por muestra. Con v = 2 la cabeza alcanza la escritura;
+;    con v negativa se aleja y lee el pasado hacia atrás.
+; 4. La ISA no divide. El programa guarda r = (1/32)/L y lo corrige una vez por
+;    muestra: r ← r + 2·(1/32 − L·r). Converge en unas 200 muestras.
+; 5. Cuando φ da la vuelta, la cabeza A salta. La ventana de A es sin²(πφ) y
+;    la de B es su complemento: el salto cae donde la ventana vale 0 y la
+;    ganancia es constante. El seno sale sin tabla, como en granular.sasm.
+; 6. Con pot0 cerca de 0,75 la velocidad es 1× exacta. En esa zona, φ se
+;    acerca despacio a 0,5: suena solo la cabeza A, a distancia fija.
+; 7. Un paso bajo (tono) filtra la salida húmeda. La realimentación la vuelve a
+;    escribir: con v ≠ 1 cada vuelta cambia otra vez de velocidad (espiral).
+;
+; Con `sw` pulsado, el búfer deja de grabar: las cabezas resbalan sobre los
+; últimos 0,67 s, que se repiten.
+;
+; pot0 = velocidad        (0 → −2× · 0,58 → ½× · 0,7 a 0,8 → 1× · 1 → 2×)
+; pot1 = realimentación   (0 → nada · 1 → 0,9: la espiral dura mucho)
+; pot2 = mezcla           (0 → seco · 1 → solo la cabeza)
+; pot3 = duración         (ventana: 0 → 21 ms · 1 → 336 ms)
+; pot4 = tono             (0 → abierto · 1 → oscuro)
+; pot5 = tiempo           (retraso inicial: 0 → 3 ms · 1 → 0,3 s más)
+;
+; Diseño propio, a partir del principio del modo «Slip» de algunos pedales de
+; bucle y reverb boutique: un búfer siempre grabando con una cabeza de
+; reproducción de velocidad continua, hacia delante o hacia atrás.
+
+equ  kclip  2/3             ; CLIP tiene pendiente 1,5: esto la deja en 1
+
+equ  u      reg0            ; una muestra: 2^-15
+equ  h      reg1            ; 0,5: con -2,0 resta 1
+equ  hn     reg2            ; -0,5: con -2,0 suma 1
+equ  w      reg3            ; cabeza de escritura
+equ  fi     reg4            ; fase φ de la cabeza A
+equ  r      reg5            ; (1/32)/L
+equ  lv     reg6            ; ventana L, en vueltas
+equ  d0     reg7            ; distancia mínima a la escritura
+equ  s      reg8            ; (1 − v)/4
+equ  pa     reg9            ; cabeza A
+equ  pb     reg10           ; cabeza B
+equ  t      reg11
+equ  tv     reg12
+equ  lp     reg13           ; salida húmeda filtrada
+equ  fb     reg14           ; realimentación (con kclip)
+equ  kt     reg15           ; coeficiente del paso bajo
+equ  kwet   reg16
+equ  kdry   reg17
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 1/32768
+        wrax  u, 0
+        sof   0, 0.5
+        wrax  h, 1.0
+        wrax  fi, 1.0                   ; φ = 0,5: suena la cabeza A
+        wrax  r, 0
+        sof   0, -0.5
+        wrax  hn, 0
+inicio:
+; ── mandos ───────────────────────────────────────────────────────────
+include  comun/mezcla.sasm
+        rdax  pot1, 0.9*kclip
+        wrax  fb, 0
+        rdax  pot4, -0.95
+        sof   1.0, 0.999
+        wrax  kt, 0                     ; 0,999 (abierto) a 0,049 (oscuro)
+        rdax  pot5, 0.45
+        sof   1.0, 0.004
+        wrax  d0, 0                     ; 131 muestras a 0,3 s más
+        rdax  pot3, 15/32
+        sof   1.0, 1/32
+        wrax  lv, 1.0                   ; L = 1/32 a 1/2 vuelta
+        mulx  r
+        sof   -2.0, 1/16                ; 2·(1/32 − L·r)
+        rdax  r, 1.0
+        wrax  r, 0
+; ── velocidad: s = (1 − v)/4 con una zona muerta en 1× ───────────────
+        rdax  pot0, 1.0
+        sof   1.0, -0.7
+        skp   neg, lento
+        sof   1.0, -0.1
+        skp   neg, zona_1x
+        sof   -1.25, 0                  ; v de 1 a 2
+        skp   run|zro|gez|neg, guardar_s
+lento:
+        sof   -1.0714, 0                ; v de −2 a 1
+        skp   run|zro|gez|neg, guardar_s
+zona_1x:
+        clr
+guardar_s:
+        wrax  s, 1.0
+        skp   zro, centrar
+        mulx  r
+        sof   1/256, 0                  ; dφ = (1 − v)/L muestras
+        skp   run|zro|gez|neg, sumar_fi
+centrar:
+        rdax  fi, -1.0
+        sof   1.0, 0.5
+        mulx  r
+        sof   1/16384, 0                ; φ se acerca a 0,5 (glide de 3 % como mucho)
+sumar_fi:
+        rdax  fi, 1.0
+        skp   neg, mas_uno
+        rdax  h, -2.0
+        skp   gez, fi_listo
+mas_uno:
+        rdax  hn, -2.0
+fi_listo:
+        wrax  fi, 1.0
+; ── posiciones de las dos cabezas: p = w − d0 − φ·L ──────────────────
+        mulx  lv
+        rdax  d0, 1.0
+        sof   -1.0, 0
+        rdax  w, 1.0
+        wrax  pa, 0
+        rdax  fi, 1.0
+        sof   1.0, -0.5
+        skp   gez, b_lista
+        sof   1.0, 1.0
+b_lista:
+        mulx  lv
+        rdax  d0, 1.0
+        sof   -1.0, 0
+        rdax  w, 1.0
+        wrax  pb, 0
+; ── ventana: wA = sin²(πφ), wB = 1 − wA ──────────────────────────────
+        rdax  fi, 1.0
+        wrax  t, -1.0
+        sof   1.0, 32767/32768          ; 1 − φ
+        mulx  t
+        wrax  t, 1.0
+        rdax  t, 1.0
+        rdax  t, 1.0
+        rdax  t, 1.0                    ; p = 4φ(1 − φ)
+        wrax  t, 0.225
+        sof   1.0, 0.775
+        mulx  t                         ; ≈ sin(πφ)
+        wrax  t, 1.0
+        mulx  t
+        wrax  t, 0                      ; wA
+        rdaa  pb, 1.0
+        wrax  tv, -1.0
+        rdaa  pa, 1.0
+        mulx  t
+        rdax  tv, 1.0                   ; vB + wA·(vA − vB)
+; ── tono: paso bajo de un polo con coeficiente kt ────────────────────
+        rdax  lp, -1.0
+        mulx  kt
+        rdax  lp, 1.0
+        wrax  lp, 1.0
+; ── escritura: entrada + realimentación; congelada con sw ────────────
+        mulx  fb
+        rdax  adcl, 0.5*kclip
+        rdax  adcr, 0.5*kclip
+        clip
+        wrax  t, 0
+        rdax  sw, 1.0
+        skp   zro, grabar
+        clr
+        skp   zro, avanzar_w
+grabar:
+        rdax  t, 1.0
+        wraa  w, 0
+avanzar_w:
+        clr
+        rdax  w, 1.0
+        rdax  u, 1.0
+        rdax  h, -2.0
+        skp   gez, w_listo
+        rdax  hn, -2.0
+w_listo:
+        wrax  w, 0
+; ── salida ───────────────────────────────────────────────────────────
+        rdax  lp, 1.0
+        mulx  kwet
+        wrax  t, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  t, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  t, 1.0
+        wrax  dacr, 0

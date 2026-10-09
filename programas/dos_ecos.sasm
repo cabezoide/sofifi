@@ -1,0 +1,219 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: delay
+; resumen: Dos ecos a ritmo, uno limpio y otro de cinta, que se cruzan y acaban en una nube difusa.
+; resumen.en: Two echoes in rhythm, one clean and one tape, that cross and end in a diffuse cloud.
+; resumen.zh-CN: 两个节奏回声，一个干净，一个磁带味，彼此交叉，最后化为弥散的云。
+; resumen.ja: リズムに合わせた2つのエコー。片方はクリーン、片方はテープ。交差して拡散した雲になります。
+;
+; dos_ecos.sasm — Dos tomas de una sola memoria de retardo, a una proporción
+; rítmica. La toma A es limpia y cae en T (la negra). La toma B cae en k·T.
+; La toma B tiene wow, un paso bajo, un paso alto suave y saturación (CLIP).
+; Diseño propio, a partir del principio de dos hilos de foro en español
+; (Guitarristas.info, «Pedales para Post rock»; guitarrista.org, «Post Rock,
+; cómo crear los efectos»): en el post-rock se usan dos delays, uno de ellos
+; de tipo cinta, y un eco con mucha realimentación. La proporción con
+; puntillo y la difusión en el bucle son una propuesta de diseño.
+;
+; Cada muestra:
+;   1. Calcula los tiempos. Cada toma tiene un LFO senoidal parado (como
+;      comun/tiempo.sasm): su retardo es base + E·(1 + depth).
+;      A: 32 768·u muestras, con u de 0,15 a 0,81 (pot0, con deslizamiento).
+;      B corta: 32 768·k·u, con k = 1/2, 2/3 o 3/4.
+;      B larga: 1,5 veces A. Usa otra toma con base 7 300: una excursión
+;      sola no llega a 0,82 s.
+;   2. El wow es un triángulo por software (0,6 Hz) suavizado. Se suma al
+;      depth de las dos tomas B: ±32 muestras.
+;   3. B = mezcla de la toma corta y la larga (según la zona de pot3), y
+;      después paso bajo (≈ 1,6 kHz), paso alto suave y CLIP de pendiente 1.
+;   4. Realimentación cruzada: m = (A + B)/2 vuelve a la memoria. Así el
+;      eco de A se lee otra vez en k·T y el de B en T. La ganancia peor es
+;      la de la realimentación (0,95), porque |m| ≤ máx(|A|, |B|).
+;   5. Difusión: cuatro allpass sobre m, mezclados con m según pot5. Solo
+;      actúan en el bucle: los primeros ecos quedan nítidos y las
+;      repeticiones se emborronan hasta formar una nube.
+;   6. Escritura: entrada + realimentación, con CLIP de pendiente 1.
+;
+; pot0 = tiempo          (0 → A a 0,10 s · 1 → A a 0,54 s)
+; pot1 = realimentación  (0 → un eco por toma · 1 → 0,95)
+; pot2 = mezcla          (0 → seco · 1 → solo ecos)
+; pot3 = proporción      (zonas de B: 0–0,25 → ½ · 0,25–0,5 → ⅔ · 0,5–0,75 → ¾ (corchea con puntillo) · 0,75–1 → 1,5 (negra con puntillo))
+; pot4 = equilibrio      (0 → 85 % limpio y 15 % cinta · 1 → 15 % limpio y 85 % cinta)
+; pot5 = difusión        (0 → repeticiones nítidas · 1 → nube difusa)
+; sw   = mientras se pisa, la realimentación sube a 1 y la nube se sostiene
+
+equ  et     16384             ; excursión de los tres LFO del tiempo
+equ  base2  7300              ; retardo mínimo de la toma B larga
+equ  ew     32                ; wow: excursión en muestras
+equ  klp    0.2               ; paso bajo de la cinta (≈ 1,6 kHz)
+equ  kap    0.6               ; coeficiente de los allpass de difusión
+equ  x2     2 - 1/65536       ; el coeficiente más cercano a 2 (S1.16)
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  u        reg2
+equ  k        reg3
+equ  sel      reg4
+equ  tri      reg5
+equ  dir      reg6
+equ  vel      reg7
+equ  wow      reg8
+equ  a        reg9
+equ  b        reg10
+equ  bs       reg11
+equ  lpb      reg12
+equ  hpb      reg13
+equ  fb       reg14
+equ  m        reg15
+equ  gb       reg16
+equ  tmp      reg17
+equ  ecow     reg18
+equ  kt       reg19
+equ  selt     reg20
+
+mem  dl    base2 + 2*et + 3
+mem  ap1   131
+mem  ap2   211
+mem  ap3   337
+mem  ap4   503
+
+lfo  0  sin  et
+lfo  1  sin  et
+lfo  2  sin  et
+
+; ── LFOs del tiempo: rate 0 en cada muestra, salvo en la inicialización ──
+        wrax  lfo0_rate, 0              ; ACC vale 0 al empezar la muestra
+        wrax  lfo1_rate, 0
+        wrax  lfo2_rate, 0
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 0.5                    ; un cuarto de vuelta: la forma vale 1
+        wrax  lfo0_rate, 1.0
+        wrax  lfo1_rate, 1.0
+        wrax  lfo2_rate, 0
+        sof   0, 1/512                  ; tmp = 2^-9 para fijar una velocidad fina
+        wrax  tmp, 0
+        rdax  tmp, 1024*4*0.6/48828.125 ; vel = 4f/fs: triángulo de 0,6 Hz
+        wrax  vel, 0
+inicio:
+; ── controles ────────────────────────────────────────────────────────
+include  comun/mezcla.sasm
+        rdax  pot0, 0.66                ; u → 0,15 + 0,66·pot0
+        sof   1.0, 0.15
+        rdfx  u, 0.0005                 ; deslizamiento de ~40 ms
+        wrax  u, 0
+        rdax  pot1, 0.95                ; fb = máx(0,95·pot1, sw)
+        maxx  sw, 0.999
+        wrax  fb, 0
+        rdax  pot4, 0.7                 ; gb = 0,15 + 0,7·pot4
+        sof   1.0, 0.15
+        wrax  gb, 0
+; ── zonas de pot3: proporción k de la toma B y selección de la larga ──
+        rdax  pot3, 1.0
+        sof   1.0, -0.25
+        skp   neg, z_mitad
+        sof   1.0, -0.25
+        skp   neg, z_tercios
+        sof   1.0, -0.25
+        skp   neg, z_puntillo
+        sof   0, 0.99997                ; zona 4: B = 1,5·A (toma larga)
+        wrax  selt, 0
+        sof   0, 0.75
+        wrax  kt, 0
+        skp   zro, fin_zona
+z_puntillo:
+        clr                             ; zona 3: B = 3/4·A
+        wrax  selt, 0
+        sof   0, 0.75
+        wrax  kt, 0
+        skp   zro, fin_zona
+z_tercios:
+        clr                             ; zona 2: B = 2/3·A
+        wrax  selt, 0
+        sof   0, 2/3
+        wrax  kt, 0
+        skp   zro, fin_zona
+z_mitad:
+        clr                             ; zona 1: B = 1/2·A
+        wrax  selt, 0
+        sof   0, 0.5
+        wrax  kt, 0
+fin_zona:
+        clr
+        rdax  kt, 1.0                   ; k y sel se deslizan: sin saltos
+        rdfx  k, 0.0005
+        wrax  k, 0
+        rdax  selt, 1.0
+        rdfx  sel, 0.002
+        wrax  sel, 0
+; ── 2. wow: triángulo de 0,6 Hz con las esquinas redondeadas ─────────
+include  comun/lfo_triangulo.sasm
+        rdfx  wow, 0.0005
+        wrax  wow, 0
+; ── 1. tiempos: depth de cada LFO parado ─────────────────────────────
+        rdax  u, 1.0                    ; A: depth = 2u − 1
+        sof   x2, -1.0
+        wrax  lfo0_depth, 0
+        rdax  u, 1.0                    ; B corta: depth = 2k·u − 1 + wow
+        mulx  k
+        sof   x2, -1.0
+        rdax  wow, ew/et
+        wrax  lfo1_depth, 0
+        rdax  u, 1.0                    ; B larga: depth = 3u − 1 − base2/et + wow
+        sof   1.5, -(1 + base2/et)/2
+        sof   x2, 0
+        rdax  wow, ew/et
+        wrax  lfo2_depth, 0
+; ── 3. tomas ─────────────────────────────────────────────────────────
+        cho   dl, 1.0, lfo0
+        wrax  a, 0
+        cho   dl, 1.0, lfo1
+        wrax  bs, -1.0
+        cho   dl + base2, 1.0, lfo2     ; ACC = larga − corta
+        mulx  sel
+        rdax  bs, 1.0
+        rdfx  lpb, klp                  ; cinta: paso bajo
+        wrax  lpb, 1.0
+        rdfx  hpb, 0.004                ; paso alto suave (x − paso bajo lento)
+        wrax  hpb, -1.0
+        rdax  lpb, 1.0
+        sof   2/3, 0                    ; curva_suave(2x/3): pendiente 1, techo ±1
+        clip
+        wrax  b, 0
+; ── 4 y 5. realimentación cruzada con difusión ───────────────────────
+        rdax  a, 0.5
+        rdax  b, 0.5
+        wrax  m, 1.0
+        rda   ap1#, kap
+        wrap  ap1, -kap
+        rda   ap2#, kap
+        wrap  ap2, -kap
+        rda   ap3#, kap
+        wrap  ap3, -kap
+        rda   ap4#, kap
+        wrap  ap4, -kap
+        rdax  m, -1.0                   ; m + pot5·(difuso − m)
+        mulx  pot5
+        rdax  m, 1.0
+; ── 6. escritura ─────────────────────────────────────────────────────
+        mulx  fb
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        sof   2/3, 0
+        clip
+        wra   dl, 0
+; ── salida: A + gb·(B − A) ───────────────────────────────────────────
+        rdax  b, 1.0
+        rdax  a, -1.0
+        mulx  gb
+        rdax  a, 1.0
+        mulx  kwet
+        wrax  ecow, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  ecow, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  ecow, 1.0
+        wrax  dacr, 0

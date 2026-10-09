@@ -3,7 +3,7 @@
 
 # Programas del núcleo
 
-75 programas y 600 presets. Cada programa es un fichero de texto en `programas/`; los presets están en `presets/banco.toml`.
+81 programas y 648 presets. Cada programa es un fichero de texto en `programas/`; los presets están en `presets/banco.toml`.
 Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste.py`). La memoria es de 43 008 palabras.
 
 ## Reverb
@@ -47,10 +47,12 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 | `dados` | Cuatro ecos con tiempos y octavas al azar; sw tira los dados otra vez. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: probabilidad<br>4: tono<br>5: ancho | 8 | 239 | 1 620 | 38 260 |
 | `delay` | Eco digital limpio de 20 a 690 ms, con tono en la realimentación. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: tono | 8 | 38 | 309 | 33 749 |
 | `deriva` | Eco que pierde el rumbo: el tiempo salta al azar y llega con glide. | 0: tiempo<br>1: profundidad<br>2: mezcla<br>3: velocidad<br>4: glide<br>5: realimentación | 8 | 128 | 969 | 33 796 |
+| `dos_ecos` | Dos ecos a ritmo, uno limpio y otro de cinta, que se cruzan y acaban en una nube difusa. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: proporción<br>4: equilibrio<br>5: difusión | 8 | 142 | 1 131 | 41 258 |
 | `ducking` | Eco que se aparta mientras se toca y aparece en los silencios. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: ducking | 8 | 51 | 394 | 33 749 |
 | `eco_casero` | Eco de chip casero: limpio con tiempos cortos; oscuro, granuloso y con bombeo al alargarlo. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: suciedad<br>4: modulación<br>5: tono | 8 | 124 | 1 002 | 41 492 |
 | `enjambre` | Un enjambre de ocho ecos cortos: se junta en reverb o se abre en ecos sueltos. | 0: dispersión<br>1: realimentación<br>2: mezcla<br>3: difusión<br>4: tono<br>5: deriva | 8 | 199 | 1 377 | 42 820 |
 | `estelar` | Eco con un phaser dentro del lazo: cada repetición barre más y la cola gira. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: profundidad<br>4: velocidad<br>5: resonancia | 8 | 123 | 830 | 33 749 |
+| `frenada` | Eco de cinta con freno: al pisar, la cinta se para y el eco cae hasta el silencio. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: frenada<br>4: arranque<br>5: wow y flutter | 8 | 156 | 1 199 | 32 876 |
 | `lata` | Eco de lata de aceite: corto, turbio y líquido, con un vibrato atado al tiempo. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: profundidad<br>4: tono<br>5: aceite | 8 | 90 | 768 | 18 931 |
 | `lluvia` | Seis ecos irregulares que se deshacen en allpass: una lluvia de notas. | 0: difusión<br>1: realimentación<br>2: mezcla | 8 | 46 | 364 | 35 385 |
 | `oscilador` | Eco que oscila solo con un techo de nivel; el tiempo afina el tono. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: suavizado<br>4: tono<br>5: nivel | 8 | 86 | 614 | 24 678 |
@@ -104,6 +106,7 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 | `lofi` | Menos muestras por segundo y menos bits, con aliasing. | 0: muestreo<br>1: bits<br>2: mezcla<br>3: tono | 8 | 81 | 577 | 1 |
 | `ringmod` | Modulador en anillo: multiplica la guitarra por un seno; suena metálico. | 0: frecuencia<br>2: mezcla | 8 | 33 | 236 | 1 |
 | `saturacion` | Saturación tipo overdrive: de un brillo cálido a una distorsión espesa. | 0: ganancia<br>1: tono<br>2: mezcla<br>3: nivel | 8 | 42 | 277 | 1 |
+| `viento` | Ráfagas de ruido filtrado que silban al azar y soplan más fuerte cuando se toca. | 0: velocidad<br>1: resonancia<br>2: mezcla<br>3: sensibilidad<br>4: frecuencia<br>5: nivel | 8 | 140 | 913 | 3 728 |
 
 ## Filtro
 
@@ -120,6 +123,9 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 | `erosion` | Bucle de cinta que se desgasta en cada vuelta: pierde agudos y nivel y gana wow, grano y saturación. | 0: erosión<br>1: damping<br>2: mezcla<br>3: modulación<br>4: nivel<br>5: duración | 8 | 161 | 1 043 | 32 769 |
 | `looper` | Micro-looper de 0,67 s con overdub, ½×, 2× y reverse. | 0: nivel<br>1: velocidad<br>2: sentido<br>3: realimentación | 8 | 85 | 549 | 32 769 |
 | `mosaico` | Bucle sonido sobre sonido de 0,67 s que suena a la vez a ½×, 1× y 2×. | 0: octava baja<br>1: nivel<br>2: mezcla<br>3: octava alta<br>4: realimentación<br>5: difusión | 8 | 144 | 1 064 | 34 662 |
+| `relevo` | Freeze de dos capas: cada pisada congela un acorde nuevo y lo funde sobre el anterior, con bend y vibrato. | 0: tiempo<br>1: afinación<br>2: mezcla<br>3: vibrato<br>4: tono<br>5: nivel | 8 | 197 | 1 438 | 34 140 |
+| `resbalon` | Una cabeza libre resbala sobre lo que acabas de tocar, de −2× a 2×, sin grabar. | 0: velocidad<br>1: realimentación<br>2: mezcla<br>3: duración<br>4: tono<br>5: tiempo | 8 | 119 | 865 | 32 769 |
+| `tartamudeo` | Cada ataque fuerte captura un trozo corto y lo repite, cada vez más bajo. | 0: umbral<br>1: duración<br>2: mezcla<br>3: repeticiones<br>4: velocidad<br>5: tono | 8 | 188 | 1 240 | 32 769 |
 
 ## Cadenas
 

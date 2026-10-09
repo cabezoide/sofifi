@@ -1,4 +1,4 @@
-<!-- i18n: fuente=demo_examples/README.md sha=52ab78dd5e15 estado=al_dia -->
+<!-- i18n: fuente=demo_examples/README.md sha=74f2450d718c estado=al_dia -->
 # demo_examples
 
 A synthetic guitar (an Em9 arpeggio, Karplus-Strong strings) through each core program, with the bit-exact model. Generate them again with `.venv/bin/python scripts/generar_demos.py`: the audio is the same each time.
@@ -81,6 +81,12 @@ A synthetic guitar (an Em9 arpeggio, Karplus-Strong strings) through each core p
 | `demo_orilla.ogg` | `orilla` | rate 0.35 · depth 0.55 · mix 0.50 · smoothing 0.50 · low-pass gate 0.80 · sensitivity 0.50 | 3.00 → 3.80 s |
 | `demo_baldosa.ogg` | `baldosa` | time 0.55 · decay 0.70 · mix 0.45 · modulation 0.50 · tone 0.40 · sample rate 0.30 | 2.60 → 3.40 s |
 | `demo_eco_casero.ogg` | `eco_casero` | time 0.75 · feedback 0.55 · mix 0.45 · dirt 0.80 · modulation 0.30 · tone 0.30 | — |
+| `demo_relevo.ogg` | `relevo` | time 0.60 · tuning 0.50 · mix 0.60 · vibrato 0.35 · tone 0.60 · level 0.70 | 1.00 → 1.10 s, 4.00 → 4.10 s |
+| `demo_frenada.ogg` | `frenada` | time 0.50 · feedback 0.50 · mix 0.45 · brake time 0.50 · spin-up time 0.40 · wow and flutter 0.40 | 2.50 → 3.50 s |
+| `demo_resbalon.ogg` | `resbalon` | rate 0.58 · feedback 0.70 · mix 0.55 · length 0.70 · tone 0.40 · time 0.20 | 4.00 → 7.00 s |
+| `demo_tartamudeo.ogg` | `tartamudeo` | threshold 0.30 · length 0.45 · mix 0.50 · repeats 0.60 | — |
+| `demo_dos_ecos.ogg` | `dos_ecos` | time 0.85 · feedback 0.60 · mix 0.50 · ratio 0.90 · balance 0.50 · diffusion 0.70 | 4.00 → 6.00 s |
+| `demo_viento.ogg` | `viento` | rate 0.50 · resonance 0.60 · mix 0.50 · sensitivity 0.70 · frequency 0.50 · level 0.40 | 2.50 → 3.50 s |
 | `demo_cadena_eco_y_muelle.ogg` | Eco y muelle: `delay` → `spring` | pot0 0.55 · pot1 0.40 · pot2 0.35 · pot3 0.60 · pot4 0.40 · pot5 0.00 | — |
 | `demo_cadena_flor_al_reves.ogg` | Flor al revés: `reverse` → `bloom` | pot0 0.60 · pot1 0.40 · pot2 0.50 · pot3 0.80 · pot4 0.55 · pot5 0.40 | — |
 | `demo_cadena_organo_infinito.ogg` | Órgano infinito: `octava` → `infinite` | pot0 0.60 · pot1 0.40 · pot2 0.00 · pot3 0.10 · pot4 0.50 · pot5 0.00 | — |

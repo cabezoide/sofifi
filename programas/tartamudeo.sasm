@@ -1,0 +1,272 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: looper
+; resumen: Cada ataque fuerte captura un trozo corto y lo repite, cada vez más bajo.
+; resumen.en: Each hard attack captures a short slice and repeats it, softer each time.
+; resumen.zh-CN: 每次强烈的拨弦都会捕捉一小段声音并重复播放，一次比一次轻。
+; resumen.ja: 強いアタックごとに短い断片を捉え、少しずつ小さくしながら繰り返します。
+;
+; tartamudeo.sasm — tartamudeo disparado por la dinámica, en la región
+; absoluta (RDAA y WRAA, ADR 0009). Diseño propio, a partir del principio del
+; modo de envolvente de un looper boutique: la fuerza de la pulsación decide
+; cuándo el pedal corta el bucle con repeticiones y notas congeladas.
+;
+; Cada muestra:
+;   1. La cabeza `w` escribe la entrada en la región absoluta. `w` va de −0,5
+;      a 0,5: así `ini + fase` nunca satura.
+;   2. Un detector de ataque compara el pico de la entrada (caída de ~30 ms)
+;      con 1,5 veces su media lenta (~40 ms) más el umbral. Solo dispara en el
+;      flanco de subida, y no antes de un trozo desde el disparo anterior. Una
+;      nota sostenida no vuelve a disparar: el pico apenas tiene rizado.
+;   3. El disparo guarda `inin` = w − 128 muestras y acorta la pasada actual:
+;      la ventana la apaga en 128 muestras.
+;   4. Al final de cada pasada, la fase vuelve a 0. Si hay un trozo pendiente,
+;      empieza una pasada muda de un trozo entero: el trozo se graba. Después,
+;      cada pasada suena con la ganancia anterior por el factor de pot3.
+;   5. Una ventana de 128 muestras en cada borde quita los clics. La ganancia
+;      solo cambia en el borde, donde la ventana vale 0.
+;   6. La escritura se para si va a pisar el trozo que suena. Así el trozo
+;      dura más que la región (0,67 s).
+;
+; pot0 = umbral        (0 → 0,002, todo dispara · 1 → 0,25, solo ataques fuertes)
+; pot1 = duración      (0 → trozo de 30 ms · 1 → 200 ms)
+; pot2 = mezcla        (0 → seco · 1 → solo repeticiones)
+; pot3 = repeticiones  (0 → cada repetición a 0,3 · 1 → a 0,99, casi sin fin)
+; pot4 = velocidad     (< 1/3 → 1× · < 2/3 → ½× · resto → 2×)
+; pot5 = tono          (0 → brillante · 1 → oscuro)
+; sw   = mantener      (el trozo que suena se repite sin bajar; no hay disparos)
+
+equ  rampa  128/32768       ; ventana y pre-roll: 128 muestras
+
+equ  u      reg0            ; una muestra: 2^-15
+equ  x      reg1            ; entrada mono
+equ  w      reg2            ; cabeza de escritura, de −0,5 a 0,5
+equ  ini    reg3            ; inicio del trozo que suena
+equ  inin   reg4            ; inicio del trozo pendiente
+equ  pend   reg5            ; ≈ 1: hay un trozo pendiente
+equ  fase   reg6            ; posición dentro del trozo
+equ  fin    reg7            ; final de la pasada actual
+equ  largo  reg8            ; duración del trozo
+equ  vel    reg9            ; avance por muestra al sonar
+equ  paso   reg10           ; avance por muestra de esta pasada
+equ  g      reg11           ; ganancia de la pasada actual
+equ  gsig   reg12           ; ganancia de la pasada siguiente
+equ  kr     reg13           ; factor por repetición
+equ  umbr   reg14           ; umbral del detector
+equ  envr   reg15           ; pico de la entrada
+equ  envl   reg16           ; envolvente lenta
+equ  cond   reg17           ; ≥ 0: ataque en esta muestra
+equ  ant    reg18           ; cond de la muestra anterior
+equ  bloq   reg19           ; < 0: se puede disparar
+equ  t      reg20
+equ  y      reg21           ; lectura del trozo
+equ  ktono  reg22
+equ  lp     reg23           ; paso bajo del tono
+equ  kwet   reg24
+equ  kdry   reg25
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 1/32768
+        wrax  u, 0
+        sof   0, -0.5
+        wrax  ant, 0                    ; sin ataque antes de empezar
+        sof   0, 0.0447
+        wrax  fin, 0
+inicio:
+; ── mandos ───────────────────────────────────────────────────────────
+        rdax  pot0, 1.0
+        mulx  pot0
+        sof   0.25, 0.002
+        wrax  umbr, 0                   ; 0,002 + 0,25·pot0²: de 0,002 a 0,252
+        rdax  pot1, 0.2533
+        sof   1.0, 0.0447
+        wrax  largo, 0                  ; 1 465 a 9 766 muestras
+        rdax  pot3, 0.69
+        sof   1.0, 0.3
+        wrax  kr, 0
+        rdax  pot5, -0.95
+        sof   1.0, 0.999
+        wrax  ktono, 0
+include  comun/mezcla.sasm
+        rdax  u, 1.0
+        wrax  vel, 0                    ; 1×
+        rdax  pot4, 1.0
+        sof   1.0, -1/3
+        skp   neg, entrada
+        sof   1.0, -1/3
+        skp   gez, doble
+        clr
+        rdax  u, 0.5
+        wrax  vel, 0                    ; ½×
+        skp   zro, entrada
+doble:
+        clr
+        rdax  u, 1.0
+        rdax  u, 1.0
+        wrax  vel, 0                    ; 2×
+; ── detector de ataque ───────────────────────────────────────────────
+entrada:
+        clr
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wrax  x, 1.0
+        absa
+        maxx  envr, 0.9993              ; pico con caída de ~30 ms
+        wrax  envr, 1.0
+        rdfx  envl, 0.0005
+        wrax  envl, 0
+        rdax  envr, 1.0
+        rdax  envl, -1.5
+        rdax  umbr, -1.0
+        wrax  cond, 0
+        rdax  ant, 1.0
+        skp   gez, fin_ataque           ; ya estaba por encima: no es un flanco
+        clr
+        rdax  cond, 1.0
+        skp   neg, fin_ataque
+        clr
+        rdax  bloq, 1.0
+        skp   gez, fin_ataque           ; el disparo anterior está muy cerca
+        clr
+        rdax  sw, -1.0
+        skp   neg, fin_ataque           ; mantener: no hay disparos
+; ── disparo ──────────────────────────────────────────────────────────
+        clr
+        rdax  w, 1.0
+        sof   1.0, -rampa
+        wrax  inin, 0                   ; el trozo empieza 128 muestras antes
+        sof   0, 0.99997
+        wrax  pend, 0
+        rdax  largo, 1.0
+        wrax  bloq, 0
+        rdax  fase, 1.0
+        sof   1.0, rampa
+        wrax  t, 1.0
+        rdax  fin, -1.0
+        skp   gez, fin_ataque           ; la pasada ya acaba antes
+        clr
+        rdax  t, 1.0
+        wrax  fin, 0                    ; la ventana la apaga en 128 muestras
+fin_ataque:
+        clr
+        rdax  cond, 1.0
+        wrax  ant, 0
+        rdax  bloq, 1.0
+        rdax  u, -1.0
+        wrax  bloq, 0
+; ── escritura: se para antes de pisar el trozo que suena ─────────────
+        rdax  gsig, 1.0
+        sof   1.0, -0.001
+        rdax  pend, -1.0
+        skp   neg, escribir             ; trozo pendiente o sin repeticiones
+        clr
+        rdax  w, 1.0
+        rdax  ini, -1.0                 ; w − ini, en (−1, 1)
+        skp   gez, distancia
+        sof   1.0, 1.0
+distancia:
+        sof   1.0, -0.992               ; a 262 muestras del trozo: parar
+        skp   gez, leer
+escribir:
+        clr
+        rdax  x, 1.0
+        wraa  w, 0
+        rdax  w, 1.0
+        rdax  u, 1.0
+        wrax  w, 1.0
+        sof   1.0, -0.5
+        skp   neg, leer
+        sof   1.0, -0.5
+        wrax  w, 0                      ; w = 0,5: vuelve a −0,5
+; ── lectura y avance de la fase ──────────────────────────────────────
+leer:
+        clr
+        rdax  ini, 1.0
+        rdax  fase, 1.0
+        wrax  t, 0
+        rdaa  t, 1.0
+        wrax  y, 0
+        rdax  u, 1.0
+        wrax  paso, 0                   ; pasada muda: a tiempo real
+        rdax  g, 1.0
+        skp   zro, avanzar
+        clr
+        rdax  vel, 1.0
+        wrax  paso, 0
+avanzar:
+        clr
+        rdax  fase, 1.0
+        rdax  paso, 1.0
+        wrax  fase, 1.0
+        rdax  fin, -1.0
+        skp   neg, ventana
+; ── fin de la pasada ─────────────────────────────────────────────────
+        clr
+        wrax  fase, 0
+        rdax  largo, 1.0
+        wrax  fin, 0
+        rdax  pend, 1.0
+        skp   zro, repetir
+        clr
+        wrax  pend, 0
+        wrax  g, 0                      ; pasada muda: el trozo se graba
+        rdax  inin, 1.0
+        wrax  ini, 0
+        sof   0, 0.99997
+        wrax  gsig, 0
+        skp   zro, ventana
+repetir:
+        clr
+        rdax  g, 1.0
+        skp   zro, bajar
+        clr
+        rdax  sw, -1.0
+        skp   neg, ventana              ; mantener: la ganancia no baja
+bajar:
+        clr
+        rdax  gsig, 1.0
+        wrax  g, 1.0
+        mulx  kr
+        wrax  gsig, 0
+; ── ventana: min(1, 256·fase) · min(1, 256·(fin − fase)) ─────────────
+ventana:
+        clr
+        rdax  fase, 1.0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        wrax  t, 0
+        rdax  fin, 1.0
+        rdax  fase, -1.0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        mulx  t
+        mulx  g
+        mulx  y
+; ── tono y salida ────────────────────────────────────────────────────
+        rdax  lp, -1.0
+        mulx  ktono
+        rdax  lp, 1.0
+        wrax  lp, 1.0
+        mulx  kwet
+        wrax  t, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  t, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  t, 1.0
+        wrax  dacr, 0

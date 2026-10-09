@@ -1,4 +1,4 @@
-<!-- i18n: fuente=demo_examples/README.md sha=52ab78dd5e15 estado=al_dia -->
+<!-- i18n: fuente=demo_examples/README.md sha=74f2450d718c estado=al_dia -->
 # demo_examples
 
 合成ギター（Em9 のアルペジオ、Karplus-Strong の弦）を、ビット精度のモデルでコアの各プログラムに通したものです。`.venv/bin/python scripts/generar_demos.py` で再生成でき、毎回同じ音声になります。
@@ -81,6 +81,12 @@
 | `demo_orilla.ogg` | `orilla` | 速さ 0.35 · 深さ 0.55 · ミックス 0.50 · スムージング 0.50 · ローパスゲート 0.80 · 感度 0.50 | 3.00 → 3.80 s |
 | `demo_baldosa.ogg` | `baldosa` | タイム 0.55 · ディケイ 0.70 · ミックス 0.45 · モジュレーション 0.50 · トーン 0.40 · サンプリング周波数 0.30 | 2.60 → 3.40 s |
 | `demo_eco_casero.ogg` | `eco_casero` | タイム 0.75 · フィードバック 0.55 · ミックス 0.45 · 汚れ 0.80 · モジュレーション 0.30 · トーン 0.30 | — |
+| `demo_relevo.ogg` | `relevo` | タイム 0.60 · チューニング 0.50 · ミックス 0.60 · ビブラート 0.35 · トーン 0.60 · レベル 0.70 | 1.00 → 1.10 s, 4.00 → 4.10 s |
+| `demo_frenada.ogg` | `frenada` | タイム 0.50 · フィードバック 0.50 · ミックス 0.45 · ブレーキ時間 0.50 · 始動時間 0.40 · ワウとフラッター 0.40 | 2.50 → 3.50 s |
+| `demo_resbalon.ogg` | `resbalon` | 速さ 0.58 · フィードバック 0.70 · ミックス 0.55 · 長さ 0.70 · トーン 0.40 · タイム 0.20 | 4.00 → 7.00 s |
+| `demo_tartamudeo.ogg` | `tartamudeo` | スレッショルド 0.30 · 長さ 0.45 · ミックス 0.50 · リピート回数 0.60 | — |
+| `demo_dos_ecos.ogg` | `dos_ecos` | タイム 0.85 · フィードバック 0.60 · ミックス 0.50 · 比率 0.90 · バランス 0.50 · 拡散 0.70 | 4.00 → 6.00 s |
+| `demo_viento.ogg` | `viento` | 速さ 0.50 · レゾナンス 0.60 · ミックス 0.50 · 感度 0.70 · 周波数 0.50 · レベル 0.40 | 2.50 → 3.50 s |
 | `demo_cadena_eco_y_muelle.ogg` | Eco y muelle: `delay` → `spring` | pot0 0.55 · pot1 0.40 · pot2 0.35 · pot3 0.60 · pot4 0.40 · pot5 0.00 | — |
 | `demo_cadena_flor_al_reves.ogg` | Flor al revés: `reverse` → `bloom` | pot0 0.60 · pot1 0.40 · pot2 0.50 · pot3 0.80 · pot4 0.55 · pot5 0.40 | — |
 | `demo_cadena_organo_infinito.ogg` | Órgano infinito: `octava` → `infinite` | pot0 0.60 · pot1 0.40 · pot2 0.00 · pot3 0.10 · pot4 0.50 · pot5 0.00 | — |

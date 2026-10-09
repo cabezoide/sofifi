@@ -1,0 +1,278 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: looper
+; resumen: Freeze de dos capas: cada pisada congela un acorde nuevo y lo funde sobre el anterior, con bend y vibrato.
+; resumen.en: A two-layer freeze: each press freezes a new chord and fades it in over the old one, with bend and vibrato.
+; resumen.zh-CN: 双层冻结：每次踩下都会冻结一个新和弦，并淡入替换旧和弦，带推弦和颤音。
+; resumen.ja: 2 層のフリーズ。踏むたびに新しいコードを固め、前のコードからフェードで入れ替えます。ベンドとビブラート付き。
+;
+; relevo.sasm — freeze con relevo A/B en la región absoluta (RDAA y WRAA, ADR 0009).
+;
+; 1. La región absoluta se parte en dos bucles de 16 384 muestras (0,34 s):
+;    el A empieza en 0 y el B en 16 384. Solo un bucle suena del todo.
+; 2. Una pisada (flanco de subida de `sw`) graba la entrada en el bucle que
+;    no suena. La grabación dura una vuelta y siempre empieza en la muestra 0
+;    del bucle: la costura queda en el mismo sitio en los dos.
+; 3. Al acabar la grabación, el fundido pasa del bucle viejo al nuevo. Las
+;    ganancias son cos y sen de (π/2)·g, así que la potencia no cae a la mitad.
+;    El estado g2 = 2g − 1 avanza un paso por muestra y WRAX lo satura en −1
+;    y en 1: el fundido no necesita saltos. Una pisada durante la grabación o
+;    el fundido no hace nada.
+; 4. Dos cabezas leen los dos bucles a la vez, a media vuelta una de otra.
+;    La fase φ de la cabeza 1 va de −1 a 1 por vuelta. La costura cae en
+;    φ = ±1. La ventana de la cabeza 1 es cos(πφ/2) y la de la cabeza 2, su
+;    complemento en potencia. El seno sale sin tabla, como en granular.sasm.
+; 5. La fase avanza con una velocidad fraccional: el bend lento (un paso bajo
+;    de 0,34 s sobre pot1) y el vibrato (triángulo por software redondeado a
+;    seno). RDAA interpola entre dos muestras. La fase tiene 1 024 pasos por
+;    muestra: la velocidad tiene pasos de 1,7 cents.
+; 6. La capa pasa por un paso bajo (tono) y por tres allpass cortos: dos para
+;    el canal izquierdo y dos para el derecho, con el primero en común.
+;
+; Los bucles guardan la entrada a media escala; la salida los sube ×1,9.
+;
+; pot0 = tiempo          (fundido: 0 → 0,1 s · 0,5 → 0,37 s · 1 → 4 s)
+; pot1 = afinación       (bend de la capa: 0 → −2 semitonos · 0,5 → 0 · 1 → +2 semitonos)
+; pot2 = mezcla          (0 → seco · 1 → solo la capa)
+; pot3 = vibrato         (0 → nada · 1 → ±50 cents a 6 Hz; la velocidad va de 3 a 6 Hz)
+; pot4 = tono            (0 → oscuro, corte a 1,2 kHz · 1 → brillante, sin filtro)
+; pot5 = nivel           (nivel de la capa: 0 → −9 dB · 1 → 0 dB)
+;
+; Diseño propio, a partir del principio de los freeze que piden los guitarristas
+; en Guitarristas.info (hilo «¿Existe pedal sustain infinito?»): una pisada
+; nueva cambia la nota congelada sin dejar la vieja sonando, y la nota
+; sostenida admite bend y vibrato.
+
+equ  ka     0.5             ; difusión de cada allpass
+equ  uno    32767/32768     ; el 1 que cabe en el operando D
+
+equ  u      reg0            ; una muestra en el formato de RDAA: 2^-15
+equ  m1     reg1            ; −1: con +1,0 resta 1, con −1,0 suma 1
+equ  phi    reg2            ; fase de la cabeza 1, de −1 a 1 por vuelta
+equ  phi2   reg3            ; fase de la cabeza 2, a media vuelta
+equ  pa     reg4            ; posición de la cabeza 1 para RDAA
+equ  pb     reg5            ; posición de la cabeza 2 para RDAA
+equ  s1     reg6            ; ventana de la cabeza 1
+equ  s2     reg7            ; ventana de la cabeza 2
+equ  ga     reg8            ; ganancia del bucle A
+equ  gb     reg9            ; ganancia del bucle B
+equ  g      reg10           ; estado del fundido: 0 → A · 1 → B
+equ  g2     reg11           ; el mismo estado de −1 a 1: g = (1 + g2)/2
+equ  obj    reg30           ; destino de g2: −1 → A · casi 1 → B
+equ  rec    reg12           ; muestras que quedan por grabar; 0 = no graba
+equ  wr     reg13           ; cabeza de escritura
+equ  swp    reg14           ; sw de la muestra anterior
+equ  b      reg15           ; pot1 suavizado: el bend lento
+equ  tri    reg16           ; triángulo del vibrato
+equ  dir    reg17
+equ  vel    reg18           ; subida del triángulo por muestra
+equ  vib    reg19           ; desvío de velocidad del vibrato
+equ  d      reg20           ; paso del fundido por muestra
+equ  t      reg21
+equ  la     reg22           ; bucle A con su ganancia
+equ  lp     reg24           ; paso bajo del tono
+equ  kt     reg25
+equ  kc     reg26
+equ  s      reg27           ; salida del primer allpass
+equ  kwet   reg28
+equ  kdry   reg29
+
+mem  ap1    293
+mem  ap2    457
+mem  ap3    619
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 1/32768
+        wrax  u, 0
+        sof   0, -1.0
+        wrax  m1, 1.0
+        wrax  g2, 1.0                   ; suena el bucle A (en silencio)
+        wrax  obj, 0
+        rdax  pot1, 1.0
+        wrax  b, 0                      ; sin deslizamiento al encender
+inicio:
+; ── mandos ───────────────────────────────────────────────────────────
+include  comun/mezcla.sasm
+        rdax  pot0, -1.0
+        sof   1.0, uno                  ; x = 1 − pot0
+        wrax  t, 1.0
+        mulx  t
+        sof   0.0128, 0.000326
+        sof   1/32, 0
+        wrax  d, 0                      ; paso de g2: x²·4·10^-4 + 10^-5, de 0,1 a 4 s
+        rdax  pot4, 0.85
+        sof   1.0, 0.15
+        wrax  kt, 0
+        rdax  pot5, 0.65
+        sof   1.0, 0.35
+        wrax  kc, 0
+        rdax  pot3, 0.0157
+        sof   1.0, 0.0157
+        sof   1/64, 0
+        wrax  vel, 0                    ; 4f/fs con f = 3 + 3·pot3 Hz
+; ── pisada: flanco de subida de sw ───────────────────────────────────
+        ldax  sw
+        rdax  swp, -1.0
+        wrax  t, 0                      ; ≈ 1 solo en el flanco de subida
+        ldax  sw
+        wrax  swp, 0
+        ldax  rec
+        skp   zro, sin_grabar
+; ── grabación: una vuelta en el bucle que no suena ───────────────────
+        clr
+        rdax  adcl, 0.25
+        rdax  adcr, 0.25
+        wraa  wr, 0
+        rdax  wr, 1.0
+        rdax  u, 1.0
+        wrax  wr, 0
+        rdax  rec, 1.0
+        rdax  u, -1.0
+        wrax  rec, 1.0
+        rdax  u, -1.0                   ; negativo solo si rec = 0
+        skp   gez, mover
+        ldax  obj
+        sof   -1.0, 0
+        wrax  obj, 0                    ; el relevo: el destino cambia de bucle
+        skp   zro, mover
+sin_grabar:
+        ldax  t
+        sof   1.0, -0.5
+        skp   neg, mover                ; sin flanco
+        ldax  g2
+        mulx  obj
+        sof   1.0, -0.9999
+        skp   neg, mover                ; el fundido no ha acabado: no hace nada
+        sof   0, 0.5
+        wrax  rec, 0                    ; 16 384 muestras
+        rdax  obj, -0.25
+        sof   1.0, 0.25
+        wrax  wr, 0                     ; B (0,5) si suena A; A (≈ 0) si suena B
+; ── fundido: g2 va hacia obj; WRAX lo satura en −1 y en 1 ────────────
+mover:
+        ldax  obj
+        mulx  d
+        rdax  g2, 1.0
+        wrax  g2, 0.5
+        sof   1.0, 0.5
+        wrax  g, 1.0
+; ── ganancias de los bucles: cos y sen de (π/2)·g ────────────────────
+        mulx  g
+        sof   -1.0, uno                 ; p = 1 − g²
+        wrax  t, 0.225
+        sof   1.0, 0.775
+        mulx  t
+        wrax  ga, 0                     ; ≈ cos(πg/2)
+        rdax  g, -1.0
+        sof   1.0, uno
+        wrax  t, 1.0
+        mulx  t
+        sof   -1.0, uno                 ; p = 1 − (1 − g)²
+        wrax  t, 0.225
+        sof   1.0, 0.775
+        mulx  t
+        wrax  gb, 0                     ; ≈ sen(πg/2)
+; ── vibrato: triángulo por software y forma de seno ──────────────────
+include  comun/lfo_triangulo.sasm
+        mulx  tri
+        sof   -0.5, 1.5                 ; 1,5 − 0,5·tri²
+        mulx  tri                       ; ≈ seno, con pico 1
+        wrax  t, 0
+        rdax  pot3, 0.0146
+        mulx  t
+        wrax  vib, 0                    ; ±50 cents en la escala de razón/2
+; ── bend lento y velocidad ───────────────────────────────────────────
+        rdax  pot1, 1.0
+        rdax  b, -1.0
+        sof   1/128, 0
+        sof   1/128, 0                  ; paso bajo de 2^14 muestras (0,34 s)
+        rdax  b, 1.0
+        wrax  b, 1.0
+        sof   1.0, -0.5                 ; e = b − 0,5
+        wrax  t, 0.01336
+        mulx  t
+        rdax  t, 0.11578
+        sof   1.0, 0.5                  ; razón/2 ≈ 2^(4e/12)/2, error < 0,5 cents
+        rdax  vib, 1.0
+        sof   1/4096, 0                 ; dφ = razón·2^-13: φ recorre 2 por vuelta
+; ── fase de las dos cabezas ──────────────────────────────────────────
+        rdax  phi, 1.0
+        rdax  m1, 1.0                   ; φ + dφ − 1
+        skp   neg, sin_vuelta
+        rdax  m1, 1.0
+        skp   gez|neg, phi_ok
+sin_vuelta:
+        rdax  m1, -1.0
+phi_ok:
+        wrax  phi, 0.25
+        sof   1.0, 0.25
+        wrax  pa, 0                     ; de 0 a 0,5: 16 384 muestras
+        rdax  phi, 1.0
+        skp   neg, phi2_suma
+        rdax  m1, 1.0
+        skp   gez|neg, phi2_ok
+phi2_suma:
+        rdax  m1, -1.0
+phi2_ok:
+        wrax  phi2, 0.25
+        sof   1.0, 0.25
+        wrax  pb, 0
+; ── ventanas: cos(πφ/2), con p = 1 − φ² ──────────────────────────────
+        rdax  phi, 1.0
+        mulx  phi
+        sof   -1.0, uno
+        wrax  t, 0.225
+        sof   1.0, 0.775
+        mulx  t
+        wrax  s1, 0
+        rdax  phi2, 1.0
+        mulx  phi2
+        sof   -1.0, uno
+        wrax  t, 0.225
+        sof   1.0, 0.775
+        mulx  t
+        wrax  s2, 0
+; ── lectura de los dos bucles y relevo ───────────────────────────────
+        rdaa  pa, 1.0
+        mulx  s1
+        wrax  t, 0
+        rdaa  pb, 1.0
+        mulx  s2
+        rdax  t, 1.0
+        mulx  ga
+        wrax  la, 0
+        rdaa  pa, 1.0, 16384
+        mulx  s1
+        wrax  t, 0
+        rdaa  pb, 1.0, 16384
+        mulx  s2
+        rdax  t, 1.0
+        mulx  gb
+        rdax  la, 1.0
+; ── tono, nivel y difusión ───────────────────────────────────────────
+        rdax  lp, -1.0
+        mulx  kt
+        rdax  lp, 1.0
+        wrax  lp, 1.0
+        mulx  kc
+        rda   ap1#, ka
+        wrap  ap1, -ka
+        wrax  s, 1.0
+        rda   ap2#, ka
+        wrap  ap2, -ka
+        mulx  kwet
+        wrax  t, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  t, 1.9
+        wrax  dacl, 0
+        rdax  s, 1.0
+        rda   ap3#, ka
+        wrap  ap3, -ka
+        mulx  kwet
+        wrax  t, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  t, 1.9
+        wrax  dacr, 0

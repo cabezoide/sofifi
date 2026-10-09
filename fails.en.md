@@ -1,4 +1,4 @@
-<!-- i18n: fuente=fails.md sha=cf031779fc00 estado=al_dia -->
+<!-- i18n: fuente=fails.md sha=e61de9d9dc80 estado=al_dia -->
 # Failures and their resolution
 
 This is the record of the failures found in the project. Each entry has a symptom, a diagnosis, a root cause, a resolution and a lesson. The record helps us not to repeat them. It also explains why the design is as it is.
@@ -36,6 +36,7 @@ Add a new entry when a failure is diagnosed and resolved. Do not rewrite the ent
 | F-27 | 08 | Small constants, control loops and a blind fingerprint in batch 10 | resolved before publication |
 | F-28 | 08 | The minimum speed of phaser and filtro was 0, and three traps in batch 11 | resolved |
 | F-29 | 08 | Five modulation and level traps in batch 12 | resolved before publication |
+| F-30 | 08 | Detectors, seams and read limits in batch 13 | resolved before publication |
 
 ---
 
@@ -369,3 +370,22 @@ The acoustic tests of the new programs found four failures before publication.
   - **Symptom:** each note started with a peak of 2.4 times, and with feedback at maximum the loop went out of control.
   - **Resolution:** both use the same mean detector, and the compressor uses feedback (1/envelope without division).
 - **Lesson:** test a modulation effect on the mono sum and at low frequencies, not only on one channel. Each filter state needs its own register.
+
+## F-30 · Detectors, seams and read limits in batch 13
+
+- **The attack detector of `comun/compuerta.sasm` fires on low notes** (`tartamudeo`).
+  - **Symptom:** a held note of 82 Hz fired 12 times a second, and the notes of an arpeggio did not fire.
+  - **Cause:** the fast envelope has much ripple on low notes. The rule «fast > 2·slow» is not true while the previous note sounds.
+  - **Resolution:** a peak detector with MAXX (fall of approximately 30 ms) and the rule «peak > 1.5·slow + threshold». The common block does not change.
+- **A read head gets to the seam of the ring** (`frenada`).
+  - **Symptom:** with a long echo and a long brake, a click on footswitch release.
+  - **Cause:** the write head got to the braking read head, which read the point where the ring turns.
+  - **Resolution:** a window turns that head off near the write head.
+- **A variable speed needs a division** (`resbalon`).
+  - **Cause:** the window phase moves (1 − v)/L on each sample, and the ISA has no division.
+  - **Resolution:** a reciprocal that corrects itself on each sample: r ← r + 2·(1/32 − L·r).
+- **A CHO reaches only 2·E samples from its base** (`dos_ecos`).
+  - **Symptom:** the tap at 1.5 times the time did not get to 0.82 s.
+  - **Cause:** the excursion E of an LFO is a maximum of 16,384 samples.
+  - **Resolution:** two taps with two LFOs of different base and a crossfade between them.
+- **Lesson:** validate a common block with low notes and with arpeggios. Each read head of a ring needs its window near the write head.
