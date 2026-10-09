@@ -10,6 +10,8 @@ sofifi cadenas                     (lista presets/cadenas.toml: coste y si cabe)
 sofifi componer NOMBRE SALIDA.sasm (la cadena como un programa, ADR 0013)
 sofifi cadena  NOMBRE  ENTRADA.wav  SALIDA.wav  [--pot N=V] [--freeze A:B] [--cola S]
 sofifi rom     NOMBRE  SALIDA.v   (programa o cadena como ROM programa_hil, para `make hil`)
+sofifi banco   SALIDA.img [NOMBRE...]   (banco de la microSD; sin nombres, todo lo que cabe)
+sofifi banco   --leer IMAGEN.img        (comprueba un banco y lista sus programas)
 """
 
 from __future__ import annotations
@@ -36,6 +38,7 @@ from sofifi.domain.ensamblador import ErrorEnsamblado
 from sofifi.domain.isa import NUM_POTS
 from sofifi.domain.senal import Controles
 from sofifi.services.catalogo import catalogos, ficha, ficha_cadena
+from sofifi.services.microsd import escribir_imagen, listar_imagen
 from sofifi.services.render import exportar_microcodigo, renderizar
 from sofifi.services.tablas import (
     PROGRAMAS_EN_ROM,
@@ -118,8 +121,19 @@ def main(argv: list[str] | None = None) -> int:
     ro = sub.add_parser("rom", help="ROM programa_hil de un programa o una cadena (make hil)")
     ro.add_argument("nombre", help="programa (programas/NOMBRE.sasm) o cadena")
     ro.add_argument("salida", type=Path)
+    ba = sub.add_parser("banco", help="banco de programas para la microSD (Fase 08)")
+    ba.add_argument("imagen", type=Path)
+    ba.add_argument("nombres", nargs="*", help="programas o cadenas; sin nombres, todo lo que cabe")
+    ba.add_argument("--leer", action="store_true", help="comprueba la imagen y lista su contenido")
     args = p.parse_args(argv)
     try:
+        if args.orden == "banco":
+            if args.leer:
+                lineas = listar_imagen(args.imagen)
+            else:
+                lineas = escribir_imagen(args.imagen, args.nombres, PROGRAMAS, RUTA_CADENAS)
+            print("\n".join(lineas))
+            return 0
         if args.orden == "rom":
             try:
                 prog = programa_o_cadena(args.nombre, PROGRAMAS, RUTA_CADENAS)

@@ -194,3 +194,29 @@ def test_banco_de_cadenas_con_errores(tmp_path: Path) -> None:
     ruta.write_text(una + una)
     with pytest.raises(ValueError, match="repetidas"):
         leer_cadenas(ruta)
+
+
+def test_cli_banco_y_rom(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """sofifi banco escribe, lee y rechaza; sofifi rom escribe la ROM del HIL."""
+    monkeypatch.chdir(Path(__file__).resolve().parents[2])
+    imagen = tmp_path / "banco.img"
+    assert main(["banco", str(imagen), "plate", "Eco y muelle"]) == 0
+    assert main(["banco", "--leer", str(imagen)]) == 0
+    salida = capsys.readouterr().out
+    assert "0 plate:" in salida and "1 cadena_eco_y_muelle:" in salida
+    datos = bytearray(imagen.read_bytes())
+    datos[520] ^= 1  # un bit de los metadatos de la ranura 0
+    imagen.write_bytes(bytes(datos))
+    assert main(["banco", "--leer", str(imagen)]) == 1
+    assert "CRC incorrecto" in capsys.readouterr().err
+    assert main(["banco", str(imagen), "no_existe"]) == 1
+    todo = tmp_path / "todo.img"
+    assert main(["banco", str(todo)]) == 0
+    assert "69 programas" in capsys.readouterr().out
+    rom = tmp_path / "programa_hil.v"
+    assert main(["rom", "tremolo", str(rom)]) == 0
+    assert "module programa_hil" in rom.read_text(encoding="utf-8")
+    assert main(["rom", "bruma", str(rom)]) == 1  # no cabe en los 38 bloques de hil_nucleo
+    assert main(["rom", "no_existe", str(rom)]) == 1
