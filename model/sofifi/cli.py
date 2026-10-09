@@ -49,17 +49,34 @@ from sofifi.services.tablas import (
     verilog_tabla_hermite,
 )
 
-RUTA_BANCO = Path("presets/banco.toml")
+
+def buscar_raiz(desde: Path) -> Path:
+    """La raíz del repositorio: la primera carpeta, desde ``desde`` hacia arriba,
+    con ``programas/`` y ``presets/banco.toml``. Si ninguna la tiene, la del paquete.
+
+    Se busca desde el directorio actual para que, en un worktree, la CLI use los
+    ficheros de ese worktree y no los del repositorio donde se instaló.
+    """
+    for carpeta in (desde, *desde.parents):
+        if (carpeta / "programas").is_dir() and (carpeta / "presets" / "banco.toml").is_file():
+            return carpeta
+    return Path(__file__).resolve().parents[2]
+
+
+RAIZ = buscar_raiz(Path.cwd())
+RUTA_BANCO = RAIZ / "presets" / "banco.toml"
 PALABRAS_HIL = 38_912  # memoria de retardo de hil_nucleo: 38 bloques, el resto es captura
-RUTA_CADENAS = Path("presets/cadenas.toml")
-PROGRAMAS = Path("programas")
+RUTA_CADENAS = RAIZ / "presets" / "cadenas.toml"
+PROGRAMAS = RAIZ / "programas"
 
 
 def _cadena(nombre: str) -> Cadena:
     for c in leer_cadenas(RUTA_CADENAS):
         if c.nombre == nombre:
             return c
-    raise argparse.ArgumentTypeError(f"«{nombre}» no está en {RUTA_CADENAS} (ver: sofifi cadenas)")
+    raise argparse.ArgumentTypeError(
+        f"«{nombre}» no está en presets/cadenas.toml (ver: sofifi cadenas)"
+    )
 
 
 def _incluir(nombre: str) -> str:
@@ -152,7 +169,7 @@ def main(argv: list[str] | None = None) -> int:
         elif args.orden == "catalogo":
             fichas = [
                 ficha(r.stem, r.read_text(encoding="utf-8"), ensamblar_archivo(r))
-                for r in sorted(Path("programas").glob("*.sasm"))
+                for r in sorted(PROGRAMAS.glob("*.sasm"))
             ]
             presets = {p: len(v) for p, v in leer_banco(RUTA_BANCO).items()}
             textos = textos_de_programas(PROGRAMAS)
@@ -160,14 +177,15 @@ def main(argv: list[str] | None = None) -> int:
                 ficha_cadena(c, recursos(c, textos, _incluir)) for c in leer_cadenas(RUTA_CADENAS)
             ]
             for ruta, texto in catalogos(fichas, presets, cadenas).items():
-                Path(ruta).write_text(texto, encoding="utf-8")
+                (RAIZ / ruta).write_text(texto, encoding="utf-8")
                 print(f"{len(fichas)} programas → {ruta}")
         elif args.orden == "tablas":
-            Path(RUTA_TABLA_HERMITE).write_text(verilog_tabla_hermite(), encoding="utf-8")
+            (RAIZ / RUTA_TABLA_HERMITE).write_text(verilog_tabla_hermite(), encoding="utf-8")
             print(f"tabla Hermite → {RUTA_TABLA_HERMITE}")
             for nombre in PROGRAMAS_EN_ROM:
-                programa = ensamblar_archivo(Path("programas") / f"{nombre}.sasm")
-                Path(ruta_programa(nombre)).write_text(verilog_programa(programa), encoding="utf-8")
+                programa = ensamblar_archivo(PROGRAMAS / f"{nombre}.sasm")
+                destino = RAIZ / ruta_programa(nombre)
+                destino.write_text(verilog_programa(programa), encoding="utf-8")
                 print(f"{nombre} → {ruta_programa(nombre)}")
         elif args.orden == "asm":
             prog = exportar_microcodigo(
@@ -184,7 +202,8 @@ def main(argv: list[str] | None = None) -> int:
                 del_programa = leer_banco(RUTA_BANCO).get(args.programa.stem, {})
                 if args.preset not in del_programa:
                     raise argparse.ArgumentTypeError(
-                        f"--preset {args.preset}: no está en [{args.programa.stem}] de {RUTA_BANCO}"
+                        f"--preset {args.preset}: no está en [{args.programa.stem}]"
+                        " de presets/banco.toml"
                     )
                 pots_preset = [f"pot{k}={v}" for k, v in enumerate(del_programa[args.preset])]
             controles = Controles(_pots(pots_preset + args.pot), _tramos(args.freeze))

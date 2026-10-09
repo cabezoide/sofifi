@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/scripts.md sha=35d6b1ed2f0c estado=al_dia -->
+<!-- i18n: fuente=docs/scripts.md sha=d373cf34432c estado=al_dia -->
 # スクリプトと `sofifi` CLI
 
 このガイドは、`scripts/` の各スクリプトと `sofifi` CLI の各コマンドを説明します。内容は作業ごとにまとめています。各ツールについて、何をするか、典型的なコマンド、必要なもの、どのゲートまたはフェーズで使うかを示します。
@@ -7,7 +7,7 @@
 
 ## 始める前に
 
-- すべてのコマンドはリポジトリのルートで実行します。`sofifi` CLI は現在のディレクトリで `programas/` と `presets/` を探します。
+- スクリプトはリポジトリのルートで実行します。`sofifi` CLI はどのフォルダーからでも動きます。`programas/` と `presets/banco.toml` がある最初のフォルダーを上に向かって探します。
 - `make install` で環境を一度作ります。モデル、ゲートのツール、EDA ツールチェーンが `.venv` に入ります。
 - `make hooks` でフックを一度インストールします。
 - ボードを使うには、udev ルール `scripts/udev/99-tang-primer-25k.rules` をインストールします。手順はそのヘッダーにあります。
@@ -38,7 +38,7 @@
 | `i18n` | ハード | 各翻訳が存在し、その印が正直である（ADR 0007）。 | `scripts/check_i18n.py` |
 | `cierre` | ハード | README とインフォグラフィックがバージョンを示し、キャプチャが最新である。 | `scripts/check_cierre.py` |
 | `model` | ハード | モデルのスタイル、書式、型、テスト。 | `ruff check`、`ruff format --check`、`mypy`、`pytest -n auto` |
-| `rtl-lint` | ハード | `rtl/top/tops.txt` の各トップと、`rtl/comun/`、`rtl/primitivas/`、`rtl/nucleo/` の各モジュールの lint。 | `verilator --lint-only -Wall -DSIMULACION` |
+| `rtl-lint` | ハード | `rtl/top/tops.txt` の各トップと、`rtl/comun/`、`rtl/primitivas/`、`rtl/nucleo/`、`rtl/sd/` の各モジュールの lint。 | `verilator --lint-only -Wall -DSIMULACION` |
 | `sim` | ハード | cocotb テストベンチがモデルと同じビットを出す（ADR 0003）。 | `pytest sim -n 4` |
 | `ratchets` | ハード | `docs/ratchets.yaml` のどの測定値も基準より悪くならない。 | `scripts/check_ratchets.py` |
 | `shell-lint` | ソフト | `scripts/*.sh` と `scripts/hooks/*` に shellcheck をかける。 | `shellcheck` |
@@ -127,7 +127,7 @@ BL616 デバッガーは 2 つのポートを出します：`/dev/ttyUSB0` が J
 |---|---|---|---|
 | `make hil` | プログラムまたはチェーンの ROM を作り、`hil_programa` を合成して書き込み、`scripts/hil_nucleo.py` を実行する。 | `make hil HIL=marea` | 4 096 サンプルが一致すれば 0 |
 | `scripts/hil_nucleo.py` | ボードの 4 096 サンプルと CRC-32 をモデルと比べる。`--traza K0` を付けると、最初に食い違う命令を探す。 | `.venv/bin/python scripts/hil_nucleo.py --programa plate` | すべて一致すれば 0 |
-| `scripts/hil_lote.py` | 複数の名前について `make hil` を実行し、build/hil_lote.csv に書く。1 つの名前に約 4 分かかる。 | `.venv/bin/python scripts/hil_lote.py --todos` | すべて一致すれば 0 |
+| `scripts/hil_lote.py` | 複数の名前について `make hil` を実行し、build/hil_lote.csv に書く。1 つの名前に約 4 分かかる。20 分を超えた名前は「TIEMPO AGOTADO」（タイムアウト）と記録する。 | `.venv/bin/python scripts/hil_lote.py --todos` | すべて一致すれば 0 |
 | `scripts/margen_reloj.py` | 配線済みの設計の PLL 分周だけを変え、各周波数でキャプチャを繰り返す。 | `.venv/bin/python scripts/margen_reloj.py --divisores 8 7 6` | 100 MHz が常に通れば 0 |
 | `scripts/verificar_primitivas.py` | プリミティブのテスト用トップを確認する：`dsp`、`bsram`、`pll`、`fs`。 | `.venv/bin/python scripts/verificar_primitivas.py dsp` | すべての行が正しければ 0 |
 
@@ -148,7 +148,7 @@ BL616 デバッガーは 2 つのポートを出します：`/dev/ttyUSB0` が J
 注記：
 
 - `make hil` は `hil_nucleo` のメモリに収まるプログラムまたはチェーンを受け付けます：38 912 ワード。それ以外は `sofifi rom` が拒否します。
-- `scripts/margen_reloj.py` には `build/<base>.pnr.json` と build/prueba_pll.fs が必要です。最後に `prueba_pll` を書き込みます。このトップは UART にほとんど送信しません。
+- `scripts/margen_reloj.py` には `build/<base>.pnr.json` と build/prueba_pll.fs が必要です。build/prueba_pll.fs がないとボードに触れず、終了コード 2 を返します。最後に `prueba_pll` を書き込みます。このトップは UART にほとんど送信しません。
 - これらのツールは既定で `/dev/ttyUSB1` を読みます。ポートは `--puerto` で変えます。
 
 ## 4. microSD
@@ -220,7 +220,7 @@ SOFIFI_MUESTRAS=4883 .venv/bin/python -m pytest sim/nucleo/nucleo_test.py
 ## 知っておくべき動作
 
 - `scripts/generar_demos.py` は `--readme`、`--help`、または引数なしを受け付けます。それ以外の引数では終了コード 2 を返し、デモを作りません。
-- `check_*` スクリプトは引数を読みません。`scripts/check_optimizacion.py --help` はすべてのトップを合成します。
+- `check_*` スクリプトにはオプションがありません。`--help` ではヘルプを表示し、それ以外の引数では実行せずに終了コード 2 を返します。
 - `scripts/informe_recursos.py` には nextpnr レポートのパスが必要です。ないと使い方を表示し、終了コード 2 を返します。
-- 引数が正しくないとき、または chrome-headless-shell がないとき、`scripts/capturar_infografia.py` はヘルプを表示して 1 で終了します。
+- 引数が正しくないとき、`scripts/capturar_infografia.py` は終了コード 2 を返します。chrome-headless-shell がないときは、インストール方法を示して終了コード 1 を返します。
 - `scripts/ci_local.sh --help` と、コマンドなしの `scripts/fpga.sh` はヘッダーを表示します。

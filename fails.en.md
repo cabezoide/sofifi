@@ -1,4 +1,4 @@
-<!-- i18n: fuente=fails.md sha=89f1e6883b89 estado=al_dia -->
+<!-- i18n: fuente=fails.md sha=deca93c093e8 estado=al_dia -->
 # Failures and their resolution
 
 This is the record of the failures found in the project. Each entry has a symptom, a diagnosis, a root cause, a resolution and a lesson. The record helps us not to repeat them. It also explains why the design is as it is.
@@ -441,3 +441,19 @@ The acoustic tests of the new programs found four failures before publication.
 - **Resolution:** if nextpnr fails only the clock, `scripts/fpga.sh` tries seeds 2, 3 and 4 (`SEMILLAS_PNR`). The first try does not change, and the script tells which seed closes timing.
 - **The resources are not noise:** `nucleo_placa` goes from 11,709 to 11,982 LUT4 and from 1,208 to 1,242 ALU. In that top, Yosys removes the bits that the ROM never uses. The new constant uses bit 15 of the D field (RAT-11 and RAT-12).
 - **Lesson:** a clock failure after a change that does not touch the logic is placement noise. Measure the real margin on the board (ADR 0011).
+
+## F-34 · Scripts that did something different from the request
+
+When we documented the scripts (PR #58), we found six unexpected behaviors. None of them changed a published result.
+
+| Script | Symptom | Resolution |
+|---|---|---|
+| `check_*` | they ignored their arguments: `check_optimizacion.py --help` synthesized all the tops | `scripts/sin_opciones.py`: `--help` prints the help; a different argument gives exit code 2 |
+| `capturar_infografia.py` | without chrome-headless-shell, it only printed the help | it tells what is missing and how to install it |
+| `margen_reloj.py` | if `prueba_pll.fs` was missing, the exception in `finally` hid the result | it checks the file before it touches the board; the last load only gives a warning |
+| `hil_lote.py` | a name that stopped responding stopped the full batch | its own process group; after 20 min, it kills the full group and records «TIEMPO AGOTADO» |
+| `rtl-lint` | it did not lint `rtl/sd/` module by module | `rtl/sd/` is added to the list of separate modules |
+| `sofifi` CLI | it worked only from the root of the repository | it looks up from the current directory for the root |
+
+- **Cause:** each script was written for the normal case. Nobody tested its incorrect inputs.
+- **Lesson:** when you document a script, also run its `--help` and an incorrect argument. A `finally` that can fail hides what came before it.

@@ -15,7 +15,7 @@ def analizador() -> argparse.ArgumentParser:
     """El analizador de ``sofifi`` con sus diez órdenes."""
     p = argparse.ArgumentParser(
         prog="sofifi",
-        description="Modelo bit-exact del núcleo SOFIFI. Se ejecuta desde la raíz del repositorio.",
+        description="Modelo bit-exact del núcleo SOFIFI. Funciona en cualquier carpeta del repo.",
         epilog="Guía de todas las órdenes: docs/scripts.md. Código de salida: 0 bien, 1 error.",
     )
     sub = p.add_subparsers(dest="orden", required=True)

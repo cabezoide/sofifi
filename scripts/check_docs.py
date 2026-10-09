@@ -38,6 +38,7 @@ import sys
 from pathlib import Path
 
 import yaml
+from sin_opciones import exigir_sin_opciones
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -266,4 +267,5 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    exigir_sin_opciones(__doc__)
     sys.exit(main())

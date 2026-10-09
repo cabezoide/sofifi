@@ -22,9 +22,9 @@ de Playwright, ``~/.cache/ms-playwright``):
 2. Un primer paso de Chrome (``--dump-dom``) mide la altura de la sección.
 3. El segundo paso captura una ventana de 1 080 px de ancho y esa altura, a escala 2.
 
-Escribe los PNG y ``docs/img/capturas.json``. Salida: 0 bien; 1 argumentos
-incorrectos o falta chrome-headless-shell (en los dos casos imprime esta
-ayuda).
+Escribe los PNG y ``docs/img/capturas.json``. Salida: 0 bien o ``--help``;
+1 falta chrome-headless-shell (dice cómo instalarlo); 2 argumentos incorrectos
+(imprime esta ayuda).
 """
 
 from __future__ import annotations
@@ -121,13 +121,24 @@ def todas() -> list[tuple[Path, str, Path]]:
 
 
 def main() -> int:
-    if sys.argv[1:] == ["--todas"] and CHROME:
-        trabajos = todas()
-    elif len(sys.argv) == 4 and CHROME:
-        trabajos = [(Path(sys.argv[1]), sys.argv[2], Path(sys.argv[3]))]
-    else:
+    argumentos = sys.argv[1:]
+    if argumentos in (["-h"], ["--help"]):
+        print(__doc__)
+        return 0
+    if argumentos != ["--todas"] and len(argumentos) != 3:
         print(__doc__, file=sys.stderr)
+        return 2
+    if not CHROME:
+        print(
+            "falta chrome-headless-shell en ~/.cache/ms-playwright. Instálalo con:\n"
+            "  npx playwright install chromium-headless-shell",
+            file=sys.stderr,
+        )
         return 1
+    if argumentos == ["--todas"]:
+        trabajos = todas()
+    else:
+        trabajos = [(Path(argumentos[0]), argumentos[1], Path(argumentos[2]))]
     for html, seccion, salida in trabajos:
         capturar(html, seccion, salida)
         anotar(html, salida)

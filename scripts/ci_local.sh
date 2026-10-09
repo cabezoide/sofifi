@@ -93,9 +93,10 @@ run_job() {
          verilator_real --lint-only -Wall -DSIMULACION --top-module "${linea[0]}" "${linea[@]:1}") \
           || fallos=1
       done < rtl/top/tops.txt
-      # Además, cada módulo por separado: los del núcleo aún no están en ningún top.
+      # Además, cada módulo por separado: un top solo ve las ramas que usa, y un
+      # módulo de rtl/sd/ o del núcleo puede tener avisos que su top no dispara.
       local modulos f
-      modulos="$(git ls-files 'rtl/comun/*.v' 'rtl/primitivas/*.v' 'rtl/nucleo/*.v')"
+      modulos="$(git ls-files 'rtl/comun/*.v' 'rtl/primitivas/*.v' 'rtl/nucleo/*.v' 'rtl/sd/*.v')"
       for f in $modulos; do
         # shellcheck disable=SC2086
         (ulimit -u "$TOPE_PROCESOS"

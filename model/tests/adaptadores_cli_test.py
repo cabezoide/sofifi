@@ -223,3 +223,15 @@ def test_cli_banco_y_rom(
     assert "module programa_hil" in rom.read_text(encoding="utf-8")
     assert main(["rom", "bruma", str(rom)]) == 1  # no cabe en los 38 bloques de hil_nucleo
     assert main(["rom", "no_existe", str(rom)]) == 1
+
+
+def test_la_cli_encuentra_la_raiz_desde_una_subcarpeta(tmp_path: Path) -> None:
+    from sofifi.cli import buscar_raiz
+
+    (tmp_path / "programas").mkdir()
+    (tmp_path / "presets").mkdir()
+    (tmp_path / "presets" / "banco.toml").write_text("", encoding="utf-8")
+    hondo = tmp_path / "rtl" / "top"
+    hondo.mkdir(parents=True)
+    assert buscar_raiz(hondo) == tmp_path
+    assert buscar_raiz(tmp_path) == tmp_path
