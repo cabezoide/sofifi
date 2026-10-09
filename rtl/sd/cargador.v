@@ -110,7 +110,13 @@ module cargador (
     wire [15:0] numero   = {b[9], b[10]};
     wire [15:0] instr    = {b[40], b[41]};
     wire [15:0] palabras = {b[42], b[43]};
-    wire [53:0] palabra  = 54'(acum >> (n_acum - 7'd54));
+    // Desempaquetado en tres etapas registradas (timing a 100 MHz): 1) copia de
+    // acum y desplazamiento (0 a 7: acum no pasa de 61 bits); 2) la palabra;
+    // 3) comprobaciones y escritura. Un byte nuevo tarda 64 ciclos o más.
+    reg  [1:0]  etapa;        // 0: libre; 1: desplazar; 2: comprobar
+    reg  [61:0] copia;
+    reg  [2:0]  desp;
+    reg  [53:0] palabra;
     wire [5:0]  op       = palabra[53:48];
     wire [17:0] salto    = palabra[17:0];
     // El byte en curso cuenta para el CRC: la cabecera hasta el byte 10, los
@@ -135,7 +141,7 @@ module cargador (
         hecho <= 1'b0; fallo <= 1'b0; sd_leer <= 1'b0; prog_we <= 1'b0;
         crc_iniciar <= 1'b0; crc_meter <= 1'b0;
         if (rst) begin
-            c <= C_LIBRE; ocupado <= 1'b0; nucleo_rst <= 1'b0; motivo <= 4'd0;
+            c <= C_LIBRE; ocupado <= 1'b0; nucleo_rst <= 1'b0; motivo <= 4'd0; etapa <= 2'd0;
             cfg_instrucciones <= 12'd1; cfg_palabras <= 16'd1; cfg_lfo_tipos <= 8'd0;
             cfg_lfo_excursiones <= 60'd0; cfg_absoluta <= 1'b0;
         end else begin
@@ -165,8 +171,14 @@ module cargador (
                     end
                 end
                 // Saca una palabra en cuanto hay 54 bits.
-                if (siguiente == C_SIGUIENTE && n_acum >= 7'd54 && !(sd_dato_v && mirar)) begin
+                if (siguiente == C_SIGUIENTE && etapa == 2'd0 && n_acum >= 7'd54 &&
+                    !(sd_dato_v && mirar)) begin
                     n_acum <= n_acum - 7'd54;
+                    copia <= acum; desp <= 3'(n_acum - 7'd54); etapa <= 2'd1;
+                end
+                if (etapa == 2'd1) begin palabra <= 54'(copia >> desp); etapa <= 2'd2; end
+                if (etapa == 2'd2) begin
+                    etapa <= 2'd0;
                     if (n_palabras < n_instr) begin
                         n_palabras <= n_palabras + 1'b1;
                         if (op > OP_MAX) malo <= 1'b1;
@@ -209,7 +221,7 @@ module cargador (
                     // ⌈54·n / 8⌉ = ⌈27·n / 4⌉
                     bytes_micro <= 14'((18'd27 * {2'd0, instr} + 18'd3) >> 2);
                     i_micro <= 5'd0; metidos <= 14'd0;
-                    acum <= 62'd0; n_acum <= 7'd0; n_palabras <= 12'd0;
+                    acum <= 62'd0; n_acum <= 7'd0; n_palabras <= 12'd0; etapa <= 2'd0;
                     malo <= 1'b0; absoluta <= 1'b0;
                     sd_bloque <= sd_bloque + 32'd1;
                     siguiente <= C_SIGUIENTE; c <= C_PEDIR;
@@ -218,7 +230,7 @@ module cargador (
             C_SIGUIENTE: if (motivo != 4'd0) begin   // un fallo llega aquí con su motivo
                 fallo <= 1'b1; ocupado <= 1'b0; c <= C_LIBRE;
                 // Con el núcleo ya parado (segunda pasada), queda parado.
-            end else if (crc_bits != 4'd0 || n_acum >= 7'd54) begin
+            end else if (crc_bits != 4'd0 || n_acum >= 7'd54 || etapa != 2'd0) begin
                 // espera a que el CRC y el desempaquetado terminen
             end else if (metidos < bytes_micro) begin   // otro bloque de microcódigo
                 i_micro <= i_micro + 1'b1;

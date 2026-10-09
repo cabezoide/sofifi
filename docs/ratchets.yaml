@@ -253,3 +253,20 @@ ratchets:
       Segunda vuelta: la cola bajó de 8 a 4 palabras y el retiro lleva un
       solo operando de 24 bit, la saturación mira los tres bits altos y la ALU
       no reenvía el ACC (hil_nucleo: de +894 a +618 LUT4; nucleo_placa, +612).
+  - id: RAT-20
+    nombre: LUT4 del top prueba_sd
+    medida: recursos:prueba_sd:LUT4
+    liston: 2244
+    direccion: menor_mejor
+    aviso_holgura: 0
+    motivo: >-
+      2026-10-09, Fase 08: listón donde se está (ADR 0010). Controlador SD,
+      cargador del banco, UART y CRC del microcódigo escrito.
+  - id: RAT-21
+    nombre: ALU del top prueba_sd
+    medida: recursos:prueba_sd:ALU
+    liston: 490
+    direccion: menor_mejor
+    aviso_holgura: 0
+    motivo: >-
+      2026-10-09, Fase 08: listón donde se está (ADR 0010).

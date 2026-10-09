@@ -50,7 +50,7 @@ PDF es vectorial y se puede ampliar sin perder detalle.
 | `primitivas/pll_100.pdf` | `rtl/primitivas/pll_100.v` | `35ddf86070ba` | Reloj de 100 MHz desde el cristal de 50 MHz de la Tang Primer 25K. |
 | `primitivas/registro_copia.pdf` | `rtl/primitivas/registro_copia.v` | `25ea9c5a2455` | Registro de ANCHO bit que Yosys no fusiona con otro igual. |
 | `sd/carga_sd.pdf` | `rtl/sd/carga_sd.v` | `1f37570f1869` | Carga de programas desde la microSD (Fase 08): sd_spi.v + cargador.v. |
-| `sd/cargador.pdf` | `rtl/sd/cargador.v` | `4ac666251c71` | Cargador de programas desde el banco de la microSD (Fase 08). |
+| `sd/cargador.pdf` | `rtl/sd/cargador.v` | `ecbc8170989f` | Cargador de programas desde el banco de la microSD (Fase 08). |
 | `sd/sd_spi.pdf` | `rtl/sd/sd_spi.v` | `8b800e71e7cd` | Controlador de tarjeta SD en modo SPI (Fase 08, ADR 0004): arranque y lectura de bloques de 512 bytes. |
 | `top/hil_looper.pdf` | `rtl/top/hil_looper.v` | `f9fa8bc14659` | hil_nucleo con el looper (Fase 07): prueba RDAA y WRAA en la placa. |
 | `top/hil_nucleo.pdf` | `rtl/top/hil_nucleo.v` | `c17fa929291d` | Verificación del núcleo en la placa (Fase 05, hardware-in-the-loop). |
@@ -63,3 +63,5 @@ PDF es vectorial y se puede ampliar sin perder detalle.
 | `top/prueba_dsp.pdf` | `rtl/top/prueba_dsp.v` | `7b3c63e1485e` | Prueba del bloque DSP (Fase 03), a 100 MHz. |
 | `top/prueba_fs.pdf` | `rtl/top/prueba_fs.v` | `248cc3ad6edb` | Prueba del reloj de muestra y de la recepción UART (Fase 05), a 100 MHz: |
 | `top/prueba_pll.pdf` | `rtl/top/prueba_pll.v` | `26730b4db73b` | Prueba del PLL (Fase 03). |
+| `top/prueba_sd.pdf` | `rtl/top/prueba_sd.v` | `5915aec54e2a` | Prueba de la microSD en la placa (Fase 08): arranca la tarjeta del Sipeed PMOD TF en el conector J6 del Dock y carga ranuras del banco de `sofifi banco`. |
+| `top/prueba_sd_logica.pdf` | `rtl/top/prueba_sd_logica.v` | `892b765090ff` | Lógica de rtl/top/prueba_sd.v (protocolo y órdenes, allí), sin PLL ni pines triestado: es lo que simula sim/top/prueba_sd_test.py con el modelo de tarjeta. |
