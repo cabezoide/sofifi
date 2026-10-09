@@ -82,8 +82,8 @@ async def arranca_y_lee(dut: cocotb.handle.HierarchyObject) -> None:
             assert int(dut.error.value) and int(dut.codigo.value) == 6
             return
         assert datos == IMAGEN[512 * n : 512 * n + 512], (
-            f"bloque {n}: {len(datos)} bytes, error {int(dut.error.value)}, código {int(dut.codigo.value)}"
-            f", recibidos {[hex(b) for b in RECIBIDOS[:20]]}, rx {int(dut.rx.value):02x}, r1 {int(dut.r1.value):02x}, lecturas {tarjeta.lecturas}"
+            f"bloque {n}: {len(datos)} bytes, código {int(dut.codigo.value)}, "
+            f"recibidos {[hex(b) for b in RECIBIDOS[:20]]}"
         )
         assert int(dut.fin.value) or not int(dut.ocupado.value)
     assert tarjeta.lecturas == [0, 29, 1, 39]

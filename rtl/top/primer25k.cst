@@ -8,3 +8,20 @@ IO_LOC  "uart_tx" C3;
 IO_PORT "uart_tx" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
 IO_LOC  "uart_rx" B3;
 IO_PORT "uart_rx" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;
+
+// microSD: Sipeed PMOD TF en el conector J6 del Dock (Fase 08). Bolas del
+// esquema del Dock (Tang_Primer_25K_Dock_60033, BANK1 a 3,3 V) y de los dos
+// esquemas del PMOD TF. CS y SCK cambian con la revisión del módulo: prueba_sd
+// elige la que responde. La v1 no tiene pull-ups: MISO lleva PULL_MODE=UP.
+IO_LOC  "sd_f5" F5;
+IO_PORT "sd_f5" IO_TYPE=LVCMOS33 PULL_MODE=UP DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC  "sd_h5" H5;
+IO_PORT "sd_h5" IO_TYPE=LVCMOS33 PULL_MODE=UP DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC  "sd_g5" G5;
+IO_PORT "sd_g5" IO_TYPE=LVCMOS33 PULL_MODE=UP DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC  "sd_g8" G8;
+IO_PORT "sd_g8" IO_TYPE=LVCMOS33 PULL_MODE=UP DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC  "sd_mosi" G7;
+IO_PORT "sd_mosi" IO_TYPE=LVCMOS33 PULL_MODE=NONE DRIVE=8 BANK_VCCIO=3.3;
+IO_LOC  "sd_miso" H8;
+IO_PORT "sd_miso" IO_TYPE=LVCMOS33 PULL_MODE=UP BANK_VCCIO=3.3;

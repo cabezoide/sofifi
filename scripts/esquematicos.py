@@ -122,6 +122,12 @@ def _svg(m: Modulo) -> str:
         f"proc; opt; clean; write_json {json.relative_to(RAIZ)}"
     )
     subprocess.run([str(YOSYS), "-q", "-p", guion], cwd=RAIZ, check=True, timeout=600)
+    # netlistsvg solo admite puertos input y output y bits 0, 1 y x: un inout
+    # (los pines de la microSD de prueba_sd) se dibuja como salida, y la alta
+    # impedancia «z», como «x».
+    texto = json.read_text(encoding="utf-8")
+    texto = texto.replace('"direction": "inout"', '"direction": "output"').replace('"z"', '"x"')
+    json.write_text(texto, encoding="utf-8")
     subprocess.run(
         ["node", f"--stack-size={PILA_NODE_KB}", str(NETLISTSVG_JS), str(json), "-o", str(svg)],
         check=True,

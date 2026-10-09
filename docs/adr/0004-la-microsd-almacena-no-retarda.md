@@ -34,3 +34,19 @@ Opción 2.
 ## Actualización 2026-10-07 (Fase 01, ADR 0008)
 
 La reserva sube de unos 12 a **14 bloques**: el microcódigo de 54 bit para 2 048 instrucciones ocupa 6 bloques (2 048 × 54 bit), no 4. La memoria de retardo queda en **42 bloques = 43 008 palabras** de 18 bit, unos 0,88 s a 48 828 Hz. La decisión no cambia.
+
+## Actualización 2026-10-09 (Fase 08: pines de la microSD)
+
+La microSD va en un **Sipeed PMOD TF**, en el conector **J6** del Dock (dato de la persona propietaria). `rtl/top/primer25k.cst` añade sus pines. Las bolas salen del esquema del Dock y de los dos esquemas del PMOD TF de Sipeed [V]:
+
+| Señal | PMOD TF v2 | PMOD TF v1 |
+|---|---|---|
+| CS | F5 | G5 |
+| SCK | H5 | G8 |
+| MOSI | G7 | G7 |
+| MISO | H8 | H8 |
+
+- La revisión del módulo no está serigrafiada. El top `prueba_sd` prueba la v2 y, si la tarjeta no arranca, la v1. Los pines de la otra revisión quedan en alta impedancia: en modo SPI son DAT1 y DAT2, que la tarjeta no usa.
+- Ningún `.cst` publicado usa el PMOD TF en J6. La v1 está comprobada contra un `.cst` de Sipeed en J4. La correspondencia de la v2 sale de `.cst` de terceros en J4 [INF].
+- La v1 no tiene pull-ups: MISO lleva `PULL_MODE=UP`.
+- La decisión no cambia: la microSD almacena el banco y no retarda audio.

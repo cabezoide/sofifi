@@ -53,7 +53,7 @@ def con_meta(k: int, **cambios: int) -> bytes:
 
 
 def con_microcodigo(k: int, byte: int, valor: int) -> bytes:
-    """Un byte del microcódigo cambiado y el CRC recalculado: solo vale si el contenido es válido."""
+    """Un byte del microcódigo cambiado y el CRC recalculado (el CRC sigue cuadrando)."""
     inicio = BLOQUE * bloque_ranura(k)
     datos = bytearray(IMAGEN)
     datos[inicio + BLOQUE + byte] = valor

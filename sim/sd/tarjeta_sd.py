@@ -9,6 +9,7 @@ probar los errores del controlador.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 
 import cocotb
@@ -24,8 +25,15 @@ class Variante:
 
 
 class TarjetaSD:
-    def __init__(self, dut: cocotb.handle.HierarchyObject, imagen: bytes, v: Variante) -> None:
-        self.dut, self.imagen, self.v = dut, imagen, v
+    def __init__(
+        self,
+        dut: cocotb.handle.HierarchyObject,
+        imagen: bytes,
+        v: Variante,
+        conectada: Callable[[], bool] = lambda: True,
+    ) -> None:
+        """``conectada`` dice si la tarjeta está en los pines que usa el diseño."""
+        self.dut, self.imagen, self.v, self.conectada = dut, imagen, v, conectada
         self.salida: list[int] = []  # bits pendientes de MISO
         self.comando: list[int] = []
         self.byte, self.bits = 0, 0
@@ -73,7 +81,7 @@ class TarjetaSD:
         self.dut.sd_miso.value = 1
         while True:
             await Edge(self.dut.sd_sck)
-            if int(self.dut.sd_cs_n.value):
+            if int(self.dut.sd_cs_n.value) or not self.conectada():
                 self.bits, self.byte, self.comando = 0, 0, []
                 continue
             if int(self.dut.sd_sck.value):  # subida: lee MOSI
