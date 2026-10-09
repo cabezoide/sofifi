@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/programas.md sha=0b076b220fda estado=al_dia -->
+<!-- i18n: fuente=docs/programas.md sha=f4f3a0032e92 estado=al_dia -->
 <!-- GENERADO por `sofifi catalogo` desde programas/*.sasm. No se edita a mano:
      model/tests/catalogo_test.py lo compara con su generador. -->
 
@@ -127,7 +127,7 @@ The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/co
 | Program | What it does | Knobs | Presets | Instructions | Cycles | Memory |
 |---|---|---|---|---|---|---|
 | `erosion` | A tape loop that wears out on each pass: it loses treble and level and gains wow, grain and saturation. | 0: erosion<br>1: damping<br>2: mix<br>3: modulation<br>4: level<br>5: length | 8 | 161 | 1,043 | 32,769 |
-| `looper` | A 0.67 s micro-looper with overdub, ½×, 2× and reverse. | 0: level<br>1: rate<br>2: direction<br>3: feedback | 8 | 85 | 549 | 32,769 |
+| `looper` | A 0.67 s micro-looper with overdub, ½×, 2× and reverse. | 0: level<br>1: rate<br>2: direction<br>3: feedback | 8 | 87 | 576 | 32,769 |
 | `mosaico` | A 0.67 s sound-on-sound loop that plays at ½×, 1× and 2× at the same time. | 0: lower octave<br>1: level<br>2: mix<br>3: upper octave<br>4: feedback<br>5: diffusion | 8 | 144 | 1,064 | 34,662 |
 | `relevo` | A two-layer freeze: each press freezes a new chord and fades it in over the old one, with bend and vibrato. | 0: time<br>1: tuning<br>2: mix<br>3: vibrato<br>4: tone<br>5: level | 8 | 197 | 1,438 | 34,140 |
 | `resbalon` | A free read head slips over what you just played, from −2× to 2×, with no recording. | 0: rate<br>1: feedback<br>2: mix<br>3: length<br>4: tone<br>5: time | 8 | 119 | 865 | 32,769 |
@@ -150,7 +150,7 @@ A chain joins two programs into one, in series (→) or in parallel (‖), with 
 | Eco y resonancia | `delay` ‖ `resonador` | 870 | 33,749 | 27 | 1 | fits |
 | Flor al revés | `reverse` → `bloom` | 930 | 39,908 | 17 | 1 | fits |
 | Fuzz en la nube | `saturacion` → `cloud` | 1,248 | 42,814 | 16 | 4 | fits |
-| Loop filtrado | `looper` → `filtro` | 991 | 32,769 | 22 | 0 | fits |
+| Loop filtrado | `looper` → `filtro` | 1,018 | 32,769 | 23 | 0 | fits |
 | Octavas en flor | `octava` ‖ `bloom` | 953 | 27,620 | 18 | 2 | fits |
 | Placa que tiembla | `tremolo` → `plate` | 1,109 | 37,439 | 14 | 2 | fits |
 | Shimmer con vibrato | `vibrato` → `shimmer` | 1,243 | 41,664 | 18 | 4 | fits |

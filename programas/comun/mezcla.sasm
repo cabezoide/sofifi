@@ -1,9 +1,10 @@
 ; SPDX-License-Identifier: MIT
 ;
 ; comun/mezcla.sasm — mezcla desde pot2: kwet = pot2 y kdry = 1 − pot2.
-; Necesita los registros kwet y kdry.
+; Necesita los registros kwet y kdry. D = 1,0 cabe en SOF (S2.15): con
+; pot2 = 1, kdry vale 0 y el seco no vuelve invertido.
 
         rdax  pot2, 1.0
         wrax  kwet, -1.0
-        sof   1.0, 0.999
+        sof   1.0, 1.0
         wrax  kdry, 0

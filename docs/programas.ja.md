@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/programas.md sha=0b076b220fda estado=al_dia -->
+<!-- i18n: fuente=docs/programas.md sha=f4f3a0032e92 estado=al_dia -->
 <!-- GENERADO por `sofifi catalogo` desde programas/*.sasm. No se edita a mano:
      model/tests/catalogo_test.py lo compara con su generador. -->
 
@@ -127,7 +127,7 @@
 | プログラム | 働き | ノブ | プリセット | 命令数 | サイクル | メモリー |
 |---|---|---|---|---|---|---|
 | `erosion` | 一周ごとに擦り切れるテープループ。高域とレベルを失い、ワウ、粒子感、飽和を増していきます。 | 0: 侵食<br>1: ダンピング<br>2: ミックス<br>3: モジュレーション<br>4: レベル<br>5: 長さ | 8 | 161 | 1,043 | 32,769 |
-| `looper` | 0.67 秒のマイクロルーパー。オーバーダブ、½×、2×、リバース付き。 | 0: レベル<br>1: 速さ<br>2: 方向<br>3: フィードバック | 8 | 85 | 549 | 32,769 |
+| `looper` | 0.67 秒のマイクロルーパー。オーバーダブ、½×、2×、リバース付き。 | 0: レベル<br>1: 速さ<br>2: 方向<br>3: フィードバック | 8 | 87 | 576 | 32,769 |
 | `mosaico` | 0.67 秒のサウンド・オン・サウンドのループを ½×、1×、2× で同時に再生します。 | 0: 下のオクターブ<br>1: レベル<br>2: ミックス<br>3: 上のオクターブ<br>4: フィードバック<br>5: 拡散 | 8 | 144 | 1,064 | 34,662 |
 | `relevo` | 2 層のフリーズ。踏むたびに新しいコードを固め、前のコードからフェードで入れ替えます。ベンドとビブラート付き。 | 0: タイム<br>1: チューニング<br>2: ミックス<br>3: ビブラート<br>4: トーン<br>5: レベル | 8 | 197 | 1,438 | 34,140 |
 | `resbalon` | 自由な再生ヘッドが今弾いた音の上を −2× から 2× で滑ります。録音は不要です。 | 0: 速さ<br>1: フィードバック<br>2: ミックス<br>3: 長さ<br>4: トーン<br>5: タイム | 8 | 119 | 865 | 32,769 |
@@ -150,7 +150,7 @@
 | Eco y resonancia | `delay` ‖ `resonador` | 870 | 33,749 | 27 | 1 | 収まる |
 | Flor al revés | `reverse` → `bloom` | 930 | 39,908 | 17 | 1 | 収まる |
 | Fuzz en la nube | `saturacion` → `cloud` | 1,248 | 42,814 | 16 | 4 | 収まる |
-| Loop filtrado | `looper` → `filtro` | 991 | 32,769 | 22 | 0 | 収まる |
+| Loop filtrado | `looper` → `filtro` | 1,018 | 32,769 | 23 | 0 | 収まる |
 | Octavas en flor | `octava` ‖ `bloom` | 953 | 27,620 | 18 | 2 | 収まる |
 | Placa que tiembla | `tremolo` → `plate` | 1,109 | 37,439 | 14 | 2 | 収まる |
 | Shimmer con vibrato | `vibrato` → `shimmer` | 1,243 | 41,664 | 18 | 4 | 収まる |

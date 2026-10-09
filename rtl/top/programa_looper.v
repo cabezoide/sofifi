@@ -2,7 +2,7 @@
 //
 // GENERADO por `sofifi tablas` desde programas/looper.sasm.
 // No se edita a mano: model/tests/tablas_test.py compara este fichero con su
-// generador. 85 instrucciones, 85 ciclos del modelo,
+// generador. 87 instrucciones, 87 ciclos del modelo,
 // 1 palabras de memoria.
 `default_nettype none
 
@@ -15,7 +15,7 @@ module programa_looper (
     output wire [59:0] lfo_excursiones,
     output wire        absoluta
 );
-    assign instrucciones   = 12'd85;
+    assign instrucciones   = 12'd87;
     assign palabras        = 16'd1;
     assign lfo_tipos       = 8'h00;
     assign lfo_excursiones = 60'h000000000000000;
@@ -54,7 +54,7 @@ module programa_looper (
             11'd27: palabra = 54'h05100000000000;
             11'd28: palabra = 54'h0e000000000000;
             11'd29: palabra = 54'h04080400000000;
-            11'd30: palabra = 54'h0b002000000017;
+            11'd30: palabra = 54'h0b002000000019;
             11'd31: palabra = 54'h0e000000000000;
             11'd32: palabra = 54'h10040400000000;
             11'd33: palabra = 54'h05140000000000;
@@ -66,49 +66,51 @@ module programa_looper (
             11'd39: palabra = 54'h04000400000000;
             11'd40: palabra = 54'h11040000000000;
             11'd41: palabra = 54'h0e000000000000;
-            11'd42: palabra = 54'h04040400000000;
-            11'd43: palabra = 54'h04100400000000;
-            11'd44: palabra = 54'h05040400000000;
-            11'd45: palabra = 54'h04080c00000000;
-            11'd46: palabra = 54'h0b008000000001;
-            11'd47: palabra = 54'h05040000000000;
-            11'd48: palabra = 54'h0e000000000000;
-            11'd49: palabra = 54'h04040400000000;
-            11'd50: palabra = 54'h0b004000000019;
-            11'd51: palabra = 54'h04080400000000;
-            11'd52: palabra = 54'h05040000000000;
-            11'd53: palabra = 54'h0b002000000016;
-            11'd54: palabra = 54'h0e000000000000;
-            11'd55: palabra = 54'h04c80400000000;
-            11'd56: palabra = 54'h0b00200000000a;
-            11'd57: palabra = 54'h0e000000000000;
-            11'd58: palabra = 54'h04000400000000;
-            11'd59: palabra = 54'h11040000000000;
-            11'd60: palabra = 54'h04040400000000;
-            11'd61: palabra = 54'h040c0400000000;
-            11'd62: palabra = 54'h05040400000000;
-            11'd63: palabra = 54'h09000400038001;
-            11'd64: palabra = 54'h0b004000000005;
-            11'd65: palabra = 54'h0e000000000000;
-            11'd66: palabra = 54'h0b002000000007;
+            11'd42: palabra = 54'h10180400000000;
+            11'd43: palabra = 54'h11080000000000;
+            11'd44: palabra = 54'h04040400000000;
+            11'd45: palabra = 54'h04100400000000;
+            11'd46: palabra = 54'h05040400000000;
+            11'd47: palabra = 54'h04080c00000000;
+            11'd48: palabra = 54'h0b008000000001;
+            11'd49: palabra = 54'h05040000000000;
+            11'd50: palabra = 54'h0e000000000000;
+            11'd51: palabra = 54'h04040400000000;
+            11'd52: palabra = 54'h0b004000000019;
+            11'd53: palabra = 54'h04080400000000;
+            11'd54: palabra = 54'h05040000000000;
+            11'd55: palabra = 54'h0b002000000016;
+            11'd56: palabra = 54'h0e000000000000;
+            11'd57: palabra = 54'h04c80400000000;
+            11'd58: palabra = 54'h0b00200000000a;
+            11'd59: palabra = 54'h0e000000000000;
+            11'd60: palabra = 54'h04000400000000;
+            11'd61: palabra = 54'h11040000000000;
+            11'd62: palabra = 54'h04040400000000;
+            11'd63: palabra = 54'h040c0400000000;
+            11'd64: palabra = 54'h05040400000000;
+            11'd65: palabra = 54'h09000400038001;
+            11'd66: palabra = 54'h0b004000000005;
             11'd67: palabra = 54'h0e000000000000;
-            11'd68: palabra = 54'h04040400000000;
-            11'd69: palabra = 54'h0b002000000004;
-            11'd70: palabra = 54'h0e000000000000;
-            11'd71: palabra = 54'h04040400000000;
-            11'd72: palabra = 54'h05080000000000;
-            11'd73: palabra = 54'h05040000000000;
-            11'd74: palabra = 54'h0e000000000000;
-            11'd75: palabra = 54'h05140000000000;
+            11'd68: palabra = 54'h0b002000000007;
+            11'd69: palabra = 54'h0e000000000000;
+            11'd70: palabra = 54'h04040400000000;
+            11'd71: palabra = 54'h0b002000000004;
+            11'd72: palabra = 54'h0e000000000000;
+            11'd73: palabra = 54'h04040400000000;
+            11'd74: palabra = 54'h05080000000000;
+            11'd75: palabra = 54'h05040000000000;
             11'd76: palabra = 54'h0e000000000000;
-            11'd77: palabra = 54'h04140400000000;
-            11'd78: palabra = 54'h08900000000000;
-            11'd79: palabra = 54'h04800400000000;
-            11'd80: palabra = 54'h05880000000000;
-            11'd81: palabra = 54'h04140400000000;
-            11'd82: palabra = 54'h08900000000000;
-            11'd83: palabra = 54'h04840400000000;
-            11'd84: palabra = 54'h058c0000000000;
+            11'd77: palabra = 54'h05140000000000;
+            11'd78: palabra = 54'h0e000000000000;
+            11'd79: palabra = 54'h04140400000000;
+            11'd80: palabra = 54'h08900000000000;
+            11'd81: palabra = 54'h04800400000000;
+            11'd82: palabra = 54'h05880000000000;
+            11'd83: palabra = 54'h04140400000000;
+            11'd84: palabra = 54'h08900000000000;
+            11'd85: palabra = 54'h04840400000000;
+            11'd86: palabra = 54'h058c0000000000;
             default: palabra = 54'h0;
         endcase
     end

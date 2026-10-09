@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/programas.md sha=0b076b220fda estado=al_dia -->
+<!-- i18n: fuente=docs/programas.md sha=f4f3a0032e92 estado=al_dia -->
 <!-- GENERADO por `sofifi catalogo` desde programas/*.sasm. No se edita a mano:
      model/tests/catalogo_test.py lo compara con su generador. -->
 
@@ -127,7 +127,7 @@
 | 程序 | 作用 | 旋钮 | 预设 | 指令数 | 周期 | 存储器 |
 |---|---|---|---|---|---|---|
 | `erosion` | 每转一圈都会磨损的磁带循环：失去高频和电平，增加 wow、颗粒和饱和。 | 0: 侵蚀<br>1: 阻尼<br>2: 干湿比<br>3: 调制<br>4: 电平<br>5: 时长 | 8 | 161 | 1,043 | 32,769 |
-| `looper` | 0.67 秒微型循环器，带叠录、½×、2× 和反向。 | 0: 电平<br>1: 速度<br>2: 方向<br>3: 反馈 | 8 | 85 | 549 | 32,769 |
+| `looper` | 0.67 秒微型循环器，带叠录、½×、2× 和反向。 | 0: 电平<br>1: 速度<br>2: 方向<br>3: 反馈 | 8 | 87 | 576 | 32,769 |
 | `mosaico` | 0.67 秒的声上叠声循环，同时以 ½×、1× 和 2× 播放。 | 0: 低八度<br>1: 电平<br>2: 干湿比<br>3: 高八度<br>4: 反馈<br>5: 扩散 | 8 | 144 | 1,064 | 34,662 |
 | `relevo` | 双层冻结：每次踩下都会冻结一个新和弦，并淡入替换旧和弦，带推弦和颤音。 | 0: 时间<br>1: 调音<br>2: 干湿比<br>3: 颤音<br>4: 音色<br>5: 电平 | 8 | 197 | 1,438 | 34,140 |
 | `resbalon` | 一个自由读取头在你刚弹过的声音上滑行，从 −2× 到 2×，无需录音。 | 0: 速度<br>1: 反馈<br>2: 干湿比<br>3: 时长<br>4: 音色<br>5: 时间 | 8 | 119 | 865 | 32,769 |
@@ -150,7 +150,7 @@
 | Eco y resonancia | `delay` ‖ `resonador` | 870 | 33,749 | 27 | 1 | 可装入 |
 | Flor al revés | `reverse` → `bloom` | 930 | 39,908 | 17 | 1 | 可装入 |
 | Fuzz en la nube | `saturacion` → `cloud` | 1,248 | 42,814 | 16 | 4 | 可装入 |
-| Loop filtrado | `looper` → `filtro` | 991 | 32,769 | 22 | 0 | 可装入 |
+| Loop filtrado | `looper` → `filtro` | 1,018 | 32,769 | 23 | 0 | 可装入 |
 | Octavas en flor | `octava` ‖ `bloom` | 953 | 27,620 | 18 | 2 | 可装入 |
 | Placa que tiembla | `tremolo` → `plate` | 1,109 | 37,439 | 14 | 2 | 可装入 |
 | Shimmer con vibrato | `vibrato` → `shimmer` | 1,243 | 41,664 | 18 | 4 | 可装入 |
