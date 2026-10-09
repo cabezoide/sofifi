@@ -1,0 +1,251 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: delay
+; resumen: Eco de cinta con freno: al pisar, la cinta se para y el eco cae hasta el silencio.
+; resumen.en: Tape echo with a brake: press the switch and the tape stops, the echo falls to silence.
+; resumen.zh-CN: 带刹车的磁带回声：踩下踏板，磁带停下，回声的音高一路降到无声。
+; resumen.ja: ブレーキ付きテープエコー。踏むとテープが止まり、エコーは無音まで落ちる。
+;
+; frenada.sasm — Eco de cinta de 40 a 620 ms con un freno completo (tape stop).
+; Diseño propio, a partir del principio de los parches de «tape stop» con
+; pedal (parche ZOIA «Tape Pad V2»): un pulsador frena la cinta del eco hasta
+; pararla, y al soltarlo la cinta arranca otra vez.
+;
+; La cinta es la región absoluta (RDAA y WRAA, ADR 0009), un anillo de
+; 32 768 muestras. Una muestra vale u = 2^-15 en un registro de posición.
+;
+;   1. La cabeza de escritura w avanza una muestra cada vez.
+;   2. La cabeza B lee siempre a la distancia de pot0: es el eco normal.
+;   3. La cabeza A lee a la velocidad v = 1 − s. La frenada s sube hacia 1
+;      con sw pisado (rampa lineal, pot3) y baja hacia 0 al soltar (pot4).
+;      Mientras v < 1, A se queda atrás y su tono baja.
+;   4. La salida es B + f·(A − B). El fundido f sube a 1 en 21 ms al pisar.
+;      Con s = 0 y sw suelto, f baja a 0 en 21 ms: A pasa a B sin salto.
+;      Con f = 0, A se coloca sobre B.
+;   5. La cabeza de reproducción da un nivel proporcional a la velocidad: la
+;      salida se multiplica por v. Un paso bajo sigue a v: más lento, más oscuro.
+;   6. Wow y flutter (pot5): dos memorias cortas leídas con CHO.
+;   7. Escribe en la cinta la entrada más el eco por la realimentación, con
+;      saturación suave (CLIP).
+;
+; Si el freno dura mucho, w alcanza a la cabeza A por detrás y la adelanta.
+; En ese cruce, A lee la costura entre lo más nuevo y lo más viejo. Una
+; ventana sobre la distancia g = w − A apaga a A a menos de 1 024 muestras
+; de la costura: el cruce no da un clic.
+;
+; pot0 = tiempo          (0 → 40 ms · 1 → 620 ms)
+; pot1 = realimentación  (0 → un eco · 1 → casi infinita)
+; pot2 = mezcla          (0 → seco · 1 → solo eco)
+; pot3 = frenada         (0 → para en 0,1 s · 1 → para en 3 s)
+; pot4 = arranque        (0 → arranca en 0,05 s · 1 → arranca en 2 s)
+; pot5 = wow y flutter   (0 → nada · 1 → cinta gastada)
+; sw   = freno: mientras se pisa, la cinta frena hasta parar
+
+equ  ew    48                 ; wow: excursión en muestras (≈ 0,35 % de tono a 0,6 Hz)
+equ  ef    2                  ; flutter: excursión en muestras (≈ 0,15 % de tono)
+
+equ  u      reg0              ; una muestra: 2^-15
+equ  w      reg1              ; cabeza de escritura, en [0, 1)
+equ  ra     reg2              ; cabeza A (la que frena), en [−0,92, 1)
+equ  rb     reg3              ; cabeza B = w − db
+equ  db     reg4              ; distancia de B (tiempo de eco)
+equ  s      reg5              ; frenada: 0 = en marcha · ~1 = parada
+equ  v      reg6              ; velocidad: 1 − s
+equ  f      reg7              ; fundido de B a A
+equ  tmp    reg8
+equ  k      reg9              ; coeficiente del paso bajo
+equ  lp     reg10
+equ  hp     reg11
+equ  eco    reg12
+equ  ecow   reg13
+equ  kwet   reg14
+equ  kdry   reg15
+equ  gm     reg16             ; g/2: media distancia de w a A, en [0, 0,5)
+equ  win    reg17             ; ventana de la costura
+
+mem  wow   2*ew + 3
+mem  flu   2*ef + 3
+
+lfo  0  sin  ew
+lfo  1  sin  ef
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 1/32768
+        wrax  u, 0
+        sof   0, 1/512                  ; tmp = 2^-9 para fijar frecuencias finas
+        wrax  tmp, 0
+        rdax  tmp, 1024*0.6/48828.125   ; LFO0 (wow) a 0,6 Hz (rate = 2f/fs)
+        wrax  lfo0_rate, 0
+        rdax  tmp, 1024*5.7/48828.125   ; LFO1 (flutter) a 5,7 Hz
+        wrax  lfo1_rate, 0
+        rdax  pot0, 0.86                ; la distancia empieza ya en su valor
+        sof   1.0, 0.06
+        wrax  db, 0
+inicio:
+; ── mandos ───────────────────────────────────────────────────────────
+include  comun/mezcla.sasm
+        rdax  pot0, 0.86                ; db = 0,06 a 0,92: 1 966 a 30 147 muestras
+        sof   1.0, 0.06
+        rdfx  db, 0.0005                ; deslizamiento de ~40 ms
+        wrax  db, 0
+        rdax  pot5, 1.0
+        wrax  lfo0_depth, 1.0
+        wrax  lfo1_depth, 0
+; ── frenada: rampa lineal de s ───────────────────────────────────────
+        rdax  sw, 1.0
+        skp   zro, soltado
+        clr
+        rdax  pot3, -0.82               ; q = 1 − 0,82·pot3
+        sof   1.0, 0.999
+        wrax  tmp, 1.0
+        mulx  tmp                       ; paso = 2·10^-4·q²: de 0,1 s a 3 s
+        sof   0.0002, 0
+        rdax  s, 1.0
+        wrax  s, 0                      ; satura justo por debajo de 1
+        skp   zro, velocidad
+soltado:
+        clr
+        rdax  pot4, -0.84               ; q = 1 − 0,84·pot4
+        sof   1.0, 0.999
+        wrax  tmp, 1.0
+        mulx  tmp                       ; paso = 4·10^-4·q²: de 0,05 s a 2 s
+        sof   -0.0004, 0
+        rdax  s, 1.0
+        skp   gez, guardar_s
+        clr                             ; no baja de 0
+guardar_s:
+        wrax  s, 0
+velocidad:
+        rdax  s, -1.0
+        sof   1.0, 32767/32768          ; v = 1 − s
+        skp   gez, guardar_v
+        clr
+guardar_v:
+        wrax  v, 0.43
+        sof   1.0, 0.02
+        wrax  k, 0                      ; k = 0,02 + 0,43·v: de 155 Hz a 4,6 kHz
+; ── fundido: sube con freno (sw o s > 0), baja sin él ────────────────
+        rdax  s, 1.0
+        rdax  sw, 1.0
+        skp   zro, f_baja
+        clr
+        rdax  f, 1.0
+        sof   1.0, 1/1024
+        wrax  f, 0                      ; satura justo por debajo de 1
+        skp   zro, cabezas
+f_baja:
+        rdax  f, 1.0                    ; ACC = 0 aquí
+        sof   1.0, -1/1024
+        skp   gez, guardar_f
+        clr
+guardar_f:
+        wrax  f, 0
+; ── cabezas de lectura ───────────────────────────────────────────────
+cabezas:
+        rdax  w, 1.0
+        rdax  db, -1.0
+        wrax  rb, 0                     ; B = w − db (la máscara da la vuelta)
+        rdax  f, 1.0
+        skp   zro, colocar_a
+        clr
+        rdax  s, 1.0
+        mulx  u
+        sof   -1.0, 0
+        rdax  u, 1.0
+        rdax  ra, 1.0                   ; A avanza u·(1 − s)
+        sof   1.0, -0.5
+        skp   neg, a_dentro
+        sof   1.0, -1.0                 ; A ≥ 0,5: resta una vuelta entera
+a_dentro:
+        sof   1.0, 0.5
+        wrax  ra, 0
+        skp   zro, leer
+colocar_a:
+        rdax  rb, 1.0                   ; ACC = 0 aquí
+        wrax  ra, 0
+; ── ventana de la costura: 0 con A sobre w, 1 a más de 1 024 muestras ─
+leer:
+        rdax  w, 0.5
+        rdax  ra, -0.5                  ; (w − A)/2, en (−0,5, 0,96)
+        skp   gez, g_pos
+        sof   1.0, 0.5
+g_pos:
+        sof   1.0, -0.5
+        skp   gez, g_listo
+        sof   1.0, 0.5
+g_listo:
+        wrax  gm, 1.0                   ; g/2 en [0, 0,5)
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0                  ; ×64, satura en 1
+        wrax  win, 0
+        rdax  gm, -1.0
+        sof   1.0, 0.5
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        mulx  win
+        wrax  win, 0
+; ── lectura: B + f·(A·win − B) ───────────────────────────────────────
+        rdaa  rb, 1.0
+        wrax  tmp, 0
+        rdaa  ra, 0.5
+        mulx  win
+        rdax  tmp, -0.5
+        mulx  f
+        rdax  tmp, 0.5                  ; (B + f·(A·win − B))/2, sin saturar
+        sof   1.999, 0
+        mulx  v                         ; nivel proporcional a la velocidad
+; ── cabeza: paso bajo que sigue a v y paso alto suave ────────────────
+        rdax  lp, -1.0
+        mulx  k
+        rdax  lp, 1.0
+        wrax  lp, 1.0
+        rdfx  hp, 0.004
+        wrax  hp, -1.0
+        rdax  lp, 1.0
+; ── wow y flutter ────────────────────────────────────────────────────
+        wra   wow, 0
+        cho   wow + 1, 1.0, lfo0
+        wra   flu, 0
+        cho   flu + 1, 1.0, lfo1
+        wrax  eco, 1.0
+; ── realimentación con saturación y escritura ────────────────────────
+        mulx  pot1
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        sof   2/3, 0                    ; curva_suave(2x/3): pendiente 1, techo ±1
+        clip
+        wraa  w, 0
+; ── w avanza y da la vuelta ──────────────────────────────────────────
+        rdax  w, 1.0
+        sof   1.0, -32767/32768
+        skp   neg, avanzar_w
+        clr
+        wrax  w, 0
+        skp   zro, salida
+avanzar_w:
+        clr
+        rdax  w, 1.0
+        rdax  u, 1.0
+        wrax  w, 0
+; ── salida ───────────────────────────────────────────────────────────
+salida:
+        rdax  eco, 1.0
+        mulx  kwet
+        wrax  ecow, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  ecow, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  ecow, 1.0
+        wrax  dacr, 0

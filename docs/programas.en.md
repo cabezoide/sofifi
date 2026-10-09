@@ -1,10 +1,10 @@
-<!-- i18n: fuente=docs/programas.md sha=0430f9a27658 estado=al_dia -->
+<!-- i18n: fuente=docs/programas.md sha=35fd52e7490f estado=al_dia -->
 <!-- GENERADO por `sofifi catalogo` desde programas/*.sasm. No se edita a mano:
      model/tests/catalogo_test.py lo compara con su generador. -->
 
 # Core programs
 
-75 programs and 600 presets. Each program is a text file in `programas/`; the presets are in `presets/banco.toml`. Program and preset names are in Spanish.
+81 programs and 648 presets. Each program is a text file in `programas/`; the presets are in `presets/banco.toml`. Program and preset names are in Spanish.
 The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/coste.py`). The memory has 43,008 words.
 
 ## Reverb
@@ -48,10 +48,12 @@ The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/co
 | `dados` | Four echoes with random times and octaves; sw rolls the dice again. | 0: time<br>1: feedback<br>2: mix<br>3: probability<br>4: tone<br>5: width | 8 | 239 | 1,620 | 38,260 |
 | `delay` | Clean digital echo from 20 to 690 ms, with tone in the feedback. | 0: time<br>1: feedback<br>2: mix<br>3: tone | 8 | 38 | 309 | 33,749 |
 | `deriva` | An echo that drifts: the time jumps at random and glides to the new value. | 0: time<br>1: depth<br>2: mix<br>3: rate<br>4: glide<br>5: feedback | 8 | 128 | 969 | 33,796 |
+| `dos_ecos` | Two echoes in rhythm, one clean and one tape, that cross and end in a diffuse cloud. | 0: time<br>1: feedback<br>2: mix<br>3: ratio<br>4: balance<br>5: diffusion | 8 | 142 | 1,131 | 41,258 |
 | `ducking` | An echo that moves back while you play and comes back in the silences. | 0: time<br>1: feedback<br>2: mix<br>3: ducking | 8 | 51 | 394 | 33,749 |
 | `eco_casero` | Home-built chip echo: clean at short times; dark, grainy and pumping when you make it longer. | 0: time<br>1: feedback<br>2: mix<br>3: dirt<br>4: modulation<br>5: tone | 8 | 124 | 1,002 | 41,492 |
 | `enjambre` | A swarm of eight short echoes: it closes into a reverb or opens into single echoes. | 0: spread<br>1: feedback<br>2: mix<br>3: diffusion<br>4: tone<br>5: drift | 8 | 199 | 1,377 | 42,820 |
 | `estelar` | Echo with a phaser inside the loop: each repeat sweeps more and the tail swirls. | 0: time<br>1: feedback<br>2: mix<br>3: depth<br>4: rate<br>5: resonance | 8 | 123 | 830 | 33,749 |
+| `frenada` | Tape echo with a brake: press the switch and the tape stops, the echo falls to silence. | 0: time<br>1: feedback<br>2: mix<br>3: brake time<br>4: spin-up time<br>5: wow and flutter | 8 | 156 | 1,199 | 32,876 |
 | `lata` | Oil can echo: short, murky and liquid, with a vibrato tied to the time. | 0: time<br>1: feedback<br>2: mix<br>3: depth<br>4: tone<br>5: oil | 8 | 90 | 768 | 18,931 |
 | `lluvia` | Six irregular echoes that dissolve in allpass filters: a rain of notes. | 0: diffusion<br>1: feedback<br>2: mix | 8 | 46 | 364 | 35,385 |
 | `oscilador` | Echo that oscillates by itself under a level ceiling; the time tunes the pitch. | 0: time<br>1: feedback<br>2: mix<br>3: smoothing<br>4: tone<br>5: level | 8 | 86 | 614 | 24,678 |
@@ -105,6 +107,7 @@ The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/co
 | `lofi` | Fewer samples per second and fewer bits, with aliasing. | 0: sample rate<br>1: bits<br>2: mix<br>3: tone | 8 | 81 | 577 | 1 |
 | `ringmod` | Ring modulator: it multiplies the guitar by a sine; it sounds metallic. | 0: frequency<br>2: mix | 8 | 33 | 236 | 1 |
 | `saturacion` | Overdrive-type saturation: from a warm glow to a thick distortion. | 0: gain<br>1: tone<br>2: mix<br>3: level | 8 | 42 | 277 | 1 |
+| `viento` | Gusts of filtered noise that whistle at random and blow harder when you play. | 0: rate<br>1: resonance<br>2: mix<br>3: sensitivity<br>4: frequency<br>5: level | 8 | 140 | 913 | 3,728 |
 
 ## Filter
 
@@ -121,6 +124,9 @@ The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/co
 | `erosion` | A tape loop that wears out on each pass: it loses treble and level and gains wow, grain and saturation. | 0: erosion<br>1: damping<br>2: mix<br>3: modulation<br>4: level<br>5: length | 8 | 161 | 1,043 | 32,769 |
 | `looper` | A 0.67 s micro-looper with overdub, ½×, 2× and reverse. | 0: level<br>1: rate<br>2: direction<br>3: feedback | 8 | 85 | 549 | 32,769 |
 | `mosaico` | A 0.67 s sound-on-sound loop that plays at ½×, 1× and 2× at the same time. | 0: lower octave<br>1: level<br>2: mix<br>3: upper octave<br>4: feedback<br>5: diffusion | 8 | 144 | 1,064 | 34,662 |
+| `relevo` | A two-layer freeze: each press freezes a new chord and fades it in over the old one, with bend and vibrato. | 0: time<br>1: tuning<br>2: mix<br>3: vibrato<br>4: tone<br>5: level | 8 | 197 | 1,438 | 34,140 |
+| `resbalon` | A free read head slips over what you just played, from −2× to 2×, with no recording. | 0: rate<br>1: feedback<br>2: mix<br>3: length<br>4: tone<br>5: time | 8 | 119 | 865 | 32,769 |
+| `tartamudeo` | Each hard attack captures a short slice and repeats it, softer each time. | 0: threshold<br>1: length<br>2: mix<br>3: repeats<br>4: rate<br>5: tone | 8 | 188 | 1,240 | 32,769 |
 
 ## Chains
 

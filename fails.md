@@ -35,6 +35,7 @@ Se añade una entrada nueva cuando un fallo está diagnosticado y resuelto. Las 
 | F-27 | 08 | Constantes pequeñas, bucles de control y una huella ciega en el lote 10 | resuelto antes de publicar |
 | F-28 | 08 | La velocidad mínima de phaser y filtro era 0, y tres trampas del lote 11 | resuelto |
 | F-29 | 08 | Cinco trampas de modulación y de nivel en el lote 12 | resuelto antes de publicar |
+| F-30 | 08 | Detectores, costuras y límites de lectura en el lote 13 | resuelto antes de publicar |
 
 ---
 
@@ -368,3 +369,22 @@ Las pruebas acústicas de los programas nuevos encontraron cuatro fallos antes d
   - **Síntoma:** cada nota empezaba con un pico de 2,4 veces y, con la realimentación al máximo, el bucle se desbocaba.
   - **Resolución:** los dos usan el mismo detector de media, y el compresor es de realimentación (1/envolvente sin división).
 - **Lección:** un efecto de modulación se prueba en la suma mono y a frecuencias graves, no solo en un canal. Cada estado de un filtro necesita su propio registro.
+
+## F-30 · Detectores, costuras y límites de lectura en el lote 13
+
+- **El detector de ataques de `comun/compuerta.sasm` dispara con los graves** (`tartamudeo`).
+  - **Síntoma:** una nota sostenida de 82 Hz disparaba 12 veces por segundo, y las notas de un arpegio no disparaban.
+  - **Causa:** la envolvente rápida tiene mucho rizado en graves. La regla «rápida > 2·lenta» no se cumple mientras suena la nota anterior.
+  - **Resolución:** un detector de pico con MAXX (caída de unos 30 ms) y la regla «pico > 1,5·lenta + umbral». El bloque común no cambia.
+- **Una cabeza de lectura alcanza la costura del anillo** (`frenada`).
+  - **Síntoma:** con un eco largo y una frenada larga, un clic al soltar el pedal.
+  - **Causa:** la escritura alcanzaba a la cabeza que frena, que leía el punto donde el anillo da la vuelta.
+  - **Resolución:** una ventana apaga esa cabeza cerca de la escritura.
+- **Una velocidad variable pide dividir** (`resbalon`).
+  - **Causa:** la fase de la ventana avanza (1 − v)/L por muestra, y la ISA no divide.
+  - **Resolución:** un recíproco que se corrige en cada muestra: r ← r + 2·(1/32 − L·r).
+- **Un CHO solo llega a 2·E muestras desde su base** (`dos_ecos`).
+  - **Síntoma:** la toma a 1,5 veces el tiempo no llegaba a 0,82 s.
+  - **Causa:** la excursión E de un LFO es como mucho 16 384 muestras.
+  - **Resolución:** dos tomas con dos LFO de base distinta y un fundido entre ellas.
+- **Lección:** un bloque común se valida con notas graves y con arpegios. Cada cabeza de lectura de un anillo necesita su ventana cerca de la escritura.

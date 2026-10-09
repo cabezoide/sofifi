@@ -1,4 +1,4 @@
-<!-- i18n: fuente=demo_examples/README.md sha=52ab78dd5e15 estado=al_dia -->
+<!-- i18n: fuente=demo_examples/README.md sha=74f2450d718c estado=al_dia -->
 # demo_examples
 
 一段合成吉他（Em9 琶音，Karplus-Strong 弦模型）经内核的每个程序处理，使用逐位精确模型。可用 `.venv/bin/python scripts/generar_demos.py` 重新生成，每次得到的音频都相同。
@@ -81,6 +81,12 @@
 | `demo_orilla.ogg` | `orilla` | 速度 0.35 · 深度 0.55 · 干湿比 0.50 · 平滑 0.50 · 低通门 0.80 · 灵敏度 0.50 | 3.00 → 3.80 s |
 | `demo_baldosa.ogg` | `baldosa` | 时间 0.55 · 衰减 0.70 · 干湿比 0.45 · 调制 0.50 · 音色 0.40 · 采样率 0.30 | 2.60 → 3.40 s |
 | `demo_eco_casero.ogg` | `eco_casero` | 时间 0.75 · 反馈 0.55 · 干湿比 0.45 · 脏污 0.80 · 调制 0.30 · 音色 0.30 | — |
+| `demo_relevo.ogg` | `relevo` | 时间 0.60 · 调音 0.50 · 干湿比 0.60 · 颤音 0.35 · 音色 0.60 · 电平 0.70 | 1.00 → 1.10 s, 4.00 → 4.10 s |
+| `demo_frenada.ogg` | `frenada` | 时间 0.50 · 反馈 0.50 · 干湿比 0.45 · 制动时间 0.50 · 启动时间 0.40 · wow 与 flutter 0.40 | 2.50 → 3.50 s |
+| `demo_resbalon.ogg` | `resbalon` | 速度 0.58 · 反馈 0.70 · 干湿比 0.55 · 时长 0.70 · 音色 0.40 · 时间 0.20 | 4.00 → 7.00 s |
+| `demo_tartamudeo.ogg` | `tartamudeo` | 阈值 0.30 · 时长 0.45 · 干湿比 0.50 · 重复次数 0.60 | — |
+| `demo_dos_ecos.ogg` | `dos_ecos` | 时间 0.85 · 反馈 0.60 · 干湿比 0.50 · 比例 0.90 · 平衡 0.50 · 扩散 0.70 | 4.00 → 6.00 s |
+| `demo_viento.ogg` | `viento` | 速度 0.50 · 谐振 0.60 · 干湿比 0.50 · 灵敏度 0.70 · 频率 0.50 · 电平 0.40 | 2.50 → 3.50 s |
 | `demo_cadena_eco_y_muelle.ogg` | Eco y muelle: `delay` → `spring` | pot0 0.55 · pot1 0.40 · pot2 0.35 · pot3 0.60 · pot4 0.40 · pot5 0.00 | — |
 | `demo_cadena_flor_al_reves.ogg` | Flor al revés: `reverse` → `bloom` | pot0 0.60 · pot1 0.40 · pot2 0.50 · pot3 0.80 · pot4 0.55 · pot5 0.40 | — |
 | `demo_cadena_organo_infinito.ogg` | Órgano infinito: `octava` → `infinite` | pot0 0.60 · pot1 0.40 · pot2 0.00 · pot3 0.10 · pot4 0.50 · pot5 0.00 | — |

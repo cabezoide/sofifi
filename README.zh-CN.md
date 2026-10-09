@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=6397a1cc2fda estado=al_dia -->
+<!-- i18n: fuente=README.md sha=022cb6da352e estado=al_dia -->
 # SOFIFI — 集成 FPGA 上的沉浸式波形与滤波合成器
 
 *英文名：Soundscapes On FPGA: Integrated Filters & Impulses；西班牙文名：Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada。*
@@ -16,9 +16,9 @@ FPGA（高云 GW5A-LV25）上。每个效果都是一个文本程序，由自研
 
 | 项目 | 状态 |
 |---|---|
-| 程序库 | 8 个类别中共 **75 个程序与 600 个预设**（阶段 07） |
+| 程序库 | 8 个类别中共 **81 个程序与 648 个预设**（阶段 07） |
 | 同时运行两个效果 | **24 条链**：18 条现在可以装入，6 条等待 SDRAM（`presets/cadenas.toml`，ADR 0013） |
-| 与模型一致 | 75 个程序和 18 条可装入的链在 RTL 中的输出与模型逐位一致（仿真） |
+| 与模型一致 | 81 个程序和 18 条可装入的链在 RTL 中的输出与模型逐位一致（仿真） |
 | 开发板 | plate 和循环器在芯片上以 100 至 125 MHz 运行，输出与模型逐位一致（阶段 07） |
 | 下一步 | 从 microSD 卡加载程序（阶段 08） |
 | 接吉他发声 | **尚未实现**：缺少 I2S 编解码器（阶段 11） |
@@ -123,8 +123,8 @@ make esquematicos  # 重新生成 RTL 的 PDF 原理图
 
 | 文档 | 内容 |
 |---|---|
-| `docs/programas.zh-CN.md` | 75 个程序：作用、旋钮、预设与开销 |
-| `presets/banco.toml` | 600 个预设 |
+| `docs/programas.zh-CN.md` | 81 个程序：作用、旋钮、预设与开销 |
+| `presets/banco.toml` | 648 个预设 |
 | `docs/arquitectura_fpga.zh-CN.md` | FPGA 架构及其在各阶段的变化 |
 | `schematics/` | 每个 RTL 模块的 PDF 原理图，由 Verilog 生成 |
 | `docs/EXTENDING.zh-CN.md` | 如何添加效果、指令、RTL 模块或检查门 |
