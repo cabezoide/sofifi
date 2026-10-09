@@ -15,6 +15,7 @@ por capa y el detalle que un agente necesita para trabajar sin releer todo.
 | Núcleo | `SOFIFI_MUESTRAS=4883 pytest sim/nucleo/nucleo_test.py` (aceptación; la compuerta usa 1 000) · `sofifi tablas` regenera ROM y programas |
 | Programas | `sofifi asm` (ciclos del RTL) · `sofifi catalogo` (docs/programas.md) · `sofifi presets` · `sofifi render --preset NOMBRE` |
 | Cadenas | `sofifi cadenas` (coste y si caben) · `sofifi componer NOMBRE salida.sasm` · `sofifi cadena NOMBRE entrada.wav salida.wav` (ADR 0013) |
+| MicroSD | `sofifi banco salida.img [NOMBRE...]` (sin nombres, todo lo que cabe) · `sofifi banco --leer salida.img` (comprueba CRC y límites; Fase 08) |
 | Placa | `make synth` · `make prog` (SRAM) · `make uart` (lee `/dev/ttyUSB1`) |
 | Núcleo en placa | `make prog TOP=hil_nucleo` · `.venv/bin/python scripts/hil_nucleo.py` · margen: `scripts/margen_reloj.py` (ADR 0011). Looper: `TOP=hil_looper` y `--programa looper` (con `--base hil_looper` en el margen). Cualquier programa o cadena: `make hil HIL=NOMBRE`; todos: `scripts/hil_lote.py --todos` |
 | Primitivas | `make prog TOP=prueba_dsp` y `.venv/bin/python scripts/verificar_primitivas.py dsp` (también `bsram` y `pll`) |
