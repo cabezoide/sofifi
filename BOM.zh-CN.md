@@ -1,4 +1,4 @@
-<!-- i18n: fuente=BOM.md sha=38e7dbe6cc99 estado=al_dia -->
+<!-- i18n: fuente=BOM.md sha=bfc6e2d73f57 estado=al_dia -->
 # BOM · SOFIFI 硬件
 
 这是效果器的采购清单。链接检查日期为 **2026 年 10 月 7 日**：[V] = 页面已加载，商品在售；[?] = 页面无法加载。价格为该日期的价格，不含运费，价格会变动。
@@ -8,8 +8,8 @@
 | # | 物品 | 用途 | 大约价格 | 购买渠道 |
 |---|---|---|---|---|
 | 1 | **Sipeed Tang Primer 25K Dock Kit**（FPGA GW5A-LV25 + 带 USB-C 调试器、3 个 PMOD 和 40 针连接器的 Dock） | 运行 DSP 核心的 FPGA。Dock 上的调试器为 FPGA 编程，同时充当 UART：不需要另外的调试器。 | 29 USD | [V] [SpotPear（Sipeed 经销商）](https://spotpear.com/shop/Sipeed-FPGA-Tang-Primer-25K-Dock-Gowin-PMOD-SDRAM-GW5A-LV25MG121-RISCV-Retro-Game-Open-Source-linux/Tang-Primer-25K-Dock-Kit.html) · [?] [AliExpress 上的 Sipeed 官方店](https://www.aliexpress.us/item/3256806038278266.html) |
-| 2 | **Sipeed PMOD TF-CARD**（microSD 读卡器） | 在 microSD 中保存程序和预设（第 08 阶段）。 | — | 无经过验证的链接。官方资料：[V] [Sipeed wiki](https://wiki.sipeed.com/hardware/en/tang/tang-PMOD/FPGA_PMOD.html)。Sipeed PMOD 套件：[?] [AliExpress](https://www.aliexpress.us/item/1005006265716790.html)。搜索“Sipeed Tang PMOD TF-CARD”。 |
-| 3 | **64 GB microSD**（例如 Samsung EVO Select） | 存储。可容纳数百万个程序。 | 15 USD | [V] [Samsung](https://www.samsung.com/us/computing/memory-storage/memory-cards/evo-select-adapter-microsdxc-64gb-mb-me64ka-am/)（10 月 7 日缺货）。替代品：SanDisk Ultra 64 GB。 |
+| 2 | **Sipeed PMOD TF-CARD**（microSD 读卡器） | 以 SPI 模式读取 microSD（第 08 阶段）。它插在 Dock 的 J6 连接器上。测试 top 能识别它的两个版本。 | — | 无经过验证的链接。官方资料：[V] [Sipeed wiki](https://wiki.sipeed.com/hardware/en/tang/tang-PMOD/FPGA_PMOD.html)。Sipeed PMOD 套件：[?] [AliExpress](https://www.aliexpress.us/item/1005006265716790.html)。搜索“Sipeed Tang PMOD TF-CARD”。 |
+| 3 | **64 GB microSD**（例如 Samsung EVO Select） | 保存程序库。程序库最多占用约 14 MB（1,024 个程序）。必须是 SDHC 或 SDXC 卡：版本 1 的卡无法工作。 | 15 USD | [V] [Samsung](https://www.samsung.com/us/computing/memory-storage/memory-cards/evo-select-adapter-microsdxc-64gb-mb-me64ka-am/)（10 月 7 日缺货）。替代品：SanDisk Ultra 64 GB。 |
 | 4 | **USB-A 转 USB-C 数据线** | 将 Dock 连接到 PC。 | 5 USD | [V] [Adafruit #4474](https://www.adafruit.com/product/4474) |
 
 ## 第 09 至 11 阶段还缺少的物品

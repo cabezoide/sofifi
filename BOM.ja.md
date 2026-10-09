@@ -1,4 +1,4 @@
-<!-- i18n: fuente=BOM.md sha=38e7dbe6cc99 estado=al_dia -->
+<!-- i18n: fuente=BOM.md sha=bfc6e2d73f57 estado=al_dia -->
 # BOM · SOFIFI のハードウェア
 
 ペダルの購入リストです。リンクは **2026 年 10 月 7 日** に確認しました。[V] = ページが表示され、商品が販売中。[?] = ページを表示できなかった。価格はその日のもので、送料を含みません。価格は変わります。
@@ -8,8 +8,8 @@
 | # | 品目 | 用途 | 概算価格 | 購入先 |
 |---|---|---|---|---|
 | 1 | **Sipeed Tang Primer 25K Dock Kit**（FPGA GW5A-LV25 + USB-C デバッガー、3 つの PMOD、40 ピンコネクター付きの Dock） | DSP コアを実行する FPGA。Dock のデバッガーが FPGA に書き込み、UART も兼ねます。別のデバッガーは不要です。 | 29 USD | [V] [SpotPear（Sipeed の販売代理店）](https://spotpear.com/shop/Sipeed-FPGA-Tang-Primer-25K-Dock-Gowin-PMOD-SDRAM-GW5A-LV25MG121-RISCV-Retro-Game-Open-Source-linux/Tang-Primer-25K-Dock-Kit.html) · [?] [AliExpress の Sipeed 公式ストア](https://www.aliexpress.us/item/3256806038278266.html) |
-| 2 | **Sipeed PMOD TF-CARD**（microSD リーダー） | プログラムとプリセットを microSD に保存します（フェーズ 08）。 | — | 確認済みのリンクなし。公式資料：[V] [Sipeed wiki](https://wiki.sipeed.com/hardware/en/tang/tang-PMOD/FPGA_PMOD.html)。Sipeed の PMOD キット：[?] [AliExpress](https://www.aliexpress.us/item/1005006265716790.html)。「Sipeed Tang PMOD TF-CARD」で検索してください。 |
-| 3 | **64 GB の microSD**（例：Samsung EVO Select） | ストレージ。数百万のプログラムが入ります。 | 15 USD | [V] [Samsung](https://www.samsung.com/us/computing/memory-storage/memory-cards/evo-select-adapter-microsdxc-64gb-mb-me64ka-am/)（10 月 7 日に品切れ）。代替品：SanDisk Ultra 64 GB。 |
+| 2 | **Sipeed PMOD TF-CARD**（microSD リーダー） | microSD を SPI モードで読みます（フェーズ 08）。Dock の J6 コネクターに挿します。テスト用トップは 2 つのリビジョンの両方を認識します。 | — | 確認済みのリンクなし。公式資料：[V] [Sipeed wiki](https://wiki.sipeed.com/hardware/en/tang/tang-PMOD/FPGA_PMOD.html)。Sipeed の PMOD キット：[?] [AliExpress](https://www.aliexpress.us/item/1005006265716790.html)。「Sipeed Tang PMOD TF-CARD」で検索してください。 |
+| 3 | **64 GB の microSD**（例：Samsung EVO Select） | プログラムのバンクを保存します。バンクは最大で約 14 MB（1,024 プログラム）を使います。SDHC か SDXC でなければなりません：バージョン 1 のカードは動作しません。 | 15 USD | [V] [Samsung](https://www.samsung.com/us/computing/memory-storage/memory-cards/evo-select-adapter-microsdxc-64gb-mb-me64ka-am/)（10 月 7 日に品切れ）。代替品：SanDisk Ultra 64 GB。 |
 | 4 | **データ通信対応の USB-A to USB-C ケーブル** | Dock を PC に接続します。 | 5 USD | [V] [Adafruit #4474](https://www.adafruit.com/product/4474) |
 
 ## フェーズ 09 から 11 で足りないもの

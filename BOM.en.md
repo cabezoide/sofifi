@@ -1,4 +1,4 @@
-<!-- i18n: fuente=BOM.md sha=38e7dbe6cc99 estado=al_dia -->
+<!-- i18n: fuente=BOM.md sha=bfc6e2d73f57 estado=al_dia -->
 # BOM · SOFIFI hardware
 
 This is the shopping list for the pedal. We checked the links on **7 October 2026**: [V] = the page loaded and the item was for sale; [?] = the page did not load. The prices are from that date, without shipping, and they change.
@@ -8,8 +8,8 @@ This is the shopping list for the pedal. We checked the links on **7 October 202
 | # | Item | Function | Approx. price | Where to buy |
 |---|---|---|---|---|
 | 1 | **Sipeed Tang Primer 25K Dock Kit** (FPGA GW5A-LV25 + Dock with USB-C debugger, 3 PMOD and 40-pin connector) | The FPGA that runs the DSP core. The Dock debugger programs the FPGA and is also the UART: you do not need a different one. | 29 USD | [V] [SpotPear (Sipeed distributor)](https://spotpear.com/shop/Sipeed-FPGA-Tang-Primer-25K-Dock-Gowin-PMOD-SDRAM-GW5A-LV25MG121-RISCV-Retro-Game-Open-Source-linux/Tang-Primer-25K-Dock-Kit.html) · [?] [official Sipeed store on AliExpress](https://www.aliexpress.us/item/3256806038278266.html) |
-| 2 | **Sipeed PMOD TF-CARD** (microSD reader) | Keeps the programs and presets on the microSD (Phase 08). | — | No verified link. Official datasheet: [V] [Sipeed wiki](https://wiki.sipeed.com/hardware/en/tang/tang-PMOD/FPGA_PMOD.html). Sipeed PMOD kit: [?] [AliExpress](https://www.aliexpress.us/item/1005006265716790.html). Search for "Sipeed Tang PMOD TF-CARD". |
-| 3 | **64 GB microSD** (for example, Samsung EVO Select) | Storage. It holds millions of programs. | 15 USD | [V] [Samsung](https://www.samsung.com/us/computing/memory-storage/memory-cards/evo-select-adapter-microsdxc-64gb-mb-me64ka-am/) (sold out on 7 October). Alternative: SanDisk Ultra 64 GB. |
+| 2 | **Sipeed PMOD TF-CARD** (microSD reader) | Reads the microSD in SPI mode (Phase 08). It connects to the J6 connector of the Dock. The test top recognizes its two revisions. | — | No verified link. Official datasheet: [V] [Sipeed wiki](https://wiki.sipeed.com/hardware/en/tang/tang-PMOD/FPGA_PMOD.html). Sipeed PMOD kit: [?] [AliExpress](https://www.aliexpress.us/item/1005006265716790.html). Search for "Sipeed Tang PMOD TF-CARD". |
+| 3 | **64 GB microSD** (for example, Samsung EVO Select) | Keeps the program bank. The bank uses a maximum of approximately 14 MB (1,024 programs). It must be an SDHC or SDXC card: version 1 cards do not work. | 15 USD | [V] [Samsung](https://www.samsung.com/us/computing/memory-storage/memory-cards/evo-select-adapter-microsdxc-64gb-mb-me64ka-am/) (sold out on 7 October). Alternative: SanDisk Ultra 64 GB. |
 | 4 | **USB-A to USB-C data cable** | Connects the Dock to the PC. | 5 USD | [V] [Adafruit #4474](https://www.adafruit.com/product/4474) |
 
 ## What is missing for phases 09 to 11

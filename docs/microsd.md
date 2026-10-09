@@ -2,6 +2,15 @@
 
 El pedal carga sus programas desde la microSD (Fase 08, ADR 0004). La tarjeta no lleva sistema de ficheros: guarda un banco de bloques crudos que escribe `sofifi banco`. El formato está en `model/sofifi/domain/banco.py`.
 
+> **Estado (2026-10-09).** El banco, el controlador SD y el top de prueba funcionan en simulación. Falta la prueba con una tarjeta real.
+
+| Dato del banco | Valor |
+|---|---|
+| Tamaño de bloque | 512 bytes |
+| Bloque 0 | cabecera: magia, versión, número de programas y CRC-32 |
+| Ranura *k* | empieza en el bloque 1 + 28·*k*: 1 bloque de metadatos y 27 de microcódigo |
+| Programas por banco | como máximo 1 024 (unos 14 MB de la tarjeta) |
+
 ## Lo que hace falta
 
 - Una microSD o microSDHC/SDXC. Las tarjetas de la versión 1 (anteriores a 2006) no funcionan.
@@ -56,7 +65,7 @@ El pedal carga sus programas desde la microSD (Fase 08, ADR 0004). La tarjeta no
    .venv/bin/python scripts/prueba_sd.py --imagen build/banco.img
    ```
 
-   El script dice qué revisión del PMOD TF respondió. Para cada ranura dice `igual` o `DISTINTO`.
+   El script dice qué revisión del PMOD TF respondió. Para cada ranura dice `igual` o `DISTINTO`. Con `--ranuras 0 3` prueba solo esas ranuras; con `--puerto`, otro puerto serie.
 
 ## Si algo falla
 
@@ -65,4 +74,7 @@ El pedal carga sus programas desde la microSD (Fase 08, ADR 0004). La tarjeta no
 | `revisión del PMOD TF ninguna`, error `CMD0` | No hay tarjeta, el módulo no está en J6 o un contacto está mal. |
 | error `CMD8` | La tarjeta es de la versión 1. Usa una microSDHC o microSDXC. |
 | motivo `cabecera` | La tarjeta no tiene un banco: repite «Escribir el banco». |
+| error `CMD17` o `token de datos` | La tarjeta no entrega el bloque. Comprueba los contactos y prueba otra tarjeta. |
+| motivo `ranura fuera del banco` | Pediste una ranura que el banco no tiene. Con `--leer`, `sofifi banco` lista las ranuras. |
 | motivo `CRC` | La tarjeta o la imagen están dañadas: vuelve a escribir la imagen. |
+| motivo `CRC en la escritura` | La tarjeta dio otros datos en la segunda lectura. El núcleo queda parado. Repite la carga. |

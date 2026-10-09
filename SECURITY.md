@@ -1,6 +1,6 @@
 # Seguridad
 
-## Modelo de amenazas (versión 0.0)
+## Modelo de amenazas (versión 0.7)
 
 El pedal es un dispositivo **standalone, sin red**. Sus entradas no confiables son:
 
@@ -8,11 +8,15 @@ El pedal es un dispositivo **standalone, sin red**. Sus entradas no confiables s
 2. **MIDI IN** (futuro).
 3. **La señal de audio.** No es un vector de ataque, pero sí de daño: un feedback o un freeze descontrolado puede producir niveles peligrosos para el oído y el equipo.
 
-## Controles previstos
+## Controles
 
-- Parsers de presets y microcódigo con validación de longitud y CRC antes de cargar.
-- Limitador de seguridad fijo en la salida, fuera del microcódigo programable.
-- Saturación explícita en toda la aritmética DSP (ADR 0003).
+| Control | Estado |
+|---|---|
+| Saturación explícita en toda la aritmética DSP (ADR 0003, ADR 0008) | hecho |
+| Banco de microcódigo en la microSD sin sistema de ficheros: bloques crudos, límites de cada campo y CRC-32 antes de cargar (`docs/microsd.md`) | hecho en el modelo y en el RTL; probado en simulación; falta la tarjeta real (Fase 08) |
+| Carga en dos pasadas: el núcleo no se toca hasta validar toda la ranura | hecho, como el anterior |
+| Parser de presets de texto con validación de longitud | previsto (Fase 08, punto 16 de la hoja de ruta) |
+| Limitador de seguridad fijo en la salida, fuera del microcódigo programable | previsto (Fase 12) |
 
 ## Repositorio
 

@@ -19,7 +19,14 @@ Lo comprueba `model/tests/arquitectura_test.py`.
 
 ## Uso
 
-`.venv/bin/sofifi asm PROG.sasm out/prog` genera el microcódigo. `.venv/bin/sofifi render PROG.sasm in.wav out/x.wav --pot pot0=0.5 --freeze 2:6 --cola 4` procesa audio.
+| Orden | Qué hace |
+|---|---|
+| `.venv/bin/sofifi asm PROG.sasm out/prog` | genera el microcódigo y da los ciclos del RTL |
+| `.venv/bin/sofifi render PROG.sasm in.wav out/x.wav --pot pot0=0.5 --freeze 2:6 --cola 4` | procesa audio |
+| `.venv/bin/sofifi cadena NOMBRE in.wav out/x.wav` | procesa audio con una cadena |
+| `.venv/bin/sofifi banco out/banco.img` | escribe el banco de la microSD |
+
+`.venv/bin/sofifi --help` lista todas las órdenes.
 
 ## Reglas de esta capa
 

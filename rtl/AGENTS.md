@@ -1,15 +1,14 @@
 # rtl/AGENTS.md — Verilog sintetizable (tiene precedencia en esta carpeta)
 
-Vacío en la versión 0.0. Las reglas se escriben antes que el código.
-
 ## Reglas
 
 - **Verilog-2005, o el subconjunto de SystemVerilog que aceptan a la vez Gowin
   EDA y Yosys.** Si una construcción solo la acepta una de las dos herramientas,
   no entra.
-- **Un solo dominio de reloj para el audio** (100 MHz; ADR 0005). Los cruces de
-  dominio (por ejemplo, con la SD) usan FIFOs asíncronas y se declaran en el
-  módulo.
+- **Un solo dominio de reloj para el audio** (100 MHz; ADR 0005). Un cruce de
+  dominio, si hace falta, usa una FIFO asíncrona y se declara en el módulo. La
+  SD no lo necesita: SCK sale de un divisor del reloj de 100 MHz y MISO pasa por
+  dos biestables (`rtl/sd/sd_spi.v`).
 - **Ningún bloque DSP sin modelo** en `model/` y sin testbench de comparación en
   `sim/` (ADR 0003).
 - **Cabecera SPDX** en cada fichero; lo portado se declara en `docs/terceros.yaml`.
@@ -65,3 +64,11 @@ Vacío en la versión 0.0. Las reglas se escriben antes que el código.
   arranque, el reset no llega nunca en simulación.
 - Al usar BSRAM en modo 2K×9 hay que tener en cuenta que el bit 9 viene en otro
   bus.
+- **La Fmax de nextpnr depende de la semilla de colocación** (F-33): de 95 a
+  112 MHz con el mismo netlist. `scripts/fpga.sh` reintenta con las semillas 2,
+  3 y 4 (`SEMILLAS_PNR`) si solo falla el reloj.
+- **El PMOD TF tiene dos revisiones** con CS y SCK en pines distintos.
+  `rtl/top/prueba_sd.v` prueba la v2 y después la v1, y deja en alta impedancia
+  los pines de la otra.
+- **Yosys poda los bits que una ROM nunca usa.** Los recursos de un top con una
+  ROM fija (`nucleo_placa`) cambian si cambia una constante del programa (F-33).

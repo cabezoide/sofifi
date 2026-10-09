@@ -4,12 +4,13 @@ Qué hay dentro de la FPGA, cómo se conecta y cómo ha cambiado fase a fase. Se
 
 Chip: **Gowin GW5A-LV25** (Tang Primer 25K): 23 040 LUT4, 56 bloques de BSRAM de 18 Kbit, 28 bloques DSP, 6 PLL.
 
-## Vista general (Fase 06, requisito previo)
+## Vista general (núcleo segmentado, ADR 0014)
 
 ```mermaid
 flowchart LR
     cristal["Cristal 50 MHz"] --> pll["PLL → 100 MHz<br/>(reloj de todo)"]
     rom["ROM del programa"] --> cargador["Cargador"] --> mc["Microcódigo<br/>2 048 × 54 · BSRAM"]
+    sd["microSD<br/>PMOD TF"] -.->|"Fase 08 · prueba_sd"| csd["carga_sd<br/>sd_spi + cargador<br/>CRC-32 en dos pasadas"] -.-> mc
     gen["Generador de muestra<br/>tick cada 2 048 ciclos"] --> sec
 
     subgraph nucleo["Núcleo DSP"]
@@ -39,7 +40,12 @@ flowchart LR
     tx --> pc["PC"]
 ```
 
-Todo corre en **un solo dominio de reloj de 100 MHz** (ADR 0005). La única excepción es el medidor de frecuencia de las pruebas, que cruza al dominio del cristal en código Gray.
+Todo corre en **un solo dominio de reloj de 100 MHz** (ADR 0005). Hay dos casos especiales:
+
+- El medidor de frecuencia de las pruebas cruza al dominio del cristal en código Gray.
+- El reloj de la microSD (SCK) sale de un divisor del reloj de 100 MHz. No es otro dominio: la entrada MISO pasa por dos biestables.
+
+La línea discontinua del diagrama es la carga desde la microSD. Hoy solo existe en el top `prueba_sd`, sin el núcleo (Fase 08, en curso).
 
 ## Bloques
 
@@ -64,18 +70,19 @@ Todo corre en **un solo dominio de reloj de 100 MHz** (ADR 0005). La única exce
 | Programa del HIL | parámetro `PROGRAMA` de `hil_nucleo`; tops `hil_looper` y `hil_programa` | una ROM en lógica | plate por defecto; el looper prueba `RDAA` y `WRAA`; `hil_programa` lleva la ROM que escribe `sofifi rom` (`make hil HIL=NOMBRE`) |
 | Controlador SD | `rtl/sd/sd_spi.v` | ~930 flip-flops y ~390 ALU con el cargador (yosys) | SPI modo 0: 400 kHz al arrancar y 12,5 MHz al leer; bloques de 512 bytes con CMD17; solo lee |
 | Cargador del banco | `rtl/sd/cargador.v`, `rtl/sd/carga_sd.v` | (en la fila anterior) | dos pasadas: comprueba magia, límites, códigos y CRC-32 sin tocar el núcleo; después para el núcleo, escribe y vuelve a comprobar el CRC (Fase 08) |
+| Prueba de la SD | `rtl/top/prueba_sd.v`, `rtl/top/prueba_sd_logica.v` | 2 244 LUT4 y 490 ALU (listones RAT-20 y RAT-21) | prueba la revisión v2 del PMOD TF y después la v1; órdenes `S` (estado) y `L` (cargar una ranura) por la UART; `scripts/prueba_sd.py` compara con el modelo |
 
 ## Presupuesto (top `hil_nucleo`, núcleo segmentado, ADR 0014)
 
 | Recurso | Uso | Notas |
 |---|---|---|
-| LUT4 | 12 405 de 23 040 (54 %) | Según nextpnr, con las LUT de paso de los flip-flops. El núcleo solo (`nucleo_placa`): 11 709. |
+| LUT4 | 12 329 de 23 040 (54 %) | Según nextpnr, con las LUT de paso de los flip-flops (listón RAT-16). El núcleo solo (`nucleo_placa`): 11 982 (RAT-11, F-33). |
 | Flip-flops | 7 145 de 23 040 (31 %) | Unos 3 100 son copias y registros de segmentación (F-15); unos 450, la cola y el retiro. |
 | ALU | 1 318 de 17 280 (8 %) | |
 | BSRAM | 56 de 56 | 38 de retardo + 6 de microcódigo + 12 de captura. En el pedal final, la captura no existe: 42 + 6 = 48. |
 | DSP | 2 de 28 | |
-| Frecuencia | 110 MHz según nextpnr; **125 MHz en la placa sin errores (3 de 3) y 133,3 MHz (2 de 2)**; el looper, 125 MHz (2 de 2) | margen real de al menos un 25 % sobre 100 MHz (ADR 0011) |
-| Ciclos por muestra | plate 783, hall 856, cloud 900, shimmer 1 030, sostenido 1 156, chorale 1 185; la cadena más cara, 1 270 de 2 048 | modelo de tiempos exacto en `model/sofifi/domain/coste.py` |
+| Frecuencia | 110 MHz según nextpnr; **125 MHz en la placa sin errores (3 de 3) y 133,3 MHz (2 de 2)**; el looper, 125 MHz (2 de 2) | margen real de al menos un 25 % sobre 100 MHz (ADR 0011). La cifra de nextpnr cambia con la semilla de colocación (F-33). |
+| Ciclos por muestra | plate 790, hall 863, cloud 907, shimmer 1 037, sostenido 1 190, chorale 1 192; el programa más caro, `dados`, 1 620; la cadena más cara que cabe, «Cuerdas en ola», 1 288 de 2 048 | `sofifi asm` y `sofifi cadenas`; modelo de tiempos exacto en `model/sofifi/domain/coste.py` |
 
 ## Reglas de diseño que salen de los fallos
 
@@ -89,6 +96,8 @@ Todo corre en **un solo dominio de reloj de 100 MHz** (ADR 0005). La única exce
 - **Sumas en paralelo antes que en serie.** Si una corrección depende de un signo, se calculan todas las opciones y el signo elige (F-15).
 - **Las ROM van en lógica**, con `rom_style` en el `case`, para no caer en BSRAM `SPX9` (F-09).
 - **El timing se mide en la placa** (ADR 0011): nextpnr es optimista en un factor de 1,45 a 1,5 en el GW5A. Para el 20 % de margen hace falta que nextpnr dé unos 150 MHz o más, y medirlo. Si falla, `margen_reloj.py --traza` dice qué instrucción.
+- **Un fallo de reloj de nextpnr tras un cambio que no toca la lógica es ruido de colocación.** Con el mismo netlist, `nucleo_placa` dio de 95,41 a 112,10 MHz según la semilla. `scripts/fpga.sh` prueba las semillas 2, 3 y 4 si solo falla el reloj (F-33).
+- **La SD no abre otro dominio de reloj.** SCK sale de un divisor del reloj de 100 MHz y MISO pasa por dos biestables. Por eso el reloj rápido de la SD no pasa de 12,5 MHz (`DIV_RAPIDO` = 4).
 
 ## Historia por fase
 
@@ -184,6 +193,16 @@ Se añaden los envoltorios del PLL (`pll_100`), del DSP (`mult_27x18`) y de la B
 | `RDAA` | 27 | 19 |
 
 Una instrucción que lee el ACC espera 7 ciclos desde el final de la anterior que lo escribe. En media, los programas gastan 1,6 veces menos ciclos. Las parejas en serie que caben pasan de 790 a 1 312 de 2 550 (con los registros compartidos, ADR 0013).
+
+### Fase 08 · Carga de programas desde la microSD (en curso)
+
+La tarjeta no lleva sistema de ficheros: guarda un banco de bloques crudos que escribe `sofifi banco` (`docs/microsd.md`).
+
+- **Formato** (`model/sofifi/domain/banco.py`): bloque 0 de cabecera; la ranura *k* empieza en el bloque 1 + 28·*k*. Cada ranura tiene 1 bloque de metadatos y 27 de microcódigo. El banco admite hasta 1 024 programas.
+- **`sd_spi`:** arranca la tarjeta en modo SPI con CMD0, CMD8, ACMD41 y CMD58 a 400 kHz. Después lee bloques de 512 bytes con CMD17 a 12,5 MHz. Solo acepta tarjetas de la versión 2, como todas las SDHC y SDXC. No escribe en la tarjeta.
+- **`cargador`:** hace dos pasadas. La primera comprueba la cabecera, los límites, cada código de operación, los saltos y los dos CRC-32, sin tocar el núcleo. La segunda para el núcleo, escribe el microcódigo y vuelve a comprobar el CRC. Si la segunda falla, el núcleo queda parado: mejor silencio que un programa a medias.
+- **`prueba_sd`:** el top de prueba, sin el núcleo. El PMOD TF tiene dos revisiones con CS y SCK en pines distintos; el top prueba la v2 y después la v1.
+- **Estado:** el modelo, el RTL y el top dan los mismos datos en simulación, con un modelo de tarjeta en cocotb (`sim/sd/tarjeta_sd.py`). **Falta la prueba con la tarjeta real.**
 
 ### Próximo cambio previsto
 

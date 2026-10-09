@@ -1,6 +1,6 @@
 # Fase 08 — Carga de programas desde la microSD
 
-> Planificada: no está en el control hasta cerrarse.
+> **En curso** (2026-10-09). No está en el control hasta cerrarse. Los tres PRs del plan están hechos y probados en simulación. **Falta la prueba con la tarjeta real** (sección «Estado»).
 
 ## Objetivo
 
@@ -32,20 +32,37 @@ Un sistema de ficheros FAT en RTL es caro y su parser es superficie de ataque (C
     - 27 bloques de microcódigo: 2 048 × 54 bit = 13 824 bytes, exactamente 27 bloques, con las palabras empaquetadas.
   - El cargador solo lee los bloques que ocupa el programa: el plate, de unas 100 instrucciones, cabe en 2 bloques de microcódigo.
   - La posición se deduce del índice y nunca se lee de la tarjeta. El cargador no sigue punteros escritos por terceros; solo comprueba `k < número de programas ≤ máximo` y la longitud declarada.
-  - Capacidad: unos 4 millones de ranuras en 64 GB. El límite de la biblioteca no es la tarjeta.
-- **Herramienta:** `sofifi banco programas/*.sasm salida.img`, y una guía para escribir la imagen con `dd`.
-- **RTL:** `rtl/sd/sd_spi.v` y `rtl/sd/cargador.v`, que verifica antes de escribir.
+  - Capacidad: el banco admite hasta 1 024 programas (`MAX_PROGRAMAS`), unos 14 MB. Una tarjeta de 64 GB tendría sitio para unos 4 millones de ranuras: el límite de la biblioteca no es la tarjeta.
+- **Herramienta:** `sofifi banco salida.img [NOMBRE...]`. Sin nombres, el banco lleva todos los programas y cadenas que caben. `sofifi banco --leer salida.img` comprueba una imagen. La guía para escribirla con `dd` está en `docs/microsd.md`.
+- **RTL:**
+  - `rtl/sd/sd_spi.v`: arranque SPI (CMD0, CMD8, ACMD41, CMD58) a 400 kHz y lectura de bloques con CMD17 a 12,5 MHz. Solo tarjetas de la versión 2.
+  - `rtl/sd/cargador.v`: dos pasadas. La primera valida sin tocar el núcleo; la segunda para el núcleo, escribe y vuelve a comprobar el CRC.
+  - `rtl/sd/carga_sd.v`: une los dos módulos.
+  - `rtl/top/prueba_sd.v`: top de prueba sin el núcleo. Prueba las dos revisiones del PMOD TF (v2 y v1) y responde por la UART a `scripts/prueba_sd.py`.
 
 ## Plan de PRs
 
-1. Formato y herramienta en el modelo, con property tests de que un banco corrupto se rechaza.
-2. RTL SD SPI con un modelo de tarjeta en cocotb.
-3. Prueba en hardware con la microSD de 64 GB, informando por UART.
+| PR | Contenido | Estado |
+|---|---|---|
+| 1 | Formato y herramienta en el modelo, con property tests de que un banco corrupto se rechaza | hecho (a668f59) |
+| 2 | RTL SD SPI y cargador, con un modelo de tarjeta en cocotb (`sim/sd/tarjeta_sd.py`) | hecho (bdbf577) |
+| 3 | Top `prueba_sd` para la tarjeta real en el PMOD TF (J6), con informe por la UART | hecho en simulación (1eef7de); falta la tarjeta real |
 
 ## Criterios de aceptación
 
-- Un banco corrupto (bit volteado o longitud fuera de rango) se rechaza en el modelo y en el RTL.
-- En la placa, el cargador lee la cabecera de la tarjeta real.
+| Criterio | Estado |
+|---|---|
+| Un banco corrupto (bit volteado o longitud fuera de rango) se rechaza en el modelo y en el RTL. | cumplido en el modelo y en la simulación del RTL |
+| En la placa, el cargador lee la cabecera de la tarjeta real. | pendiente |
+
+## Estado
+
+Para cerrar la fase falta la prueba en la placa:
+
+1. Escribir el banco en la microSD de 64 GB (`docs/microsd.md`).
+2. Cargar el top con `make prog TOP=prueba_sd`.
+3. Ejecutar `.venv/bin/python scripts/prueba_sd.py --imagen build/banco.img`.
+4. Anotar el resultado: una medición en `docs/mediciones.yaml` y, si algo falla, una entrada en `fails.md`.
 
 ## Ampliaciones de la Fase 03
 
