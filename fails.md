@@ -30,6 +30,7 @@ Se añade una entrada nueva cuando un fallo está diagnosticado y resuelto. Las 
 | F-22 | 07 | El shoegaze sonaba cinco veces más fuerte que el plate | resuelto antes de publicar |
 | F-23 | 07 | Una cadena con saturación sonaba seis veces más fuerte que el plate | resuelto antes de publicar |
 | F-24 | 07 | La cola del microcódigo se llevó la última BSRAM | resuelto |
+| F-25 | 08 | Tres fallos del controlador SD, encontrados en simulación | resuelto antes de la placa |
 
 ---
 
@@ -268,3 +269,16 @@ Se añade una entrada nueva cuando un fallo está diagnosticado y resuelto. Las 
 - **Causa raíz:** Yosys convierte en BSRAM cualquier array con lectura por índice, aunque sea pequeño. En `hil_nucleo` la captura ya usa todas las BSRAM libres.
 - **Resolución:** `(* ram_style = "logic" *)` en la cola. Después, la segunda vuelta la bajó a 4 palabras.
 - **Lección:** un array nuevo en el RTL lleva su `ram_style` desde el principio. En este chip, cada BSRAM es memoria de retardo.
+
+## F-25 · Tres fallos del controlador SD, encontrados en simulación
+
+- **Síntoma 1:** el cargador rechazaba todos los bancos con el motivo «cabecera».
+  - **Causa:** la magia se comparaba con la cadena `"SOFIFI\0\0"`. En Verilog, `\0` no es un escape fiable, y la constante no valía los 8 bytes esperados.
+  - **Resolución:** la magia es la constante `64'h534F_4649_4649_0000`.
+- **Síntoma 2:** la lectura de bloques fallaba con el motivo «token» a 25 MHz, y funcionaba a reloj lento.
+  - **Causa:** MISO pasa por dos biestables de sincronización. Con medio periodo de SCK de 2 ciclos, el bit llegaba tarde a la muestra.
+  - **Resolución:** el medio periodo rápido es de 4 ciclos como mínimo (12,5 MHz). El parámetro lo dice.
+- **Síntoma 3:** el programa llegaba bien al núcleo, pero con la memoria y los LFO de otro.
+  - **Causa:** los bloques de microcódigo sobrescribían los bytes guardados de los metadatos.
+  - **Resolución:** solo se guardan los bytes de la cabecera y de los metadatos.
+- **Lección:** el modelo de tarjeta en cocotb y las imágenes de `sofifi banco` encontraron los tres fallos antes de la placa. Las constantes de varios bytes van en hexadecimal.

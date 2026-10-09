@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/arquitectura_fpga.md sha=4bbfca227440 estado=al_dia -->
+<!-- i18n: fuente=docs/arquitectura_fpga.md sha=5656d20a0cf5 estado=al_dia -->
 # FPGA architecture
 
 This document tells what is inside the FPGA, how the parts connect and how the design changed in each phase. We update it when we close each phase and in each PR that changes FPGA blocks. `SBOM.en.md` gives a simple explanation of each component. `fails.en.md` gives the failures that made the design.
@@ -63,6 +63,8 @@ All the logic runs in **one clock domain of 100 MHz** (ADR 0005 (Spanish)). Ther
 | Program loader | `rtl/comun/carga_programa.v` | ~30 LUT | instructions + 1 cycles |
 | Core trace (HIL only) | `rtl/top/hil_nucleo.v`, command `T` | ~150 flip-flops | records (pc, ACC) in the capture |
 | HIL program | `PROGRAMA` parameter of `hil_nucleo`; tops `hil_looper` and `hil_programa` | one ROM in logic | plate by default; the looper tests `RDAA` and `WRAA`; `hil_programa` has the ROM that `sofifi rom` writes (`make hil HIL=NAME`) |
+| SD controller | `rtl/sd/sd_spi.v` | ~930 flip-flops and ~390 ALU with the loader (yosys) | SPI mode 0: 400 kHz at start and 12.5 MHz to read; 512-byte blocks with CMD17; read only |
+| Bank loader | `rtl/sd/cargador.v`, `rtl/sd/carga_sd.v` | (in the row above) | two passes: it checks the magic value, the limits, the codes and the CRC-32 without a change to the core; then it stops the core, writes and checks the CRC again (Phase 08) |
 
 ## Budget (top `hil_nucleo`, pipelined core, ADR 0014)
 

@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/arquitectura_fpga.md sha=4bbfca227440 estado=al_dia -->
+<!-- i18n: fuente=docs/arquitectura_fpga.md sha=5656d20a0cf5 estado=al_dia -->
 # FPGA アーキテクチャ
 
 この文書は、FPGA の中に何があるか、各部がどうつながるか、設計がフェーズごとにどう変わったかを示します。各フェーズの終了時と、FPGA のブロックを変える各 PR で更新します。各コンポーネントの簡単な説明は `SBOM.ja.md` にあります。設計を形づくった障害は `fails.ja.md` にあります。
@@ -63,6 +63,8 @@ flowchart LR
 | プログラムローダー | `rtl/comun/carga_programa.v` | ~30 LUT | 命令数 + 1 サイクル |
 | コアのトレース（HIL のみ） | `rtl/top/hil_nucleo.v`、コマンド `T` | ~150 フリップフロップ | (pc, ACC) をキャプチャに記録 |
 | HIL のプログラム | `hil_nucleo` のパラメーター `PROGRAMA`、トップ `hil_looper` と `hil_programa` | ロジック上の ROM 1 つ | 既定は plate。looper で `RDAA` と `WRAA` を試験。`hil_programa` は `sofifi rom` が書く ROM を使う（`make hil HIL=名前`） |
+| SD コントローラー | `rtl/sd/sd_spi.v` | ローダーと合わせて約 930 フリップフロップと約 390 ALU（yosys） | SPI モード 0：起動時 400 kHz、読み出し時 12.5 MHz。CMD17 で 512 バイトのブロック。読み出しのみ |
+| バンクのローダー | `rtl/sd/cargador.v`、`rtl/sd/carga_sd.v` | （前の行に含む） | 2 回：まずコアに触れずにマジック値、範囲、命令コード、CRC-32 を確認。次にコアを止めて書き込み、CRC をもう一度確認（フェーズ 08） |
 
 ## リソース予算（トップ `hil_nucleo`、パイプライン化したコア、ADR 0014）
 

@@ -1,4 +1,4 @@
-<!-- i18n: fuente=fails.md sha=f7dcf11c7376 estado=al_dia -->
+<!-- i18n: fuente=fails.md sha=2e3f3b481e49 estado=al_dia -->
 # Failures and their resolution
 
 This is the record of the failures found in the project. Each entry has a symptom, a diagnosis, a root cause, a resolution and a lesson. The record helps us not to repeat them. It also explains why the design is as it is.
@@ -31,6 +31,7 @@ Add a new entry when a failure is diagnosed and resolved. Do not rewrite the ent
 | F-22 | 07 | The shoegaze program was five times louder than the plate | resolved before publication |
 | F-23 | 07 | A chain with saturation was six times louder than the plate | resolved before publication |
 | F-24 | 07 | The microcode queue took the last BSRAM | resolved |
+| F-25 | 08 | Three failures of the SD controller, found in simulation | resolved before the board |
 
 ---
 
@@ -269,3 +270,16 @@ Add a new entry when a failure is diagnosed and resolved. Do not rewrite the ent
 - **Root cause:** Yosys changes each array that is read by index into BSRAM, also a small array. In `hil_nucleo`, the capture already uses all the free BSRAM.
 - **Resolution:** `(* ram_style = "logic" *)` on the queue. Then the second pass made the queue smaller: 4 words.
 - **Lesson:** give each new array in the RTL its `ram_style` from the start. In this chip, each BSRAM is delay memory.
+
+## F-25 · Three failures of the SD controller, found in simulation
+
+- **Symptom 1:** the loader rejected all banks with the reason «header».
+  - **Cause:** the magic value was compared with the string `"SOFIFI\0\0"`. In Verilog, `\0` is not a reliable escape, and the constant did not have the 8 expected bytes.
+  - **Resolution:** the magic value is the constant `64'h534F_4649_4649_0000`.
+- **Symptom 2:** block reads failed with the reason «token» at 25 MHz, and worked at the slow clock.
+  - **Cause:** MISO goes through two synchronisation flip-flops. With a half period of SCK of 2 cycles, the bit arrived late for the sample.
+  - **Resolution:** the fast half period is a minimum of 4 cycles (12.5 MHz). The parameter tells this.
+- **Symptom 3:** the program arrived correctly at the core, but with the memory and the LFOs of a different program.
+  - **Cause:** the microcode blocks wrote over the saved bytes of the metadata.
+  - **Resolution:** the loader saves only the bytes of the header and of the metadata.
+- **Lesson:** the card model in cocotb and the images from `sofifi banco` found the three failures before the board. Write constants of more than one byte in hexadecimal.
