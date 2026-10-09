@@ -1,16 +1,17 @@
-<!-- i18n: fuente=docs/arquitectura_fpga.md sha=5656d20a0cf5 estado=al_dia -->
+<!-- i18n: fuente=docs/arquitectura_fpga.md sha=4c2e37123255 estado=al_dia -->
 # FPGA architecture
 
 This document tells what is inside the FPGA, how the parts connect and how the design changed in each phase. We update it when we close each phase and in each PR that changes FPGA blocks. `SBOM.en.md` gives a simple explanation of each component. `fails.en.md` gives the failures that made the design.
 
 Chip: **Gowin GW5A-LV25** (Tang Primer 25K): 23,040 LUT4, 56 BSRAM blocks of 18 Kbit, 28 DSP blocks, 6 PLLs.
 
-## Overview (Phase 06, prerequisite)
+## Overview (pipelined core, ADR 0014)
 
 ```mermaid
 flowchart LR
     cristal["Crystal 50 MHz"] --> pll["PLL → 100 MHz<br/>(clock for all)"]
     rom["Program ROM"] --> cargador["Loader"] --> mc["Microcode<br/>2,048 × 54 · BSRAM"]
+    sd["microSD<br/>PMOD TF"] -.->|"Phase 08 · prueba_sd"| csd["carga_sd<br/>sd_spi + loader<br/>CRC-32 in two passes"] -.-> mc
     gen["Sample generator<br/>tick every 2,048 cycles"] --> sec
 
     subgraph nucleo["DSP core"]
@@ -40,7 +41,12 @@ flowchart LR
     tx --> pc["PC"]
 ```
 
-All the logic runs in **one clock domain of 100 MHz** (ADR 0005 (Spanish)). There is only one exception: the frequency meter of the tests. It crosses to the crystal domain in Gray code.
+All the logic runs in **one clock domain of 100 MHz** (ADR 0005 (Spanish)). There are two special cases:
+
+- The frequency meter of the tests crosses to the crystal domain in Gray code.
+- The microSD clock (SCK) comes from a divider of the 100 MHz clock. It is not a different domain: the MISO input goes through two flip-flops.
+
+The dashed line in the diagram is the load from the microSD. Today it exists only in the `prueba_sd` top, without the core (Phase 08, in progress).
 
 ## Blocks
 
@@ -65,18 +71,19 @@ All the logic runs in **one clock domain of 100 MHz** (ADR 0005 (Spanish)). Ther
 | HIL program | `PROGRAMA` parameter of `hil_nucleo`; tops `hil_looper` and `hil_programa` | one ROM in logic | plate by default; the looper tests `RDAA` and `WRAA`; `hil_programa` has the ROM that `sofifi rom` writes (`make hil HIL=NAME`) |
 | SD controller | `rtl/sd/sd_spi.v` | ~930 flip-flops and ~390 ALU with the loader (yosys) | SPI mode 0: 400 kHz at start and 12.5 MHz to read; 512-byte blocks with CMD17; read only |
 | Bank loader | `rtl/sd/cargador.v`, `rtl/sd/carga_sd.v` | (in the row above) | two passes: it checks the magic value, the limits, the codes and the CRC-32 without a change to the core; then it stops the core, writes and checks the CRC again (Phase 08) |
+| SD test | `rtl/top/prueba_sd.v`, `rtl/top/prueba_sd_logica.v` | 2,244 LUT4 and 490 ALU (ratchets RAT-20 and RAT-21) | tests revision v2 of the PMOD TF and then v1; commands `S` (status) and `L` (load a slot) through the UART; `scripts/prueba_sd.py` compares with the model |
 
 ## Budget (top `hil_nucleo`, pipelined core, ADR 0014)
 
 | Resource | Use | Notes |
 |---|---|---|
-| LUT4 | 12,405 of 23,040 (54 %) | Value from nextpnr. It includes the pass-through LUTs of the flip-flops. The core alone (`nucleo_placa`): 11,709. |
+| LUT4 | 12,329 of 23,040 (54 %) | Value from nextpnr. It includes the pass-through LUTs of the flip-flops (ratchet RAT-16). The core alone (`nucleo_placa`): 11,982 (RAT-11, F-33). |
 | Flip-flops | 7,145 of 23,040 (31 %) | Approximately 3,100 are copies and pipeline registers (F-15); approximately 450 are the queue and the retire line. |
 | ALU | 1,318 of 17,280 (8 %) | |
 | BSRAM | 56 of 56 | 38 for delay + 6 for microcode + 12 for capture. The final pedal has no capture: 42 + 6 = 48. |
 | DSP | 2 of 28 | |
-| Frequency | 110 MHz from nextpnr; **125 MHz on the board without errors (3 of 3) and 133.3 MHz (2 of 2)**; the looper, 125 MHz (2 of 2) | real margin of at least 25 % above 100 MHz (ADR 0011, Spanish) |
-| Cycles per sample | plate 783, hall 856, cloud 900, shimmer 1,030, sostenido 1,156, chorale 1,185; the most expensive chain, 1,270 of 2,048 | exact timing model in `model/sofifi/domain/coste.py` |
+| Frequency | 110 MHz from nextpnr; **125 MHz on the board without errors (3 of 3) and 133.3 MHz (2 of 2)**; the looper, 125 MHz (2 of 2) | real margin of at least 25 % above 100 MHz (ADR 0011, Spanish). The nextpnr value changes with the placement seed (F-33). |
+| Cycles per sample | plate 790, hall 863, cloud 907, shimmer 1,037, sostenido 1,190, chorale 1,192; the most expensive program, `dados`, 1,620; the most expensive chain that fits, "Cuerdas en ola", 1,288 of 2,048 | `sofifi asm` and `sofifi cadenas`; exact timing model in `model/sofifi/domain/coste.py` |
 
 ## Design rules from the failures
 
@@ -90,6 +97,8 @@ All the logic runs in **one clock domain of 100 MHz** (ADR 0005 (Spanish)). Ther
 - **Parallel additions before serial additions.** If a correction depends on a sign, calculate all the options and let the sign select one (F-15).
 - **ROMs go in logic**, with `rom_style` in the `case`. This prevents BSRAM `SPX9` (F-09).
 - **Measure the timing on the board** (ADR 0011): nextpnr is optimistic by a factor of 1.45 to 1.5 on the GW5A. For a 20 % margin, nextpnr must give approximately 150 MHz or more, and you must measure it. If it fails, `margen_reloj.py --traza` tells which instruction.
+- **A nextpnr clock failure after a change that does not touch the logic is placement noise.** With the same netlist, `nucleo_placa` gave 95.41 to 112.10 MHz, as a function of the seed. If only the clock fails, `scripts/fpga.sh` tries the seeds 2, 3 and 4 (F-33).
+- **The SD does not open a different clock domain.** SCK comes from a divider of the 100 MHz clock, and MISO goes through two flip-flops. Thus the fast SD clock is a maximum of 12.5 MHz (`DIV_RAPIDO` = 4).
 
 ## History by phase
 
@@ -185,6 +194,16 @@ We add the wrappers for the PLL (`pll_100`), the DSP (`mult_27x18`) and the infe
 | `RDAA` | 27 | 19 |
 
 An instruction that reads the ACC waits 7 cycles after the end of the previous instruction that writes it. On average, the programs use 1.6 times fewer cycles. The series pairs that fit increase from 790 to 1,312 of 2,550 (with the shared registers, ADR 0013, Spanish).
+
+### Phase 08 · Program load from the microSD (in progress)
+
+The card has no file system: it keeps a bank of raw blocks that `sofifi banco` writes (`docs/microsd.md`, Spanish).
+
+- **Format** (`model/sofifi/domain/banco.py`): block 0 is the header; slot *k* starts at block 1 + 28·*k*. Each slot has 1 metadata block and 27 microcode blocks. The bank holds up to 1,024 programs.
+- **`sd_spi`:** starts the card in SPI mode with CMD0, CMD8, ACMD41 and CMD58 at 400 kHz. Then it reads 512-byte blocks with CMD17 at 12.5 MHz. It accepts only version 2 cards, for example all SDHC and SDXC cards. It does not write to the card.
+- **`cargador`:** makes two passes. The first pass checks the header, the limits, each operation code, the jumps and the two CRC-32 values, without a change to the core. The second pass stops the core, writes the microcode and checks the CRC again. If the second pass fails, the core stays stopped: silence is better than half a program.
+- **`prueba_sd`:** the test top, without the core. The PMOD TF has two revisions with CS and SCK on different pins; the top tests v2 and then v1.
+- **Status:** the model, the RTL and the top give the same data in simulation, with a card model in cocotb (`sim/sd/tarjeta_sd.py`). **The test with the real card is not done yet.**
 
 ### Next planned change
 

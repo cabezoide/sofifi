@@ -1,16 +1,17 @@
-<!-- i18n: fuente=docs/arquitectura_fpga.md sha=5656d20a0cf5 estado=al_dia -->
+<!-- i18n: fuente=docs/arquitectura_fpga.md sha=4c2e37123255 estado=al_dia -->
 # FPGA 架构
 
 本文说明 FPGA 内部有什么、各部分如何连接，以及设计在各阶段如何变化。每个阶段结束时更新本文；每个改动 FPGA 模块的 PR 也要更新本文。各组件的简明说明见 `SBOM.zh-CN.md`；塑造了设计的故障见 `fails.zh-CN.md`。
 
 芯片：**Gowin GW5A-LV25**（Tang Primer 25K）：23,040 个 LUT4，56 个 18 Kbit 的 BSRAM 块，28 个 DSP 块，6 个 PLL。
 
-## 总览（第 06 阶段，前置条件）
+## 总览（流水线核心，ADR 0014，西班牙语）
 
 ```mermaid
 flowchart LR
     cristal["晶振 50 MHz"] --> pll["PLL → 100 MHz<br/>(全局时钟)"]
     rom["程序 ROM"] --> cargador["加载器"] --> mc["微码<br/>2,048 × 54 · BSRAM"]
+    sd["microSD<br/>PMOD TF"] -.->|"第 08 阶段 · prueba_sd"| csd["carga_sd<br/>sd_spi + cargador<br/>两遍 CRC-32"] -.-> mc
     gen["样本发生器<br/>每 2,048 周期一个 tick"] --> sec
 
     subgraph nucleo["DSP 核心"]
@@ -40,7 +41,12 @@ flowchart LR
     tx --> pc["PC"]
 ```
 
-所有逻辑都运行在**单一的 100 MHz 时钟域**中（ADR 0005（西班牙语））。唯一的例外是测试用的频率计：它以格雷码跨入晶振时钟域。
+所有逻辑都运行在**单一的 100 MHz 时钟域**中（ADR 0005（西班牙语））。有两种特殊情况：
+
+- 测试用的频率计以格雷码跨入晶振时钟域。
+- microSD 的时钟（SCK）来自 100 MHz 时钟的分频器。它不是另一个时钟域：MISO 输入经过两个触发器。
+
+图中的虚线是从 microSD 加载。目前它只存在于顶层 `prueba_sd` 中，不含核心（第 08 阶段，进行中）。
 
 ## 模块
 
@@ -65,18 +71,19 @@ flowchart LR
 | HIL 的程序 | `hil_nucleo` 的参数 `PROGRAMA`；顶层 `hil_looper` 和 `hil_programa` | 一个逻辑实现的 ROM | 默认是 plate；looper 用来测试 `RDAA` 和 `WRAA`；`hil_programa` 使用 `sofifi rom` 写出的 ROM（`make hil HIL=名称`） |
 | SD 控制器 | `rtl/sd/sd_spi.v` | 与加载器合计约 930 个触发器和约 390 个 ALU（yosys） | SPI 模式 0：启动时 400 kHz，读取时 12.5 MHz；用 CMD17 读 512 字节的块；只读 |
 | 存储库加载器 | `rtl/sd/cargador.v`、`rtl/sd/carga_sd.v` | （见上一行） | 两遍：先检查魔数、范围、操作码和 CRC-32，不改动核心；然后停止核心、写入并再次检查 CRC（第 08 阶段） |
+| SD 测试 | `rtl/top/prueba_sd.v`、`rtl/top/prueba_sd_logica.v` | 2,244 个 LUT4 和 490 个 ALU（标尺 RAT-20 和 RAT-21） | 先测试 PMOD TF 的 v2 版本，再测试 v1；通过 UART 接收命令 `S`（状态）和 `L`（加载一个槽位）；`scripts/prueba_sd.py` 与模型比较 |
 
 ## 预算（顶层 `hil_nucleo`，流水线核心，ADR 0014）
 
 | 资源 | 用量 | 说明 |
 |---|---|---|
-| LUT4 | 12,405 / 23,040（54 %） | nextpnr 的数值，包含触发器的直通 LUT。单独的核心（`nucleo_placa`）：11,709。 |
+| LUT4 | 12,329 / 23,040（54 %） | nextpnr 的数值，包含触发器的直通 LUT（标尺 RAT-16）。单独的核心（`nucleo_placa`）：11,982（RAT-11，F-33）。 |
 | 触发器 | 7,145 / 23,040（31 %） | 约 3,100 个是副本和流水线寄存器（F-15）；约 450 个是队列和退休线。 |
 | ALU | 1,318 / 17,280（8 %） | |
 | BSRAM | 56 / 56 | 38 个用于延迟 + 6 个用于微码 + 12 个用于捕获。最终的踏板没有捕获：42 + 6 = 48。 |
 | DSP | 2 / 28 | |
-| 频率 | nextpnr 给出 110 MHz；**开发板上 125 MHz 无错误（3 次中 3 次），133.3 MHz（2 次中 2 次）**；looper 为 125 MHz（2 次中 2 次） | 相对 100 MHz 的实际余量至少为 25 %（ADR 0011，西班牙语） |
-| 每个样本的周期数 | plate 783、hall 856、cloud 900、shimmer 1,030、sostenido 1,156、chorale 1,185；最贵的链 1,270，上限 2,048 | 精确的时序模型见 `model/sofifi/domain/coste.py` |
+| 频率 | nextpnr 给出 110 MHz；**开发板上 125 MHz 无错误（3 次中 3 次），133.3 MHz（2 次中 2 次）**；looper 为 125 MHz（2 次中 2 次） | 相对 100 MHz 的实际余量至少为 25 %（ADR 0011，西班牙语）。nextpnr 的数值随布局种子变化（F-33）。 |
+| 每个样本的周期数 | plate 790、hall 863、cloud 907、shimmer 1,037、sostenido 1,190、chorale 1,192；最贵的程序 `dados` 为 1,620；能装下的最贵的链“Cuerdas en ola”为 1,288，上限 2,048 | `sofifi asm` 和 `sofifi cadenas`；精确的时序模型见 `model/sofifi/domain/coste.py` |
 
 ## 来自故障的设计规则
 
@@ -90,6 +97,8 @@ flowchart LR
 - **并行加法优先于串行加法。** 如果一个修正取决于符号，就先计算所有选项，再由符号选择（F-15）。
 - **ROM 放在逻辑中**，在 `case` 上加 `rom_style`，以免被映射为 BSRAM `SPX9`（F-09）。
 - **时序在开发板上测量**（ADR 0011）：在 GW5A 上，nextpnr 乐观 1.45 到 1.5 倍。要有 20 % 的余量，nextpnr 需要给出约 150 MHz 或更高，并且要实测。如果失败，`margen_reloj.py --traza` 会指出是哪条指令。
+- **改动不涉及逻辑后，nextpnr 报告的时钟失败是布局噪声。** 同一个网表下，`nucleo_placa` 随种子不同给出 95.41 到 112.10 MHz。如果只有时钟失败，`scripts/fpga.sh` 会尝试种子 2、3 和 4（F-33）。
+- **SD 不打开另一个时钟域。** SCK 来自 100 MHz 时钟的分频器，MISO 经过两个触发器。因此 SD 的快速时钟不超过 12.5 MHz（`DIV_RAPIDO` = 4）。
 
 ## 各阶段历史
 
@@ -185,6 +194,16 @@ UART TX 和一个计数器。没有 PLL，运行在 50 MHz。第一次“第二�
 | `RDAA` | 27 | 19 |
 
 读取 ACC 的指令，在写它的前一条指令结束后等待 7 个周期。平均而言，程序用的周期少 1.6 倍。能装下的串联组合从 2,550 个中的 790 个增加到 1,312 个（加上共享寄存器，ADR 0013，西班牙语）。
+
+### 第 08 阶段 · 从 microSD 加载程序（进行中）
+
+存储卡没有文件系统：它保存一个由原始块组成的程序库，由 `sofifi banco` 写入（`docs/microsd.md`，西班牙语）。
+
+- **格式**（`model/sofifi/domain/banco.py`）：块 0 是头部；槽位 *k* 从块 1 + 28·*k* 开始。每个槽位有 1 个元数据块和 27 个微码块。程序库最多容纳 1,024 个程序。
+- **`sd_spi`：** 以 400 kHz 用 CMD0、CMD8、ACMD41 和 CMD58 在 SPI 模式下启动存储卡。之后以 12.5 MHz 用 CMD17 读取 512 字节的块。它只接受版本 2 的卡，例如所有 SDHC 和 SDXC 卡。它不向存储卡写入。
+- **`cargador`：** 分两遍。第一遍检查头部、范围、每个操作码、跳转和两个 CRC-32，不改动核心。第二遍停止核心、写入微码并再次检查 CRC。如果第二遍失败，核心保持停止：静音胜过半个程序。
+- **`prueba_sd`：** 测试顶层，不含核心。PMOD TF 有两个版本，CS 和 SCK 在不同的引脚上；顶层先测试 v2，再测试 v1。
+- **状态：** 模型、RTL 和顶层在仿真中给出相同的数据，使用 cocotb 中的存储卡模型（`sim/sd/tarjeta_sd.py`）。**还缺少用真实存储卡的测试。**
 
 ### 下一个计划中的改动
 

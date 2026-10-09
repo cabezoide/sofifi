@@ -18,9 +18,10 @@ texto que ejecuta un núcleo DSP propio.
 |---|---|
 | Biblioteca | **86 programas y 688 presets** en 8 familias (Fase 07) |
 | Dos efectos a la vez | **24 cadenas**: 18 caben hoy y 6 esperan la SDRAM (`presets/cadenas.toml`, ADR 0013) |
-| Igualdad con el modelo | los 86 programas y las 18 cadenas que caben dan en el RTL los mismos bits que el modelo (simulación) |
-| Placa | el plate y el looper dan en el silicio los mismos bits que el modelo, de 100 a 125 MHz (Fase 07) |
-| Siguiente | carga de programas desde la microSD (Fase 08) |
+| Igualdad con el modelo, en simulación | los 86 programas y las 18 cadenas que caben dan en el RTL los mismos bits que el modelo |
+| Igualdad con el modelo, en la placa | 50 de 50: 41 programas y 9 cadenas, con el núcleo de la Fase 07 (MED-16, 2026-10-08) |
+| Núcleo | segmentado en orden (ADR 0014): gasta 1,6 veces menos ciclos; sin errores en la placa a 125 MHz (3 de 3) y a 133,3 MHz (2 de 2); trabaja a 100 MHz |
+| En curso | **Fase 08, microSD:** el banco, el controlador SD y el top `prueba_sd` funcionan en simulación. Falta la prueba con la tarjeta real (`docs/microsd.md`) |
 | Audio con guitarra | **todavía no**: falta el códec I2S (Fase 11) |
 
 ## Escuchar los efectos sin hardware
@@ -44,14 +45,14 @@ texto que ejecuta un núcleo DSP propio.
 
 | Familia | Programas |
 |---|---|
-| Reverb | plate, plate_vivo, hall, blackhole, cloud, bloom, spring, chorale, resonador, gated, reverb_inversa, infinite, freeze, freeze_givens, shimmer, shimmer_quinta, shimmer_energia |
-| Delay | delay, cinta, bbd, pingpong, lluvia, ducking, reverse |
-| Modulación | chorus, flanger, phaser, tremolo, vibrato, slicer |
-| Pitch | octava, armonizador, doblador, escalera |
-| Dinámica | compresor, puerta, swell |
-| Filtro | autowah, filtro, ancho |
-| Textura | saturacion, lofi, ringmod, granular |
-| Looper | looper |
+| Reverb (26) | plate, plate_vivo, hall, blackhole, cloud, bloom, spring, chorale, resonador, gated, reverb_inversa, infinite, freeze, freeze_givens, shimmer, shimmer_quinta, shimmer_energia, shimmer_grave, shimmer_escondido, ensemble, marea, shoegaze, sostenido, dinamica, baldosa, semilla |
+| Delay (21) | delay, cinta, bbd, pingpong, lluvia, ducking, reverse, bruma, tambor, oscilador, enjambre, probabilidad, dados, aureo, estelar, lata, deriva, eco_casero, dos_ecos, frenada, compas |
+| Modulación (11) | chorus, flanger, phaser, tremolo, vibrato, slicer, armonico, desplazador, dimension, orilla, vibe |
+| Pitch (8) | octava, armonizador, doblador, escalera, arcoiris, acople, arpegio, espiral |
+| Dinámica (6) | compresor, puerta, swell, violin, arco, swell_ritmico |
+| Looper (6) | looper, erosion, mosaico, relevo, resbalon, tartamudeo |
+| Textura (5) | saturacion, lofi, ringmod, granular, viento |
+| Filtro (3) | autowah, filtro, ancho |
 
 `docs/programas.md` dice qué hace cada programa, qué mandos tiene y cuánto
 cuesta. Lo genera `sofifi catalogo`.
@@ -70,9 +71,10 @@ cuesta. Lo genera `sofifi catalogo`.
 - **fs = 48 828 Hz:** un reloj de 100 MHz da 2 048 ciclos exactos por muestra (ADR 0005).
 - **Modelo de referencia bit-exact en Python.** El RTL debe dar los mismos bits
   que el modelo, muestra a muestra (ADR 0003).
-- **Coste real:** cada instrucción gasta en el RTL entre 2 y 50 ciclos. Una
-  instrucción que lee el ACC espera al resultado de la anterior (ADR 0014).
-  `sofifi asm` da los ciclos de un programa.
+- **Coste real:** el núcleo está segmentado en orden (ADR 0014). Una
+  instrucción solo espera si lee un resultado que aún no está listo, como el
+  del ACC. Un programa gasta de 185 a 1 620 ciclos de los 2 048. `sofifi asm`
+  da los ciclos de un programa.
 
 ![¿Por qué escoger SOFIFI? Se puede leer, cambiar y comprobar bit a bit; frente al FV-1 gana en instrucciones y muestreo, y aún no suena con guitarra](docs/img/porque.png)
 
@@ -99,6 +101,7 @@ make sim           # testbenches cocotb del RTL
 make prog          # sintetiza hola_uart y lo carga en la SRAM de la Tang Primer 25K
 make uart          # lee la UART del depurador (/dev/ttyUSB1) y exige "SOFIFI"
 make esquematicos  # regenera los esquemáticos PDF del RTL
+make hil HIL=hall  # carga un programa o una cadena en la placa y lo compara con el modelo
 ```
 
 Para programar sin sudo hace falta la regla udev del depurador BL616
@@ -119,7 +122,7 @@ Si falta una herramienta, la compuerta lo dice (`NO CORRIÓ`). No da un verde fa
 | Pieza | Estado |
 |---|---|
 | Tang Primer 25K + Dock | disponible |
-| microSD de 64 GB (PMOD TF) | disponible |
+| microSD de 64 GB y módulo Sipeed PMOD TF | disponible; falta probar la tarjeta en la placa (Fase 08) |
 | Códec I2S (PCM1808 + PCM5102A o Digilent Pmod I2S2) | **falta** (Fase 11) |
 | MCP3208 + potenciómetros | falta (Fase 09; los botones de la Dock hacen de footswitch) |
 | OLED SSD1306 de 128×64 | falta (Fase 10) |
@@ -139,10 +142,18 @@ Fase 08 bastan la placa y la microSD.
 | `presets/banco.toml` | los 688 presets |
 | `docs/arquitectura_fpga.md` | la arquitectura del FPGA y cómo cambia en cada fase |
 | `schematics/` | un esquemático PDF de cada módulo RTL, generado desde el Verilog |
-| `docs/EXTENDING.md` | cómo añadir un efecto, una instrucción, un módulo RTL o una compuerta |
+| `presets/cadenas.toml` | las 24 cadenas de dos programas |
+| `docs/microsd.md` | cómo escribir el banco de programas en la microSD y probarlo en la placa |
+| `docs/EXTENDING.md` | cómo añadir un programa, un preset, una cadena, una instrucción, un módulo RTL o una compuerta |
 | `BOM.md` | lista de compra del hardware, con enlaces |
 | `SBOM.md` | qué hace cada componente del FPGA y con qué herramientas se construye |
 | `fails.md` | los fallos encontrados: síntoma, causa, resolución y lección |
+
+## Scripts
+
+Los scripts de `scripts/` construyen, prueban y miden el proyecto. La guía
+[docs/scripts.md](docs/scripts.md) dice qué hace cada uno, cuándo usarlo y con
+qué opciones.
 
 ## Idiomas
 

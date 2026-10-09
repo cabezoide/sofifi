@@ -20,7 +20,7 @@ La FPGA contiene un **pequeño procesador de audio hecho a medida** (el núcleo)
 | Componente | Qué hace, en sencillo | Qué aporta |
 |---|---|---|
 | **Microcódigo** | Memoria con las instrucciones del programa (hasta 2 048). | Permite cambiar de efecto sin cambiar el hardware: basta con cargar otro programa. |
-| **Secuenciador** | Lee las instrucciones una a una y dice a cada pieza qué hacer. Mientras ejecuta una, ya lee la siguiente. | Es el «director de orquesta» del núcleo. |
+| **Secuenciador** | Lee las instrucciones y dice a cada pieza qué hacer. Empieza una instrucción sin esperar a que acabe la anterior. Solo espera si necesita un resultado que aún no está listo (ADR 0014). | Es el «director de orquesta» del núcleo. Así, los programas gastan 1,6 veces menos ciclos. |
 | **Banco de registros** | 64 casillas que guardan números: entradas, salidas, potenciómetros y variables del programa. | Es la «mesa de trabajo» de cada efecto. |
 | **Multiplicador** (bloque DSP) | Multiplica dos números en un paso. | Casi todo en audio son multiplicaciones: volumen, filtros, mezclas. |
 | **ALU** | Suma, compara y satura (evita que el sonido se desborde). | Combina los resultados y los guarda en el acumulador. |
@@ -35,10 +35,18 @@ La FPGA contiene un **pequeño procesador de audio hecho a medida** (el núcleo)
 | Componente | Qué hace, en sencillo | Qué aporta |
 |---|---|---|
 | **UART TX / RX** | Puerto serie con el PC, a través del USB de la placa. | Permite hablar con la FPGA: pedir pruebas y recibir resultados. |
-| **Cargador de programa** | Copia un programa desde una memoria fija al microcódigo al arrancar. | Hoy carga el plate; en la Fase 08 lo hará desde la microSD. |
+| **Cargador de programa** | Copia un programa desde una memoria fija al microcódigo al arrancar. | En los tops de prueba carga el plate, el looper o el programa de `make hil`. |
 | **Captura y CRC-32** (solo en pruebas) | Graba 4 096 muestras a velocidad real y las envía con un código de control. | Demuestra que el hardware suena **exactamente** igual que el modelo del PC. |
 | **Traza** (solo en pruebas) | Graba qué instrucción se ejecuta y qué valor deja en el acumulador. | Si el chip falla, dice en qué instrucción, para saber qué parte arreglar. |
 | **Medidor de frecuencia** (solo en pruebas) | Cuenta ciclos de un reloj durante un segundo de otro. | Comprobó que el PLL y la frecuencia de muestreo son exactos. |
+
+### La microSD (Fase 08, en curso)
+
+| Componente | Qué hace, en sencillo | Qué aporta |
+|---|---|---|
+| **Controlador SD** (`sd_spi`) | Habla con la tarjeta por SPI: la arranca y lee bloques de 512 bytes. No escribe en ella. | Da acceso a la biblioteca de programas sin un sistema de ficheros, que sería caro y frágil. |
+| **Cargador del banco** (`cargador`, `carga_sd`) | Lee una ranura de la tarjeta dos veces. La primera vez solo comprueba; la segunda escribe el programa en el núcleo. | Un programa dañado no se carga. Si la primera lectura falla, el núcleo sigue con el programa anterior. |
+| **Prueba de la SD** (`prueba_sd`, solo en pruebas) | Carga ranuras a petición del PC y le dice qué leyó. | Comprueba que la tarjeta da los mismos datos que el modelo. Falta probarla con la tarjeta real. |
 
 ### Primitivas del chip (piezas físicas del GW5A)
 
@@ -47,7 +55,7 @@ La FPGA contiene un **pequeño procesador de audio hecho a medida** (el núcleo)
 | BSRAM (bloques de 18 Kbit) | 48 de 56 en el núcleo | memoria de retardo y microcódigo |
 | DSP (MULTALU27X18) | 2 de 28 | el multiplicador |
 | PLLA | 1 de 6 | el reloj de 100 MHz |
-| LUT4 y flip-flops | ~50 % y ~28 % (top de pruebas) | toda la lógica, y las copias que dan margen de reloj |
+| LUT4 y flip-flops | ~54 % y ~31 % (top de pruebas `hil_nucleo`) | toda la lógica, y las copias que dan margen de reloj |
 
 ## Herramientas de software
 
@@ -62,6 +70,7 @@ Todo se instala con `make install` (pip) y es software libre.
 | verilator | 5.48 | LGPL-3.0 o Artistic-2.0 | Simula el Verilog. Solo se usa como herramienta; no se copia código (ADR 0002). |
 | cocotb | 2.1 | BSD-3-Clause | Escribe las pruebas de simulación en Python. |
 | pyserial | 3.5 | BSD-3-Clause | Habla con la UART de la placa. |
+| soundfile | 0.12 | BSD-3-Clause | Escribe las demos en Ogg Vorbis. Usa libsndfile (LGPL-2.1) como biblioteca, sin copiar código (ADR 0002). Opcional: `pip install -e '.[demos]'`. |
 | Python + numpy | 3.12+ / 2.x | PSF / BSD | El modelo bit-exact, que es la referencia de todo (ADR 0003). |
 
 Las versiones mínimas están en `pyproject.toml`. Las trampas de cada herramienta están en `fails.md` y `rtl/AGENTS.md`.

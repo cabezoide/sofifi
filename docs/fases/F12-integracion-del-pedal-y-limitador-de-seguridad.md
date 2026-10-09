@@ -60,7 +60,7 @@ Después de esta fase quedan los saltos de hardware. Cada uno necesita su ADR:
 
 | Punto | Cambio | Hardware | ADR |
 |---|---|---|---|
-| 23 | Segundo núcleo o VLIW: dos programas en paralelo y cambio de preset sin cortes | Ninguno | ADR 0009 |
+| 23 | Segundo núcleo o VLIW: dos programas en paralelo y cambio de preset sin cortes. **Segundo núcleo descartado:** no cabe en la 25K; dos efectos a la vez son cadenas (ADR 0013) | Ninguno | ADR 0009, ADR 0013 |
 | 24 | SDRAM con lecturas anticipadas: looper largo y granular de 5-30 s | Módulo SDRAM | ADR 0004 (revisión prevista) |
 | 25 | Coprocesador STFT de 1 024 puntos: shimmer por vocoder de fase y freeze espectral | Ninguno | ADR 0006 y ADR 0009 |
 | 26 | USB-MIDI de clase | Microcontrolador puente | — |

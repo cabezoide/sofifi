@@ -29,7 +29,9 @@ el oráculo del RTL (ADR 0003). Todo el audio vive en BSRAM, porque no hay SDRAM
 | `docs/adr/README.md` | índice de decisiones. Leerlo antes de proponer un cambio estructural |
 | `docs/fases/` | spec por fase + control `docs/fases/estado_fases.csv` |
 | `docs/terceros.yaml` | origen y licencia de todo código ajeno estudiado o portado |
-| `docs/EXTENDING.md` | cómo añadir un efecto, un módulo RTL o una compuerta |
+| `docs/EXTENDING.md` | cómo añadir un programa, un preset, una cadena, un módulo RTL, un top o una compuerta |
+| `docs/microsd.md` | cómo escribir el banco de programas en la microSD y probarlo en la placa (Fase 08) |
+| [docs/scripts.md](docs/scripts.md) | guía de los scripts de `scripts/`: qué hace cada uno y con qué opciones |
 | `model/sofifi/` | modelo de referencia, por capas (ver `model/AGENTS.md`) |
 | `demo_examples/` | demos en Ogg Vorbis (guitarra sintética + una por programa); se regeneran con `scripts/generar_demos.py` |
 | `programas/` | programas del núcleo en ensamblador (`.sasm`), uno por efecto. Los bloques comunes van en `programas/comun/` y entran con `include` |
@@ -37,7 +39,7 @@ el oráculo del RTL (ADR 0003). Todo el audio vive en BSRAM, porque no hay SDRAM
 | `presets/cadenas.toml` | cadenas: dos programas en uno, en serie o en paralelo (`sofifi cadenas`, ADR 0013) |
 | `docs/programas.md` | catálogo de programas, generado con `sofifi catalogo` |
 | `schematics/` | un esquemático PDF por módulo RTL, generado con `make esquematicos` (ADR 0012) |
-| `rtl/` | Verilog sintetizable (ver `rtl/AGENTS.md`) |
+| `rtl/` | Verilog sintetizable (ver `rtl/AGENTS.md`): `rtl/nucleo/`, `rtl/sd/`, `rtl/primitivas/`, `rtl/comun/` y los tops en `rtl/top/` |
 | `sim/` | testbenches cocotb que comparan RTL con modelo (ver `sim/AGENTS.md`) |
 | `scripts/ci_local.sh` | LA compuerta; el hook `scripts/hooks/pre-push` delega en ella |
 
