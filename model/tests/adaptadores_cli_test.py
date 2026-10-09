@@ -214,7 +214,10 @@ def test_cli_banco_y_rom(
     assert main(["banco", str(imagen), "no_existe"]) == 1
     todo = tmp_path / "todo.img"
     assert main(["banco", str(todo)]) == 0
-    assert "69 programas" in capsys.readouterr().out
+    raiz = Path(__file__).resolve().parents[2]
+    cadenas = [c for c in leer_cadenas(raiz / "presets" / "cadenas.toml") if c.requiere is None]
+    total = len(list((raiz / "programas").glob("*.sasm"))) + len(cadenas)
+    assert f"{total} programas" in capsys.readouterr().out
     rom = tmp_path / "programa_hil.v"
     assert main(["rom", "tremolo", str(rom)]) == 0
     assert "module programa_hil" in rom.read_text(encoding="utf-8")

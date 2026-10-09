@@ -248,6 +248,12 @@ HUELLAS = {
     "sostenido": "763109b6d96e55af",
     "shoegaze": "bb1e25cca088c986",
     "bruma": "2e6661ec9122cde7",
+    "armonico": "23463ed15dbf6ab4",
+    "arcoiris": "dee201eb880e202e",
+    "tambor": "1f1e2019cced53cb",
+    "mosaico": "a6d48be05b31d041",
+    "erosion": "28774e5b2dc4dbbe",
+    "desplazador": "98bedfe6554d4343",
 }
 
 
@@ -264,9 +270,13 @@ SEGUNDOS_HUELLA = {
     "looper": 0.3,
     "granular": 0.5,
     "bruma": 0.3,
+    "tambor": 0.4,
+    "mosaico": 0.5,
+    "erosion": 0.3,
+    "desplazador": 0.4,
 }
 # Sin footswitch, el looper solo deja pasar la señal seca: graba los primeros 0,1 s.
-TRAMOS_SW = {"looper": ((0, int(0.1 * FS)),)}
+TRAMOS_SW = {"looper": ((0, int(0.1 * FS)),), "erosion": ((0, int(0.1 * FS)),)}
 CON_TONO = {
     "lofi",
     "swell",
@@ -281,6 +291,10 @@ CON_TONO = {
     "looper",
     "granular",
     "sostenido",
+    "armonico",
+    "arcoiris",
+    "mosaico",
+    "erosion",
 }
 
 

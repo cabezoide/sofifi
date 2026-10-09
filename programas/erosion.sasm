@@ -1,0 +1,223 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: looper
+; resumen: Bucle de cinta que se desgasta en cada vuelta: pierde agudos y nivel y gana wow, grano y saturación.
+; resumen.en: A tape loop that wears out on each pass: it loses treble and level and gains wow, grain and saturation.
+; resumen.zh-CN: 每转一圈都会磨损的磁带循环：失去高频和电平，增加 wow、颗粒和饱和。
+; resumen.ja: 一周ごとに擦り切れるテープループ。高域とレベルを失い、ワウ、粒子感、飽和を増していきます。
+;
+; erosion.sasm — bucle que se desintegra, en la región absoluta (RDAA y WRAA,
+; ADR 0009). Diseño propio, a partir del principio de los bucles de cinta que
+; se gastan (ZOIA «TapeRewinder», el modo cinta de Chase Bliss Blooper y Mood)
+; y de la capa nueva a media ganancia de Phantasmagoria.
+;
+; El principio: un bucle de cinta pasa una y otra vez por la cabeza. En cada
+; vuelta la cinta pierde un poco de óxido. La frase pierde agudos y nivel, y la
+; velocidad irregular deja su huella. Al final queda una niebla oscura.
+;
+; El bucle tiene una longitud fija P (pot5). Una cabeza `pos` lee y escribe:
+;   1. Lee en pos + off, con off ≥ 1 muestra. El wow mueve off con azar lento
+;      (comun/azar_lento.sasm). El wow de cada vuelta se suma al de antes.
+;   2. Paso bajo de un polo: v = y + m·(lp − y). m crece con la erosión y el
+;      damping.
+;   3. Saturación suave: v + e·(clip(1,2v)/1,8 − v).
+;   4. Grano: v·(1 + 0,2·e·n), con n un ruido blanco de un generador
+;      congruencial, x ← frac(5x + c).
+;   5. Pérdida: v·(1 − 0,3·e).
+;   6. Suma la capa nueva: entrada·capa. `capa` sigue a sw·nivel con una rampa
+;      de ~4 ms, para que la costura no haga clic al pisar ni al soltar.
+;   7. Escribe en pos.
+; Con e = 0 (pot0) los pasos 1 a 5 no cambian nada: el bucle se mantiene.
+;
+; La costura del final: la lectura llega hasta P + 63 muestras. Las primeras
+; 64 muestras de cada vuelta se escriben también en P + k. Así la lectura no
+; tiene que dar la vuelta. P se cuantiza a muestras enteras: con un P
+; fraccionario, la lectura interpolaría en cada vuelta y el bucle se apagaría.
+;
+; pot0 = erosión  (0 → el bucle se mantiene · 1 → −3 dB y más oscuro en cada vuelta)
+; pot1 = damping  (0 → la erosión casi no oscurece · 1 → oscurece mucho)
+; pot2 = mezcla   (0 → seco · 1 → solo bucle)
+; pot3 = modulación (0 → sin wow · 1 → wow de hasta 1,2 ms por vuelta)
+; pot4 = nivel    (capa nueva con sw pisado: 0 → 0,25 · 1 → 1)
+; pot5 = duración (0 → 0,17 s · 1 → 0,67 s)
+
+equ  wmax   60/32768          ; wow: excursión de off, 60 muestras
+equ  espejo 64/32768          ; muestras que se copian detrás de P
+
+equ  u          reg0          ; una muestra: 2^-15
+equ  h          reg1          ; 0,5: con -2,0 resta 1
+equ  hn         reg2          ; -0,5: con -2,0 suma 1
+equ  c          reg3          ; incremento del generador (impar)
+equ  xr         reg4          ; ruido en [0, 1)
+equ  x          reg5          ; entrada mono
+equ  pos        reg6          ; cabeza de escritura
+equ  largo      reg7          ; longitud con rampa
+equ  lq         reg8          ; longitud en muestras enteras (P·u)
+equ  rd         reg9          ; cabeza de lectura
+equ  y          reg10         ; muestra leída del bucle
+equ  lp         reg11         ; estado del paso bajo
+equ  m          reg12         ; cuánto oscurece cada vuelta
+equ  ng         reg13         ; −0,3·e: pérdida por vuelta
+equ  ew         reg14         ; e·(2 − e): peso del wow
+equ  capa       reg15         ; ganancia de la capa nueva, con rampa
+equ  v          reg16
+equ  t          reg17
+equ  kwet       reg18
+equ  kdry       reg19
+equ  xlog       reg20
+equ  cuenta_az  reg21
+equ  azar       reg22
+equ  tmp        reg23
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 1/32768
+        wrax  u, 1/256                  ; ACC = 2^-23: el bit que hace impar a c
+        sof   1.0, 0.381958
+        wrax  c, 0
+        sof   0, 0.5
+        wrax  h, 0
+        sof   0, -0.5
+        wrax  hn, 0
+        rdax  pot5, 0.748
+        sof   1.0, 0.25
+        wrax  largo, 0                  ; la longitud empieza sin rampa
+inicio:
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wrax  x, 0
+; ── mandos ───────────────────────────────────────────────────────────
+include  comun/mezcla.sasm
+        rdax  pot0, -0.3
+        wrax  ng, 0
+        rdax  pot1, 0.6
+        sof   1.0, 0.1
+        mulx  pot0
+        wrax  m, 0                      ; m = e·(0,1 + 0,6·pot1)
+        ldax  pot0
+        mulx  pot0
+        wrax  t, -1.0
+        rdax  pot0, 1.0
+        rdax  pot0, 1.0
+        wrax  ew, 0                     ; ew = 2e − e²
+        rdax  pot4, 0.75
+        sof   1.0, 0.25
+        mulx  sw                        ; sw·(0,25 + 0,75·pot4)
+        rdfx  capa, 0.005               ; rampa de ~4 ms
+        wrax  capa, 0
+; ── longitud: rampa y cuantización a muestras enteras ────────────────
+        rdax  pot5, 0.748
+        sof   1.0, 0.25                 ; 8 192 a 32 703 muestras
+        rdfx  largo, 0.0005
+        wrax  largo, 1/256              ; el siguiente SOF redondea a 2^-23
+        sof   -2.0, 0
+        sof   -2.0, 0
+        sof   -2.0, 0
+        sof   -2.0, 0
+        sof   -2.0, 0
+        sof   -2.0, 0
+        sof   -2.0, 0
+        sof   -2.0, 0
+        wrax  lq, 0                     ; P·u, con P entero
+; ── azar lento para el wow ───────────────────────────────────────────
+include  comun/azar_lento.sasm
+        rdax  pot3, 1.0
+        mulx  ew
+        mulx  azar
+        sof   wmax, 0
+        rdax  u, 1.0
+        rdax  pos, 1.0
+        wrax  rd, 0                     ; rd = pos + 1 + wow
+; ── ruido: x ← frac(5x + c), exacto en 23 bit ────────────────────────
+        rdax  xr, 1.25
+        rdax  xr, 1.25
+        rdax  xr, 1.25
+        rdax  xr, 1.25
+        rdax  c, 1.0                    ; [0, 6)
+        rdax  h, -2.0
+        rdax  h, -2.0
+        rdax  h, -2.0
+        rdax  h, -2.0
+        skp   gez, menos_2
+        rdax  hn, -2.0
+        rdax  hn, -2.0
+        rdax  hn, -2.0
+        rdax  hn, -2.0
+menos_2:
+        rdax  h, -2.0
+        rdax  h, -2.0
+        skp   gez, menos_1
+        rdax  hn, -2.0
+        rdax  hn, -2.0
+menos_1:
+        rdax  h, -2.0
+        skp   gez, guardar_x
+        rdax  hn, -2.0
+guardar_x:
+        wrax  xr, 1.0
+        sof   1.0, -0.5                 ; n en [−0,5, 0,5)
+        mulx  pot0
+        sof   0.2, 0
+        wrax  t, 0                      ; t = 0,2·e·n
+; ── 1. lectura ───────────────────────────────────────────────────────
+        rdaa  rd, 1.0
+        wrax  y, 0
+; ── 2. paso bajo: v = y + m·(lp − y) ─────────────────────────────────
+        rdax  lp, 1.0
+        rdax  y, -1.0
+        mulx  m
+        rdax  y, 1.0
+        wrax  lp, 1.0
+        wrax  v, 1.0
+; ── 3. saturación: v + e·(clip(1,2v)/1,8 − v) ────────────────────────
+        sof   1.2, 0
+        clip
+        sof   0.5556, 0
+        rdax  v, -1.0
+        mulx  pot0
+        rdax  v, 1.0
+        wrax  v, 1.0
+; ── 4. grano y 5. pérdida ────────────────────────────────────────────
+        mulx  t
+        rdax  v, 1.0
+        wrax  v, 1.0
+        mulx  ng
+        rdax  v, 1.0
+        wrax  v, 0
+; ── 6. capa nueva y 7. escritura ─────────────────────────────────────
+        rdax  x, 1.0
+        mulx  capa
+        rdax  v, 1.0
+        wrax  v, 1.0
+        wraa  pos, 0
+        rdax  pos, 1.0
+        sof   1.0, -espejo
+        skp   gez, avanzar
+        rdax  lq, 1.0
+        sof   1.0, espejo
+        wrax  t, 0                      ; t = pos + P
+        rdax  v, 1.0
+        wraa  t, 0                      ; copia detrás de P
+avanzar:
+        clr
+        rdax  pos, 1.0
+        rdax  u, 1.0
+        wrax  pos, 1.0
+        rdax  lq, -1.0
+        skp   neg, salida
+        clr
+        wrax  pos, 0                    ; pos ≥ P: vuelve al principio
+; ── salida: seco·kdry + bucle·kwet ───────────────────────────────────
+salida:
+        clr
+        rdax  y, 1.0
+        mulx  kwet
+        wrax  t, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  t, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  t, 1.0
+        wrax  dacr, 0

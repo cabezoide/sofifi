@@ -1,0 +1,210 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: modulación
+; resumen: Eco que desplaza su frecuencia en cada vuelta: la cola sube o baja en espiral.
+; resumen.en: Echo that shifts its frequency on each pass: the tail goes up or down in a spiral.
+; resumen.zh-CN: 每次回授都移动频率的回声：尾音螺旋般上升或下降。
+; resumen.ja: 周回ごとに周波数をずらすエコー。テールが螺旋のように上がり、または下がります。
+;
+; desplazador.sasm — Eco con desplazamiento de frecuencia en la realimentación.
+; Diseño propio, a partir del principio del desplazador de frecuencia del módulo
+; Buchla 285 (versión FV-1 en modularsynthesis.com): red de Hilbert y oscilador
+; en cuadratura.
+;
+; Un desplazador de frecuencia suma d Hz a todas las frecuencias. No cambia la
+; afinación como un pitch shift: las proporciones entre armónicos se rompen.
+; En el bucle del eco, cada vuelta suma d Hz otra vez. La cola sube o baja sin
+; fin, como la espiral de un poste de barbero.
+;
+; Cada muestra:
+;   1. Un oscilador por software de forma acoplada da s y c, en cuadratura
+;      (s = s + k·c; c = c − k·s). k da el desplazamiento; su signo, el sentido.
+;   2. El CHO lee el eco (tiempo con comun/tiempo.sasm). Un paso bajo da el tono.
+;      Un paso alto de 40 Hz quita los graves que la red no separa bien.
+;   3. Una red de Hilbert divide el eco en dos ramas, I y Q. Cada rama tiene
+;      cuatro allpass de primer orden en forma directa I. Cada etapa guarda su
+;      salida en una palabra de memoria; la etapa siguiente la lee como x[n−1].
+;      La forma del FV-1 (RDA + WRAP) no sirve: con polos cerca de 1, su estado
+;      interno crece como 1/(1 − k) y se satura.
+;      Entre 60 Hz y 8 kHz, Q va 90° detrás de I (error ≤ 1,3°).
+;   4. Banda lateral única: izquierda = I·c − Q·s, en f + d.
+;   5. Derecha = I·c − a·Q·s, con a = 1 − 2·pot5. Con pot5 = 1, la derecha
+;      desplaza al revés en la última vuelta; con 0,5, da las dos bandas.
+;   6. La izquierda vuelve al retardo con la entrada, por la realimentación.
+;   Los coeficientes de los allpass salen de una optimización minimax propia
+;   (polos en la transformación bilineal, banda de 60 Hz a 8 kHz).
+;
+; pot0 = desplazamiento   (0 → −25 Hz · 0,5 → 0 · 1 → +25 Hz; curva cuadrática)
+; pot1 = tiempo           (0 → 20 ms · 1 → 690 ms)
+; pot2 = mezcla           (0 → seco · 1 → solo ecos)
+; pot3 = realimentación   (0 → un eco · 1 → 0,95)
+; pot4 = tono             (0 → oscuro · 1 → limpio)
+; pot5 = ancho            (0 → mono · 1 → la derecha desplaza al revés)
+; sw   = mientras se pisa, el desplazamiento cambia de sentido
+;
+; Diseño propio, a partir del principio del desplazador de frecuencia del
+; Buchla 285 hecho con FV-1 (modularsynthesis.com): red de Hilbert de dos
+; ramas allpass y un oscilador en cuadratura, y = I·cos − Q·sin.
+
+equ  et    16384
+equ  base  977
+equ  khp   2*3.14159265*40/48828.125   ; paso alto del bucle
+equ  kmax  2*3.14159265*25/48828.125   ; k = 2π·d/fs con d = 25 Hz
+
+; Red de Hilbert: polos de los allpass, rama I (ka) y rama Q (kb).
+equ  ka1   0.99196
+equ  ka2   0.94467
+equ  ka3   0.68359
+equ  ka4   -0.34281
+equ  kb1   0.99801
+equ  kb2   0.9782
+equ  kb3   0.86414
+equ  kb4   0.32447
+
+equ  trate    lfo0_rate
+equ  tdepth   lfo0_depth
+equ  tpot     pot1
+equ  kwet     reg0
+equ  kdry     reg1
+equ  tiempo   reg2
+equ  ktono    reg3
+equ  lp       reg4
+equ  u        reg5
+equ  k        reg6
+equ  s        reg7
+equ  c        reg8
+equ  tmp_ks   reg9
+equ  ic       reg12
+equ  qs       reg13
+equ  kancho   reg14
+equ  yl       reg15
+equ  yr       reg16
+equ  wet      reg17
+equ  hp       reg10
+equ  xh       reg11
+
+mem  dl    base + 2*et + 3
+mem  x0    1
+mem  a1    1
+mem  a2    1
+mem  a3    1
+mem  a4    1
+mem  b1    1
+mem  b2    1
+mem  b3    1
+mem  b4    1
+
+lfo  0  sin  et
+
+        wrax  trate, 0                  ; ACC vale 0 al empezar la muestra
+        skp   run, inicio
+        sof   0, 0.5                    ; un cuarto de vuelta: forma 1
+        wrax  trate, 0
+        sof   0, 0.9                    ; el oscilador arranca en (0, 0,9)
+        wrax  c, 0
+inicio:
+include  comun/mezcla.sasm
+include  comun/tiempo.sasm
+        rdax  pot4, 0.8
+        sof   1.0, 0.19999
+        wrax  ktono, 0
+        rdax  pot5, -1.0                ; a = 1 − 2·pot5 (con −2 en RDAX,
+        sof   1.999, 0.99999            ; a24 saturaría antes del SOF)
+        wrax  kancho, 0
+; ── desplazamiento: k = kmax·u·|u|·(1 − 2·sw), u = 2·pot0 − 1 ────────
+        sof   0, -1.0
+        rdax  pot0, 1.999
+        wrax  u, 1.0
+        absa
+        mulx  u
+        sof   kmax, 0
+        wrax  k, 0
+        rdax  sw, -1.0                  ; 1 − 2·sw: +1 suelto, −1 pisado
+        sof   1.999, 0.99999
+        mulx  k
+        wrax  k, 0
+; ── oscilador: s = s + k·c; c = c − k·s ──────────────────────────────
+        rdax  c, 1.0
+        mulx  k
+        rdax  s, 1.0
+        wrax  s, 1.0
+        mulx  k
+        wrax  tmp_ks, 0
+        rdax  c, 1.0
+        rdax  tmp_ks, -1.0
+        wrax  c, 0
+; ── eco y tono: lp = lp + ktono·(x − lp) ─────────────────────────────
+        cho   dl + base, 1.0, lfo0
+        rdax  lp, -1.0
+        mulx  ktono
+        rdax  lp, 1.0
+        wrax  lp, 1.0
+        rdfx  hp, khp                   ; paso alto de un polo a 40 Hz:
+        wrax  hp, -1.0                  ; quita lo que la red de Hilbert
+        rdax  lp, 1.0                   ; no separa bien
+        wrax  xh, 1.0
+; ── rama I: y = −k·x + x[n−1] + k·y[n−1], en forma directa I ──────
+        wra   x0, -ka1
+        rda   x0#, 1.0
+        rda   a1#, ka1
+        wra   a1, -ka2
+        rda   a1#, 1.0
+        rda   a2#, ka2
+        wra   a2, -ka3
+        rda   a2#, 1.0
+        rda   a3#, ka3
+        wra   a3, -ka4
+        rda   a3#, 1.0
+        rda   a4#, ka4
+        wra   a4, 1.0
+        mulx  c
+        wrax  ic, 0
+; ── rama Q: y = −k·x + x[n−1] + k·y[n−1], en forma directa I ──────
+        ldax  xh
+        sof   -kb1, 0
+        rda   x0#, 1.0
+        rda   b1#, kb1
+        wra   b1, -kb2
+        rda   b1#, 1.0
+        rda   b2#, kb2
+        wra   b2, -kb3
+        rda   b2#, 1.0
+        rda   b3#, kb3
+        wra   b3, -kb4
+        rda   b3#, 1.0
+        rda   b4#, kb4
+        wra   b4, 1.0
+        mulx  s
+        sof   1.1111, 0                 ; compensa la amplitud 0,9 del oscilador
+        wrax  qs, 0
+; ── banda lateral única ──────────────────────────────────────────────
+        rdax  ic, 1.1111
+        rdax  qs, -1.0
+        wrax  yl, 0
+        rdax  qs, 1.0
+        mulx  kancho
+        sof   -1.0, 0
+        rdax  ic, 1.1111
+        wrax  yr, 0
+; ── realimentación y escritura del retardo ───────────────────────────
+        rdax  yl, 1.0
+        mulx  pot3
+        sof   0.95, 0
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wra   dl, 0
+; ── salida ───────────────────────────────────────────────────────────
+        rdax  yl, 1.0
+        mulx  kwet
+        wrax  wet, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  wet, 1.0
+        wrax  dacl, 0
+        rdax  yr, 1.0
+        mulx  kwet
+        wrax  wet, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  wet, 1.0
+        wrax  dacr, 0

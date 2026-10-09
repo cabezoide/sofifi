@@ -1,10 +1,10 @@
-<!-- i18n: fuente=docs/programas.md sha=a7568d48c090 estado=al_dia -->
+<!-- i18n: fuente=docs/programas.md sha=c531d8bc29c3 estado=al_dia -->
 <!-- GENERADO por `sofifi catalogo` desde programas/*.sasm. No se edita a mano:
      model/tests/catalogo_test.py lo compara con su generador. -->
 
 # Core programs
 
-51 programs and 408 presets. Each program is a text file in `programas/`; the presets are in `presets/banco.toml`. Program and preset names are in Spanish.
+57 programs and 456 presets. Each program is a text file in `programas/`; the presets are in `presets/banco.toml`. Program and preset names are in Spanish.
 The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/coste.py`). The memory has 43,008 words.
 
 ## Reverb
@@ -46,12 +46,15 @@ The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/co
 | `lluvia` | Six irregular echoes that dissolve in allpass filters: a rain of notes. | 0: diffusion<br>1: feedback<br>2: mix | 8 | 46 | 364 | 35,385 |
 | `pingpong` | A stereo echo that jumps from one side to the other. | 0: time<br>1: feedback<br>2: mix | 8 | 38 | 353 | 40,874 |
 | `reverse` | Reversed echo in grains of 0.17 s. | 0: tone<br>1: feedback<br>2: mix | 8 | 34 | 301 | 16,388 |
+| `tambor` | A four-head magnetic drum echo: a rhythm that comes from the heads that are on. | 0: rate<br>1: feedback<br>2: mix<br>3: heads<br>4: age<br>5: tone | 8 | 173 | 1,328 | 37,656 |
 
 ## Modulation
 
 | Program | What it does | Knobs | Presets | Instructions | Cycles | Memory |
 |---|---|---|---|---|---|---|
+| `armonico` | The lows and the highs pulse in opposite phase; with pot2, an echo after them. | 0: rate<br>1: depth<br>2: echo<br>3: frequency<br>4: shape<br>5: width | 8 | 125 | 847 | 17,101 |
 | `chorus` | Three voices with moving delays. | 0: rate<br>1: depth<br>2: mix | 8 | 42 | 416 | 1,101 |
+| `desplazador` | Echo that shifts its frequency on each pass: the tail goes up or down in a spiral. | 0: frequency shift<br>1: time<br>2: mix<br>3: feedback<br>4: tone<br>5: width | 8 | 110 | 864 | 33,767 |
 | `flanger` | A very short moving delay with feedback: sweeping combs. | 0: rate<br>1: depth<br>2: mix<br>3: feedback | 8 | 31 | 266 | 247 |
 | `phaser` | Four allpass filters with a moving coefficient: sweeping notches. | 0: rate<br>1: depth<br>2: mix<br>3: feedback | 8 | 79 | 513 | 1 |
 | `slicer` | It cuts the sound into rhythmic pulses, like a gate that opens and closes. | 0: rate<br>1: depth<br>2: duty cycle<br>3: smoothing | 8 | 37 | 262 | 1 |
@@ -62,6 +65,7 @@ The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/co
 
 | Program | What it does | Knobs | Presets | Instructions | Cycles | Memory |
 |---|---|---|---|---|---|---|
+| `arcoiris` | Two pitch-shifted voices in a loop that regenerates and can self-oscillate. | 0: interval<br>1: second voice<br>2: mix<br>3: time<br>4: feedback<br>5: tone | 8 | 76 | 693 | 12,345 |
 | `armonizador` | One voice at −12, −7, −5, +5, +7 or +12 semitones, with feedback. | 0: interval<br>1: feedback<br>2: mix | 8 | 55 | 450 | 4,100 |
 | `doblador` | Two voices detuned by a few cents, one on each side: it widens the sound. | 0: detune<br>2: mix | 8 | 32 | 346 | 1,028 |
 | `escalera` | An echo in which each repeat goes up or down an interval: a staircase. | 0: interval<br>1: feedback<br>2: mix<br>3: time | 8 | 67 | 582 | 39,313 |
@@ -96,7 +100,9 @@ The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/co
 
 | Program | What it does | Knobs | Presets | Instructions | Cycles | Memory |
 |---|---|---|---|---|---|---|
+| `erosion` | A tape loop that wears out on each pass: it loses treble and level and gains wow, grain and saturation. | 0: erosion<br>1: damping<br>2: mix<br>3: modulation<br>4: level<br>5: length | 8 | 161 | 1,043 | 32,769 |
 | `looper` | A 0.67 s micro-looper with overdub, ½×, 2× and reverse. | 0: level<br>1: rate<br>2: direction<br>3: feedback | 8 | 85 | 549 | 32,769 |
+| `mosaico` | A 0.67 s sound-on-sound loop that plays at ½×, 1× and 2× at the same time. | 0: lower octave<br>1: level<br>2: mix<br>3: upper octave<br>4: feedback<br>5: diffusion | 8 | 144 | 1,064 | 34,662 |
 
 ## Chains
 

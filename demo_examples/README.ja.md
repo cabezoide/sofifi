@@ -1,4 +1,4 @@
-<!-- i18n: fuente=demo_examples/README.md sha=652d4c2773fe estado=al_dia -->
+<!-- i18n: fuente=demo_examples/README.md sha=a6d916286d67 estado=al_dia -->
 # demo_examples
 
 合成ギター（Em9 のアルペジオ、Karplus-Strong の弦）を、ビット精度のモデルでコアの各プログラムに通したものです。`.venv/bin/python scripts/generar_demos.py` で再生成でき、毎回同じ音声になります。
@@ -57,6 +57,12 @@
 | `demo_sostenido.ogg` | `sostenido` | レイヤー 0.20 · ダンピング 0.30 · ミックス 0.50 · キャプチャー 0.30 | — |
 | `demo_shoegaze.ogg` | `shoegaze` | ディケイ 0.85 · ダンピング 0.30 · ミックス 0.55 · サチュレーション 0.80 | — |
 | `demo_bruma.ogg` | `bruma` | 拡散 0.70 · フィードバック 0.55 · ミックス 0.50 · ヘッド 1.00 | — |
+| `demo_armonico.ogg` | `armonico` | 速さ 0.30 · 深さ 0.75 · エコー 0.35 · 周波数 0.50 · 波形 0.10 · 幅 0.80 | — |
+| `demo_arcoiris.ogg` | `arcoiris` | 音程 0.79 · 第2声部 0.00 · ミックス 0.50 · タイム 0.30 · フィードバック 0.75 · トーン 0.60 | 2.50 → 4.00 s |
+| `demo_tambor.ogg` | `tambor` | 速さ 0.55 · フィードバック 0.50 · ミックス 0.45 · ヘッド 0.85 · エイジング 0.40 · トーン 0.60 | 3.50 → 5.00 s |
+| `demo_mosaico.ogg` | `mosaico` | 下のオクターブ 0.60 · レベル 0.70 · ミックス 0.55 · 上のオクターブ 0.50 · フィードバック 0.85 · 拡散 0.60 | 4.00 → 8.00 s |
+| `demo_erosion.ogg` | `erosion` | 侵食 0.25 · ダンピング 0.60 · ミックス 0.65 · モジュレーション 0.70 · レベル 1.00 · 長さ 1.00 | 0.00 → 0.67 s |
+| `demo_desplazador.ogg` | `desplazador` | 周波数シフト 0.75 · タイム 0.45 · ミックス 0.50 · フィードバック 0.85 · トーン 0.70 · 幅 0.50 | — |
 | `demo_cadena_eco_y_muelle.ogg` | Eco y muelle: `delay` → `spring` | pot0 0.55 · pot1 0.40 · pot2 0.35 · pot3 0.60 · pot4 0.40 · pot5 0.00 | — |
 | `demo_cadena_flor_al_reves.ogg` | Flor al revés: `reverse` → `bloom` | pot0 0.60 · pot1 0.40 · pot2 0.50 · pot3 0.80 · pot4 0.55 · pot5 0.40 | — |
 | `demo_cadena_organo_infinito.ogg` | Órgano infinito: `octava` → `infinite` | pot0 0.60 · pot1 0.40 · pot2 0.00 · pot3 0.10 · pot4 0.50 · pot5 0.00 | — |

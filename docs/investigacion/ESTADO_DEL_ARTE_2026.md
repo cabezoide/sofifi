@@ -265,6 +265,54 @@ El orden sigue impacto entre coste. Las cifras de coste son [INF] salvo indicaci
 | 26 | USB-MIDI de clase | Expectativa de 2024-2026 | Firmware del puente | Hardware: puente USB | Otro: microcontrolador | Posterior a 12 |
 | 27 | Drive neuronal pequeño (S4D o LSTM-8) | Carácter de amplificador | ≤ 750 instr.; < 20 Kbit de pesos | Sí: bucles matriz-vector, tablas tanh/sigmoide | Ninguno | Baja prioridad |
 
+## Ideas de la comunidad DIY y de parches (2026-10-09)
+
+A petición de la persona propietaria, tres investigaciones buscaron ideas de efectos ambient en los foros DIY analógicos (FreeStompboxes, DIYStompboxes, Madbean, PedalPCB, AION FX), en los repositorios de parches (Patchstorage: ZOIA, MOD, Daisy; programas del Spin FV-1) y en los foros en español (Guitarristas.info, Musiquiatra, guitarrista.org). Se usa solo el principio de cada efecto, descrito con palabras propias (ADR 0002). Lo que se lee en un foro es dato citado (P10).
+
+- **Acceso:** FreeStompboxes, DIYStompboxes y el foro de PedalPCB devuelven 403; se citan sus fragmentos del buscador [?]. El Cuartito Diyer da 403 y ChileMusicos no responde. No se encontraron hilos en español sobre FV-1, Daisy ni MOD.
+- **Licencias:** los parches de Patchstorage tienen licencias variadas (WTFPL, CC BY-SA 4.0 o ninguna). Casi todos los programas FV-1 publicados no tienen licencia. CloudSeed es MIT y se podría portar con una entrada en `docs/terceros.yaml` [V].
+- **NAM y TONE3000** son capturas de amplificador: no dan ideas ambient para este núcleo.
+
+| Programa | Qué se oye | Principio de | Lote |
+|---|---|---|---|
+| `erosion` | un bucle que se desintegra en cada vuelta | ZOIA TapeRewinder; Blooper y Mood | 9 |
+| `mosaico` | un bucle leído a ½×, 1× y 2×: pad en tres octavas | ZOIA Astral Temple (WTFPL) | 9 |
+| `arcoiris` | dos voces transpuestas con regeneración caótica | PedalPCB Leprechaun, Madbean Rainbow Puker | 9 |
+| `desplazador` | eco con desplazamiento de frecuencia: espiral sin fin | FV-1 del Buchla 285 (modularsynthesis.com) | 9 |
+| `tambor` | eco de tambor de 4 cabezas con combinaciones | PedalPCB Hydra | 9 |
+| `armonico` | trémolo armónico: graves y agudos en contrafase | PedalPCB Pendulum; FV-1 Starfield+ | 9 |
+| `violin` | ataque lento y un vibrato que entra tarde | Guitarristas.info (hilos «violín» y «slow attack») | 10 |
+| `acople` | la nota sostenida se vuelve un acople armónico | Guitarristas.info (pedales atmosféricos) | 10 |
+| `arco` | sustain tipo eBow, con control automático de ganancia | Guitarristas.info (sustain infinito) | 10 |
+| `oscilador` | delay que autooscila con el nivel limitado | Guitarristas.info (compresor al final) | 10 |
+| `shimmer_escondido` | shimmer que solo entra en la cola | Guitarristas.info y Musiquiatra (shimmer) | 10 |
+| `dinamica` | el decay y el brillo siguen la fuerza al tocar | MOD Dyna Shimmer; ZOIA DirtyVerb | 10 |
+| `enjambre` | nube de ecos cortos que se junta o se dispersa | PedalPCB Deflector | 11 |
+| `probabilidad` | 8 ecos que suenan o no según una probabilidad | ZOIA Echolalia (WTFPL) | 11 |
+| `dados` | 4 ecos con tiempos y octavas al azar | ZOIA Rain Delay (WTFPL) | 11 |
+| `aureo` | tomas de eco en serie de Fibonacci | ZOIA Golden | 11 |
+| `estelar` | eco con un phaser en la realimentación | FV-1 Starfield (Madbean) | 11 |
+| `lata` | eco de lata de aceite: vibrato atado al tiempo | FV-1 Oil can delay | 11 |
+| `deriva` | el tiempo de eco salta a destinos al azar con glide | FV-1 Pitch Step Glider | 12 |
+| `dimension` | chorus espacial sin vibrato audible | AION Blueshift | 12 |
+| `vibe` | vibe de lámpara con fases escalonadas | AION Straylight; PedalPCB ElectroVibe | 12 |
+| `orilla` | chorus aleatorio con puerta de paso bajo | PedalPCB Low Tide | 12 |
+| `baldosa` | reverb sucia de eco cruzado, estilo PT2399 | FreeStompboxes (Wishing Well, Spare Room, TBR) | 12 |
+| `eco_casero` | eco que se ensucia cuanto más largo es | guitarrista.org y Guitarristas.info (PT2399) | 12 |
+| `relevo` | freeze que pasa de un acorde al siguiente con fundido | Guitarristas.info (sustain infinito) | 13 |
+| `frenada` | con el pulsador, la cinta se para y el tono cae | ZOIA Tape Pad V2 (WTFPL) | 13 |
+| `resbalon` | cabeza de velocidad libre sobre el pasado inmediato | Mood (modo Slip) | 13 |
+| `tartamudeo` | cada ataque fuerte repite un trozo | Mood (modo Envelope) | 13 |
+| `dos_ecos` | dos ecos a negra y negra con puntillo | Guitarristas.info y guitarrista.org (post-rock) | 13 |
+| `viento` | ráfagas de ruido filtrado que soplan al tocar | Guitarristas.info (simular instrumentos) | 13 |
+| `espiral` | reverb con pitch en la regeneración, L y R distintos | ZOIA Downward spiral, Abyss | 14 |
+| `arpegio` | ecos que tocan un arpegio y caen en una reverb | ZOIA Arpverb; FV-1 Arpeggio | 14 |
+| `semilla` | nube con multitap que sale de una semilla | CloudSeed (MIT) | 14 |
+| `swell_ritmico` | swell al ritmo del tap tempo | ZOIA Swell verb (CC BY-SA 4.0) | 14 |
+| `compas` | eco con tap tempo y subdivisiones | BYOC Echo Royal | 14 |
+
+Ya existen y no se repiten: Space Echo (cadena `cinta` → `spring`), shimmer de coro (`chorale`), freeze momentáneo (`freeze`), reverse reverb, reverb antes de saturación (`shoegaze`). Se descartan por FFT: Venus y Saturn. La receta «sinte» de Guitarristas.info (puerta, phaser, delay y reverb) es una cadena candidata.
+
 ## Conclusión
 
 El hallazgo central invierte la intuición. SOFIFI no necesita más potencia para competir con Strymon o Chase Bliss; ya tiene 16 veces el cómputo del FV-1 [?]. Necesita gastar ese cómputo en calidad que antes era cara. Las matrices variables, el velvet noise y los coeficientes ajustados por DDSP cuestan menos de 250 instrucciones juntas. Las tres atacan el defecto clásico de las reverbs digitales baratas: el anillo metálico [INF]. La fase 06 puede entregar casi toda esa calidad sin tocar la ISA.
