@@ -1,4 +1,4 @@
-<!-- i18n: fuente=fails.md sha=a86581e83fcd estado=al_dia -->
+<!-- i18n: fuente=fails.md sha=1d92f42b4246 estado=al_dia -->
 # Failures and their resolution
 
 This is the record of the failures found in the project. Each entry has a symptom, a diagnosis, a root cause, a resolution and a lesson. The record helps us not to repeat them. It also explains why the design is as it is.
@@ -33,6 +33,7 @@ Add a new entry when a failure is diagnosed and resolved. Do not rewrite the ent
 | F-24 | 07 | The microcode queue took the last BSRAM | resolved |
 | F-25 | 08 | Three failures of the SD controller, found in simulation | resolved before the board |
 | F-26 | 08 | Four fixed-point traps in batch 9 of the catalogue | resolved before publication |
+| F-27 | 08 | Small constants, control loops and a blind fingerprint in batch 10 | resolved before publication |
 
 ---
 
@@ -305,3 +306,23 @@ The acoustic tests of the new programs found four failures before publication.
   - **Cause:** the read fell between two samples. The interpolation is a low-pass filter, and it applies once on each pass.
   - **Resolution:** the length is rounded to whole samples. With erosion 0, the loop repeats bit for bit.
 - **Lesson:** in fixed point, the ACC and the registers saturate to [−1, 1). In a loop with feedback, a hidden filter is raised to the number of passes. The tests measure the level and the exact repetition, not only that «it makes a sound».
+
+## F-27 · Small constants, control loops and a blind fingerprint in batch 10
+
+- **A constant smaller than 1/32,768 does not fit in the D operand of SOF** (`violin`).
+  - **Symptom:** the age of the note and the slowest ramp did not move.
+  - **Cause:** D is S2.15: its smallest step is 1/32,768. 1/fs is smaller.
+  - **Resolution:** the constant comes from the product of two SOF, or from a ×64 factor that then multiplies a register of 1/64.
+- **A low-pass filter with a very small coefficient stops before it arrives** (`arco`).
+  - **Symptom:** the output fade stayed at 0.002 and did not get to 0.
+  - **Cause:** with RDFX and a coefficient of 2^-15, the step of each sample rounds to 0 near the target.
+  - **Resolution:** a fixed linear term and a floor at 0.
+- **An automatic gain control gets stuck or stops the loop** (`arco`, `oscilador`).
+  - **Symptom:** in `arco`, the gain stayed at 0 for ever. In `oscilador`, the loop stopped after the first note.
+  - **Cause:** a multiplicative gain that gets to 0 does not go up again. And a strong attack with a slow recovery pushed the gain below the value that keeps the oscillation.
+  - **Resolution:** a floor for the gain (1/256). In `oscilador`, a softer attack and a recovery of 85 ms.
+- **A fingerprint with neutral knobs does not tell programs apart** (`dinamica`).
+  - **Symptom:** `dinamica` and `freeze` had the same fingerprint.
+  - **Cause:** the fingerprint test sets pot3 = 0.5, which in `dinamica` is «no dynamics»: the program is then a plate with the CLIP tank, the same as `freeze` without the footswitch.
+  - **Resolution:** `POTS_HUELLA` gives `dinamica` a depth of 0.9, with a note of 0.6 s.
+- **Lesson:** long time constants do not fit in one instruction: build them. A control loop needs a floor. A fingerprint is useful only if the stimulus and the knobs get to the effect.

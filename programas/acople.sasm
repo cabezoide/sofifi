@@ -1,0 +1,223 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: pitch
+; resumen: Una nota sostenida hace crecer encima un armónico saturado, como un acople.
+; resumen.en: A held note slowly grows a saturated harmonic above it, like amp feedback.
+; resumen.zh-CN: 持续的音符上方会慢慢长出一个饱和的泛音，就像音箱的回授。
+; resumen.ja: 音を伸ばすと、その上に歪んだ倍音が育ちます。アンプのフィードバックのようです。
+;
+; acople.sasm — Acople simulado. Se toca una nota y se mantiene. Pasado un
+; tiempo, encima de la nota crece un armónico saturado: la octava, la quinta o
+; la doble octava. Una nota nueva lo apaga y la espera empieza otra vez.
+;
+; Cada muestra:
+;   1. Dos envolventes de |x| detectan los ataques (comun/compuerta.sasm). En
+;      cada ataque, `cuenta` vuelve a 1 y baja hasta 0 en el tiempo de pot0.
+;   2. El objetivo `obj` es 1 si la cuenta llegó a 0 y la nota sigue (envolvente
+;      lenta > 0,002). Si no, es 0. Sin nota, la cuenta vuelve a 1.
+;   3. Mientras se pisa el footswitch, `obj` es 1 y la subida dura unos 40 ms.
+;   4. La ganancia g sigue a `obj`: sube con el tiempo de pot3 y baja en unos
+;      40 ms. La ganancia del acople es g²·nivel·mezcla·min(1, 4·envolvente):
+;      con una nota normal y pot5 = 1, el acople suena unas 1,5 veces más fuerte que ella.
+;   5. La voz: un pitch shifter de doble tap (LFO0 en rampa de 2 048 muestras)
+;      sube la entrada el intervalo de pot1.
+;   6. Un paso alto (~230 Hz) y un paso bajo de pot4 dejan la banda del
+;      armónico. La banda se multiplica por 32 y CLIP la satura. Así el
+;      armónico satura también con una nota suave. Otro paso bajo de pot4
+;      suaviza los agudos que añade CLIP.
+;   7. Tres allpass cortos por lado dan un poco de espacio. Los dos lados
+;      comparten los dos primeros.
+;
+; pot0 = tiempo       (espera hasta el acople: 0 → 0,3 s · 1 → 4 s)
+; pot1 = intervalo    (tres tramos: +12 · +7 · +24 semitonos)
+; pot2 = mezcla       (0 → seco · 1 → acople al máximo y seco a la mitad)
+; pot3 = subida       (crecimiento del acople: 0 → unos 0,15 s · 1 → unos 3 s)
+; pot4 = tono         (paso bajo del acople: 0 → ~1,2 kHz · 1 → ~5,8 kHz)
+; pot5 = nivel        (nivel máximo del acople: 0 → 0,15 · 1 → 0,5)
+; sw   = mientras se pisa, el acople sube ya
+;
+; Diseño propio, a partir del principio del pedal de acople simulado que se
+; recomienda para ambient en Guitarristas.info («Pedales atmosféricos y
+; ambientales»), para sonidos tipo Mogwai o Explosions in the Sky: una nota
+; larga hace crecer un armónico que suena como un amplificador a todo volumen.
+
+equ  w        2048
+equ  tmin     0.3             ; espera con pot0 = 0 (s)
+equ  tmax     4.0             ; espera con pot0 = 1 (s)
+equ  sub0     0.15            ; subida con pot3 = 0 (s)
+equ  sub1     3.0             ; subida con pot3 = 1 (s)
+equ  unota    0.002           ; envolvente lenta mínima de una nota
+equ  krapido  0.0005          ; ~40 ms: caída del acople y subida con sw
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  tmp      reg2
+equ  envr     reg3
+equ  envl     reg4
+equ  cuenta   reg5
+equ  kpaso    reg6
+equ  obj      reg7
+equ  ksub     reg8
+equ  g        reg9
+equ  kac      reg10
+equ  grave    reg11
+equ  brillo   reg12
+equ  kbr      reg13
+equ  kmax     reg14
+equ  ac       reg15
+equ  acl      reg16
+equ  acr      reg17
+equ  suave    reg18
+
+mem  pa       w + 3
+mem  ap1      131
+mem  ap2      293
+mem  ap3      457
+mem  ap4      613
+
+lfo  0  ramp w
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 1/512                  ; tmp = 2^-9
+        wrax  tmp, 0
+inicio:
+; ── controles ────────────────────────────────────────────────────────
+        rdax  pot2, 1.0                 ; kwet = pot2 · kdry = 1 − pot2/2
+        wrax  kwet, -0.5
+        sof   1.0, 0.999
+        wrax  kdry, 0
+        rdax  pot5, 0.35                ; kmax de 0,15 a 0,5
+        sof   1.0, 0.15
+        wrax  kmax, 0
+        rdax  pot4, 0.6                 ; kbr de 0,15 a 0,75
+        sof   1.0, 0.15
+        wrax  kbr, 0
+; Intervalo (pot1). Con W = 2 048 y tmp = 2^-9, el coeficiente es (1 − razón)/2.
+        rdax  pot1, 1.0
+        sof   1.0, -1/3
+        skp   neg, int_8va
+        sof   1.0, -1/3
+        skp   neg, int_5ta
+        clr                             ; +24: razón 4
+        rdax  tmp, -1.5
+        skp   gez|neg, int_fin
+int_8va:
+        clr                             ; +12: razón 2
+        rdax  tmp, -0.5
+        skp   gez|neg, int_fin
+int_5ta:
+        clr                             ; +7: razón 1,49831
+        rdax  tmp, (1 - 1.49831)/2
+int_fin:
+        wrax  lfo0_rate, 0
+; kpaso = kmin + (kmax − kmin)·(1 − pot0)², como comun/duracion.sasm.
+        rdax  pot0, 1.0
+        sof   -1.0, 0.99997
+        wrax  kpaso, 1.0
+        mulx  kpaso
+        sof   64*(1/(tmin*48828.125) - 1/(tmax*48828.125)), 64/(tmax*48828.125)
+        sof   1/64, 0
+        wrax  kpaso, 0
+; ksub, con la misma forma desde pot3: de 1/(sub0·fs) a 1/(sub1·fs).
+        rdax  pot3, 1.0
+        sof   -1.0, 0.99997
+        wrax  ksub, 1.0
+        mulx  ksub
+        sof   64*(1/(sub0*48828.125) - 1/(sub1*48828.125)), 64/(sub1*48828.125)
+        sof   1/64, 0
+        wrax  ksub, 0
+; ── 1. ataques y cuenta atrás ────────────────────────────────────────
+include  comun/compuerta.sasm
+; ── 2. objetivo: 1 si la cuenta acabó ────────────────────────────────
+        skp   neg, madura
+        clr
+        wrax  obj, 0
+        skp   zro, nota                 ; ACC = 0: salta siempre
+madura:
+        sof   0, 0.99997
+        wrax  obj, 0
+nota:
+        rdax  envl, 1.0                 ; sin nota: obj = 0 y cuenta = 1
+        sof   1.0, -unota
+        skp   gez, pie
+        sof   0, 0.99997
+        wrax  cuenta, 0
+        wrax  obj, 0
+pie:
+; ── 3. footswitch: acoplar ya ────────────────────────────────────────
+        clr
+        rdax  sw, 1.0
+        skp   zro, rampa
+        sof   0, 0.99997
+        wrax  obj, 0
+        sof   0, krapido
+        wrax  ksub, 0
+rampa:
+; ── 4. ganancia: g += k·(obj − g); con obj = 0, k = krapido ──────────
+        ldax  obj
+        sof   1.0, -0.5
+        skp   gez, sube
+        sof   0, krapido
+        wrax  ksub, 0
+sube:
+        ldax  obj
+        rdax  g, -1.0
+        mulx  ksub
+        rdax  g, 1.0
+        wrax  g, 1.0
+        mulx  g                         ; g²
+        mulx  kmax
+        mulx  kwet
+        wrax  kac, 0
+        rdax  envl, 1.999               ; min(1, 4·envl): el acople sigue a la nota
+        sof   1.999, 0
+        mulx  kac
+        wrax  kac, 0
+; ── 5. voz: pitch shifter de doble tap ───────────────────────────────
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wra   pa, 0
+        cho   pa + 1, 1.0, lfo0, na
+        cho   pa + 1, 1.0, lfo0, na|media
+; ── 6. banda del armónico, ×8 y CLIP ─────────────────────────────────
+        wrax  ac, 1.0
+        rdfx  grave, 0.03               ; paso bajo de ~230 Hz
+        wrax  grave, -1.0
+        rdax  ac, 1.0                   ; paso alto = voz − grave
+        rdax  brillo, -1.0              ; brillo += kbr·(x − brillo)
+        mulx  kbr
+        rdax  brillo, 1.0
+        wrax  brillo, 1.999
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        clip
+        rdax  suave, -1.0               ; otro paso bajo de pot4 tras CLIP
+        mulx  kbr
+        rdax  suave, 1.0
+        wrax  suave, 1.0
+        mulx  kac
+; ── 7. allpass cortos ────────────────────────────────────────────────
+        rda   ap1#, 0.5
+        wrap  ap1, -0.5
+        rda   ap2#, 0.5
+        wrap  ap2, -0.5
+        wrax  ac, 1.0
+        rda   ap3#, 0.5
+        wrap  ap3, -0.5
+        wrax  acl, 0
+        rdax  ac, 1.0
+        rda   ap4#, 0.5
+        wrap  ap4, -0.5
+        wrax  acr, 0
+; ── salida ───────────────────────────────────────────────────────────
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  acl, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  acr, 1.0
+        wrax  dacr, 0

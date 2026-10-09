@@ -1,4 +1,4 @@
-<!-- i18n: fuente=demo_examples/README.md sha=a6d916286d67 estado=al_dia -->
+<!-- i18n: fuente=demo_examples/README.md sha=4baa1149f9a8 estado=al_dia -->
 # demo_examples
 
 合成ギター（Em9 のアルペジオ、Karplus-Strong の弦）を、ビット精度のモデルでコアの各プログラムに通したものです。`.venv/bin/python scripts/generar_demos.py` で再生成でき、毎回同じ音声になります。
@@ -63,6 +63,12 @@
 | `demo_mosaico.ogg` | `mosaico` | 下のオクターブ 0.60 · レベル 0.70 · ミックス 0.55 · 上のオクターブ 0.50 · フィードバック 0.85 · 拡散 0.60 | 4.00 → 8.00 s |
 | `demo_erosion.ogg` | `erosion` | 侵食 0.25 · ダンピング 0.60 · ミックス 0.65 · モジュレーション 0.70 · レベル 1.00 · 長さ 1.00 | 0.00 → 0.67 s |
 | `demo_desplazador.ogg` | `desplazador` | 周波数シフト 0.75 · タイム 0.45 · ミックス 0.50 · フィードバック 0.85 · トーン 0.70 · 幅 0.50 | — |
+| `demo_violin.ogg` | `violin` | 立ち上がり 0.50 · タイム 0.30 · ミックス 1.00 · 深さ 0.60 · 速さ 0.30 · トーン 0.50 | — |
+| `demo_shimmer_escondido.ogg` | `shimmer_escondido` | ディケイ 0.80 · ダンピング 0.25 · ミックス 0.55 · シマー量 0.80 · ダッキング 1.00 · トーン 0.40 | — |
+| `demo_arco.ogg` | `arco` | サステイン 0.85 · 立ち上がり 0.50 · ミックス 0.85 · 上のオクターブ 0.70 · トーン 0.30 · スレッショルド 0.20 | — |
+| `demo_oscilador.ogg` | `oscilador` | タイム 0.12 · フィードバック 0.70 · ミックス 0.50 · スムージング 0.70 · トーン 0.40 · レベル 0.20 | 2.00 → 4.00 s |
+| `demo_dinamica.ogg` | `dinamica` | ディケイ 0.75 · ダンピング 0.30 · ミックス 0.45 · 深さ 0.85 · スレッショルド 0.10 · 速さ 0.10 | — |
+| `demo_acople.ogg` | `acople` | タイム 0.00 · 音程 0.00 · ミックス 1.00 · 立ち上がり 0.15 · トーン 0.55 · レベル 1.00 | — |
 | `demo_cadena_eco_y_muelle.ogg` | Eco y muelle: `delay` → `spring` | pot0 0.55 · pot1 0.40 · pot2 0.35 · pot3 0.60 · pot4 0.40 · pot5 0.00 | — |
 | `demo_cadena_flor_al_reves.ogg` | Flor al revés: `reverse` → `bloom` | pot0 0.60 · pot1 0.40 · pot2 0.50 · pot3 0.80 · pot4 0.55 · pot5 0.40 | — |
 | `demo_cadena_organo_infinito.ogg` | Órgano infinito: `octava` → `infinite` | pot0 0.60 · pot1 0.40 · pot2 0.00 · pot3 0.10 · pot4 0.50 · pot5 0.00 | — |

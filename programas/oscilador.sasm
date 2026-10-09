@@ -1,0 +1,155 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: delay
+; resumen: Eco que oscila solo con un techo de nivel; el tiempo afina el tono.
+; resumen.en: Echo that oscillates by itself under a level ceiling; the time tunes the pitch.
+; resumen.zh-CN: 自激振荡的回声，电平有上限；时间调节音高。
+; resumen.ja: レベルの上限付きで自己発振するエコー。タイムで音程を変えます。
+;
+; oscilador.sasm — Un eco que autooscila, pero domado. Con la realimentación
+; por encima de 1, una nota basta para disparar el lazo. Un control automático
+; de ganancia (CAG) dentro del lazo para la subida en el techo. Así queda un
+; tono continuo que no sube de volumen. Al girar el tiempo, el puntero de
+; lectura se desliza y el tono se afina como en una cinta.
+;
+; Cada muestra:
+;   1. Lee la línea con un LFO parado (como comun/tiempo.sasm). pot0 pasa por
+;      un paso bajo de velocidad regulable (pot3) y después se eleva al cuadrado:
+;      los tiempos cortos, los que dan tonos, ocupan más recorrido del mando.
+;   2. Filtra el eco con un paso banda de Chamberlin (comun/svf.sasm) con
+;      q = 1: ganancia 1 en el centro, que fija pot4.
+;   3. Multiplica por la ganancia g del CAG. La envolvente de picos (MAXX)
+;      compara la salida con el techo (pot5). Si lo pasa, g baja en proporción
+;      al exceso. Si no, g vuelve hacia 1 en unos 85 ms.
+;   4. Multiplica por la realimentación (hasta 1,1, en el coeficiente de SOF),
+;      suma la entrada, satura con CLIP y escribe en la línea.
+;
+; pot0 = tiempo           (0 → 2 ms · 0,2 → 22 ms · 0,5 → 128 ms · 1 → 0,5 s)
+; pot1 = realimentación   (0 → un eco · 0,91 → 1 · 1 → 1,1: oscila)
+; pot2 = mezcla           (0 → seco · 1 → solo eco)
+; pot3 = suavizado        (0 → el tiempo llega en ~40 ms · 1 → en ~0,5 s)
+; pot4 = tono             (centro del paso banda: 0 → 300 Hz · 1 → 3 kHz)
+; pot5 = nivel            (techo de la oscilación: 0 → 0,1 · 1 → 0,6 de pico)
+; sw   = mientras se pisa, realimentación al máximo (1,1): dispara el lazo
+;
+; Diseño propio, a partir del principio de los guitarristas que suben la
+; realimentación de un delay al máximo y mueven el tiempo para cambiar el tono
+; (foro Guitarristas.info). Allí el volumen crecía sin freno; aquí el CAG lo
+; para en el techo.
+
+equ  et    12288              ; excursión del LFO: 2·et = 24 576 muestras (0,5 s)
+equ  base  98                 ; retardo mínimo: 2 ms
+equ  ka    0.001              ; ataque del CAG
+equ  kr    1/4096             ; vuelta de g hacia 1
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  tiempo   reg2
+equ  kg       reg3
+equ  f        reg4
+equ  lp       reg5
+equ  bp       reg6
+equ  g        reg7
+equ  env      reg8
+equ  techo    reg9
+equ  kh       reg10
+equ  y        reg11
+equ  tmp      reg12
+equ  eco      reg13
+equ  ecow     reg14
+
+mem  dl    base + 2*et + 3
+
+lfo  0  sin  et
+
+        wrax  lfo0_rate, 0              ; ACC vale 0 al empezar la muestra
+        skp   run, inicio
+        sof   0, 0.5                    ; un cuarto de vuelta: forma 1
+        wrax  lfo0_rate, 0
+        sof   0, 0.99997                ; g = 1
+        wrax  g, 0
+        sof   0, -1.0                   ; al arrancar, el tiempo ya está en pot0
+        rdax  pot0, 1.999
+        wrax  tiempo, 0
+inicio:
+; ── controles ────────────────────────────────────────────────────────
+include  comun/mezcla.sasm
+        rdax  pot3, -0.92               ; kg = 0,0005·(1 − 0,92·pot3)
+        sof   1.0, 0.999
+        sof   0.0005, 0
+        wrax  kg, 0
+        rdax  pot4, 1.0                 ; f = 0,0386 + 0,35·pot4²
+        mulx  pot4
+        sof   0.35, 0.0386
+        wrax  f, 0
+        rdax  pot5, 0.5                 ; techo = 0,1 + 0,5·pot5
+        sof   1.0, 0.1
+        wrax  techo, 0
+        rdax  pot1, 0.55                ; kh = 0,55·max(pot1, sw); ×2 en el lazo
+        maxx  sw, 0.55
+        wrax  kh, 0
+; ── 1. tiempo: paso bajo de pot0 y cuadrado ──────────────────────────
+        sof   0, -1.0                   ; objetivo = 2·pot0 − 1
+        rdax  pot0, 1.999
+        rdax  tiempo, -1.0
+        mulx  kg
+        rdax  tiempo, 1.0
+        wrax  tiempo, 0.5               ; p = (tiempo + 1)/2
+        sof   1.0, 0.5
+        wrax  tmp, 1.0
+        mulx  tmp
+        sof   1.999, -1.0               ; depth = 2·p² − 1
+        wrax  lfo0_depth, 0
+        cho   dl + base, 1.0, lfo0
+        wrax  eco, 0
+; ── 2. paso banda de Chamberlin con q = 1 ────────────────────────────
+        rdax  bp, 1.0
+        mulx  f
+        rdax  lp, 1.0
+        wrax  lp, -1.0
+        rdax  eco, 1.0
+        rdax  bp, -1.0                  ; hp = x − lp − bp
+        mulx  f
+        rdax  bp, 1.0
+        wrax  bp, 1.0
+; ── 3. CAG: y = bp·g; g baja si la envolvente pasa del techo ─────────
+        mulx  g
+        wrax  y, 0
+        rdax  env, 0.9995
+        maxx  y, 1.0
+        wrax  env, 1.0
+        rdax  techo, -1.0
+        skp   neg, soltar
+        sof   ka, 0
+        mulx  g                         ; proporcional a g: g nunca pasa de 0
+        wrax  tmp, 0
+        rdax  g, 1.0
+        rdax  tmp, -1.0
+        wrax  g, 0
+soltar:
+        clr
+        rdax  g, -1.0
+        sof   kr, kr                    ; (1 − g)·kr: unos 85 ms
+        rdax  g, 1.0
+        wrax  g, 0
+; ── 4. realimentación, entrada, CLIP y escritura ─────────────────────
+        rdax  y, 1.0
+        mulx  kh
+        sof   1.999, 0                  ; la ganancia > 1 va en el coeficiente
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        sof   2/3, 0                    ; curva_suave(2x/3): pendiente 1, techo ±1
+        clip
+        wra   dl, 0
+; ── salida ───────────────────────────────────────────────────────────
+        rdax  y, 1.0
+        mulx  kwet
+        wrax  ecow, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  ecow, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  ecow, 1.0
+        wrax  dacr, 0

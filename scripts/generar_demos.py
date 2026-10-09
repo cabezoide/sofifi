@@ -105,6 +105,18 @@ DEMOS: tuple[tuple[str, dict[int, str], tuple[tuple[float, float], ...], float],
     # Graba el arpegio entero y lo deja desgastarse vuelta a vuelta hasta la niebla.
     ("erosion", {0: "0.25", 1: "0.6", 2: "0.65", 3: "0.7", 4: "1", 5: "1"}, ((0.0, 0.67),), 6.0),
     ("desplazador", {0: "0.75", 1: "0.45", 2: "0.5", 3: "0.85", 4: "0.7", 5: "0.5"}, (), 6.0),
+    ("violin", {0: "0.5", 1: "0.3", 2: "1", 3: "0.6", 4: "0.3", 5: "0.5"}, (), 2.0),
+    ("shimmer_escondido", {0: "0.8", 1: "0.25", 2: "0.55", 3: "0.8", 4: "1", 5: "0.4"}, (), 6.0),
+    ("arco", {0: "0.85", 1: "0.5", 2: "0.85", 3: "0.7", 4: "0.3", 5: "0.2"}, (), 4.0),
+    (
+        "oscilador",
+        {0: "0.12", 1: "0.7", 2: "0.5", 3: "0.7", 4: "0.4", 5: "0.2"},
+        ((2.0, 4.0),),
+        4.0,
+    ),
+    # El arpegio tiene amplitud fija: la dinámica apenas actúa en esta demo.
+    ("dinamica", {0: "0.75", 1: "0.3", 2: "0.45", 3: "0.85", 4: "0.1", 5: "0.1"}, (), 5.0),
+    ("acople", {0: "0", 1: "0", 2: "1", 3: "0.15", 4: "0.55", 5: "1"}, (), 3.0),
 )
 # Cadenas del banco (presets/cadenas.toml, ADR 0013), con sus pots: (nombre, cola en segundos).
 DEMOS_CADENAS: tuple[tuple[str, float], ...] = (

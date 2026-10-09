@@ -3,7 +3,7 @@
 
 # Programas del núcleo
 
-57 programas y 456 presets. Cada programa es un fichero de texto en `programas/`; los presets están en `presets/banco.toml`.
+63 programas y 504 presets. Cada programa es un fichero de texto en `programas/`; los presets están en `presets/banco.toml`.
 Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste.py`). La memoria es de 43 008 palabras.
 
 ## Reverb
@@ -14,6 +14,7 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 | `bloom` | La reverb crece despacio después de cada nota, como una flor que se abre. | 0: decay<br>1: damping<br>2: mezcla<br>3: apertura | 8 | 84 | 637 | 23 520 |
 | `chorale` | La cola del plate canta una vocal, de «a» a «i». | 0: decay<br>1: damping<br>2: mezcla<br>3: vocal | 8 | 160 | 1 192 | 37 439 |
 | `cloud` | Difusores largos con modulación aleatoria: el ataque se disuelve. | 0: decay<br>1: damping<br>2: mezcla<br>3: modulación | 8 | 96 | 907 | 42 814 |
+| `dinamica` | Plate cuya cola cambia con la fuerza con que se toca. | 0: decay<br>1: damping<br>2: mezcla<br>3: profundidad<br>4: umbral<br>5: velocidad | 8 | 141 | 1 188 | 37 439 |
 | `ensemble` | Un coro de tres voces antes del plate: la cola suena como una sección de cuerdas. | 0: decay<br>1: damping<br>2: mezcla<br>3: ensemble | 8 | 99 | 953 | 38 540 |
 | `freeze` | Plate que congela la cola con el pulsador. | 0: decay<br>1: damping<br>2: mezcla | 8 | 103 | 940 | 37 439 |
 | `freeze_givens` | Freeze que se mueve sin perder energía: la cola congelada gira entre las ramas. | 0: decay<br>1: damping<br>2: mezcla<br>3: giro | 8 | 136 | 1 138 | 37 439 |
@@ -27,6 +28,7 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 | `reverb_inversa` | Reverb al revés: tras cada ataque, la cola crece y se corta de golpe. | 0: decay<br>1: damping<br>2: mezcla<br>3: duración | 8 | 133 | 1 098 | 37 439 |
 | `shimmer` | Plate con un +12 en la realimentación: cada vuelta sube una octava. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 8 | 108 | 1 037 | 41 539 |
 | `shimmer_energia` | Shimmer que se regula solo: cuanta más octava acumula, menos añade. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 8 | 117 | 1 095 | 41 539 |
+| `shimmer_escondido` | Shimmer escondido: la octava se calla mientras tocas y aparece en la cola. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer<br>4: ducking<br>5: tono | 8 | 139 | 1 239 | 41 539 |
 | `shimmer_grave` | Shimmer hacia abajo: cada vuelta baja una octava y la cola se vuelve un órgano grave. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 8 | 108 | 1 037 | 41 539 |
 | `shimmer_quinta` | Shimmer de quinta: cada vuelta sube 7 semitonos, como un acorde que se abre. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 8 | 108 | 1 037 | 41 539 |
 | `shoegaze` | Plate que se satura después de la cola: un muro de ruido cálido detrás de la guitarra. | 0: decay<br>1: damping<br>2: mezcla<br>3: saturación | 8 | 142 | 1 106 | 37 439 |
@@ -43,6 +45,7 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 | `delay` | Eco digital limpio de 20 a 690 ms, con tono en la realimentación. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: tono | 8 | 38 | 309 | 33 749 |
 | `ducking` | Eco que se aparta mientras se toca y aparece en los silencios. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: ducking | 8 | 51 | 394 | 33 749 |
 | `lluvia` | Seis ecos irregulares que se deshacen en allpass: una lluvia de notas. | 0: difusión<br>1: realimentación<br>2: mezcla | 8 | 46 | 364 | 35 385 |
+| `oscilador` | Eco que oscila solo con un techo de nivel; el tiempo afina el tono. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: suavizado<br>4: tono<br>5: nivel | 8 | 86 | 614 | 24 678 |
 | `pingpong` | Eco estéreo que salta de un lado a otro. | 0: tiempo<br>1: realimentación<br>2: mezcla | 8 | 38 | 353 | 40 874 |
 | `reverse` | Eco invertido en granos de 0,17 s. | 0: tono<br>1: realimentación<br>2: mezcla | 8 | 34 | 301 | 16 388 |
 | `tambor` | Eco de tambor magnético de cuatro cabezas: un ritmo que sale de las cabezas encendidas. | 0: velocidad<br>1: realimentación<br>2: mezcla<br>3: cabezas<br>4: edad<br>5: tono | 8 | 173 | 1 328 | 37 656 |
@@ -64,6 +67,7 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 
 | Programa | Qué hace | Mandos | Presets | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|---|
+| `acople` | Una nota sostenida hace crecer encima un armónico saturado, como un acople. | 0: tiempo<br>1: intervalo<br>2: mezcla<br>3: subida<br>4: tono<br>5: nivel | 8 | 138 | 1 038 | 3 550 |
 | `arcoiris` | Dos voces transpuestas en un bucle que regenera y llega a autooscilar. | 0: intervalo<br>1: segunda voz<br>2: mezcla<br>3: tiempo<br>4: realimentación<br>5: tono | 8 | 76 | 693 | 12 345 |
 | `armonizador` | Una voz a −12, −7, −5, +5, +7 o +12 semitonos, con realimentación. | 0: intervalo<br>1: realimentación<br>2: mezcla | 8 | 55 | 450 | 4 100 |
 | `doblador` | Dos voces desafinadas unos cents, una a cada lado: ensancha el sonido. | 0: desafinación<br>2: mezcla | 8 | 32 | 346 | 1 028 |
@@ -74,9 +78,11 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 
 | Programa | Qué hace | Mandos | Presets | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|---|
+| `arco` | Sustain de arco: la nota entra suave, se queda a nivel fijo y puede pasar a su octava. | 0: sustain<br>1: subida<br>2: mezcla<br>3: octava alta<br>4: tono<br>5: umbral | 8 | 122 | 897 | 2 052 |
 | `compresor` | Compresor: baja lo fuerte y deja lo suave; sostiene las notas. | 0: umbral<br>1: compresión<br>2: mezcla<br>3: ganancia | 8 | 57 | 394 | 1 |
 | `puerta` | Puerta de ruido: calla el zumbido entre notas y deja pasar lo que se toca. | 0: umbral<br>1: cierre | 8 | 29 | 222 | 1 |
 | `swell` | Cada nota empieza en silencio y sube, antes de un plate. | 0: decay<br>1: damping<br>2: mezcla<br>3: subida | 8 | 116 | 983 | 37 439 |
+| `violin` | Cada nota entra sin púa, como con un arco, y el vibrato llega después. | 0: subida<br>1: tiempo<br>2: mezcla<br>3: profundidad<br>4: velocidad<br>5: tono | 8 | 118 | 845 | 85 |
 
 ## Textura
 

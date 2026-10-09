@@ -254,6 +254,12 @@ HUELLAS = {
     "mosaico": "a6d48be05b31d041",
     "erosion": "28774e5b2dc4dbbe",
     "desplazador": "98bedfe6554d4343",
+    "violin": "e85cd8cdd38066ef",
+    "shimmer_escondido": "70a5d7f170b3e906",
+    "arco": "2c4983b7c802efae",
+    "oscilador": "8e906592fdb882c9",
+    "dinamica": "e9753e942a929dcc",
+    "acople": "a82c064a0ae3a4ac",
 }
 
 
@@ -274,9 +280,18 @@ SEGUNDOS_HUELLA = {
     "mosaico": 0.5,
     "erosion": 0.3,
     "desplazador": 0.4,
+    "violin": 0.6,
+    "oscilador": 0.3,
+    "dinamica": 0.6,
 }
+# Con pot3 = 0,5, dinamica no actúa y da los mismos bits que freeze sin pulsar.
+POTS_HUELLA = {"dinamica": ("0.5", "0.3", "0.5", "0.9")}
 # Sin footswitch, el looper solo deja pasar la señal seca: graba los primeros 0,1 s.
-TRAMOS_SW = {"looper": ((0, int(0.1 * FS)),), "erosion": ((0, int(0.1 * FS)),)}
+TRAMOS_SW = {
+    "acople": ((0, int(0.3 * FS)),),
+    "looper": ((0, int(0.1 * FS)),),
+    "erosion": ((0, int(0.1 * FS)),),
+}
 CON_TONO = {
     "lofi",
     "swell",
@@ -295,6 +310,10 @@ CON_TONO = {
     "arcoiris",
     "mosaico",
     "erosion",
+    "violin",
+    "arco",
+    "acople",
+    "dinamica",
 }
 
 
@@ -313,7 +332,8 @@ def test_huella_bit_exact(nombre: str) -> None:
         x = Senal(FS, (tono(196, SEGUNDOS_HUELLA.get(nombre, 0.3), 0.5),))
     else:
         x = impulso(SEGUNDOS_HUELLA.get(nombre, 0.1))
-    c = Controles(pots("0.5", "0.3", "0.5", "0.5"), tramos_sw=TRAMOS_SW.get(nombre, ()))
+    mandos = POTS_HUELLA.get(nombre, ("0.5", "0.3", "0.5", "0.5"))
+    c = Controles(pots(*mandos), tramos_sw=TRAMOS_SW.get(nombre, ()))
     y = procesar(programa(nombre), x, c)
     datos = b"".join(v.to_bytes(3, "little", signed=True) for c in y.canales for v in c)
     assert hashlib.sha256(datos).hexdigest()[:16] == HUELLAS[nombre]

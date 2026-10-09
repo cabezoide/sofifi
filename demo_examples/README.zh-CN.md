@@ -1,4 +1,4 @@
-<!-- i18n: fuente=demo_examples/README.md sha=a6d916286d67 estado=al_dia -->
+<!-- i18n: fuente=demo_examples/README.md sha=4baa1149f9a8 estado=al_dia -->
 # demo_examples
 
 一段合成吉他（Em9 琶音，Karplus-Strong 弦模型）经内核的每个程序处理，使用逐位精确模型。可用 `.venv/bin/python scripts/generar_demos.py` 重新生成，每次得到的音频都相同。
@@ -63,6 +63,12 @@
 | `demo_mosaico.ogg` | `mosaico` | 低八度 0.60 · 电平 0.70 · 干湿比 0.55 · 高八度 0.50 · 反馈 0.85 · 扩散 0.60 | 4.00 → 8.00 s |
 | `demo_erosion.ogg` | `erosion` | 侵蚀 0.25 · 阻尼 0.60 · 干湿比 0.65 · 调制 0.70 · 电平 1.00 · 时长 1.00 | 0.00 → 0.67 s |
 | `demo_desplazador.ogg` | `desplazador` | 移频 0.75 · 时间 0.45 · 干湿比 0.50 · 反馈 0.85 · 音色 0.70 · 宽度 0.50 | — |
+| `demo_violin.ogg` | `violin` | 上升时间 0.50 · 时间 0.30 · 干湿比 1.00 · 深度 0.60 · 速度 0.30 · 音色 0.50 | — |
+| `demo_shimmer_escondido.ogg` | `shimmer_escondido` | 衰减 0.80 · 阻尼 0.25 · 干湿比 0.55 · shimmer 量 0.80 · 闪避 1.00 · 音色 0.40 | — |
+| `demo_arco.ogg` | `arco` | 延音 0.85 · 上升时间 0.50 · 干湿比 0.85 · 高八度 0.70 · 音色 0.30 · 阈值 0.20 | — |
+| `demo_oscilador.ogg` | `oscilador` | 时间 0.12 · 反馈 0.70 · 干湿比 0.50 · 平滑 0.70 · 音色 0.40 · 电平 0.20 | 2.00 → 4.00 s |
+| `demo_dinamica.ogg` | `dinamica` | 衰减 0.75 · 阻尼 0.30 · 干湿比 0.45 · 深度 0.85 · 阈值 0.10 · 速度 0.10 | — |
+| `demo_acople.ogg` | `acople` | 时间 0.00 · 音程 0.00 · 干湿比 1.00 · 上升时间 0.15 · 音色 0.55 · 电平 1.00 | — |
 | `demo_cadena_eco_y_muelle.ogg` | Eco y muelle: `delay` → `spring` | pot0 0.55 · pot1 0.40 · pot2 0.35 · pot3 0.60 · pot4 0.40 · pot5 0.00 | — |
 | `demo_cadena_flor_al_reves.ogg` | Flor al revés: `reverse` → `bloom` | pot0 0.60 · pot1 0.40 · pot2 0.50 · pot3 0.80 · pot4 0.55 · pot5 0.40 | — |
 | `demo_cadena_organo_infinito.ogg` | Órgano infinito: `octava` → `infinite` | pot0 0.60 · pot1 0.40 · pot2 0.00 · pot3 0.10 · pot4 0.50 · pot5 0.00 | — |

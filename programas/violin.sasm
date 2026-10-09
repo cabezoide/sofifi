@@ -1,0 +1,182 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: dinámica
+; resumen: Cada nota entra sin púa, como con un arco, y el vibrato llega después.
+; resumen.en: Each note starts with no pick attack, as with a bow, and the vibrato comes later.
+; resumen.zh-CN: 每个音符都没有拨片的起音，像用琴弓拉奏，颤音随后才出现。
+; resumen.ja: 各ノートはピックのアタックなしで、弓のように立ち上がり、ビブラートは後から来ます。
+;
+; violin.sasm — Violín: el nivel de cada nota sube desde el silencio, el filtro
+; se abre con la subida y un vibrato empieza cuando la nota ya tiene una edad.
+; Diseño propio, a partir del principio de los guitarristas que imitan el arco:
+; empezar con el volumen a cero, subirlo poco a poco y añadir el vibrato
+; cuando la nota ya suena, como hace un violinista.
+;
+; Cada muestra:
+;   1. Detector de ataque (comun/compuerta.sasm). En un ataque, `cuenta` vuelve
+;      a 1. Después baja 1/fs por muestra: la edad de la nota es 1 − cuenta, en
+;      segundos, hasta 2 s.
+;   2. Rampa: en un ataque, `gan` vuelve a 0. Después sube `katk` por muestra
+;      hasta 1. `gs` es `gan` con un filtro de unos 3 ms, para evitar el clic.
+;   3. La entrada se multiplica por gs². Pasa por dos polos de paso bajo cuyo
+;      coeficiente sube de 0,04 (unos 300 Hz) a kmax con gs.
+;   4. Vibrato: profundidad = 2·(cret − cuenta), entre 0 y 1. Empieza a crecer
+;      al cumplir la nota el retardo de pot1 y llega a su máximo 0,5 s después.
+;      CHO lee la línea de retardo con el LFO 0, de ±40 muestras como máximo.
+;   5. Saturación muy ligera (CLIP con poca entrada) y mezcla con el seco.
+;   6. El footswitch apaga y enciende el efecto. Un fundido de unos 20 ms
+;      lleva la salida al seco, sin clic.
+;
+; pot0 = subida        (0 → unos 50 ms · 1 → unos 1,5 s)
+; pot1 = tiempo        (retardo del vibrato: 0 → 0,1 s · 1 → 1 s)
+; pot2 = mezcla        (0 → seco · 1 → solo violín)
+; pot3 = profundidad   (0 → sin vibrato · 1 → ±1/2 semitono, aprox.)
+; pot4 = velocidad     (0 → 4,5 Hz · 1 → 8 Hz)
+; pot5 = tono          (0 → oscuro, hasta 1,7 kHz · 1 → abierto)
+; sw   = cada pisada enciende o apaga el efecto
+
+equ  e        40              ; excursión del vibrato, en muestras
+equ  kmin     0.04            ; coeficiente del paso bajo con la nota en silencio
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  envr     reg2
+equ  envl     reg3
+equ  cuenta   reg4
+equ  kpaso    reg5
+equ  gan      reg6
+equ  katk     reg7
+equ  gs       reg8
+equ  kf       reg9
+equ  lp1      reg10
+equ  lp2      reg11
+equ  tmp      reg12
+equ  k512     reg13
+equ  cret     reg14
+equ  prof     reg15
+equ  bypass   reg16
+equ  swant    reg17
+equ  eb       reg18
+equ  yw       reg19
+equ  w        reg20
+equ  d        reg21
+equ  k64      reg22
+equ  kmax     reg23
+equ  g2       reg24
+
+mem  vb    2*e + 4
+
+lfo  0  sin  e
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 1/512
+        wrax  k512, 0
+        sof   0, 1/64
+        wrax  k64, 0
+        sof   0, 0.005                  ; kpaso = 0,005·0,0041 ≈ 1/fs
+        sof   0.0041, 0
+        wrax  kpaso, 0
+inicio:
+; ── controles ────────────────────────────────────────────────────────
+include  comun/mezcla.sasm
+        rdax  pot0, -1.0                ; u = 1 − pot0
+        sof   1.0, 0.99997
+        wrax  tmp, 1.0
+        mulx  tmp                       ; u²
+        sof   0.0256, 0.0009            ; 64·katk: de 0,0265 a 0,0009
+        mulx  k64
+        wrax  katk, 0
+        rdax  pot1, -0.9                ; cret = 0,9 − 0,9·pot1
+        sof   1.0, 0.9
+        wrax  cret, 0
+        rdax  pot5, 0.7                 ; kmax = 0,2 + 0,7·pot5
+        sof   1.0, 0.2
+        wrax  kmax, 0
+        rdax  pot4, 512*2*3.5/48828.125 ; velocidad: de 4,5 a 8 Hz
+        sof   1.0, 512*2*4.5/48828.125
+        mulx  k512
+        wrax  lfo0_rate, 0
+; ── 1. detector de ataque y edad ─────────────────────────────────────
+include  comun/compuerta.sasm
+; ── 2. rampa: vuelve a 0 justo tras un ataque ────────────────────────
+        sof   1.0, -0.9999
+        skp   neg, rampa
+        clr
+        wrax  gan, 0
+rampa:
+        clr
+        rdax  gan, 1.0
+        rdax  katk, 1.0
+        wrax  gan, 1.0                  ; satura en 1
+        rdfx  gs, 0.007
+        wrax  gs, 1.0
+        mulx  gs
+        wrax  g2, 0
+; ── 3. nivel y paso bajo que se abre con la rampa ────────────────────
+        rdax  kmax, 1.0
+        sof   1.0, -kmin
+        mulx  gs
+        sof   1.0, kmin
+        wrax  kf, 0
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        mulx  g2
+        rdax  lp1, -1.0
+        mulx  kf
+        rdax  lp1, 1.0
+        wrax  lp1, 1.0
+        rdax  lp2, -1.0
+        mulx  kf
+        rdax  lp2, 1.0
+        wrax  lp2, 1.0
+        wra   vb, 0
+; ── 4. vibrato que espera la edad de la nota ─────────────────────────
+        rdax  cret, 1.0
+        rdax  cuenta, -1.0
+        sof   1.999, 0
+        skp   gez, crece
+        clr
+crece:
+        wrax  prof, 1.0                 ; satura en 1
+        mulx  pot3
+        wrax  lfo0_depth, 0
+        cho   vb + 1, 1.0, lfo0
+; ── 5. saturación muy ligera ─────────────────────────────────────────
+        sof   0.6, 0
+        clip
+        sof   1.111, 0
+        wrax  yw, 0
+; ── 6. footswitch: cada flanco de subida invierte `bypass` ───────────
+        rdax  sw, 1.0
+        rdax  swant, -1.0
+        sof   1.0, -0.5
+        skp   neg, sin_flanco
+        clr
+        rdax  bypass, -1.0
+        sof   1.0, 0.99997
+        wrax  bypass, 0
+sin_flanco:
+        clr
+        rdax  sw, 1.0
+        wrax  swant, 0
+        rdax  bypass, 1.0
+        rdfx  eb, 0.001
+        wrax  eb, -1.0                  ; w = kwet·(1 − eb) ; d = 1 − w
+        sof   1.0, 0.99997
+        mulx  kwet
+        wrax  w, -1.0
+        sof   1.0, 0.99997
+        wrax  d, 0
+; ── salida ───────────────────────────────────────────────────────────
+        rdax  yw, 1.0
+        mulx  w
+        wrax  yw, 0
+        rdax  adcl, 1.0
+        mulx  d
+        rdax  yw, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  d
+        rdax  yw, 1.0
+        wrax  dacr, 0
