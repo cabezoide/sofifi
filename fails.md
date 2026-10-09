@@ -456,3 +456,18 @@ Al documentar los scripts (PR #58) aparecieron seis comportamientos inesperados.
 
 - **Causa:** cada script se escribió para el caso normal. Nadie probaba sus entradas incorrectas.
 - **Lección:** al documentar un script, ejecuta también su `--help` y un argumento incorrecto. Un `finally` que puede fallar tapa lo que había antes.
+
+## F-35 · Presets que saturaban
+
+- **Síntoma:** al medir el banco para pasar a 1 032 presets, 13 presets antiguos daban más del 1 % de muestras saturadas o más de +6 dB sobre la entrada.
+
+  | Presets | Medida | Causa |
+  |---|---|---|
+  | los «Solo …» de plate, plate_vivo, freeze, blackhole y los cuatro shimmer | +3 a +5 dB, del 1,0 al 2,7 % saturado | mezcla 1 con decay alto: la cola se acumula sin la señal seca |
+  | enjambre/«Solo enjambre» | +8,2 dB, 28 % saturado | las ocho tomas sumadas pasan de 0 dBFS |
+  | saturacion/«Brillo cálido» y «Crunch» | +7,8 y +6,9 dB | el nivel no compensa la ganancia |
+  | ancho/«Ancho oscuro» | +6,6 dB, 18,8 % saturado | el tilt oscuro sube los graves sin compensar |
+  | compresor/«Aplastado» | 1,1 % saturado | ganancia ×4 con compresión máxima |
+
+- **Resolución:** se bajó un poco el decay, el nivel, la ganancia o la realimentación de cada uno. Todos quedan por debajo del 1 % y de +6 dB. `scripts/medir_presets.py` mide el banco entero.
+- **Lección:** un preset se mide, no solo se escucha una vez. Los extremos («Solo …», mezcla 1) son los que saturan.

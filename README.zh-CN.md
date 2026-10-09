@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=9346c0f671b2 estado=al_dia -->
+<!-- i18n: fuente=README.md sha=0f404692c52a estado=al_dia -->
 # SOFIFI — 集成 FPGA 上的沉浸式波形与滤波合成器
 
 *英文名：Soundscapes On FPGA: Integrated Filters & Impulses；西班牙文名：Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada。*
@@ -16,7 +16,7 @@ FPGA（高云 GW5A-LV25）上。每个效果都是一个文本程序，由自研
 
 | 项目 | 状态 |
 |---|---|
-| 程序库 | 8 个类别中共 **86 个程序与 688 个预设**（阶段 07） |
+| 程序库 | 8 个类别中共 **86 个程序与 1,032 个预设**（阶段 07） |
 | 同时运行两个效果 | **24 条链**：18 条现在可以装入，6 条等待 SDRAM（`presets/cadenas.toml`，ADR 0013） |
 | 与模型一致（仿真） | 86 个程序和 18 条可装入的链在 RTL 中的输出与模型逐位一致 |
 | 与模型一致（开发板） | 50 项中 50 项一致：41 个程序和 9 条链，使用阶段 07 的核心（MED-16，2026-10-08） |
@@ -127,7 +127,7 @@ make hil HIL=hall  # 把一个程序或一条链加载到开发板，并与模�
 | 文档 | 内容 |
 |---|---|
 | `docs/programas.zh-CN.md` | 86 个程序：作用、旋钮、预设与开销 |
-| `presets/banco.toml` | 688 个预设 |
+| `presets/banco.toml` | 1,032 个预设 |
 | `docs/arquitectura_fpga.zh-CN.md` | FPGA 架构及其在各阶段的变化 |
 | `schematics/` | 每个 RTL 模块的 PDF 原理图，由 Verilog 生成 |
 | `presets/cadenas.toml` | 24 条由两个程序组成的链 |

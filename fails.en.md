@@ -1,4 +1,4 @@
-<!-- i18n: fuente=fails.md sha=deca93c093e8 estado=al_dia -->
+<!-- i18n: fuente=fails.md sha=061e703dbebc estado=al_dia -->
 # Failures and their resolution
 
 This is the record of the failures found in the project. Each entry has a symptom, a diagnosis, a root cause, a resolution and a lesson. The record helps us not to repeat them. It also explains why the design is as it is.
@@ -457,3 +457,18 @@ When we documented the scripts (PR #58), we found six unexpected behaviors. None
 
 - **Cause:** each script was written for the normal case. Nobody tested its incorrect inputs.
 - **Lesson:** when you document a script, also run its `--help` and an incorrect argument. A `finally` that can fail hides what came before it.
+
+## F-35 · Presets that saturated
+
+- **Symptom:** when we measured the bank to go to 1,032 presets, 13 old presets had more than 1 % of saturated samples or were more than +6 dB above the input.
+
+  | Presets | Measurement | Cause |
+  |---|---|---|
+  | the «Solo …» presets of plate, plate_vivo, freeze, blackhole and the four shimmer programs | +3 to +5 dB, 1.0 to 2.7 % saturated | mix 1 with a high decay: the tail builds up without the dry signal |
+  | enjambre/«Solo enjambre» | +8.2 dB, 28 % saturated | the sum of the eight taps goes above 0 dBFS |
+  | saturacion/«Brillo cálido» and «Crunch» | +7.8 and +6.9 dB | the level does not compensate the gain |
+  | ancho/«Ancho oscuro» | +6.6 dB, 18.8 % saturated | the dark tilt increases the bass without compensation |
+  | compresor/«Aplastado» | 1.1 % saturated | gain ×4 with maximum compression |
+
+- **Resolution:** we decreased a little the decay, the level, the gain or the feedback of each one. All are below 1 % and below +6 dB. `scripts/medir_presets.py` measures the full bank.
+- **Lesson:** measure a preset; do not only listen to it one time. The extremes («Solo …», mix 1) are the presets that saturate.

@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=9346c0f671b2 estado=al_dia -->
+<!-- i18n: fuente=README.md sha=0f404692c52a estado=al_dia -->
 # SOFIFI — Soundscapes On FPGA: Integrated Filters & Impulses
 
 *In Spanish: Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada.*
@@ -17,7 +17,7 @@ custom DSP core executes.
 
 | Item | Status |
 |---|---|
-| Library | **86 programs and 688 presets** in 8 families (Phase 07) |
+| Library | **86 programs and 1,032 presets** in 8 families (Phase 07) |
 | Two effects at the same time | **24 chains**: 18 fit today and 6 wait for the SDRAM (`presets/cadenas.toml`, ADR 0013) |
 | Match with the model, in simulation | all 86 programs and the 18 chains that fit give in the RTL the same bits as the model |
 | Match with the model, on the board | 50 of 50: 41 programs and 9 chains, with the Phase 07 core (MED-16, 2026-10-08) |
@@ -141,7 +141,7 @@ the board and the microSD card are sufficient.
 | Document | Contents |
 |---|---|
 | `docs/programas.en.md` | the 86 programs: what they do, knobs, presets and cost |
-| `presets/banco.toml` | the 688 presets |
+| `presets/banco.toml` | the 1,032 presets |
 | `docs/arquitectura_fpga.en.md` | the FPGA architecture and how it changes in each phase |
 | `schematics/` | a PDF schematic of each RTL module, generated from the Verilog |
 | `presets/cadenas.toml` | the 24 chains of two programs |

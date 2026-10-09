@@ -170,6 +170,7 @@ Fase 08: `scripts/prueba_sd.py` todavía no se probó con una tarjeta real.
 | `scripts/capturar_infografia.py` | Captura las secciones de las infografías como PNG y anota su huella en `docs/img/capturas.json`. | `.venv/bin/python scripts/capturar_infografia.py --todas` | Al cerrar una fase (compuerta `cierre`). |
 | `scripts/esquematicos.py` | Genera un PDF por módulo RTL en `schematics/`. | `make esquematicos` | Después de cambiar un módulo RTL (ADR 0012). |
 | `scripts/generar_demos.py` | Regenera las demos Ogg de `demo_examples/` y sus guías. | `.venv/bin/python scripts/generar_demos.py` | Después de cambiar un programa con demo. |
+| `scripts/medir_presets.py` | Mide con el modelo el nivel de cada preset: avisa si satura, si pasa de +6 dB o si queda en silencio. | `.venv/bin/python scripts/medir_presets.py plate` | Después de añadir presets o de cambiar un programa. Todo el banco tarda unos 3 minutos. |
 | `sofifi catalogo` | Regenera `docs/programas.md` y sus traducciones. | `.venv/bin/sofifi catalogo` | Después de cambiar un programa, un preset o una cadena. |
 
 Necesidades:

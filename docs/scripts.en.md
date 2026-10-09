@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/scripts.md sha=d373cf34432c estado=al_dia -->
+<!-- i18n: fuente=docs/scripts.md sha=baeca6d7c17e estado=al_dia -->
 # Scripts and the `sofifi` CLI
 
 This guide describes each script in `scripts/` and each command of the `sofifi` CLI. It is organized by task. For each tool, it tells what the tool does, the typical command, what the tool needs, and which gate or phase uses it.
@@ -171,6 +171,7 @@ Phase 08: nobody has tested `scripts/prueba_sd.py` with a real card yet.
 | `scripts/capturar_infografia.py` | Captures the sections of the infographics as PNG files and records their hash in `docs/img/capturas.json`. | `.venv/bin/python scripts/capturar_infografia.py --todas` | When a phase closes (gate `cierre`). |
 | `scripts/esquematicos.py` | Makes one PDF for each RTL module in `schematics/`. | `make esquematicos` | After you change an RTL module (ADR 0012). |
 | `scripts/generar_demos.py` | Makes the Ogg demos of `demo_examples/` and their guides again. | `.venv/bin/python scripts/generar_demos.py` | After you change a program that has a demo. |
+| `scripts/medir_presets.py` | Measures the level of each preset with the model. It gives a warning if the preset saturates, is more than +6 dB, or is silent. | `.venv/bin/python scripts/medir_presets.py plate` | After you add presets or change a program. The full bank takes approximately 3 minutes. |
 | `sofifi catalogo` | Makes the catalog of programs, presets and chains again. | `.venv/bin/sofifi catalogo` | After you change a program, a preset or a chain. |
 
 Requirements:

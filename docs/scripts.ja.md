@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/scripts.md sha=d373cf34432c estado=al_dia -->
+<!-- i18n: fuente=docs/scripts.md sha=baeca6d7c17e estado=al_dia -->
 # スクリプトと `sofifi` CLI
 
 このガイドは、`scripts/` の各スクリプトと `sofifi` CLI の各コマンドを説明します。内容は作業ごとにまとめています。各ツールについて、何をするか、典型的なコマンド、必要なもの、どのゲートまたはフェーズで使うかを示します。
@@ -171,6 +171,7 @@ microSD はプログラムを保存します。音声の遅延には使いませ
 | `scripts/capturar_infografia.py` | インフォグラフィックの各節を PNG に撮り、そのハッシュを `docs/img/capturas.json` に記録する。 | `.venv/bin/python scripts/capturar_infografia.py --todas` | フェーズを閉じるとき（ゲート `cierre`）。 |
 | `scripts/esquematicos.py` | `schematics/` に RTL モジュールごとの PDF を作る。 | `make esquematicos` | RTL モジュールを変えた後（ADR 0012）。 |
 | `scripts/generar_demos.py` | `demo_examples/` の Ogg デモと説明を作り直す。 | `.venv/bin/python scripts/generar_demos.py` | デモのあるプログラムを変えた後。 |
+| `scripts/medir_presets.py` | モデルで各プリセットのレベルを測る。飽和、+6 dB 超、無音のときに警告する。 | `.venv/bin/python scripts/medir_presets.py plate` | プリセットを追加した後、またはプログラムを変えた後。バンク全体で約 3 分。 |
 | `sofifi catalogo` | プログラム、プリセット、チェーンのカタログを作り直す。 | `.venv/bin/sofifi catalogo` | プログラム、プリセット、チェーンを変えた後。 |
 
 必要なもの：

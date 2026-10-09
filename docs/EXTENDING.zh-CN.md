@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/EXTENDING.md sha=3bfc3280c871 estado=al_dia -->
+<!-- i18n: fuente=docs/EXTENDING.md sha=24e37a7d6593 estado=al_dia -->
 # 如何扩展
 
 本文按部件类型逐步说明。如果添加某样东西需要改动本清单之外的位置，说明清单不完整。在同一个 PR 中修正它。
@@ -22,7 +22,7 @@
    一致性（`sim/nucleo/nucleo_test.py`）的测试会遍历所有 `.sasm`，缺少任何内容都会失败。
 7. 如果某个旋钮使用新名称，在 `MANDOS`（`model/sofifi/services/catalogo_textos.py`）中添加其翻译。
    `model/tests/catalogo_test.py` 要求这一点。
-8. 添加至少 5 个预设（见“一个预设”一节）。
+8. 添加至少 12 个预设（见“一个预设”一节）。
 9. 用 `sofifi catalogo` 以四种语言重新生成目录。
 10. 在 `DEMOS`（`scripts/generar_demos.py`）中添加演示。运行该脚本：
     它写出 `.ogg` 和指南 `demo_examples/README*.md`。
@@ -47,7 +47,8 @@
 1. 在 `presets/banco.toml` 中该程序的表里添加一行 `"Nombre" = [pot0, pot1, …]`。
    取值范围为 0 到 1；未使用的旋钮为 0。
 2. 试听预设：`sofifi render programas/<programa>.sasm entrada.wav salida.wav --preset "Nombre"`。
-3. 用 `sofifi catalogo` 重新生成目录：目录会统计预设数量。
+3. 测量电平：`.venv/bin/python scripts/medir_presets.py <programa>`。任何预设都不能出现 SATURA 或 FUERTE。
+4. 用 `sofifi catalogo` 重新生成目录：目录会统计预设数量。
    `model/tests/presets_test.py` 检查程序、旋钮和取值范围。
 
 ## 一条链（两个程序合为一个）

@@ -22,10 +22,10 @@ def mandos(nombre: str) -> set[int]:
     return {int(m.split(":")[0]) for m in f.mandos}
 
 
-def test_cada_programa_tiene_al_menos_cinco_presets() -> None:
+def test_cada_programa_tiene_al_menos_doce_presets() -> None:
     assert sorted(BANCO) == PROGRAMAS
-    assert all(len(p) >= 5 for p in BANCO.values())
-    assert sum(len(p) for p in BANCO.values()) >= 300
+    assert all(len(p) >= 12 for p in BANCO.values())
+    assert sum(len(p) for p in BANCO.values()) >= 1000
 
 
 @pytest.mark.parametrize("programa", PROGRAMAS)

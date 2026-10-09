@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/EXTENDING.md sha=3bfc3280c871 estado=al_dia -->
+<!-- i18n: fuente=docs/EXTENDING.md sha=24e37a7d6593 estado=al_dia -->
 # How to extend
 
 This guide gives the steps for each type of part. Sometimes an addition makes
@@ -25,7 +25,7 @@ An effect is a program, not an RTL module (ADR 0006 (Spanish)).
    (`sim/nucleo/nucleo_test.py`) examine all the `.sasm` files. They fail if a part is missing.
 7. If a control has a new name, add its translation in `MANDOS`
    (`model/sofifi/services/catalogo_textos.py`). `model/tests/catalogo_test.py` requires it.
-8. Add a minimum of 5 presets (section "A preset").
+8. Add a minimum of 12 presets (section "A preset").
 9. Generate the catalog again in the four languages with `sofifi catalogo`.
 10. Add the demo in `DEMOS` (`scripts/generar_demos.py`). Run the script:
     it writes the `.ogg` file and the guides `demo_examples/README*.md`.
@@ -52,7 +52,8 @@ A preset is the same program with different control values and a name.
 1. Add a line `"Nombre" = [pot0, pot1, …]` in the table of the program, in
    `presets/banco.toml`. The values go from 0 to 1. A control that the program does not use is 0.
 2. Listen to the preset: `sofifi render programas/<programa>.sasm entrada.wav salida.wav --preset "Nombre"`.
-3. Generate the catalog again with `sofifi catalogo`: the catalog counts the presets.
+3. Measure its level: `.venv/bin/python scripts/medir_presets.py <programa>`. No preset can give SATURA or FUERTE.
+4. Generate the catalog again with `sofifi catalogo`: the catalog counts the presets.
    `model/tests/presets_test.py` checks the program, the controls and the ranges.
 
 ## A chain (two programs in one)
