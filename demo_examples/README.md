@@ -68,6 +68,12 @@ Una guitarra sintética (arpegio de Em9, cuerdas Karplus-Strong) procesada por c
 | `demo_oscilador.ogg` | `oscilador` | tiempo 0,12 · realimentación 0,70 · mezcla 0,50 · suavizado 0,70 · tono 0,40 · nivel 0,20 | 2,00 → 4,00 s |
 | `demo_dinamica.ogg` | `dinamica` | decay 0,75 · damping 0,30 · mezcla 0,45 · profundidad 0,85 · umbral 0,10 · velocidad 0,10 | — |
 | `demo_acople.ogg` | `acople` | tiempo 0,00 · intervalo 0,00 · mezcla 1,00 · subida 0,15 · tono 0,55 · nivel 1,00 | — |
+| `demo_enjambre.ogg` | `enjambre` | dispersión 0,40 · realimentación 0,70 · mezcla 0,50 · difusión 0,60 · tono 0,60 · deriva 0,40 | 2,00 → 4,00 s |
+| `demo_probabilidad.ogg` | `probabilidad` | tiempo 0,75 · probabilidad 0,50 · mezcla 0,45 · realimentación 0,60 · tono 0,70 · suavizado 0,40 | 3,00 → 5,00 s |
+| `demo_dados.ogg` | `dados` | tiempo 0,70 · realimentación 0,60 · mezcla 0,50 · probabilidad 0,40 · tono 0,60 · ancho 0,70 | 1,50 → 1,60 s, 3,00 → 3,10 s |
+| `demo_aureo.ogg` | `aureo` | inclinación 0,60 · realimentación 0,60 · mezcla 0,45 · tono 0,60 · ancho 0,90 · difusión 0,40 | 2,50 → 5,00 s |
+| `demo_estelar.ogg` | `estelar` | tiempo 0,45 · realimentación 0,75 · mezcla 0,45 · profundidad 0,90 · velocidad 0,25 · resonancia 0,40 | — |
+| `demo_lata.ogg` | `lata` | tiempo 0,35 · realimentación 0,55 · mezcla 0,45 · profundidad 0,60 · tono 0,40 · aceite 0,50 | 3,00 → 3,60 s |
 | `demo_cadena_eco_y_muelle.ogg` | Eco y muelle: `delay` → `spring` | pot0 0,55 · pot1 0,40 · pot2 0,35 · pot3 0,60 · pot4 0,40 · pot5 0,00 | — |
 | `demo_cadena_flor_al_reves.ogg` | Flor al revés: `reverse` → `bloom` | pot0 0,60 · pot1 0,40 · pot2 0,50 · pot3 0,80 · pot4 0,55 · pot5 0,40 | — |
 | `demo_cadena_organo_infinito.ogg` | Órgano infinito: `octava` → `infinite` | pot0 0,60 · pot1 0,40 · pot2 0,00 · pot3 0,10 · pot4 0,50 · pot5 0,00 | — |

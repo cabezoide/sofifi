@@ -1,4 +1,4 @@
-<!-- i18n: fuente=demo_examples/README.md sha=4baa1149f9a8 estado=al_dia -->
+<!-- i18n: fuente=demo_examples/README.md sha=125069f26b99 estado=al_dia -->
 # demo_examples
 
 合成ギター（Em9 のアルペジオ、Karplus-Strong の弦）を、ビット精度のモデルでコアの各プログラムに通したものです。`.venv/bin/python scripts/generar_demos.py` で再生成でき、毎回同じ音声になります。
@@ -69,6 +69,12 @@
 | `demo_oscilador.ogg` | `oscilador` | タイム 0.12 · フィードバック 0.70 · ミックス 0.50 · スムージング 0.70 · トーン 0.40 · レベル 0.20 | 2.00 → 4.00 s |
 | `demo_dinamica.ogg` | `dinamica` | ディケイ 0.75 · ダンピング 0.30 · ミックス 0.45 · 深さ 0.85 · スレッショルド 0.10 · 速さ 0.10 | — |
 | `demo_acople.ogg` | `acople` | タイム 0.00 · 音程 0.00 · ミックス 1.00 · 立ち上がり 0.15 · トーン 0.55 · レベル 1.00 | — |
+| `demo_enjambre.ogg` | `enjambre` | 広がり 0.40 · フィードバック 0.70 · ミックス 0.50 · 拡散 0.60 · トーン 0.60 · ドリフト 0.40 | 2.00 → 4.00 s |
+| `demo_probabilidad.ogg` | `probabilidad` | タイム 0.75 · 確率 0.50 · ミックス 0.45 · フィードバック 0.60 · トーン 0.70 · スムージング 0.40 | 3.00 → 5.00 s |
+| `demo_dados.ogg` | `dados` | タイム 0.70 · フィードバック 0.60 · ミックス 0.50 · 確率 0.40 · トーン 0.60 · 幅 0.70 | 1.50 → 1.60 s, 3.00 → 3.10 s |
+| `demo_aureo.ogg` | `aureo` | 傾き 0.60 · フィードバック 0.60 · ミックス 0.45 · トーン 0.60 · 幅 0.90 · 拡散 0.40 | 2.50 → 5.00 s |
+| `demo_estelar.ogg` | `estelar` | タイム 0.45 · フィードバック 0.75 · ミックス 0.45 · 深さ 0.90 · 速さ 0.25 · レゾナンス 0.40 | — |
+| `demo_lata.ogg` | `lata` | タイム 0.35 · フィードバック 0.55 · ミックス 0.45 · 深さ 0.60 · トーン 0.40 · オイル 0.50 | 3.00 → 3.60 s |
 | `demo_cadena_eco_y_muelle.ogg` | Eco y muelle: `delay` → `spring` | pot0 0.55 · pot1 0.40 · pot2 0.35 · pot3 0.60 · pot4 0.40 · pot5 0.00 | — |
 | `demo_cadena_flor_al_reves.ogg` | Flor al revés: `reverse` → `bloom` | pot0 0.60 · pot1 0.40 · pot2 0.50 · pot3 0.80 · pot4 0.55 · pot5 0.40 | — |
 | `demo_cadena_organo_infinito.ogg` | Órgano infinito: `octava` → `infinite` | pot0 0.60 · pot1 0.40 · pot2 0.00 · pot3 0.10 · pot4 0.50 · pot5 0.00 | — |

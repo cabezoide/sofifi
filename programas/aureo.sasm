@@ -1,0 +1,210 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: delay
+; resumen: Catorce ecos en la serie de Fibonacci, alternados entre izquierda y derecha, que se espesan en una reverb chasqueante.
+; resumen.en: Fourteen echoes on the Fibonacci series, alternating left and right, that thicken into a clicking reverb.
+; resumen.zh-CN: 十四个按斐波那契数列排布的回声，左右交替，逐渐变密，成为噼啪作响的混响。
+; resumen.ja: フィボナッチ数列に並ぶ 14 のエコー。左右に交互に出て、カチカチと鳴るリバーブへと密になる。
+;
+; aureo.sasm — Una memoria de retardo larga con 14 tomas. La toma k lee en
+; F_k·u muestras. F es la serie de Fibonacci: 1, 2, 3, 5, 8 y hasta 610.
+; Las tomas impares van a la izquierda y las pares a la derecha. Así cada eco
+; sale por el lado contrario al anterior.
+;
+; La inclinación es una pendiente de ganancia sobre las tomas. Cada canal
+; suma sus 7 tomas por el método de Horner. El programa empieza por la toma
+; más larga y multiplica la suma por t antes de añadir la siguiente. La
+; toma j recibe el peso c_j·t^j, con c_j = 0,5·1,1^j. Con t bajo, los ecos
+; tardíos se apagan. Con t cerca de 1, los ecos tardíos suenan más fuerte.
+;
+; Las tres tomas más largas (233, 377 y 610) vuelven a la entrada. El camino
+; de vuelta tiene un paso bajo de tono y dos allpass de difusión. Cada vuelta
+; suma otra vez los tiempos de Fibonacci: los ecos se multiplican con el
+; tiempo y la cola se vuelve una reverb de chasquidos.
+;
+; Hay dos tablas de tomas: larga (u = 67 muestras, 1,37 ms; la toma 610 cae
+; en 0,84 s) y corta (u = 29 muestras, 0,59 ms; la toma 610 cae en 0,36 s).
+; El footswitch funde de la tabla larga a la corta en unos 10 ms.
+;
+; pot0 = inclinación      (0 → los ecos tardíos se apagan · 1 → los ecos tardíos crecen)
+; pot1 = realimentación   (0 → una pasada · 1 → 0,9)
+; pot2 = mezcla           (0 → seco · 1 → solo ecos)
+; pot3 = tono             (realimentación: 0 → oscura · 1 → limpia)
+; pot4 = ancho            (0 → 25 % de lado · 1 → izquierda y derecha separadas)
+; pot5 = difusión         (coeficiente de los allpass: 0 → ecos limpios · 1 → 0,65)
+; sw   = tabla corta mientras se pisa
+;
+; Diseño propio, a partir del principio de los ecos estéreo con líneas de
+; longitud de Fibonacci: muchas tomas en la serie, algunas realimentadas, y un
+; pedal que cambia entre tiempos cortos y largos.
+
+equ  ul    67
+equ  us    29
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  kt       reg2
+equ  ks       reg3
+equ  ktono    reg4
+equ  kfb      reg5
+equ  kd       reg6
+equ  kw       reg7
+equ  ta       reg8
+equ  tb       reg9
+equ  el       reg10
+equ  er       reg11
+equ  lp       reg12
+equ  xf       reg13
+equ  z        reg14
+equ  lado     reg15
+equ  medio    reg16
+equ  w        reg17
+
+mem  dl    610*ul
+mem  ap1   557
+mem  ap2   829
+
+; ── mandos ───────────────────────────────────────────────────────────
+include  comun/mezcla.sasm
+        rdax  pot0, 0.449
+        sof   1.0, 0.55
+        wrax  kt, 0
+        rdax  pot3, 0.8
+        sof   1.0, 0.19999
+        wrax  ktono, 0
+        rdax  pot1, 0.9
+        wrax  kfb, 0
+        rdax  pot5, 0.65
+        wrax  kd, 0
+        rdax  pot4, 0.75
+        sof   1.0, 0.25
+        wrax  kw, 0
+        rdax  sw, 1.0                   ; tabla corta, con un fundido de 10 ms
+        rdfx  ks, 0.002
+        wrax  ks, 0
+; ── izquierda: tomas 1, 3, 8, 21, 55, 144 y 377 ─────────────────────
+        rda   dl + 377*ul, 0.88578
+        mulx  kt
+        rda   dl + 144*ul, 0.80526
+        mulx  kt
+        rda   dl + 55*ul, 0.73205
+        mulx  kt
+        rda   dl + 21*ul, 0.66550
+        mulx  kt
+        rda   dl + 8*ul, 0.60500
+        mulx  kt
+        rda   dl + 3*ul, 0.55000
+        mulx  kt
+        rda   dl + 1*ul, 0.50000
+        wrax  tb, 0
+        rda   dl + 377*us, 0.88578
+        mulx  kt
+        rda   dl + 144*us, 0.80526
+        mulx  kt
+        rda   dl + 55*us, 0.73205
+        mulx  kt
+        rda   dl + 21*us, 0.66550
+        mulx  kt
+        rda   dl + 8*us, 0.60500
+        mulx  kt
+        rda   dl + 3*us, 0.55000
+        mulx  kt
+        rda   dl + 1*us, 0.50000
+        rdax  tb, -1.0                  ; el = tb + ks·(corta − tb)
+        mulx  ks
+        rdax  tb, 1.0
+        wrax  el, 0
+; ── derecha: tomas 2, 5, 13, 34, 89, 233 y 610 ──────────────────────
+        rda   dl + 610*ul, 0.88578
+        mulx  kt
+        rda   dl + 233*ul, 0.80526
+        mulx  kt
+        rda   dl + 89*ul, 0.73205
+        mulx  kt
+        rda   dl + 34*ul, 0.66550
+        mulx  kt
+        rda   dl + 13*ul, 0.60500
+        mulx  kt
+        rda   dl + 5*ul, 0.55000
+        mulx  kt
+        rda   dl + 2*ul, 0.50000
+        wrax  tb, 0
+        rda   dl + 610*us, 0.88578
+        mulx  kt
+        rda   dl + 233*us, 0.80526
+        mulx  kt
+        rda   dl + 89*us, 0.73205
+        mulx  kt
+        rda   dl + 34*us, 0.66550
+        mulx  kt
+        rda   dl + 13*us, 0.60500
+        mulx  kt
+        rda   dl + 5*us, 0.55000
+        mulx  kt
+        rda   dl + 2*us, 0.50000
+        rdax  tb, -1.0
+        mulx  ks
+        rdax  tb, 1.0
+        wrax  er, 0
+; ── realimentación: las tres tomas más largas ────────────────────────
+        rda   dl + 233*ul, 0.3
+        rda   dl + 377*ul, 0.35
+        rda   dl + 610*ul, 0.35
+        wrax  tb, 0
+        rda   dl + 233*us, 0.3
+        rda   dl + 377*us, 0.35
+        rda   dl + 610*us, 0.35
+        rdax  tb, -1.0
+        mulx  ks
+        rdax  tb, 1.0
+        rdax  lp, -1.0                  ; lp = lp + ktono·(x − lp)
+        mulx  ktono
+        rdax  lp, 1.0
+        wrax  lp, 1.0
+; Allpass con coeficiente variable: w = x − kd·z, y = z + kd·w.
+        wrax  xf, 0
+        rda   ap1#, 1.0
+        wrax  z, 1.0
+        mulx  kd
+        sof   -1.0, 0
+        rdax  xf, 1.0
+        wra   ap1, 1.0
+        mulx  kd
+        rdax  z, 1.0
+        wrax  xf, 0
+        rda   ap2#, 1.0
+        wrax  z, 1.0
+        mulx  kd
+        sof   -1.0, 0
+        rdax  xf, 1.0
+        wra   ap2, 1.0
+        mulx  kd
+        rdax  z, 1.0
+        mulx  kfb
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wra   dl, 0
+; ── salida: medio y lado, con el ancho ───────────────────────────────
+        rdax  el, 0.5
+        rdax  er, -0.5
+        mulx  kw
+        wrax  lado, 0
+        rdax  el, 0.5
+        rdax  er, 0.5
+        wrax  medio, 0
+        rdax  medio, 0.85               ; 0,85: con todos los mandos a 1, ≤ 2× el plate
+        rdax  lado, 0.85
+        mulx  kwet
+        wrax  w, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  w, 1.0
+        wrax  dacl, 0
+        rdax  medio, 0.85
+        rdax  lado, -0.85
+        mulx  kwet
+        wrax  w, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  w, 1.0
+        wrax  dacr, 0

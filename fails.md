@@ -33,6 +33,7 @@ Se añade una entrada nueva cuando un fallo está diagnosticado y resuelto. Las 
 | F-25 | 08 | Tres fallos del controlador SD, encontrados en simulación | resuelto antes de la placa |
 | F-26 | 08 | Cuatro trampas del punto fijo en el lote 9 del catálogo | resuelto antes de publicar |
 | F-27 | 08 | Constantes pequeñas, bucles de control y una huella ciega en el lote 10 | resuelto antes de publicar |
+| F-28 | 08 | La velocidad mínima de phaser y filtro era 0, y tres trampas del lote 11 | resuelto |
 
 ---
 
@@ -325,3 +326,21 @@ Las pruebas acústicas de los programas nuevos encontraron cuatro fallos antes d
   - **Causa:** la prueba de huella pone pot3 = 0,5, que en `dinamica` es «sin dinámica»: el programa es entonces un plate con el tanque con CLIP, igual que `freeze` sin pulsar.
   - **Resolución:** `POTS_HUELLA` da a `dinamica` una profundidad de 0,9, con una nota de 0,6 s.
 - **Lección:** las constantes de tiempo largas no caben en una instrucción: se construyen. Un bucle de control necesita un suelo. Una huella solo vale si el estímulo y los mandos llegan al efecto.
+
+## F-28 · La velocidad mínima de phaser y filtro era 0, y tres trampas del lote 11
+
+- **Una constante que se redondea a 0** (`phaser` y `filtro`, publicados en la Fase 06).
+  - **Síntoma:** con pot0 = 0, el barrido no iba a 0,05 Hz: se paraba. Lo vio el autor de `estelar` al escribir el mismo cálculo.
+  - **Causa:** `sof 1.0, 4*0.05/fs` pide un D de 4·10⁻⁶. El paso de D es 1/32 768 ≈ 3·10⁻⁵, y el valor se redondeaba a 0 sin aviso.
+  - **Resolución:** la velocidad se calcula ×64 y después se divide (`sof 1/64, 0`). **El ensamblador ahora rechaza** un coeficiente o un D distinto de 0 que se redondea a 0. Al ensamblar los 63 programas, solo saltó `filtro`.
+- **Realimentar la suma de muchas tomas no funciona** (`enjambre`, `probabilidad`, `dados`).
+  - **Síntoma:** la cola moría en menos de 0,5 s o el bucle autooscilaba saturado.
+  - **Causa:** la suma de N tomas tiene picos de ganancia N en algunas frecuencias y una ganancia media mucho menor.
+  - **Resolución:** el bucle sale de una sola toma, la más larga.
+- **El coste cuenta todas las ramas de SKP** (`probabilidad`, `dados`).
+  - **Síntoma:** un contador por toma o un reparto de tres vías gastaba más de 2 000 ciclos.
+  - **Resolución:** un solo contador o dos vías por toma.
+- **Un SKP que no salta deja la comparación en el ACC** (`dados`).
+  - **Síntoma:** la salida se saturaba sin entrada.
+  - **Resolución:** un `clr` al principio de la rama.
+- **Lección:** una regla que una persona puede olvidar va en el ensamblador. Un bucle de realimentación se diseña con su ganancia peor, no con la media.

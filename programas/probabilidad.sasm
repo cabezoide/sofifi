@@ -1,0 +1,318 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: delay
+; resumen: Ocho ecos que suenan o callan por sorteo: reverb cambiante o patrón que no se repite.
+; resumen.en: Eight echoes that play or stay silent by chance: a changing reverb or a pattern that never repeats.
+; resumen.zh-CN: 八个回声按概率发声或静默：时短如多变的混响，时长如永不重复的节奏型。
+; resumen.ja: 8 つのエコーが確率で鳴ったり止まったりする。短い時間では変化するリバーブ、長い時間では繰り返さないパターン。
+;
+; probabilidad.sasm — ecos con probabilidad. Diseño propio, a partir del
+; principio del parche ZOIA «Echolalia»: un sorteo abre o cierra cada envío
+; de eco, y con tiempos cortos el conjunto suena a reverb.
+;
+; 1. La entrada y la realimentación se escriben en la región absoluta, en la
+;    cabeza `w`. La cabeza da la vuelta a las 32 768 muestras.
+; 2. Ocho tomas leen con RDAA en w − k·T. Las razones k son irregulares
+;    (0,127 a 0,997) y pot0 fija T, el retardo de la última toma.
+; 3. Cada toma pasa por una compuerta g, que vale 0 o 1.
+; 4. Un contador marca los sorteos: uno cada (0,1 a 0,3)·T + 10 ms. La
+;    posición de la cabeza fija el intervalo, que así varía sin ritmo fijo.
+;    En cada sorteo, las compuertas avanzan un puesto en un orden mezclado
+;    (g4 → g1 → g7 → g2 → g6 → g3 → g8 → g5). La compuerta g4 recibe el
+;    sorteo nuevo: se abre si el azar x es menor que pot1.
+; 5. El azar sale de un generador congruencial, x ← frac(5x + c) con c
+;    impar, que avanza una vez por muestra.
+; 6. Un paso bajo de un polo suaviza cada compuerta (pot5): no hay clics.
+; 7. La última toma, sin compuerta, vuelve a la entrada por la
+;    realimentación (pot3), con un paso bajo (pot4) y CLIP. Cada vuelta
+;    pasa otra vez por los sorteos: el patrón de una vuelta no se repite.
+; 8. La entrada y la realimentación pasan por tres allpass antes de la
+;    cabeza. Cada vuelta difunde más el eco: con T corto, suena a reverb.
+; 9. Con `sw` pisado, el contador se para: el patrón actual queda fijo.
+;
+; Al arrancar, cada compuerta vale pot1: la media de lo que dará el sorteo.
+;
+; pot0 = tiempo          (0 → última toma a 30 ms, suena a reverb · 1 → 650 ms)
+; pot1 = probabilidad    (0 → ninguna toma · 0,5 → la mitad · 1 → todas)
+; pot2 = mezcla          (0 → seco · 1 → solo ecos)
+; pot3 = realimentación  (0 → una vuelta · 1 → cola larga)
+; pot4 = tono            (0 → repeticiones oscuras · 1 → limpias)
+; pot5 = suavizado       (0 → compuerta rápida, 0,4 ms · 1 → fundido de 25 ms)
+
+equ  piso    488/32768         ; 10 ms en unidades de la cabeza (una muestra = 2^-15)
+
+equ  h       reg0              ; 0,5: con -2,0 resta 1
+equ  hn      reg1              ; -0,5: con -2,0 suma 1
+equ  c       reg2              ; incremento del generador (impar)
+equ  x       reg3              ; azar en [0, 1)
+equ  w       reg5              ; cabeza de escritura
+equ  dt      reg6              ; T, el retardo de la última toma
+equ  cnt     reg7              ; muestras hasta el próximo sorteo (·2^-15)
+equ  kt      reg8
+equ  ks      reg9
+equ  kdry    reg11
+equ  s       reg12
+equ  lp      reg13
+equ  p       reg14
+equ  g1      reg15
+equ  g2      reg16
+equ  g3      reg17
+equ  g4      reg18
+equ  g5      reg19
+equ  g6      reg20
+equ  g7      reg21
+equ  g8      reg22
+equ  gs1     reg23
+equ  gs2     reg24
+equ  gs3     reg25
+equ  gs4     reg26
+equ  gs5     reg27
+equ  gs6     reg28
+equ  gs7     reg29
+equ  gs8     reg30
+
+mem  ap1   241
+mem  ap2   557
+mem  ap3   887
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 1/32768
+        wrax  h, 1/256                  ; ACC = 2^-23: el bit que hace impar a c
+        sof   1.0, 0.2113
+        wrax  c, 0
+        sof   0, 0.5
+        wrax  h, 0
+        sof   0, -0.5
+        wrax  hn, 0
+        sof   0, 0.045
+        rdax  pot0, 0.93
+        wrax  dt, 0                     ; sin rampa de T al arrancar
+        rdax  pot1, 1.0
+        wrax  g1, 1.0
+        wrax  g2, 1.0
+        wrax  g3, 1.0
+        wrax  g4, 1.0
+        wrax  g5, 1.0
+        wrax  g6, 1.0
+        wrax  g7, 1.0
+        wrax  g8, 0
+inicio:
+; ── mandos ───────────────────────────────────────────────────────────
+        rdax  pot2, -1.0
+        sof   1.0, 1.0
+        wrax  kdry, 0                   ; kdry = 1 − pot2: 0 con pot2 = 1, sin fuga
+        sof   0, 0.045
+        rdax  pot0, 0.93
+        rdfx  dt, 0.0005                ; deslizamiento de ~40 ms
+        wrax  dt, 0
+        rdax  pot4, 0.84
+        sof   1.0, 0.15
+        wrax  kt, 0
+        rdax  pot5, -0.0492
+        sof   1.0, 0.05
+        wrax  ks, 0
+; ── x ← frac(5x + c), exacto en 23 bit ───────────────────────────────
+        rdax  x, 1.25
+        rdax  x, 1.25
+        rdax  x, 1.25
+        rdax  x, 1.25
+        rdax  c, 1.0                    ; [0, 6)
+        rdax  h, -2.0
+        rdax  h, -2.0
+        rdax  h, -2.0
+        rdax  h, -2.0
+        skp   gez, menos_2
+        rdax  hn, -2.0
+        rdax  hn, -2.0
+        rdax  hn, -2.0
+        rdax  hn, -2.0
+menos_2:
+        rdax  h, -2.0
+        rdax  h, -2.0
+        skp   gez, menos_1
+        rdax  hn, -2.0
+        rdax  hn, -2.0
+menos_1:
+        rdax  h, -2.0
+        skp   gez, guardar_x
+        sof   1.0, 1.0
+guardar_x:
+        wrax  x, 0
+; ── contador de sorteos: parado con sw pisado ────────────────────────
+        rdax  sw, 1.0
+        skp   zro, contar
+        skp   gez, suavizar             ; sw > 0: siempre salta
+contar:
+        ldax  cnt
+        sof   1.0, -1/32768
+        wrax  cnt, 1.0
+        skp   gez, suavizar
+; el registro de compuertas avanza un puesto: g4 → g1 → g7 → g2 → g6 → g3 → g8 → g5
+        ldax  g8
+        wrax  g5, 0
+        ldax  g3
+        wrax  g8, 0
+        ldax  g6
+        wrax  g3, 0
+        ldax  g2
+        wrax  g6, 0
+        ldax  g7
+        wrax  g2, 0
+        ldax  g1
+        wrax  g7, 0
+        ldax  g4
+        wrax  g1, 0
+; ── sorteo nuevo en g4: abierta si x < pot1 ──────────────────────────
+        rdax  pot1, 1.0
+        rdax  x, -1.0
+        skp   neg|zro, cerrada
+        sof   0, 0.999
+        wrax  g4, 0
+        skp   zro, recarga
+cerrada:
+        clr
+        wrax  g4, 0
+recarga:
+        ldax  w                         ; intervalo = (0,1 + 0,2·w)·T + 10 ms
+        sof   0.2, 0.1
+        mulx  dt
+        sof   1.0, piso
+        wrax  cnt, 0
+suavizar:
+; ── suavizado de las compuertas: gs = gs + ks·(g − gs) ─────────────
+        ldax  g1
+        rdax  gs1, -1.0
+        mulx  ks
+        rdax  gs1, 1.0
+        wrax  gs1, 0
+        ldax  g2
+        rdax  gs2, -1.0
+        mulx  ks
+        rdax  gs2, 1.0
+        wrax  gs2, 0
+        ldax  g3
+        rdax  gs3, -1.0
+        mulx  ks
+        rdax  gs3, 1.0
+        wrax  gs3, 0
+        ldax  g4
+        rdax  gs4, -1.0
+        mulx  ks
+        rdax  gs4, 1.0
+        wrax  gs4, 0
+        ldax  g5
+        rdax  gs5, -1.0
+        mulx  ks
+        rdax  gs5, 1.0
+        wrax  gs5, 0
+        ldax  g6
+        rdax  gs6, -1.0
+        mulx  ks
+        rdax  gs6, 1.0
+        wrax  gs6, 0
+        ldax  g7
+        rdax  gs7, -1.0
+        mulx  ks
+        rdax  gs7, 1.0
+        wrax  gs7, 0
+        ldax  g8
+        rdax  gs8, -1.0
+        mulx  ks
+        rdax  gs8, 1.0
+        wrax  gs8, 0
+; ── ocho tomas en w − k·T, cada una por su compuerta ──────────────
+        ldax  w
+        rdax  dt, -0.127
+        wrax  p, 0
+        rdaa  p, 0.3
+        mulx  gs1
+        wrax  s, 0
+        ldax  w
+        rdax  dt, -0.229
+        wrax  p, 0
+        rdaa  p, 0.29
+        mulx  gs2
+        rdax  s, 1.0
+        wrax  s, 0
+        ldax  w
+        rdax  dt, -0.311
+        wrax  p, 0
+        rdaa  p, 0.28
+        mulx  gs3
+        rdax  s, 1.0
+        wrax  s, 0
+        ldax  w
+        rdax  dt, -0.443
+        wrax  p, 0
+        rdaa  p, 0.26
+        mulx  gs4
+        rdax  s, 1.0
+        wrax  s, 0
+        ldax  w
+        rdax  dt, -0.523
+        wrax  p, 0
+        rdaa  p, 0.25
+        mulx  gs5
+        rdax  s, 1.0
+        wrax  s, 0
+        ldax  w
+        rdax  dt, -0.683
+        wrax  p, 0
+        rdaa  p, 0.23
+        mulx  gs6
+        rdax  s, 1.0
+        wrax  s, 0
+        ldax  w
+        rdax  dt, -0.797
+        wrax  p, 0
+        rdaa  p, 0.22
+        mulx  gs7
+        rdax  s, 1.0
+        wrax  s, 0
+        ldax  w
+        rdax  dt, -0.997
+        wrax  p, 0
+        rdaa  p, 1.0
+        wrax  p, 0.2                   ; p = la última toma sin compuerta, para la realimentación
+        mulx  gs8
+        rdax  s, 1.0
+        wrax  s, 0
+; ── realimentación: la última toma, con tono y CLIP ──────────────────
+        ldax  p
+        rdax  lp, -1.0                  ; lp = lp + kt·(p − lp)
+        mulx  kt
+        rdax  lp, 1.0
+        wrax  lp, 1.0
+        clip
+        mulx  pot3
+        sof   0.6, 0                    ; CLIP tiene pendiente 1,5: lazo ≤ 0,9
+; ── escritura: entrada y realimentación, difundidas por tres allpass ─
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        rda   ap1#, 0.6
+        wrap  ap1, -0.6
+        rda   ap2#, 0.6
+        wrap  ap2, -0.6
+        rda   ap3#, 0.6
+        wrap  ap3, -0.6
+        wraa  w, 0
+; ── la cabeza avanza una muestra y da la vuelta en 1 ─────────────────
+        ldax  w
+        sof   1.0, 1/32768 - 1.0
+        skp   gez, guardar_w
+        sof   1.0, 1.0
+guardar_w:
+        wrax  w, 0
+; ── salida ───────────────────────────────────────────────────────────
+        rdax  s, 1.0
+        mulx  pot2
+        wrax  s, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  s, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  s, 1.0
+        wrax  dacr, 0

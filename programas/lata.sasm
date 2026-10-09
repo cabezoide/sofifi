@@ -1,0 +1,181 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: delay
+; resumen: Eco de lata de aceite: corto, turbio y líquido, con un vibrato atado al tiempo.
+; resumen.en: Oil can echo: short, murky and liquid, with a vibrato tied to the time.
+; resumen.zh-CN: 油罐回声：短促、浑浊、如液体般流动，颤音随延迟时间变化。
+; resumen.ja: オイル缶エコー：短く、濁った、液体のような響き。ビブラートはタイムに連動します。
+;
+; lata.sasm — Eco de lata de aceite (oil can) de 60 a 350 ms. En el eco
+; original, un disco gira dentro de una lata con aceite. El disco guarda la
+; señal como carga y dos escobillas la leen más tarde. Diseño propio, a partir
+; del principio de los ecos de lata de aceite (Tel-Ray) y del programa FV-1
+; «Oil can delay» (Digital Larry / Holy City Audio): el vaivén del eco sigue
+; al tiempo de eco.
+;
+; La idea central: el tiempo de eco depende de la velocidad del disco. Un
+; disco más lento da un eco más largo y un vaivén más lento. Así, la
+; velocidad del vibrato es proporcional a 1/tiempo y la excursión es
+; proporcional al tiempo. La variación de tono queda igual en todo el recorrido.
+;
+; Cada muestra:
+;   1. Desliza el tiempo hacia pot0 (truco de comun/tiempo.sasm: dos LFO
+;      senoidales parados, uno para cada escobilla).
+;   2. Calcula la velocidad del vibrato sin dividir: un servo de un polo
+;      lleva vel hacia C/dn, con dn = tiempo / tiempo máximo.
+;   3. Lee la escobilla A (tiempo D) y la B (tiempo 1,07·D). Cada una pasa
+;      por una memoria corta con su LFO de vibrato; los dos LFO van en fases
+;      opuestas (misma velocidad, profundidad de signo contrario).
+;   4. Mezcla las dos escobillas y pasa la suma por dos allpass cortos: la
+;      difusión del aceite.
+;   5. Dos pasos bajo de un polo (~2,5 kHz con pot4 a la mitad) y un paso
+;      alto de ~150 Hz: la «fuga» de la carga. Cada eco pierde agudos y graves.
+;   6. Escribe en el disco la entrada más el eco realimentado, por CLIP.
+;
+; Motor parado (footswitch): mientras se pisa, el tiempo sube hacia el máximo
+; con un deslizamiento lento (~0,7 s). El disco frena y el tono del eco baja
+; en picado. Al soltar, el tiempo vuelve a pot0 en ~40 ms.
+;
+; pot0 = tiempo          (0 → 60 ms · 1 → 350 ms; el vibrato va de 5,3 Hz a 0,9 Hz)
+; pot1 = realimentación  (0 → un eco · 1 → 0,9, los ecos se apagan pronto)
+; pot2 = mezcla          (0 → seco · 1 → solo eco)
+; pot3 = profundidad     (0 → sin vibrato · 1 → ±1,5 % de tono)
+; pot4 = tono            (0 → claro, ~4 kHz · 1 → oscuro, ~1 kHz)
+; pot5 = aceite          (0 → una escobilla, sin difusión · 1 → dos escobillas, difusión)
+; sw   = motor parado: mientras se pisa, el disco frena y el tono baja en picado
+
+equ  ea    7080               ; escobilla A: excursión del LFO parado (2·ea de recorrido)
+equ  ba    2802               ; escobilla A: retardo mínimo sin la memoria de vibrato
+equ  eb    7576               ; escobilla B: 1,07·ea
+equ  bb    3007               ; escobilla B: 1,07·(ba + ev) − ev
+equ  ev    128                ; excursión del vibrato (muestras)
+equ  dn0   0.58572            ; dn = dn0 + dn1·tiempo: retardo de A / 350 ms
+equ  dn1   0.41428
+equ  cvel  0.151              ; vel·dn → cvel: 0,9 Hz con dn = 1 (rate = vel/4096)
+equ  kvel  0.1                ; paso del servo de la velocidad
+equ  kap   0.5                ; coeficiente de los allpass del aceite
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  tiempo   reg2
+equ  kdes     reg3
+equ  dn       reg4
+equ  vel      reg5
+equ  esa      reg6
+equ  suma     reg7
+equ  lp1      reg8
+equ  lp2      reg9
+equ  hp       reg10
+equ  eco      reg11
+equ  ecow     reg12
+equ  kac      reg13
+equ  klp      reg14
+
+mem  disco  bb + 2*eb + 3
+mem  va     2*ev + 3
+mem  vb     2*ev + 3
+mem  ap1    89
+mem  ap2    157
+
+lfo  0  sin  ea
+lfo  1  sin  ev
+lfo  2  sin  ev
+lfo  3  sin  eb
+
+; ── LFO del tiempo parados: rate 0 en cada muestra, salvo al empezar ──
+        wrax  lfo0_rate, 0              ; ACC vale 0 al empezar la muestra
+        wrax  lfo3_rate, 0
+        skp   run, inicio
+        sof   0, 0.5                    ; un cuarto de vuelta: forma = 1
+        wrax  lfo0_rate, 1.0
+        wrax  lfo3_rate, 0
+inicio:
+; ── controles ────────────────────────────────────────────────────────
+include  comun/mezcla.sasm
+        rdax  sw, -0.0301               ; kdes = 0,032 (40 ms) o 0,0019 (0,7 s)
+        sof   1.0, 0.032
+        wrax  kdes, 0
+        rdax  pot5, 0.8
+        wrax  kac, 0
+        rdax  pot4, -0.3                ; klp de 0,42 (~4 kHz) a 0,12 (~1 kHz)
+        sof   1.0, 0.42
+        wrax  klp, 0
+; ── 1. tiempo: objetivo = 2·pot0 − 1, o el máximo con el motor parado ─
+        sof   0, -1.0
+        rdax  pot0, 1.999
+        rdax  sw, 1.999
+        sof   0.5, 0                    ; la mitad, para que la resta no sature
+        rdax  tiempo, -0.5
+        mulx  kdes
+        sof   1/32, 0                   ; paso = (obj − tiempo)·kdes/64
+        rdax  tiempo, 1.0
+        wrax  tiempo, 1.0
+        wrax  lfo0_depth, 1.0
+        wrax  lfo3_depth, dn1
+        sof   1.0, dn0
+        wrax  dn, 0
+; ── 2. velocidad del vibrato: vel ← vel + kvel·(cvel − vel·dn) ───────
+        rdax  vel, 1.0
+        mulx  dn
+        sof   -kvel, kvel*cvel
+        rdax  vel, 1.0
+        wrax  vel, 1/4096
+        wrax  lfo1_rate, 1.0
+        wrax  lfo2_rate, 0
+        rdax  pot3, 1.0                 ; profundidad ∝ tiempo
+        mulx  dn
+        wrax  lfo1_depth, -1.0
+        wrax  lfo2_depth, 0             ; fase opuesta
+; ── 3. escobillas ────────────────────────────────────────────────────
+        cho   disco + ba, 1.0, lfo0
+        wra   va, 0
+        cho   disco + bb, 1.0, lfo3
+        wra   vb, 0
+        cho   va + 1, 1.0, lfo1
+        wrax  esa, 0
+        cho   vb + 1, 0.65, lfo2        ; suma = A + pot5·(0,65·B − 0,35·A)
+        rdax  esa, -0.35
+        mulx  pot5
+        rdax  esa, 1.0
+        wrax  suma, 1.0
+; ── 4. difusión del aceite: dos allpass, mezclados con kac ───────────
+        rda   ap1#, kap
+        wrap  ap1, -kap
+        rda   ap2#, kap
+        wrap  ap2, -kap
+        rdax  suma, -1.0
+        mulx  kac
+        rdax  suma, 1.0
+; ── 5. dos pasos bajo variables y la fuga (paso alto) ────────────────
+        rdax  lp1, -1.0
+        mulx  klp
+        rdax  lp1, 1.0
+        wrax  lp1, 1.0
+        rdax  lp2, -1.0
+        mulx  klp
+        rdax  lp2, 1.0
+        wrax  lp2, 1.0
+        rdfx  hp, 0.02                  ; ~150 Hz
+        wrax  hp, -1.0
+        rdax  lp2, 1.0
+        wrax  eco, 1.0
+; ── 6. realimentación y escritura en el disco ────────────────────────
+        mulx  pot1
+        sof   0.9, 0
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        sof   2/3, 0                    ; curva_suave(2x/3): pendiente 1, techo ±1
+        clip
+        wra   disco, 0
+; ── salida ───────────────────────────────────────────────────────────
+        rdax  eco, 1.0
+        mulx  kwet
+        wrax  ecow, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  ecow, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  ecow, 1.0
+        wrax  dacr, 0

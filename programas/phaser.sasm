@@ -38,8 +38,9 @@ equ  yp4      reg16
 
 ; ── controles ────────────────────────────────────────────────────────
 include  comun/mezcla.sasm
-        rdax  pot0, 4*3.95/48828.125    ; vel = 4f/fs, de 0,05 a 4 Hz
-        sof   1.0, 4*0.05/48828.125
+        rdax  pot0, 64*4*3.95/48828.125 ; 64·vel, con vel = 4f/fs de 0,05 a 4 Hz
+        sof   1.0, 64*4*0.05/48828.125  ; el suelo de 0,05 Hz no cabe en D sin el ×64
+        sof   1/64, 0
         wrax  vel, 0
 ; ── coeficiente: a = −(0,55 + 0,4·prof·s) ────────────────────────────
 include  comun/lfo_triangulo.sasm
