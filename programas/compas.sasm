@@ -1,0 +1,219 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: delay
+; resumen: Eco con tap tempo y cinco figuras: negra, corchea con puntillo, corchea, tresillo y semicorchea.
+; resumen.en: Echo with tap tempo and five note values: quarter, dotted eighth, eighth, triplet and sixteenth.
+; resumen.zh-CN: 带拍速踏板和五种音符时值的回声：四分、附点八分、八分、三连音和十六分。
+; resumen.ja: タップテンポと5つの音価（4分、付点8分、8分、3連符、16分）を持つエコー。
+;
+; compas.sasm — Un eco en la región absoluta (RDAA y WRAA, ADR 0009). Dos
+; pisadas del pedal marcan la negra. Un mando elige la figura del eco. Una
+; segunda toma en el puntillo de esa figura sale por la derecha.
+; Diseño propio, a partir del principio del BYOC «Echo Royal»: un eco
+; analógico con tap tempo y un multiplicador que divide el tiempo marcado en
+; figuras musicales.
+;
+; Unidades: en la región absoluta, una muestra vale 2^-15 en un registro
+; (formato de RDAA). El contador del tap avanza 2^-16 por muestra: así llega
+; a 1,3 s sin saturar.
+;
+; Cada muestra:
+;   1. Tap. Un flanco de subida de `sw` (sw − sw anterior > 0,5) cierra un
+;      periodo. Si el contador está entre 52 ms y 1,3 s, el periodo pasa a
+;      ser la negra. Si no, solo se reinicia el contador: la primera pisada
+;      tras una pausa larga no cuenta.
+;   2. Mover pot0 más de 0,06 desde la última pisada borra el tap: el tiempo
+;      vuelve a pot0.
+;   3. Figura: cinco zonas de pot3 dan sub = 1, ¾, ½, ⅓ o ¼ de la negra.
+;   4. Retardo d1 = negra × sub. Si no cabe en la región (0,67 s), se usa la
+;      mitad: el eco cae en la figura siguiente y sigue a tempo.
+;   5. El retardo se desliza hacia el objetivo con un polo (≈ 41 ms): un
+;      cambio de tiempo hace un glissando corto, no un clic. La toma 2 está
+;      en d2 = ¾ · d1.
+;   6. Lectura de las dos tomas detrás de la cabeza de escritura. La toma 1
+;      vuelve a la memoria con un paso bajo (tono) y la realimentación.
+;   7. Izquierda = toma 1. Derecha = toma 1 → toma 2 según pot4.
+;
+; pot0 = tiempo           (sin tap: negra de 67 ms a 1,01 s)
+; pot1 = realimentación   (0 → un eco · 1 → 0,95)
+; pot2 = mezcla           (0 → seco · 1 → solo ecos)
+; pot3 = subdivisión      (zonas: 0–0,2 → negra · 0,2–0,4 → corchea con puntillo · 0,4–0,6 → corchea · 0,6–0,8 → tresillo · 0,8–1 → semicorchea)
+; pot4 = segunda toma     (0 → toma 1 en los dos lados · 1 → a la derecha, solo el puntillo)
+; pot5 = tono             (0 → oscuro · 1 → limpio)
+; sw   = tap tempo: dos pisadas marcan la negra
+
+equ  lim_max  0.97              ; periodo máximo del tap: 0,97 · 65 536 muestras = 1,30 s
+equ  lim_min  0.04              ; periodo mínimo: 2 621 muestras = 54 ms (rebotes)
+
+equ  h      reg0            ; 0,5 exacto
+equ  wp     reg1            ; cabeza de escritura en [0, 1)
+equ  cnt    reg2            ; muestras desde la última pisada · 2^-16
+equ  swant  reg3            ; sw de la muestra anterior
+equ  per    reg4            ; periodo del tap; 0 = sin tap
+equ  potap  reg5            ; pot0 en la última pisada válida
+equ  tq     reg6            ; negra · 2^-16 por muestra
+equ  ksub   reg7            ; sub / 2
+equ  hq     reg8            ; negra · sub / 2
+equ  dobj   reg9            ; retardo objetivo de la toma 1
+equ  dl1    reg10           ; retardo deslizado de la toma 1
+equ  dl2    reg11           ; retardo de la toma 2
+equ  p1     reg12
+equ  p2     reg13
+equ  e1     reg14
+equ  e2     reg15
+equ  lp     reg16
+equ  ktono  reg17
+equ  kwet   reg18
+equ  kdry   reg19
+equ  wl     reg20
+equ  wr     reg21
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 0.5
+        wrax  h, 0
+        sof   0, 32767/32768
+        wrax  cnt, 0                    ; contador lleno: la primera pisada no cuenta
+inicio:
+; ── tap: flanco de subida de sw ──────────────────────────────────────
+        rdax  sw, 1.0
+        rdax  swant, -1.0
+        sof   1.0, -0.5
+        skp   neg, contar
+        clr
+        rdax  cnt, 1.0
+        sof   1.0, -lim_max
+        skp   gez, reiniciar            ; pausa larga: solo reinicia
+        sof   1.0, lim_max - lim_min
+        skp   neg, reiniciar            ; rebote: solo reinicia
+        clr
+        rdax  cnt, 1.0
+        wrax  per, 0
+        rdax  pot0, 1.0
+        wrax  potap, 0
+reiniciar:
+        clr
+        wrax  cnt, 0
+contar:
+        clr
+        rdax  sw, 1.0
+        wrax  swant, 0
+        rdax  cnt, 1.0
+        rdax  h, 1/32768                ; + 2^-16: una muestra
+        wrax  cnt, 0
+; ── mover pot0 borra el tap ──────────────────────────────────────────
+        rdax  pot0, 1.0
+        rdax  potap, -1.0
+        absa
+        sof   1.0, -0.06
+        skp   neg, negra
+        clr
+        wrax  per, 0
+negra:
+        clr
+        rdax  pot0, 0.7
+        sof   1.0, 0.05
+        wrax  tq, 0
+        rdax  per, 1.0
+        skp   zro, figura
+        wrax  tq, 0
+; ── figura: cinco zonas de pot3 ──────────────────────────────────────
+figura:
+        sof   0, 0.5                    ; negra
+        wrax  ksub, 0
+        rdax  pot3, 1.0
+        sof   1.0, -0.2
+        skp   neg, retardo
+        sof   0, 0.375                  ; corchea con puntillo
+        wrax  ksub, 0
+        rdax  pot3, 1.0
+        sof   1.0, -0.4
+        skp   neg, retardo
+        sof   0, 0.25                   ; corchea
+        wrax  ksub, 0
+        rdax  pot3, 1.0
+        sof   1.0, -0.6
+        skp   neg, retardo
+        sof   0, 1/6                    ; tresillo
+        wrax  ksub, 0
+        rdax  pot3, 1.0
+        sof   1.0, -0.8
+        skp   neg, retardo
+        sof   0, 0.125                  ; semicorchea
+        wrax  ksub, 0
+; ── retardo: d1 = 4·hq; si no cabe, 2·hq ─────────────────────────────
+retardo:
+        clr
+        rdax  tq, 1.0
+        mulx  ksub
+        wrax  hq, 1.0
+        rdax  hq, 1.0
+        wrax  dobj, 1.0                 ; 2·hq
+        rdax  dobj, 1.0                 ; ACC = 4·hq, sin saturar
+        rdax  h, -1.99
+        skp   gez, deslizar             ; no cabe: queda 2·hq
+        rdax  h, 1.99
+        wrax  dobj, 0
+deslizar:
+        clr
+        rdax  dobj, 1.0
+        skp   run, glide
+        wrax  dl1, 1.0                  ; primera muestra: sin deslizamiento
+glide:
+        rdfx  dl1, 0.0005
+        wrax  dl1, 0.75
+        wrax  dl2, 0
+; ── cabeza de escritura: da la vuelta a las 32 768 muestras ─────────
+        rdax  wp, 1.0
+        rdax  dl1, -1.0
+        wrax  p1, 0                     ; RDAA enmascara: un negativo da la vuelta
+        rdax  wp, 1.0
+        rdax  dl2, -1.0
+        wrax  p2, 0
+        rdaa  p1, 1.0
+        wrax  e1, 0
+        rdaa  p2, 1.0
+        wrax  e2, 0
+; ── realimentación con tono ──────────────────────────────────────────
+        rdax  pot5, 0.8
+        sof   1.0, 0.19999
+        wrax  ktono, 0
+        rdax  e1, 1.0
+        rdax  lp, -1.0                  ; lp = lp + ktono·(e1 − lp)
+        mulx  ktono
+        rdax  lp, 1.0
+        wrax  lp, 1.0
+        mulx  pot1
+        sof   0.95, 0
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wraa  wp, 0
+        rdax  wp, 1.0
+        rdax  h, 1/16384                ; + 2^-15: una muestra
+        rdax  h, -1.0
+        rdax  h, -1.0                   ; ACC = wp + 1 muestra − 1
+        skp   gez, avanzar
+        rdax  h, 1.0
+        rdax  h, 1.0
+avanzar:
+        wrax  wp, 0
+; ── salida ───────────────────────────────────────────────────────────
+include  comun/mezcla.sasm
+        rdax  e2, 0.5
+        rdax  e1, -0.5
+        mulx  pot4
+        rdax  e1, 0.5
+        mulx  kwet
+        wrax  wr, 0
+        rdax  e1, 1.0
+        mulx  kwet
+        wrax  wl, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  wl, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  wr, 1.0
+        rdax  wr, 1.0
+        wrax  dacr, 0

@@ -1,10 +1,10 @@
-<!-- i18n: fuente=docs/programas.md sha=35fd52e7490f estado=al_dia -->
+<!-- i18n: fuente=docs/programas.md sha=0b076b220fda estado=al_dia -->
 <!-- GENERADO por `sofifi catalogo` desde programas/*.sasm. No se edita a mano:
      model/tests/catalogo_test.py lo compara con su generador. -->
 
 # Core programs
 
-81 programs and 648 presets. Each program is a text file in `programas/`; the presets are in `presets/banco.toml`. Program and preset names are in Spanish.
+86 programs and 688 presets. Each program is a text file in `programas/`; the presets are in `presets/banco.toml`. Program and preset names are in Spanish.
 The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/coste.py`). The memory has 43,008 words.
 
 ## Reverb
@@ -28,6 +28,7 @@ The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/co
 | `plate_vivo` | A plate whose modulation drifts at random: the tail never repeats. | 0: decay<br>1: damping<br>2: mix<br>3: life | 8 | 127 | 1,054 | 37,439 |
 | `resonador` | Four strings tuned to E major that vibrate in sympathy with the playing. | 0: sustain<br>1: excitation<br>2: mix<br>3: tuning | 8 | 89 | 525 | 1 |
 | `reverb_inversa` | Reverse reverb: after each attack, the tail grows and stops suddenly. | 0: decay<br>1: damping<br>2: mix<br>3: length | 8 | 133 | 1,098 | 37,439 |
+| `semilla` | Cloud reverb with early reflections from a seed: each seed gives a different room. | 0: decay<br>1: damping<br>2: mix<br>3: seed<br>4: density<br>5: modulation | 8 | 196 | 1,513 | 42,934 |
 | `shimmer` | A plate with +12 in the feedback: each turn goes up one octave. | 0: decay<br>1: damping<br>2: mix<br>3: shimmer amount | 8 | 108 | 1,037 | 41,539 |
 | `shimmer_energia` | A shimmer that controls itself: the more octave it collects, the less it adds. | 0: decay<br>1: damping<br>2: mix<br>3: shimmer amount | 8 | 117 | 1,095 | 41,539 |
 | `shimmer_escondido` | Hidden shimmer: the octave stays quiet while you play and comes up in the tail. | 0: decay<br>1: damping<br>2: mix<br>3: shimmer amount<br>4: ducking<br>5: tone | 8 | 139 | 1,239 | 41,539 |
@@ -45,6 +46,7 @@ The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/co
 | `bbd` | Dark analog echo: each repeat loses treble and saturates. | 0: time<br>1: feedback<br>2: mix<br>3: modulation | 8 | 44 | 408 | 14,674 |
 | `bruma` | A four-head echo that blurs on each turn until it becomes a reverb. | 0: diffusion<br>1: feedback<br>2: mix<br>3: heads | 8 | 53 | 536 | 41,553 |
 | `cinta` | Tape echo from 0.18 to 0.85 s with wow, flutter and saturation. | 0: time<br>1: feedback<br>2: mix<br>3: wow and flutter | 8 | 50 | 484 | 41,600 |
+| `compas` | Echo with tap tempo and five note values: quarter, dotted eighth, eighth, triplet and sixteenth. | 0: time<br>1: feedback<br>2: mix<br>3: subdivision<br>4: second tap<br>5: tone | 8 | 135 | 885 | 32,769 |
 | `dados` | Four echoes with random times and octaves; sw rolls the dice again. | 0: time<br>1: feedback<br>2: mix<br>3: probability<br>4: tone<br>5: width | 8 | 239 | 1,620 | 38,260 |
 | `delay` | Clean digital echo from 20 to 690 ms, with tone in the feedback. | 0: time<br>1: feedback<br>2: mix<br>3: tone | 8 | 38 | 309 | 33,749 |
 | `deriva` | An echo that drifts: the time jumps at random and glides to the new value. | 0: time<br>1: depth<br>2: mix<br>3: rate<br>4: glide<br>5: feedback | 8 | 128 | 969 | 33,796 |
@@ -85,8 +87,10 @@ The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/co
 | `acople` | A held note slowly grows a saturated harmonic above it, like amp feedback. | 0: time<br>1: interval<br>2: mix<br>3: rise time<br>4: tone<br>5: level | 8 | 138 | 1,038 | 3,550 |
 | `arcoiris` | Two pitch-shifted voices in a loop that regenerates and can self-oscillate. | 0: interval<br>1: second voice<br>2: mix<br>3: time<br>4: feedback<br>5: tone | 8 | 76 | 693 | 12,345 |
 | `armonizador` | One voice at −12, −7, −5, +5, +7 or +12 semitones, with feedback. | 0: interval<br>1: feedback<br>2: mix | 8 | 55 | 450 | 4,100 |
+| `arpegio` | Each note opens into a transposed arpeggio (1-3-5-8) that falls into a reverb. | 0: rate<br>1: notes<br>2: mix<br>3: mode<br>4: echo<br>5: decay | 8 | 163 | 1,259 | 42,851 |
 | `doblador` | Two voices detuned by a few cents, one on each side: it widens the sound. | 0: detune<br>2: mix | 8 | 32 | 346 | 1,028 |
 | `escalera` | An echo in which each repeat goes up or down an interval: a staircase. | 0: interval<br>1: feedback<br>2: mix<br>3: time | 8 | 67 | 582 | 39,313 |
+| `espiral` | A reverb whose tail spirals up or down in pitch, with one interval on each side. | 0: interval<br>1: second voice<br>2: mix<br>3: time<br>4: feedback<br>5: decay | 8 | 171 | 1,455 | 42,878 |
 | `octava` | Octaver: one octave down and one up, each with its own level. | 0: lower octave<br>1: upper octave<br>2: dry | 8 | 25 | 296 | 4,100 |
 
 ## Dynamics
@@ -97,6 +101,7 @@ The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/co
 | `compresor` | Compressor: it lowers the loud parts, keeps the soft ones and sustains the notes. | 0: threshold<br>1: compression<br>2: mix<br>3: gain | 8 | 57 | 394 | 1 |
 | `puerta` | Noise gate: it silences the hum between notes and lets the playing through. | 0: threshold<br>1: release | 8 | 29 | 222 | 1 |
 | `swell` | Each note starts in silence and rises, before a plate. | 0: decay<br>1: damping<br>2: mix<br>3: rise time | 8 | 116 | 983 | 37,439 |
+| `swell_ritmico` | Each note rises with the curve and time you set, also to the beat of your foot, in a plate that sways. | 0: rise time<br>1: shape<br>2: mix<br>3: decay<br>4: drift<br>5: sensitivity | 8 | 216 | 1,611 | 37,439 |
 | `violin` | Each note starts with no pick attack, as with a bow, and the vibrato comes later. | 0: rise time<br>1: time<br>2: mix<br>3: depth<br>4: rate<br>5: tone | 8 | 118 | 845 | 85 |
 
 ## Texture

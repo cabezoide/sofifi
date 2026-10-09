@@ -1,0 +1,315 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: reverb
+; resumen: Reverb nube con primeras reflexiones que salen de una semilla: cada semilla da otra sala.
+; resumen.en: Cloud reverb with early reflections from a seed: each seed gives a different room.
+; resumen.zh-CN: 早期反射由种子生成的云状混响：每个种子都是一个不同的房间。
+; resumen.ja: 初期反射をシードから作るクラウドリバーブ：シードごとに別の部屋になります。
+;
+; semilla.sasm — reverb nube con un multitap previo elegido por una semilla.
+; Diseño propio, a partir del principio de CloudSeed (V. Ö. Erlingsson, MIT;
+; docs/terceros.yaml T-002, estudiado). El principio: un generador
+; pseudoaleatorio con semilla coloca las tomas tempranas; después un difusor
+; y varias líneas tardías en paralelo hacen la cola. No porta código ni
+; tablas: las constantes de este fichero son propias.
+;
+; Cada muestra:
+;   1. La entrada se escribe en la región absoluta (RDAA y WRAA, ADR 0009).
+;      La cabeza `w` da la vuelta a las 32 768 muestras.
+;   2. pot3 elige una de 8 semillas. Tres comparaciones redondean pot3
+;      hacia abajo a q = n/8. La semilla es x0 = 0,05 + 0,95·q.
+;   3. El generador repite x ← |1,98·x − 0,99| ocho veces. Es un mapa
+;      caótico: dos semillas dan dos series distintas, y la misma semilla da
+;      siempre la misma serie.
+;   4. Cada valor x_k coloca la toma k entre lo_k y lo_k + 22,5 ms. Las
+;      ventanas van de 5 ms a 108 ms. La misma semilla da las mismas tomas.
+;   5. Las tomas impares suenan siempre; las pares entran con la densidad
+;      (pot4). Cuatro van a la izquierda y cuatro a la derecha.
+;   6. Cuatro allpass en serie difuminan la suma de las tomas.
+;   7. Cuatro líneas tardías en paralelo. Cada una lee su final con un LFO
+;      senoidal (pot5), pasa por un allpass y por un paso bajo (damping).
+;      Una matriz de Householder (y = x − ½·Σx) mezcla las cuatro salidas y
+;      las realimenta con el decay. La matriz es ortogonal: la
+;      realimentación cruzada no gana energía.
+;   8. Con `sw` pulsado, la cola se congela: decay ≈ 1, sin damping y sin
+;      entrada nueva.
+;
+; pot0 = decay       (0 → 0,42 · 1 → 0,98 por vuelta)
+; pot1 = damping     (0 → brillante · 1 → oscuro)
+; pot2 = mezcla      (0 → seco · 1 → solo reverb)
+; pot3 = semilla     (8 zonas: cada zona da otras primeras reflexiones)
+; pot4 = densidad    (0 → 4 tomas tempranas · 1 → 8 tomas)
+; pot5 = modulación  (0 → sin modulación · 1 → ±24 muestras)
+; sw   = freeze      (pulsado: la cola se congela)
+;
+; Con pot4 y pot5 a 0, la reverb está completa: 4 tomas y sin modulación.
+
+equ  ext    24                ; excursión de la modulación de las líneas, en muestras
+equ  span   1100              ; ancho de la ventana de cada toma, en muestras
+equ  kd     0.6               ; difusión de entrada
+equ  ka     0.5               ; allpass de las líneas tardías
+equ  kt     0.5               ; entrada del difusor a las líneas
+equ  ke     0.7               ; nivel de las primeras reflexiones en la salida
+equ  ks     0.7               ; nivel de las líneas tardías en la salida
+
+; ventanas de las tomas: lo_k = 240 + 560·(k − 1) muestras
+equ  lo1    240
+equ  lo2    800
+equ  lo3    1360
+equ  lo4    1920
+equ  lo5    2480
+equ  lo6    3040
+equ  lo7    3600
+equ  lo8    4160
+
+equ  kdecay   reg0
+equ  kdamp    reg1
+equ  kwet     reg2
+equ  kdry     reg3
+equ  w        reg5            ; cabeza de escritura, en [−½, ½)
+equ  r        reg6            ; resto de pot3 al sacar la zona
+equ  p1       reg8            ; posiciones de las 8 tomas
+equ  p2       reg9
+equ  p3       reg10
+equ  p4       reg11
+equ  p5       reg12
+equ  p6       reg13
+equ  p7       reg14
+equ  p8       reg15
+equ  kdens    reg16
+equ  el       reg17           ; primeras reflexiones, izquierda
+equ  er       reg18           ; primeras reflexiones, derecha
+equ  lp0      reg19           ; salida (y estado del paso bajo) de cada línea tardía
+equ  lp1      reg20
+equ  lp2      reg21
+equ  lp3      reg22
+equ  h        reg23           ; −¼ de la suma de las cuatro líneas
+equ  dif      reg24           ; salida del difusor
+
+mem  ap1   149
+mem  ap2   223
+mem  ap3   337
+mem  ap4   463
+mem  d0    1499 + ext + 3     ; modulado (LFO0)
+mem  d1    1747 + ext + 3     ; modulado (LFO1)
+mem  d2    1973 + ext + 3     ; modulado (LFO0, media vuelta)
+mem  d3    2251 + ext + 3     ; modulado (LFO1, media vuelta)
+mem  a0    263
+mem  a1    331
+mem  a2    389
+mem  a3    421
+
+lfo  0  sin  ext
+lfo  1  sin  ext
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 1/32768                ; 1 LSB de rate: 0,745 Hz
+        wrax  lfo0_rate, 0.6
+        wrax  lfo1_rate, 0              ; LFO1 a 0,6 LSB: 0,447 Hz
+inicio:
+        rdax  pot0, 0.56
+        sof   1.0, 0.42
+        wrax  kdecay, 0                 ; 0,42 a 0,98
+        rdax  pot1, -0.7
+        sof   1.0, 0.999
+        wrax  kdamp, 0                  ; 1 (brillante) a 0,3 (oscuro)
+include  comun/mezcla.sasm
+        rdax  pot4, 1.0
+        wrax  kdens, 0
+        rdax  pot5, 1.0                 ; la modulación sigue a pot5
+        wrax  lfo0_depth, 1.0
+        wrax  lfo1_depth, 0
+; ── freeze: decay ≈ 1, sin damping y sin entrada nueva ───────────────
+        rdax  sw, 1.0
+        skp   zro, cabeza
+        sof   0, 0.999
+        wrax  kdecay, 1.0
+        wrax  kdamp, 0
+        wrax  kwet, 0                   ; la entrada no llega a la reverb
+; ── 1. cabeza de escritura y entrada en la región absoluta ───────────
+cabeza:
+        ldax  w
+        sof   1.0, 1/32768              ; una muestra
+        wrax  w, 1.0
+        sof   1.0, -0.5
+        skp   neg, escribir
+        sof   1.0, -0.5                 ; w ≥ ½: vuelve a −½ (la región es circular)
+        wrax  w, 0
+escribir:
+        clr
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        mulx  kwet
+        wraa  w, 0
+; ── 2. semilla: pot3 en 8 zonas, q = n/8 ─────────────────────────────
+; El ACC lleva el resto r. En cada paso, si r ≥ h, r baja h; si no, se queda.
+        rdax  pot3, 1.0
+        sof   1.0, -0.5
+        skp   gez, mitad
+        sof   1.0, 0.5
+mitad:
+        sof   1.0, -0.25
+        skp   gez, cuarto
+        sof   1.0, 0.25
+cuarto:
+        sof   1.0, -0.125
+        skp   gez, octavo
+        sof   1.0, 0.125
+octavo:
+        wrax  r, -1.0
+        rdax  pot3, 1.0                 ; q = pot3 − r
+        sof   0.95, 0.05                ; x0 = 0,05 + 0,95·q
+; ── 3. generador: x ← |1,98·x − 0,99|, ocho veces ────────────────────
+        sof   1.98, -0.99
+        absa
+        wrax  p1, 1.0
+        sof   1.98, -0.99
+        absa
+        wrax  p2, 1.0
+        sof   1.98, -0.99
+        absa
+        wrax  p3, 1.0
+        sof   1.98, -0.99
+        absa
+        wrax  p4, 1.0
+        sof   1.98, -0.99
+        absa
+        wrax  p5, 1.0
+        sof   1.98, -0.99
+        absa
+        wrax  p6, 1.0
+        sof   1.98, -0.99
+        absa
+        wrax  p7, 1.0
+        sof   1.98, -0.99
+        absa
+        wrax  p8, 0
+; ── 4. posiciones: p_k = w − span·x_k (lo_k va en el origen de RDAA) ─
+        rdax  w, 1.0
+        rdax  p1, -span/32768
+        wrax  p1, 0
+        rdax  w, 1.0
+        rdax  p2, -span/32768
+        wrax  p2, 0
+        rdax  w, 1.0
+        rdax  p3, -span/32768
+        wrax  p3, 0
+        rdax  w, 1.0
+        rdax  p4, -span/32768
+        wrax  p4, 0
+        rdax  w, 1.0
+        rdax  p5, -span/32768
+        wrax  p5, 0
+        rdax  w, 1.0
+        rdax  p6, -span/32768
+        wrax  p6, 0
+        rdax  w, 1.0
+        rdax  p7, -span/32768
+        wrax  p7, 0
+        rdax  w, 1.0
+        rdax  p8, -span/32768
+        wrax  p8, 0
+; ── 5. tomas tempranas: las impares siempre, las pares con la densidad
+        rdaa  p1, 0.8, 32768 - lo1
+        rdaa  p5, 0.6, 32768 - lo5
+        wrax  el, 0
+        rdaa  p3, -0.7, 32768 - lo3
+        rdaa  p7, -0.5, 32768 - lo7
+        wrax  er, 0
+        rdaa  p4, -0.65, 32768 - lo4
+        rdaa  p8, -0.45, 32768 - lo8
+        mulx  kdens
+        rdax  el, 1.0
+        wrax  el, 0
+        rdaa  p2, 0.75, 32768 - lo2
+        rdaa  p6, 0.55, 32768 - lo6
+        mulx  kdens
+        rdax  er, 1.0
+        wrax  er, 0
+; ── 6. difusor: cuatro allpass en serie ──────────────────────────────
+        rdax  el, 0.5
+        rdax  er, 0.5
+        rda   ap1#, kd
+        wrap  ap1, -kd
+        rda   ap2#, kd
+        wrap  ap2, -kd
+        rda   ap3#, kd
+        wrap  ap3, -kd
+        rda   ap4#, kd
+        wrap  ap4, -kd
+        wrax  dif, 0
+; ── 7. líneas tardías: final modulado, allpass y paso bajo ───────────
+        cho   d0 + 1499 - ext, 1.0, lfo0
+        rda   a0#, ka
+        wrap  a0, -ka
+        rdax  lp0, -1.0
+        mulx  kdamp
+        rdax  lp0, 1.0
+        wrax  lp0, 0
+        cho   d1 + 1747 - ext, 1.0, lfo1
+        rda   a1#, ka
+        wrap  a1, -ka
+        rdax  lp1, -1.0
+        mulx  kdamp
+        rdax  lp1, 1.0
+        wrax  lp1, 0
+        cho   d2 + 1973 - ext, 1.0, lfo0, media
+        rda   a2#, ka
+        wrap  a2, -ka
+        rdax  lp2, -1.0
+        mulx  kdamp
+        rdax  lp2, 1.0
+        wrax  lp2, 0
+        cho   d3 + 2251 - ext, 1.0, lfo1, media
+        rda   a3#, ka
+        wrap  a3, -ka
+        rdax  lp3, -1.0
+        mulx  kdamp
+        rdax  lp3, 1.0
+        wrax  lp3, 0
+; ── 7. Householder: entrada_j = decay·(lp_j − ½·Σlp) ± kt·dif ────────
+        rdax  lp0, -0.25
+        rdax  lp1, -0.25
+        rdax  lp2, -0.25
+        rdax  lp3, -0.25
+        wrax  h, 0
+        rdax  lp0, 1.0
+        rdax  h, 1.0
+        rdax  h, 1.0
+        mulx  kdecay
+        rdax  dif, kt
+        wra   d0, 0
+        rdax  lp1, 1.0
+        rdax  h, 1.0
+        rdax  h, 1.0
+        mulx  kdecay
+        rdax  dif, -kt
+        wra   d1, 0
+        rdax  lp2, 1.0
+        rdax  h, 1.0
+        rdax  h, 1.0
+        mulx  kdecay
+        rdax  dif, kt
+        wra   d2, 0
+        rdax  lp3, 1.0
+        rdax  h, 1.0
+        rdax  h, 1.0
+        mulx  kdecay
+        rdax  dif, -kt
+        wra   d3, 0
+; ── salida: seco, primeras reflexiones y cola ────────────────────────
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  el, ke
+        rdax  lp0, ks
+        rdax  lp2, -ks
+        rda   d1 + 911, ks
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  er, ke
+        rdax  lp1, ks
+        rdax  lp3, -ks
+        rda   d2 + 677, ks
+        wrax  dacr, 0

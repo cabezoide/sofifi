@@ -1,4 +1,4 @@
-<!-- i18n: fuente=fails.md sha=e61de9d9dc80 estado=al_dia -->
+<!-- i18n: fuente=fails.md sha=89eb25efb688 estado=al_dia -->
 # Failures and their resolution
 
 This is the record of the failures found in the project. Each entry has a symptom, a diagnosis, a root cause, a resolution and a lesson. The record helps us not to repeat them. It also explains why the design is as it is.
@@ -389,3 +389,23 @@ The acoustic tests of the new programs found four failures before publication.
   - **Cause:** the excursion E of an LFO is a maximum of 16,384 samples.
   - **Resolution:** two taps with two LFOs of different base and a crossfade between them.
 - **Lesson:** validate a common block with low notes and with arpeggios. Each read head of a ring needs its window near the write head.
+
+## F-31 · Loops, periods and detectors in batch 14
+
+- **A pitch spiral does not sustain** (`espiral`).
+  - **Symptom:** with the footswitch and a feedback of 1.9, the tail stopped in 1-2 s.
+  - **Cause:** the shifter in the loop moves the energy out of the band on each pass. The gain alone does not return it.
+  - **Resolution:** with the footswitch, a part of the signal goes around the shifter in the loop. The CLIP sets the ceiling.
+- **A write head with a period of 32,767** (`compas`).
+  - **Symptom:** a read `wp − d` that crosses the wrap reads a delay that is one sample short.
+  - **Cause:** RDAA masks to 32,768 samples, and the head goes back to 0 at 32,767.
+  - **Resolution:** the head goes through [0, 1) with a period of exactly 32,768. `looper` and `granular` use the old wrap: we must still check them.
+- **The attack detector triggers many times on a low note** (`swell_ritmico`).
+  - **Cause:** the peak falls 8 % between half periods, and the rule "peak > 1.5·slow + threshold" crosses 0 many times.
+  - **Resolution:** a dead time of approximately 60 ms after each attack.
+- **A sustained note and its echo make a comb** (`arpegio`).
+  - **Symptom:** the +4 voice was 65 % lower at 330 Hz than at 262 Hz.
+  - **Resolution:** the echo lasts one step, and only the echo goes into the reverb.
+- **A coefficient that a knob changes cannot go in RDFX** (`semilla`).
+  - **Resolution:** the low-pass uses MULX with a register, as in `cloud`.
+- **Lesson:** a loop with transposition needs a path without transposition. A head that wraps has the period of the mask.

@@ -3,7 +3,7 @@
 
 # Programas del núcleo
 
-81 programas y 648 presets. Cada programa es un fichero de texto en `programas/`; los presets están en `presets/banco.toml`.
+86 programas y 688 presets. Cada programa es un fichero de texto en `programas/`; los presets están en `presets/banco.toml`.
 Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste.py`). La memoria es de 43 008 palabras.
 
 ## Reverb
@@ -27,6 +27,7 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 | `plate_vivo` | Plate cuya modulación deriva al azar: la cola nunca se repite igual. | 0: decay<br>1: damping<br>2: mezcla<br>3: vida | 8 | 127 | 1 054 | 37 439 |
 | `resonador` | Cuatro cuerdas afinadas en mi mayor que vibran por simpatía con lo que se toca. | 0: sustain<br>1: excitación<br>2: mezcla<br>3: afinación | 8 | 89 | 525 | 1 |
 | `reverb_inversa` | Reverb al revés: tras cada ataque, la cola crece y se corta de golpe. | 0: decay<br>1: damping<br>2: mezcla<br>3: duración | 8 | 133 | 1 098 | 37 439 |
+| `semilla` | Reverb nube con primeras reflexiones que salen de una semilla: cada semilla da otra sala. | 0: decay<br>1: damping<br>2: mezcla<br>3: semilla<br>4: densidad<br>5: modulación | 8 | 196 | 1 513 | 42 934 |
 | `shimmer` | Plate con un +12 en la realimentación: cada vuelta sube una octava. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 8 | 108 | 1 037 | 41 539 |
 | `shimmer_energia` | Shimmer que se regula solo: cuanta más octava acumula, menos añade. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer | 8 | 117 | 1 095 | 41 539 |
 | `shimmer_escondido` | Shimmer escondido: la octava se calla mientras tocas y aparece en la cola. | 0: decay<br>1: damping<br>2: mezcla<br>3: cantidad de shimmer<br>4: ducking<br>5: tono | 8 | 139 | 1 239 | 41 539 |
@@ -44,6 +45,7 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 | `bbd` | Eco analógico oscuro: cada repetición pierde agudos y se satura. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: modulación | 8 | 44 | 408 | 14 674 |
 | `bruma` | Eco de cuatro cabezas que se difumina en cada vuelta hasta volverse reverb. | 0: difusión<br>1: realimentación<br>2: mezcla<br>3: cabezas | 8 | 53 | 536 | 41 553 |
 | `cinta` | Eco de cinta de 0,18 a 0,85 s con wow, flutter y saturación. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: wow y flutter | 8 | 50 | 484 | 41 600 |
+| `compas` | Eco con tap tempo y cinco figuras: negra, corchea con puntillo, corchea, tresillo y semicorchea. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: subdivisión<br>4: segunda toma<br>5: tono | 8 | 135 | 885 | 32 769 |
 | `dados` | Cuatro ecos con tiempos y octavas al azar; sw tira los dados otra vez. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: probabilidad<br>4: tono<br>5: ancho | 8 | 239 | 1 620 | 38 260 |
 | `delay` | Eco digital limpio de 20 a 690 ms, con tono en la realimentación. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: tono | 8 | 38 | 309 | 33 749 |
 | `deriva` | Eco que pierde el rumbo: el tiempo salta al azar y llega con glide. | 0: tiempo<br>1: profundidad<br>2: mezcla<br>3: velocidad<br>4: glide<br>5: realimentación | 8 | 128 | 969 | 33 796 |
@@ -84,8 +86,10 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 | `acople` | Una nota sostenida hace crecer encima un armónico saturado, como un acople. | 0: tiempo<br>1: intervalo<br>2: mezcla<br>3: subida<br>4: tono<br>5: nivel | 8 | 138 | 1 038 | 3 550 |
 | `arcoiris` | Dos voces transpuestas en un bucle que regenera y llega a autooscilar. | 0: intervalo<br>1: segunda voz<br>2: mezcla<br>3: tiempo<br>4: realimentación<br>5: tono | 8 | 76 | 693 | 12 345 |
 | `armonizador` | Una voz a −12, −7, −5, +5, +7 o +12 semitonos, con realimentación. | 0: intervalo<br>1: realimentación<br>2: mezcla | 8 | 55 | 450 | 4 100 |
+| `arpegio` | Cada nota se abre en un arpegio transpuesto (1-3-5-8) que cae en una reverb. | 0: velocidad<br>1: notas<br>2: mezcla<br>3: modo<br>4: eco<br>5: decay | 8 | 163 | 1 259 | 42 851 |
 | `doblador` | Dos voces desafinadas unos cents, una a cada lado: ensancha el sonido. | 0: desafinación<br>2: mezcla | 8 | 32 | 346 | 1 028 |
 | `escalera` | Eco en el que cada repetición sube o baja un intervalo: una escalera. | 0: intervalo<br>1: realimentación<br>2: mezcla<br>3: tiempo | 8 | 67 | 582 | 39 313 |
+| `espiral` | Reverb cuya cola sube o baja de tono en espiral, con un intervalo a cada lado. | 0: intervalo<br>1: segunda voz<br>2: mezcla<br>3: tiempo<br>4: realimentación<br>5: decay | 8 | 171 | 1 455 | 42 878 |
 | `octava` | Octavador: una octava abajo y una arriba, cada una con su nivel. | 0: octava baja<br>1: octava alta<br>2: seco | 8 | 25 | 296 | 4 100 |
 
 ## Dinámica
@@ -96,6 +100,7 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 | `compresor` | Compresor: baja lo fuerte y deja lo suave; sostiene las notas. | 0: umbral<br>1: compresión<br>2: mezcla<br>3: ganancia | 8 | 57 | 394 | 1 |
 | `puerta` | Puerta de ruido: calla el zumbido entre notas y deja pasar lo que se toca. | 0: umbral<br>1: cierre | 8 | 29 | 222 | 1 |
 | `swell` | Cada nota empieza en silencio y sube, antes de un plate. | 0: decay<br>1: damping<br>2: mezcla<br>3: subida | 8 | 116 | 983 | 37 439 |
+| `swell_ritmico` | Cada nota sube con la curva y el tiempo que eliges, también al pulso del pie, en un plate que ondula. | 0: subida<br>1: forma<br>2: mezcla<br>3: decay<br>4: deriva<br>5: sensibilidad | 8 | 216 | 1 611 | 37 439 |
 | `violin` | Cada nota entra sin púa, como con un arco, y el vibrato llega después. | 0: subida<br>1: tiempo<br>2: mezcla<br>3: profundidad<br>4: velocidad<br>5: tono | 8 | 118 | 845 | 85 |
 
 ## Textura
