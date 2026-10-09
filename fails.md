@@ -32,6 +32,7 @@ Se añade una entrada nueva cuando un fallo está diagnosticado y resuelto. Las 
 | F-24 | 07 | La cola del microcódigo se llevó la última BSRAM | resuelto |
 | F-25 | 08 | Tres fallos del controlador SD, encontrados en simulación | resuelto antes de la placa |
 | F-26 | 08 | Cuatro trampas del punto fijo en el lote 9 del catálogo | resuelto antes de publicar |
+| F-27 | 08 | Constantes pequeñas, bucles de control y una huella ciega en el lote 10 | resuelto antes de publicar |
 
 ---
 
@@ -304,3 +305,23 @@ Las pruebas acústicas de los programas nuevos encontraron cuatro fallos antes d
   - **Causa:** la lectura caía entre dos muestras. La interpolación es un paso bajo, y se aplica una vez por vuelta.
   - **Resolución:** la longitud se redondea a muestras enteras. Con erosión 0, el bucle se repite bit a bit.
 - **Lección:** en el punto fijo, el ACC y los registros saturan a [−1, 1). En un bucle con realimentación, un filtro escondido se eleva al número de vueltas. Las pruebas miden el nivel y la repetición exacta, no solo que «suena».
+
+## F-27 · Constantes pequeñas, bucles de control y una huella ciega en el lote 10
+
+- **Una constante menor que 1/32 768 no cabe en el operando D de SOF** (`violin`).
+  - **Síntoma:** la edad de la nota y la rampa más lenta no avanzaban.
+  - **Causa:** D es S2.15: su paso más pequeño es 1/32 768. 1/fs vale menos.
+  - **Resolución:** la constante sale del producto de dos SOF, o de un factor ×64 que después multiplica un registro de 1/64.
+- **Un paso bajo con un coeficiente diminuto se para antes de llegar** (`arco`).
+  - **Síntoma:** el fundido de salida se quedaba en 0,002 y no llegaba a 0.
+  - **Causa:** con RDFX y un coeficiente de 2^-15, el paso de cada muestra se redondea a 0 cerca del destino.
+  - **Resolución:** un término lineal fijo y un suelo en 0.
+- **Un control automático de ganancia se atasca o mata el bucle** (`arco`, `oscilador`).
+  - **Síntoma:** en `arco`, la ganancia se quedaba en 0 para siempre. En `oscilador`, el lazo moría tras la primera nota.
+  - **Causa:** una ganancia multiplicativa que llega a 0 ya no sube. Y un ataque fuerte con una recuperación lenta hundía la ganancia por debajo de la que mantiene la oscilación.
+  - **Resolución:** un suelo para la ganancia (1/256). En `oscilador`, un ataque más suave y una recuperación de 85 ms.
+- **Una huella con los mandos neutros no distingue programas** (`dinamica`).
+  - **Síntoma:** `dinamica` y `freeze` tenían la misma huella.
+  - **Causa:** la prueba de huella pone pot3 = 0,5, que en `dinamica` es «sin dinámica»: el programa es entonces un plate con el tanque con CLIP, igual que `freeze` sin pulsar.
+  - **Resolución:** `POTS_HUELLA` da a `dinamica` una profundidad de 0,9, con una nota de 0,6 s.
+- **Lección:** las constantes de tiempo largas no caben en una instrucción: se construyen. Un bucle de control necesita un suelo. Una huella solo vale si el estímulo y los mandos llegan al efecto.

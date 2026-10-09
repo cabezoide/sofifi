@@ -1,4 +1,4 @@
-<!-- i18n: fuente=demo_examples/README.md sha=a6d916286d67 estado=al_dia -->
+<!-- i18n: fuente=demo_examples/README.md sha=4baa1149f9a8 estado=al_dia -->
 # demo_examples
 
 A synthetic guitar (an Em9 arpeggio, Karplus-Strong strings) through each core program, with the bit-exact model. Generate them again with `.venv/bin/python scripts/generar_demos.py`: the audio is the same each time.
@@ -63,6 +63,12 @@ A synthetic guitar (an Em9 arpeggio, Karplus-Strong strings) through each core p
 | `demo_mosaico.ogg` | `mosaico` | lower octave 0.60 · level 0.70 · mix 0.55 · upper octave 0.50 · feedback 0.85 · diffusion 0.60 | 4.00 → 8.00 s |
 | `demo_erosion.ogg` | `erosion` | erosion 0.25 · damping 0.60 · mix 0.65 · modulation 0.70 · level 1.00 · length 1.00 | 0.00 → 0.67 s |
 | `demo_desplazador.ogg` | `desplazador` | frequency shift 0.75 · time 0.45 · mix 0.50 · feedback 0.85 · tone 0.70 · width 0.50 | — |
+| `demo_violin.ogg` | `violin` | rise time 0.50 · time 0.30 · mix 1.00 · depth 0.60 · rate 0.30 · tone 0.50 | — |
+| `demo_shimmer_escondido.ogg` | `shimmer_escondido` | decay 0.80 · damping 0.25 · mix 0.55 · shimmer amount 0.80 · ducking 1.00 · tone 0.40 | — |
+| `demo_arco.ogg` | `arco` | sustain 0.85 · rise time 0.50 · mix 0.85 · upper octave 0.70 · tone 0.30 · threshold 0.20 | — |
+| `demo_oscilador.ogg` | `oscilador` | time 0.12 · feedback 0.70 · mix 0.50 · smoothing 0.70 · tone 0.40 · level 0.20 | 2.00 → 4.00 s |
+| `demo_dinamica.ogg` | `dinamica` | decay 0.75 · damping 0.30 · mix 0.45 · depth 0.85 · threshold 0.10 · rate 0.10 | — |
+| `demo_acople.ogg` | `acople` | time 0.00 · interval 0.00 · mix 1.00 · rise time 0.15 · tone 0.55 · level 1.00 | — |
 | `demo_cadena_eco_y_muelle.ogg` | Eco y muelle: `delay` → `spring` | pot0 0.55 · pot1 0.40 · pot2 0.35 · pot3 0.60 · pot4 0.40 · pot5 0.00 | — |
 | `demo_cadena_flor_al_reves.ogg` | Flor al revés: `reverse` → `bloom` | pot0 0.60 · pot1 0.40 · pot2 0.50 · pot3 0.80 · pot4 0.55 · pot5 0.40 | — |
 | `demo_cadena_organo_infinito.ogg` | Órgano infinito: `octava` → `infinite` | pot0 0.60 · pot1 0.40 · pot2 0.00 · pot3 0.10 · pot4 0.50 · pot5 0.00 | — |

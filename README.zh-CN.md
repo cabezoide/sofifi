@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=9d5c15914f58 estado=al_dia -->
+<!-- i18n: fuente=README.md sha=fc608b241817 estado=al_dia -->
 # SOFIFI — 集成 FPGA 上的沉浸式波形与滤波合成器
 
 *英文名：Soundscapes On FPGA: Integrated Filters & Impulses；西班牙文名：Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada。*
@@ -16,9 +16,9 @@ FPGA（高云 GW5A-LV25）上。每个效果都是一个文本程序，由自研
 
 | 项目 | 状态 |
 |---|---|
-| 程序库 | 8 个类别中共 **57 个程序与 456 个预设**（阶段 07） |
+| 程序库 | 8 个类别中共 **63 个程序与 504 个预设**（阶段 07） |
 | 同时运行两个效果 | **24 条链**：18 条现在可以装入，6 条等待 SDRAM（`presets/cadenas.toml`，ADR 0013） |
-| 与模型一致 | 57 个程序和 18 条可装入的链在 RTL 中的输出与模型逐位一致（仿真） |
+| 与模型一致 | 63 个程序和 18 条可装入的链在 RTL 中的输出与模型逐位一致（仿真） |
 | 开发板 | plate 和循环器在芯片上以 100 至 125 MHz 运行，输出与模型逐位一致（阶段 07） |
 | 下一步 | 从 microSD 卡加载程序（阶段 08） |
 | 接吉他发声 | **尚未实现**：缺少 I2S 编解码器（阶段 11） |
@@ -64,7 +64,7 @@ FPGA（高云 GW5A-LV25）上。每个效果都是一个文本程序，由自研
   `RDAA` 和 `WRAA` 读写该区域（ADR 0009）。有了 SDRAM 之后，循环可以更长。
 - **fs = 48,828 Hz**：100 MHz 时钟正好为每个样本提供 2,048 个周期（ADR 0005）。
 - **Python 逐位精确参考模型**：RTL 必须逐样本给出与模型相同的位（ADR 0003）。
-- **实际开销**：每条指令在 RTL 中耗用 6 到 57 个周期。`sofifi asm` 会给出一个程序的周期数。
+- **实际开销**：每条指令在 RTL 中耗用 2 到 50 个周期。读取 ACC 的指令要等待上一条指令的结果（ADR 0014，西班牙语）。`sofifi asm` 会给出一个程序的周期数。
 
 ![为什么选择 SOFIFI？可以阅读、修改并逐位验证；与 FV-1 相比，指令数和采样率更高，但目前还不能接吉他演奏](docs/img/zh-CN/porque.png)
 
@@ -123,8 +123,8 @@ make esquematicos  # 重新生成 RTL 的 PDF 原理图
 
 | 文档 | 内容 |
 |---|---|
-| `docs/programas.zh-CN.md` | 57 个程序：作用、旋钮、预设与开销 |
-| `presets/banco.toml` | 456 个预设 |
+| `docs/programas.zh-CN.md` | 63 个程序：作用、旋钮、预设与开销 |
+| `presets/banco.toml` | 504 个预设 |
 | `docs/arquitectura_fpga.zh-CN.md` | FPGA 架构及其在各阶段的变化 |
 | `schematics/` | 每个 RTL 模块的 PDF 原理图，由 Verilog 生成 |
 | `docs/EXTENDING.zh-CN.md` | 如何添加效果、指令、RTL 模块或检查门 |

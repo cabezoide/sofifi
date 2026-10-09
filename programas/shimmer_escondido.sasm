@@ -1,0 +1,97 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: reverb
+; resumen: Shimmer escondido: la octava se calla mientras tocas y aparece en la cola.
+; resumen.en: Hidden shimmer: the octave stays quiet while you play and comes up in the tail.
+; resumen.zh-CN: 隐藏的 shimmer：演奏时八度保持安静，在尾音中浮现。
+; resumen.ja: 隠れた shimmer：弾いている間はオクターブが静かで、テールで現れます。
+;
+; shimmer_escondido.sasm — El shimmer de +12 (shimmer.sasm) con tres cambios en
+; el envío al pitch shifter:
+;   1. Ducking: un seguidor de picos (MAXX) mide la entrada. El envío se
+;      multiplica por 1 − min(1, 16·envolvente·pot4). Mientras tocas, la
+;      octava no entra; al soltar, la envolvente cae en unos 150 ms y entra.
+;   2. Paso banda: un paso bajo de un polo (pot5) y un paso alto fijo
+;      (≈ 150 Hz) quitan el agudo áspero y el grave turbio de cada vuelta.
+;   3. Umbral: con pot3 < 0,04, un SKP pone el envío a 0 exacto. La salida
+;      es entonces el plate con tanque CLIP, sin octava.
+; Con sw pisado («acento»), el envío va al máximo (0,6) y sin ducking.
+;
+; Diseño propio, a partir del principio que se discute en foros de guitarristas
+; (Guitarristas.info, Musiquiatra): el shimmer suena mejor muy escondido, sin
+; agudos de más, con un mínimo que de verdad sea cero y un pulsador que lo
+; acentúe a voluntad.
+;
+; pot0 = decay                (0 → 0,25 · 1 → 0,95)
+; pot1 = damping              (0 → brillante · 1 → oscuro)
+; pot2 = mezcla               (0 → seco · 1 → solo reverb)
+; pot3 = cantidad de shimmer  (0 → sin octava, < 0,04 es 0 exacto · 1 → envío 0,6)
+; pot4 = ducking              (0 → la octava entra siempre · 1 → se calla mientras tocas)
+; pot5 = tono                 (0 → octava oscura, ≈ 0,8 kHz · 1 → brillante, ≈ 5 kHz)
+; sw   = mientras se pisa, acento: envío al máximo y sin ducking
+
+equ  rate_pit  -1/2048            ; +12: razón 2
+equ  envd      reg13              ; envolvente de picos de la entrada
+equ  kbri      reg14              ; coeficiente del paso bajo del envío
+
+include  comun/shimmer_cuerpo.sasm
+; ── envolvente de picos: max(|x|, 0,9996·env), caída de ≈ 50 ms ──────
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        maxx  envd, 0.9996
+        wrax  envd, 0
+; ── tono del envío: kbri = 0,1 + 0,45·pot5 ───────────────────────────
+        rdax  pot5, 0.45
+        sof   1.0, 0.1
+        wrax  kbri, 0
+; ── ducking: kshim·(1 − min(1, 16·env·pot4)) ─────────────────────────
+        rdax  envd, 1.0
+        mulx  pot4
+        sof   1.999, 0                  ; a24 satura en cada paso: min(1, 16·x)
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   -1.0, 0.99997
+        mulx  kshim
+        wrax  kshim, 0
+; ── acento con sw: envío al máximo y sin ducking ─────────────────────
+        rdax  sw, 1.0
+        sof   1.0, -0.5
+        skp   neg, sin_acento
+        sof   0, 0.6
+        wrax  kshim, 0
+        skp   zro, fin_envio            ; ACC = 0: salta siempre
+sin_acento:
+; ── umbral: con pot3 < 0,04, el envío vale 0 exacto ──────────────────
+        clr
+        rdax  pot3, 1.0
+        sof   1.0, -0.04
+        skp   gez, fin_envio
+        clr
+        wrax  kshim, 0
+fin_envio:
+        clr
+; ── entrada: mono, escalada por la mezcla, predelay y ancho de banda ─
+include  comun/entrada.sasm
+        rdfx  bw, kbw
+        wrax  bw, 1.0
+        rdax  shout, 1.0                ; realimentación del shimmer
+include  comun/dattorro_difusion.sasm
+include  comun/dattorro_tanque_clip.sasm
+include  comun/dattorro_salida.sasm
+; ── envío: +12 de doble tap, paso banda y cantidad ───────────────────
+        rda   dr1 + 266*s, ksal
+        rda   dr1 + 2974*s, ksal
+        rda   dl1 + 1990*s, -ksal
+        wra   pit, 0
+        cho   pit + 1, 1.0, lfo2, na
+        cho   pit + 1, 1.0, lfo2, na|media
+        rdax  shlp, -1.0                ; paso bajo: shlp += kbri·(x − shlp)
+        mulx  kbri
+        rdax  shlp, 1.0
+        wrax  shlp, 1.0
+        rdfx  shhp, 0.02                ; paso alto = x − paso bajo lento
+        wrax  shhp, -1.0
+        rdax  shlp, 1.0
+        mulx  kshim                     ; kshim = 0 → envío 0 exacto
+        wrax  shout, 0

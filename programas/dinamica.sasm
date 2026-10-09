@@ -1,0 +1,122 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: reverb
+; resumen: Plate cuya cola cambia con la fuerza con que se toca.
+; resumen.en: A plate whose tail changes with how hard you play.
+; resumen.zh-CN: 尾音随弹奏力度变化的 plate。
+; resumen.ja: 弾く強さで残響が変わる plate。
+;
+; dinamica.sasm — Plate de Dattorro (ver plate.sasm) con el decay y el damping
+; movidos por la dinámica de la entrada. Diseño propio, a partir del principio de
+; las reverbs dinámicas de pedalboard MOD («VERB:Dyna Shimmer») y del parche
+; ZOIA «DirtyVerb»: un seguidor de envolvente cambia el tiempo y el color del
+; tanque. El ducking (ducking.sasm) baja el nivel del eco. Este programa no
+; cambia el nivel: cambia el decay y el damping del tanque.
+;
+; Cada muestra:
+;   1. Un seguidor de picos lee |x|. El ataque dura unos 7 ms. La caída sigue
+;      a pot5: así el tanque recuerda la fuerza de la nota durante la cola.
+;   2. e = 3·(env − umbral), limitado a [0, 1]. El umbral sigue a pot4.
+;   3. m = e·(2·pot3 − 1), suavizado. Con pot3 = 0,5, m = 0: es un plate.
+;   4. kdecay = decay − 0,5·m, limitado a [0,1, 0,97].
+;      kdamp = damping − 0,6·m, limitado a [0,15, 1].
+;      Con m > 0 (pot3 > 0,5), tocar fuerte da una cola corta y oscura.
+;      Con m < 0 (pot3 < 0,5), tocar fuerte da una cola larga y brillante.
+;   5. Con el footswitch, la cola se congela como en freeze.sasm.
+; El tanque lleva un limitador CLIP en cada rama (comun/dattorro_tanque_clip):
+; con el freeze, el bucle no puede crecer.
+;
+; pot0 = decay        (0 → 0,25 · 1 → 0,95, sin dinámica)
+; pot1 = damping      (0 → brillante · 1 → oscuro, sin dinámica)
+; pot2 = mezcla       (0 → seco · 1 → solo reverb)
+; pot3 = profundidad  (0 → fuerte alarga y aclara · 0,5 → nada · 1 → fuerte acorta y oscurece)
+; pot4 = umbral       (0 → 0,05 · 1 → 0,5 de nivel de pico)
+; pot5 = velocidad    (caída del seguidor: 0 → 1,3 s · 1 → 65 ms)
+
+include  comun/dattorro_decl.sasm
+
+equ  katq     0.003           ; ataque del seguidor (~7 ms)
+equ  lim_d    0.1             ; decay mínimo
+equ  lim_dmp  0.15            ; damping mínimo (kdamp)
+
+equ  env      reg9
+equ  krel     reg10
+equ  prof     reg11
+equ  mod      reg12
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+include  comun/dattorro_lfo.sasm
+inicio:
+include  comun/controles.sasm
+; ── 1. seguidor de picos: ataque fijo, caída por pot5 ────────────────
+        rdax  pot5, 0.0006              ; krel = 2·k de caída: de 2^-15 a ~6,4e-4
+        sof   1.0, 1/32768
+        wrax  krel, 0
+        rdax  pot3, 1.0                 ; prof = 2·pot3 − 1
+        sof   1.999, -1.0
+        wrax  prof, 0
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        absa
+        rdax  env, -1.0                 ; ACC = |x| − env
+        skp   neg, caida
+        sof   katq, 0                   ; ataque: env += katq·(|x| − env)
+        skp   run, suma
+caida:
+        mulx  krel                      ; caída: env += (krel/2)·(|x| − env)
+        sof   0.5, 0
+suma:
+        rdax  env, 1.0
+        wrax  env, 0
+; ── 2. e = 3·(env − umbral) en [0, 1], umbral = 0,05 + 0,45·pot4 ─────
+        rdax  env, 1.0
+        rdax  pot4, -0.45
+        sof   1.0, -0.05                ; env − umbral
+        sof   1.5, 0
+        sof   1.999, 0                  ; e = 3·(env − umbral), ACC ancho
+        sof   1.0, -1.0                 ; a24 satura en 1: min(e, 1) − 1
+        sof   1.0, 1.0                  ; a24 satura en −1: max(e, 0)
+; ── 3. m = e·prof, suavizado (~20 ms) ────────────────────────────────
+        mulx  prof
+        rdfx  mod, 0.001
+        wrax  mod, 0
+; ── 4. kdecay y kdamp con límites ────────────────────────────────────
+        rdax  kdecay, 1.0
+        rdax  mod, -0.5
+        sof   1.0, 0.03                 ; a24 satura en 1: techo 0,97
+        sof   1.0, -(1.03 + lim_d)
+        sof   1.0, 1.0 + lim_d          ; a24 satura en −1: suelo lim_d
+        wrax  kdecay, 0
+        rdax  kdamp, 1.0
+        rdax  mod, -0.6
+        sof   1.0, -(1 + lim_dmp)       ; a24 satura en 1 y en −1
+        sof   1.0, 1 + lim_dmp
+        wrax  kdamp, 0
+; ── 5. freeze: con el footswitch, decay ≈ 1, sin damping y sin entrada ──
+        rdax  sw, 1.0
+        skp   zro, sin_freeze
+        sof   0, 1.0                    ; satura a 0,99999988 al escribir
+        wrax  kdecay, 0
+        sof   0, 1.0
+        wrax  kdamp, 0
+        wrax  kwet, 0                   ; ACC = 0: la entrada no alimenta la cola
+        skp   zro, profundidad          ; ACC = 0: objetivo de modulación 0
+sin_freeze:
+        sof   0, 0.99
+profundidad:
+; la profundidad del LFO sigue a su objetivo en ~40 ms: sin clic al congelar
+        wrax  tmp, 0
+        rdax  tmp, 1.0
+        rdfx  lfo0_depth, 0.0005
+        wrax  lfo0_depth, 0
+        rdax  tmp, 1.0
+        rdfx  lfo1_depth, 0.0005
+        wrax  lfo1_depth, 0
+; ── plate ────────────────────────────────────────────────────────────
+include  comun/entrada.sasm
+        rdfx  bw, kbw
+        wrax  bw, 1.0
+include  comun/dattorro_difusion.sasm
+include  comun/dattorro_tanque_clip.sasm
+include  comun/dattorro_salida.sasm
