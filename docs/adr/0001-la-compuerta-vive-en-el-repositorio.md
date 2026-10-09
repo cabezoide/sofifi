@@ -118,3 +118,11 @@ En la rama que cierra una fase (cambia `docs/fases/estado_fases.csv` respecto de
 6. La spec de la fase dice «Cerrada el …».
 
 La compuerta no juzga si el contenido es correcto: comprueba que nada queda atrás. Revisar el contenido sigue siendo trabajo del PR de cierre.
+
+## Actualización 2026-10-09 (shellcheck por pip)
+
+La compuerta blanda `shell-lint` no corría desde la Fase 00: la máquina no tenía `shellcheck` y no hay `sudo`. A petición de la persona propietaria, `shellcheck` entra por pip, como la cadena EDA:
+
+- El extra `dev` de `pyproject.toml` lleva `shellcheck-py` (MIT). El paquete trae el binario oficial de ShellCheck 0.11 (GPL-3.0). Solo se ejecuta; no se copia código (ADR 0002).
+- `shell-lint` busca primero `.venv/bin/shellcheck` y después el del PATH, con el mismo tope de procesos que las herramientas EDA.
+- La primera pasada encontró un aviso (SC2034, una variable sin usar en `ci_local.sh`), ya corregido.

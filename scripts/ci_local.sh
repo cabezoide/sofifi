@@ -77,7 +77,6 @@ run_job() {
       ;;
     ratchets)   "$PY" scripts/check_ratchets.py ;;
     rtl-lint)
-      local files
       # Un lint por top (rtl/top/tops.txt): varios tops juntos darían MULTITOP.
       # SIMULACION elige el modelo de comportamiento de las primitivas Gowin;
       # la rama de síntesis la comprueba el trabajo `optimizacion`.
@@ -110,11 +109,14 @@ run_job() {
       "$PY" scripts/esquematicos.py --comprobar
       ;;
     shell-lint)
-      if ! command -v shellcheck >/dev/null; then
-        echo "shell-lint NO CORRIÓ: falta shellcheck."
+      # El binario del .venv (paquete shellcheck-py, extra dev) o, si no, el del PATH.
+      local sc="$ROOT/.venv/bin/shellcheck"
+      [[ -x "$sc" ]] || sc="$(command -v shellcheck || true)"
+      if [[ -z "$sc" ]]; then
+        echo "shell-lint NO CORRIÓ: falta shellcheck (make install)."
         return 3
       fi
-      shellcheck scripts/*.sh scripts/hooks/*
+      (ulimit -u "$TOPE_PROCESOS"; "$sc" scripts/*.sh scripts/hooks/*)
       ;;
     *) echo "trabajo desconocido: $1" >&2; return 2 ;;
   esac
