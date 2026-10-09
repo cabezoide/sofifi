@@ -1,0 +1,210 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: delay
+; resumen: Eco de chip casero: limpio con tiempos cortos; oscuro, granuloso y con bombeo al alargarlo.
+; resumen.en: Home-built chip echo: clean at short times; dark, grainy and pumping when you make it longer.
+; resumen.zh-CN: 自制芯片回声：短延时干净；延时越长越暗、越粗糙，并带有泵动感。
+; resumen.ja: 自作チップのエコー。短い時間ではクリーン、長くすると暗く、粗く、ポンピングします。
+;
+; eco_casero.sasm — Eco con el carácter de los chips de eco digitales baratos
+; de los pedales caseros. El chip alarga el eco con un reloj más lento. Con un
+; reloj lento hay menos ancho de banda, más ruido y más aliasing. Por eso la
+; degradación depende del tiempo de eco y no de un mando aparte. El chip usa
+; un compander: comprime antes de la memoria y expande después. El expansor
+; sube y baja el ruido con la nota: eso es el «bombeo».
+; Diseño propio, a partir del principio de dos hilos de foro en español
+; (guitarrista.org, «Ideas para un delay»; Guitarristas.info, «Pt-80 Delay»):
+; los ecos cortos de ese chip son nítidos, y los largos son ruidosos.
+;
+; Cada muestra:
+;   1. Lee el eco de dos memorias en serie. Cada una tiene un LFO senoidal
+;      parado (como comun/tiempo.sasm). Una sola excursión no llega a 0,85 s.
+;   2. Modulación: un LFO lento sobre una memoria corta mueve el tiempo.
+;   3. Degradación. d = suciedad · tiempo normalizado (0 → 1).
+;      Muestreo y retención (S&H) con un paso que crece con d².
+;   4. Dos pasos bajo de un polo. El corte baja con d. Después, reducción a
+;      7 bit, mezclada con la muestra limpia en proporción d. Va detrás del
+;      filtro: si no, el filtro quita casi todo el ruido de cuantización.
+;   5. Expansor: y = eco · envolvente(eco) · 4. Sube al cuadrado la
+;      envolvente comprimida, sin división.
+;   6. CLIP de pendiente 1 sobre y.
+;   7. Compresor 2:1 de realimentación sobre la entrada más el eco. Escribe
+;      c = 8·g·x (con CLIP) en la memoria. Un lazo rápido ajusta g hasta que
+;      8·g·envolvente(c) = 1/4: es la división 1/envolvente sin dividir.
+;      El expansor usa el mismo detector sobre la misma señal: los dos se
+;      compensan, salvo el ruido y el filtro de en medio.
+;
+; pot0 = tiempo          (0 → 30 ms · 1 → 0,85 s)
+; pot1 = realimentación  (0 → un eco · 1 → casi infinita)
+; pot2 = mezcla          (0 → seco · 1 → solo eco)
+; pot3 = suciedad        (0 → el color no cambia con el tiempo · 1 → el chip a fondo)
+; pot4 = modulación      (0 → quieto · 1 → ±0,5 ms a 0,5 Hz)
+; pot5 = tono            (0 → oscuro, corte de unos 1,4 kHz · 1 → brillante)
+; sw   = mientras se pisa, la realimentación pasa a 1,1 y el eco oscila
+
+equ  ea    16384              ; excursión de la memoria A: 2·ea muestras de recorrido
+equ  eb    3600               ; excursión de la memoria B: 2·eb muestras de recorrido
+equ  baseb 1460               ; retardo mínimo de B; el total mínimo es unos 30 ms
+equ  em    24                 ; modulación: excursión en muestras (±0,5 ms)
+equ  x2    2 - 1/65536        ; el coeficiente más cercano a 2 (S1.16)
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  tiempo   reg2
+equ  d        reg3
+equ  fb       reg4
+equ  klp      reg5
+equ  paso     reg6
+equ  cuenta   reg7
+equ  sh       reg8
+equ  lp1      reg9
+equ  lp2      reg10
+equ  envd     reg11
+equ  y        reg12
+equ  env      reg13
+equ  g        reg14
+equ  ecow     reg15
+equ  tmp      reg16
+equ  sucio    reg17
+
+mem  la    2*ea + 6
+mem  lb    baseb + 2*eb + 3
+mem  md    2*em + 4
+
+lfo  0  sin  ea
+lfo  1  sin  eb
+lfo  2  sin  em
+
+; ── LFOs del tiempo: rate 0 en cada muestra, salvo en la inicialización ──
+        wrax  lfo0_rate, 0              ; ACC vale 0 al empezar la muestra
+        wrax  lfo1_rate, 0
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 0.5                    ; un cuarto de vuelta: la forma vale 1
+        wrax  lfo0_rate, 1.0
+        wrax  lfo1_rate, 0
+        sof   0, 1/512                  ; tmp = 2^-9 para fijar una frecuencia fina
+        wrax  tmp, 0
+        rdax  tmp, 1024*0.5/48828.125   ; LFO2 (modulación) a 0,5 Hz
+        wrax  lfo2_rate, 0
+        sof   0, 0.99997                ; g = 1: el compresor arranca abierto
+        wrax  g, 0
+inicio:
+; ── controles ────────────────────────────────────────────────────────
+include  comun/mezcla.sasm
+        sof   0, -1.0                   ; tiempo → 2·pot0 − 1, en [−1, 1)
+        rdax  pot0, 1.999
+        rdfx  tiempo, 0.0005            ; deslizamiento de ~40 ms
+        wrax  tiempo, 1.0
+        wrax  lfo0_depth, 1.0
+        wrax  lfo1_depth, 0.5
+        sof   1.0, 0.5                  ; d = pot3 · (tiempo + 1)/2
+        mulx  pot3
+        wrax  d, -0.6
+        sof   1.0, 0.99997              ; tmp = 1 − 0,6·d
+        wrax  tmp, 0
+        rdax  d, 1.0                    ; paso del S&H = 1 − 0,92·d²
+        mulx  d
+        sof   -0.92, 0.99997
+        wrax  paso, 0
+        rdax  pot5, 0.7                 ; klp = (0,25 + 0,7·pot5)·(1 − 0,6·d)
+        sof   1.0, 0.25
+        mulx  tmp
+        wrax  klp, 0
+        rdax  pot1, 0.85                ; fb = máx(0,85·pot1, sw)
+        maxx  sw, 1.0
+        wrax  fb, 0
+        rdax  pot4, 1.0
+        wrax  lfo2_depth, 0
+; ── 1 y 2. eco: dos memorias en serie y modulación ───────────────────
+        cho   la + 2, 1.0, lfo0
+        wra   lb, 0
+        cho   lb + baseb, 1.0, lfo1
+        wra   md, 0
+        cho   md + 1, 1.0, lfo2
+; ── 3. muestreo y retención ──────────────────────────────────────────
+        wrax  tmp, 0
+        rdax  cuenta, 1.0
+        rdax  paso, -1.0
+        wrax  cuenta, 1.0
+        skp   gez, retener
+        sof   1.0, 0.99997              ; el contador vuelve a subir casi 1
+        wrax  cuenta, 0
+        rdax  tmp, 1.0
+        wrax  sh, 0
+retener:
+        clr
+; ── 4a. dos pasos bajo con corte variable: lp += klp·(x − lp) ────────
+        rdax  sh, 1.0
+        rdax  lp1, -1.0
+        mulx  klp
+        rdax  lp1, 1.0
+        wrax  lp1, 1.0
+        rdax  lp2, -1.0
+        mulx  klp
+        rdax  lp2, 1.0
+        wrax  lp2, 0
+; ── 4b. 7 bit: escala 2^-16, redondeo a 24 bit y 16 duplicaciones ───
+        rdax  lp2, 1/65536
+        wrax  tmp, 1.0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        rdax  lp2, -1.0                 ; sucio = lp2 + d·(q − lp2)
+        mulx  d
+        rdax  lp2, 1.0
+        wrax  sucio, 1.0
+; ── 5 y 6. expansor y CLIP ───────────────────────────────────────────
+        absa                            ; envolvente: media de |sucio| (~7 ms)
+        rdfx  envd, 0.003
+        wrax  envd, 0
+        rdax  sucio, 1.0
+        mulx  envd
+        sof   1.999, 0
+        sof   4/3, 0                    ; ×4 y ×2/3 de la curva de CLIP
+        clip
+        wrax  y, 1.0
+; ── 7. compresor sobre entrada + realimentación ──────────────────────
+        mulx  fb
+        sof   1.1, 0
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        mulx  g                         ; c = (x + 1,1·fb·y) · 8g, con CLIP de pendiente 1
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   4/3, 0
+        clip
+        wra   la, 1.0
+        absa                            ; envolvente: media de |c| (~7 ms)
+        rdfx  env, 0.003
+        wrax  env, 0
+        rdax  g, 1.0                    ; g += 1,5·(1/32 − g·env): 8g·env → 1/4
+        mulx  env
+        sof   -1.5, 1.5/32
+        rdax  g, 1.0
+        wrax  g, 0
+; ── salida ───────────────────────────────────────────────────────────
+        rdax  y, 1.0
+        mulx  kwet
+        wrax  ecow, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  ecow, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  ecow, 1.0
+        wrax  dacr, 0

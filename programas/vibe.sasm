@@ -1,0 +1,225 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: modulación
+; resumen: Vibe de lámpara: cuatro fases desiguales con un barrido que sube rápido y baja lento.
+; resumen.en: Lamp vibe: four unequal phase stages with a sweep that rises fast and falls slowly.
+; resumen.zh-CN: 灯泡式 Vibe：四级不等的相移，扫动上升快、下降慢。
+; resumen.ja: ランプ式ヴァイブ：不揃いな 4 段の位相。スイープは速く上がり、ゆっくり下がります。
+;
+; vibe.sasm — Vibe de lámpara. Diseño propio.
+;
+; En un vibe de lámpara, una bombilla ilumina cuatro fotorresistencias. Cada
+; fotorresistencia mueve un filtro de fase. Este programa imita las tres
+; diferencias con un phaser normal:
+;   - Las cuatro esquinas no son iguales: van en la proporción 1 : 3 : 10 : 30.
+;   - La lámpara se enciende rápido y se apaga lento: el barrido es asimétrico.
+;   - La resistencia sigue a la luz con una ley casi exponencial.
+;
+; Cada muestra:
+;   1. La rampa del footswitch sigue a sw en unos 0,45 s (cambio tipo Leslie).
+;   2. La velocidad del LFO es base·(1 + 3·rampa)·(1 ± k)·c. El signo es el
+;      sentido del triángulo: + al subir, − al bajar; k = 0,6·pot4. El factor
+;      c = 1 + k² + k⁴ compensa el periodo, que crece como 1/(1 − k²).
+;   3. Un LFO triangular por software avanza con esa velocidad. Es el de
+;      comun/lfo_triangulo.sasm con un cambio: el borde se mira sobre tri·dir.
+;      Así, un paso de bajada más corto que el de subida no cambia otra vez el
+;      sentido. CLIP redondea el triángulo y deja s, de −1 a 1.
+;   4. La ley de la lámpara: u = 0,75 + 0,25·prof·s y e = u⁴. Con prof = 1,
+;      e va de 1/16 a 1: cuatro octavas.
+;   5. Cada etapa i tiene el polo p = 1 − Wi·e, con las esquinas a 100, 300,
+;      1 000 y 3 000 Hz cuando e = 1.
+;   6. Las cuatro etapas son allpass de primer orden en forma directa I (sin
+;      memoria de retardo): y = a·(x − y[n−1]) + x[n−1], con a = −p.
+;   7. La entrada es (adcl + adcr)/2 más la salida de la cadena por 0,6·pot3.
+;   8. Un paso bajo de pot5 oscurece la señal húmeda. La mezcla de pot2 va
+;      de mitad y mitad (chorus: las muescas) a solo húmedo (vibrato).
+;
+; pot0 = velocidad        (0 → 0,3 Hz · 1 → 8 Hz)
+; pot1 = profundidad      (0 → esquinas quietas · 1 → cuatro octavas)
+; pot2 = mezcla           (0 → chorus, mitad y mitad · 1 → vibrato, solo húmedo)
+; pot3 = realimentación   (0 → nada · 1 → 0,6)
+; pot4 = forma            (0 → barrido simétrico · 1 → sube en 1/4 del tiempo de bajada)
+; pot5 = tono             (0 → paso bajo a ~2 kHz · 1 → abierto)
+; sw   = mientras se pisa, la velocidad sube hasta ×4 con una rampa lenta
+;
+; Diseño propio, a partir del principio de los vibe de lámpara (Uni-Vibe) que
+; describen los proyectos DIY «Straylight» y «Deluge» de AION FX y
+; «ElectroVibe» de PedalPCB: cuatro etapas de fase con esquinas escalonadas,
+; movidas por una lámpara que se enciende rápido y se apaga lento.
+
+equ  fs       48828.125
+equ  fmin     0.3             ; velocidad con pot0 = 0 (Hz)
+equ  fmax     8.0             ; velocidad con pot0 = 1 (Hz)
+equ  w1       2*3.14159265*100/fs   ; esquina de la etapa 1 con e = 1 (100 Hz)
+equ  krampa   0.000046        ; rampa del footswitch: unos 0,45 s
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  tri      reg2
+equ  dir      reg3
+equ  vel      reg4
+equ  vb       reg5
+equ  rampa    reg6
+equ  kasim    reg7
+equ  k2       reg8
+equ  t        reg9
+equ  u        reg10
+equ  e        reg11
+equ  a1       reg12
+equ  a2       reg13
+equ  a3       reg14
+equ  a4       reg15
+equ  x        reg16
+equ  y        reg17
+equ  xp1      reg18
+equ  yp1      reg19
+equ  xp2      reg20
+equ  yp2      reg21
+equ  xp3      reg22
+equ  yp3      reg23
+equ  xp4      reg24
+equ  yp4      reg25
+equ  ktono    reg26
+equ  lp       reg27
+equ  yw       reg28
+
+; ── controles ────────────────────────────────────────────────────────
+        rdax  pot2, 0.5                 ; kwet = 0,5 + 0,5·pot2 ; kdry = 1 − kwet
+        sof   1.0, 0.5
+        wrax  kwet, -1.0
+        sof   1.0, 0.99999
+        wrax  kdry, 0
+        rdax  pot5, 0.74                ; ktono = 0,25 + 0,74·pot5
+        sof   1.0, 0.25
+        wrax  ktono, 0
+        rdax  pot4, 0.6                 ; k = 0,6·pot4
+        wrax  kasim, 1.0
+        mulx  kasim
+        wrax  k2, 0
+        rdax  pot0, 64*4*(fmax-fmin)/fs ; 64·(4f/fs)
+        sof   1.0, 64*4*fmin/fs         ; el suelo no cabe en D sin el ×64
+        sof   1/4, 0                    ; vb guarda 16·(4f/fs): el ×16 compensa los /16 de 2
+        wrax  vb, 0
+; ── 1. rampa del footswitch ──────────────────────────────────────────
+        rdax  sw, 1.0
+        rdfx  rampa, krampa
+        wrax  rampa, 0
+; ── 2. velocidad: 4f/fs·(1 + 3·rampa)·(1 + k·dir)·c ──────────────────
+        ldax  rampa
+        sof   0.75, 0.25                ; (1 + 3·rampa)/4
+        mulx  vb
+        wrax  t, 0
+        ldax  dir
+        mulx  kasim
+        sof   0.5, 0.5                  ; (1 + k·dir)/2
+        mulx  t
+        wrax  t, 0
+        ldax  k2
+        mulx  k2
+        rdax  k2, 1.0
+        sof   0.5, 0.5                  ; c/2
+        mulx  t                         ; vel = vb/16·(1 + 3·rampa)·(1 + k·dir)·c
+        wrax  vel, 0
+; ── 3. LFO asimétrico ────────────────────────────────────────────────
+        rdax  dir, 1.0                  ; dir = 0 solo en la primera muestra
+        skp   zro, arranque
+        clr
+        skp   zro, paso
+arranque:
+        sof   0, 0.99999
+        wrax  dir, 0
+paso:
+        clr
+        rdax  vel, 1.0
+        mulx  dir
+        rdax  tri, 1.0
+        wrax  tri, 1.0
+        mulx  dir                       ; tri·dir: el borde cuenta solo en el sentido de la marcha
+        sof   1.0, -0.999
+        skp   neg, fin_tri
+        clr
+        rdax  dir, -1.0
+        wrax  dir, 0
+fin_tri:
+        clr
+        rdax  tri, 1.0
+        clip
+; ── 4. ley de la lámpara: e = (0,75 + 0,25·prof·s)⁴ ──────────────────
+        mulx  pot1
+        sof   0.25, 0.75
+        wrax  u, 1.0
+        mulx  u
+        wrax  e, 1.0
+        mulx  e
+        wrax  e, 0
+; ── 5. coeficientes escalonados: a = Wi·e − 1 ────────────────────────
+        rdax  e, w1
+        sof   1.0, -0.99999
+        wrax  a1, 0
+        rdax  e, 3*w1
+        sof   1.0, -0.99999
+        wrax  a2, 0
+        rdax  e, 10*w1
+        sof   1.0, -0.99999
+        wrax  a3, 0
+        rdax  e, 30*w1
+        sof   1.0, -0.99999
+        wrax  a4, 0
+; ── 7. entrada con realimentación ────────────────────────────────────
+        rdax  y, 1.0
+        mulx  pot3
+        sof   0.6, 0
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+; ── 6. etapa 1 ───────────────────────────────────────────────────────
+        wrax  x, 1.0
+        rdax  yp1, -1.0
+        mulx  a1
+        rdax  xp1, 1.0
+        wrax  yp1, 0
+        rdax  x, 1.0
+        wrax  xp1, 0
+        rdax  yp1, 1.0
+; ── etapa 2 ──────────────────────────────────────────────────────────
+        wrax  x, 1.0
+        rdax  yp2, -1.0
+        mulx  a2
+        rdax  xp2, 1.0
+        wrax  yp2, 0
+        rdax  x, 1.0
+        wrax  xp2, 0
+        rdax  yp2, 1.0
+; ── etapa 3 ──────────────────────────────────────────────────────────
+        wrax  x, 1.0
+        rdax  yp3, -1.0
+        mulx  a3
+        rdax  xp3, 1.0
+        wrax  yp3, 0
+        rdax  x, 1.0
+        wrax  xp3, 0
+        rdax  yp3, 1.0
+; ── etapa 4 ──────────────────────────────────────────────────────────
+        wrax  x, 1.0
+        rdax  yp4, -1.0
+        mulx  a4
+        rdax  xp4, 1.0
+        wrax  yp4, 0
+        rdax  x, 1.0
+        wrax  xp4, 0
+        rdax  yp4, 1.0
+        wrax  y, 1.0
+; ── 8. tono y mezcla ─────────────────────────────────────────────────
+        rdax  lp, -1.0                  ; lp += ktono·(y − lp)
+        mulx  ktono
+        rdax  lp, 1.0
+        wrax  lp, 1.0
+        mulx  kwet
+        wrax  yw, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  yw, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  yw, 1.0
+        wrax  dacr, 0

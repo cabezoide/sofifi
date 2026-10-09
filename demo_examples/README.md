@@ -74,6 +74,12 @@ Una guitarra sintética (arpegio de Em9, cuerdas Karplus-Strong) procesada por c
 | `demo_aureo.ogg` | `aureo` | inclinación 0,60 · realimentación 0,60 · mezcla 0,45 · tono 0,60 · ancho 0,90 · difusión 0,40 | 2,50 → 5,00 s |
 | `demo_estelar.ogg` | `estelar` | tiempo 0,45 · realimentación 0,75 · mezcla 0,45 · profundidad 0,90 · velocidad 0,25 · resonancia 0,40 | — |
 | `demo_lata.ogg` | `lata` | tiempo 0,35 · realimentación 0,55 · mezcla 0,45 · profundidad 0,60 · tono 0,40 · aceite 0,50 | 3,00 → 3,60 s |
+| `demo_deriva.ogg` | `deriva` | tiempo 0,45 · profundidad 0,50 · mezcla 0,45 · velocidad 0,35 · glide 0,40 · realimentación 0,50 | — |
+| `demo_dimension.ogg` | `dimension` | modo 0,65 · velocidad 0,50 · mezcla 0,50 · profundidad 0,60 · cruce 0,90 · tono 0,70 | — |
+| `demo_vibe.ogg` | `vibe` | velocidad 0,25 · profundidad 0,80 · mezcla 0,00 · realimentación 0,30 · forma 0,70 · tono 0,35 | 2,00 → 4,00 s |
+| `demo_orilla.ogg` | `orilla` | velocidad 0,35 · profundidad 0,55 · mezcla 0,50 · suavizado 0,50 · puerta 0,80 · sensibilidad 0,50 | 3,00 → 3,80 s |
+| `demo_baldosa.ogg` | `baldosa` | tiempo 0,55 · decay 0,70 · mezcla 0,45 · modulación 0,50 · tono 0,40 · muestreo 0,30 | 2,60 → 3,40 s |
+| `demo_eco_casero.ogg` | `eco_casero` | tiempo 0,75 · realimentación 0,55 · mezcla 0,45 · suciedad 0,80 · modulación 0,30 · tono 0,30 | — |
 | `demo_cadena_eco_y_muelle.ogg` | Eco y muelle: `delay` → `spring` | pot0 0,55 · pot1 0,40 · pot2 0,35 · pot3 0,60 · pot4 0,40 · pot5 0,00 | — |
 | `demo_cadena_flor_al_reves.ogg` | Flor al revés: `reverse` → `bloom` | pot0 0,60 · pot1 0,40 · pot2 0,50 · pot3 0,80 · pot4 0,55 · pot5 0,40 | — |
 | `demo_cadena_organo_infinito.ogg` | Órgano infinito: `octava` → `infinite` | pot0 0,60 · pot1 0,40 · pot2 0,00 · pot3 0,10 · pot4 0,50 · pot5 0,00 | — |

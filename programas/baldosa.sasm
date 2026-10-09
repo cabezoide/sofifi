@@ -1,0 +1,223 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: reverb
+; resumen: Reverb sucia de dos ecos cruzados, oscura y granulada, como un baño de azulejos.
+; resumen.en: Dirty reverb of two crossed echoes, dark and grainy, like a tiled bathroom.
+; resumen.zh-CN: 由两路交叉回声构成的脏混响，暗而有颗粒感，像铺满瓷砖的浴室。
+; resumen.ja: 2 本のエコーを交差させた汚れたリバーブ。暗くざらつき、タイル張りの浴室のよう。
+;
+; baldosa.sasm — Reverb de eco cruzado, como las reverbs caseras con chips de
+; eco baratos. Dos líneas cortas se alimentan en cruce. Cada vuelta pasa por un
+; paso bajo, una retención de muestras y una cuantización a 12 bit: la cola se
+; oscurece y se vuelve granulada. Un LFO por software mueve el tiempo de una
+; línea hacia arriba y el de la otra hacia abajo: así el timbre metálico baja.
+; Diseño propio, a partir del principio de las reverbs de eco cruzado con
+; PT2399 de los foros de pedales caseros (FreeStompboxes: «Wishing Well»,
+; «Spare Room», «Tiled BathRoom», «CrabVerb»). El principio: dos ecos cortos
+; que se realimentan uno a otro, filtrados y modulados en sentido contrario.
+;
+; Cada muestra:
+;   1. La entrada mono pasa por un predelay de 11 ms y dos allpass cortos.
+;   2. Las líneas A (37 ms) y B (53 ms) se leen con CHO. Un LFO parado da el
+;      tiempo (comun/tiempo.sasm); el triángulo suma ±m en A y ∓m en B.
+;   3. Cada lectura pasa por un paso bajo (tono) y un allpass corto.
+;   4. Retención (S&H): un contador común baja `paso` cada muestra; cuando
+;      pasa de 0, A y B toman una muestra nueva. No hay antialiasing.
+;   5. Cuantización a 12 bit: escala 2^-11, redondeo de WRAX y 11 duplicaciones.
+;   6. A se escribe con entrada + g·B, y B con entrada + g·A. CLIP acota.
+;      g = kfb·kg: kfb es menor que 1 y kg = 1,03 deja pasar de 1 con sw.
+;   7. dacl = A·mezcla + seco y dacr = B·mezcla + seco.
+;
+; pot0 = tiempo        (0 → 18 y 27 ms · 0,5 → 37 y 53 ms · 1 → 55 y 80 ms)
+; pot1 = decay         (realimentación g: 0 → 0,35 · 1 → 0,95)
+; pot2 = mezcla        (0 → seco · 1 → solo reverb)
+; pot3 = modulación    (0 → quieta · 1 → ±45 y ∓65 muestras a 0,7 Hz)
+; pot4 = tono          (0 → 1,9 kHz, oscuro · 1 → 7,5 kHz)
+; pot5 = muestreo      (0 → 48,8 kHz · 1 → 4,9 kHz, con aliasing)
+; sw   = mientras se pisa, la realimentación pasa a 1,01: la cola crece hasta el
+;        techo de CLIP y no se apaga
+
+equ  ba    903                ; base y excursión del tiempo de la línea A
+equ  ea    904
+equ  bb    1294               ; base y excursión del tiempo de la línea B
+equ  eb    1294
+equ  kap   0.6                ; allpass de entrada
+equ  kal   0.5                ; allpass de cada línea
+equ  kg    1.03               ; ganancia fija del bucle: con sw, 0,98·kg > 1
+equ  kmod  0.05               ; modulación máxima, en unidades de depth
+equ  x2    2 - 1/65536        ; el coeficiente más cercano a 2 (S1.16)
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  kfb      reg2
+equ  ktono    reg3
+equ  paso     reg4
+equ  cuenta   reg5
+equ  tiempo   reg6
+equ  tri      reg7
+equ  dir      reg8
+equ  vel      reg9
+equ  modu     reg10
+equ  lpa      reg11
+equ  lpb      reg12
+equ  sha      reg13
+equ  shb      reg14
+equ  qa       reg15
+equ  qb       reg16
+equ  ent      reg17
+equ  tmp      reg18
+equ  wet      reg19
+equ  fa       reg20
+equ  fb       reg21
+
+mem  pre   537
+mem  ap1   142
+mem  ap2   379
+mem  apa   263
+mem  apb   331
+mem  la    ba + 2*ea + 3
+mem  lb    bb + 2*eb + 3
+
+lfo  0  sin  ea
+lfo  1  sin  eb
+
+        wrax  lfo0_rate, 0              ; ACC vale 0 al empezar la muestra
+        wrax  lfo1_rate, 0
+        skp   run, inicio
+        sof   0, 0.5                    ; un cuarto de vuelta: forma 1
+        wrax  lfo0_rate, 1.0
+        wrax  lfo1_rate, 0
+        sof   0, 1/512                  ; vel = 4f/fs con f = 0,7 Hz
+        wrax  tmp, 0
+        rdax  tmp, 512*4*0.7/48828.125
+        wrax  vel, 0
+inicio:
+; ── controles ────────────────────────────────────────────────────────
+include  comun/mezcla.sasm
+        rdax  pot1, 0.6/kg              ; g = (0,35 + 0,6·pot1)/kg
+        sof   1.0, 0.35/kg
+        wrax  kfb, -1.0
+        sof   1.0, 0.98                 ; con sw: g = g + sw·(0,98 − g)
+        mulx  sw
+        rdax  kfb, 1.0
+        wrax  kfb, 0
+        rdax  pot4, 0.4                 ; tono: coeficiente de 0,22 a 0,62
+        sof   1.0, 0.22
+        wrax  ktono, 0
+        rdax  pot5, -0.9                ; paso = 1 − 0,9·pot5
+        sof   1.0, 0.99997
+        wrax  paso, 0
+        sof   0, -1.0                   ; tiempo → 2·pot0 − 1, deslizado
+        rdax  pot0, 1.999
+        rdfx  tiempo, 0.0005
+        wrax  tiempo, 0
+include  comun/lfo_triangulo.sasm
+        clip                            ; triángulo redondeado: casi un seno
+        mulx  pot3
+        sof   kmod, 0
+        wrax  modu, 0
+        rdax  tiempo, 1.0               ; A sube cuando B baja
+        rdax  modu, 1.0
+        wrax  lfo0_depth, 0
+        rdax  tiempo, 1.0
+        rdax  modu, -1.0
+        wrax  lfo1_depth, 0
+; ── 1. entrada: predelay y dos allpass ───────────────────────────────
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wra   pre, 0
+        rda   pre#, 1.0
+        rda   ap1#, kap
+        wrap  ap1, -kap
+        rda   ap2#, kap
+        wrap  ap2, -kap
+        wrax  ent, 0
+; ── 2 y 3. lectura, tono y allpass de cada línea ─────────────────────
+        cho   la + ba, 1.0, lfo0
+        rdax  lpa, -1.0                 ; lpa = lpa + ktono·(x − lpa)
+        mulx  ktono
+        rdax  lpa, 1.0
+        wrax  lpa, 1.0
+        rda   apa#, kal
+        wrap  apa, -kal
+        wrax  fa, 0
+        cho   lb + bb, 1.0, lfo1
+        rdax  lpb, -1.0
+        mulx  ktono
+        rdax  lpb, 1.0
+        wrax  lpb, 1.0
+        rda   apb#, kal
+        wrap  apb, -kal
+        wrax  fb, 0
+; ── 4. retención común a las dos líneas ──────────────────────────────
+        rdax  cuenta, 1.0
+        rdax  paso, -1.0
+        wrax  cuenta, 1.0
+        skp   gez, retener
+        sof   1.0, 0.99997              ; el contador vuelve a subir casi 1
+        wrax  cuenta, 0
+        rdax  fa, 1.0
+        wrax  sha, 0
+        rdax  fb, 1.0
+        wrax  shb, 0
+retener:
+        clr
+; ── 5. cuantización a 12 bit ─────────────────────────────────────────
+        rdax  sha, 1/2048
+        wrax  tmp, 1.0                  ; WRAX redondea: quedan 12 bit
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        wrax  qa, 0
+        rdax  shb, 1/2048
+        wrax  tmp, 1.0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        sof   x2, 0
+        wrax  qb, 0
+; ── 6. cruce: A recibe B y B recibe A ────────────────────────────────
+        rdax  qb, 1.0
+        mulx  kfb
+        sof   kg, 0
+        rdax  ent, 1.0
+        sof   2/3, 0                    ; curva_suave(2x/3): pendiente 1, techo ±1
+        clip
+        wra   la, 0
+        rdax  qa, 1.0
+        mulx  kfb
+        sof   kg, 0
+        rdax  ent, 1.0
+        sof   2/3, 0
+        clip
+        wra   lb, 0
+; ── 7. salida ────────────────────────────────────────────────────────
+        rdax  qa, 1.0
+        mulx  kwet
+        wrax  wet, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  wet, 1.0
+        wrax  dacl, 0
+        rdax  qb, 1.0
+        mulx  kwet
+        wrax  wet, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  wet, 1.0
+        wrax  dacr, 0

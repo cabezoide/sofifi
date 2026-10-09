@@ -77,6 +77,12 @@ En número, SOFIFI ya supera a los pedales de reverb dedicados y queda por debaj
 | Precio | 599 a 999 USD [?] | unos 125 USD de BOM | ya gana |
 | Abierto y comprobable | no | sí, bit a bit (ADR 0003) | ya gana |
 
+**Actualización 2026-10-09.** Tres criterios cambian:
+
+- **Algoritmos:** 75 programas, por encima de los 74 del H9 Gen 2 [?]. Salen de las ideas de la comunidad (lotes 9 a 12).
+- **Presets:** 600; faltan unos 400 para pasar de 1 000.
+- **Dos efectos a la vez:** las cadenas (ADR 0013) y el núcleo segmentado (ADR 0014) dejaban 1 312 parejas en serie que caben con los 51 programas de entonces. Ahora limita la memoria.
+
 **Lo más difícil son dos efectos a la vez y la calidad** [INF]:
 
 - El hall usa 1 585 de 2 048 ciclos y el granular, 1 896. Dos efectos así no caben en un núcleo.

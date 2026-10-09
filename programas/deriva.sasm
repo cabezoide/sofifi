@@ -1,0 +1,211 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: delay
+; resumen: Eco que pierde el rumbo: el tiempo salta al azar y llega con glide.
+; resumen.en: An echo that drifts: the time jumps at random and glides to the new value.
+; resumen.zh-CN: 迷失方向的回声：延时随机跳变，并以滑音到达新值。
+; resumen.ja: 迷走するエコー。タイムがランダムに跳び、グライドで新しい値へ移る。
+;
+; deriva.sasm — eco de 0,02 a 0,69 s cuyo tiempo de lectura se mueve solo.
+; Diseño propio, a partir del principio de los programas FV-1 «Pitch Step
+; Glider», «Greenwood» y «Johnny»: un destino al azar para el tiempo de eco y
+; un deslizamiento hasta él.
+;
+; El tono de un eco cambia mientras su tiempo de lectura se mueve. Si el
+; retardo crece s muestras por muestra, el eco suena (1 − s) veces más grave.
+; Por eso el glide es lineal: una pendiente fija da un desvío de tono fijo.
+; Al llegar al destino, el eco vuelve a su tono.
+;
+; Cada muestra:
+;   1. Un contador baja al ritmo de pot3. Al pasar por 0, el mapa logístico
+;      (como comun/azar_lento.sasm) da un destino nuevo. Con sw pisado, el
+;      destino no cambia.
+;   2. La desviación avanza hacia el destino con una pendiente máxima.
+;      pot4 por debajo de 0,5 fija la pendiente libre. Por encima, la
+;      pendiente da 1 o 2 semitonos exactos.
+;   3. Dos pasos bajos de ~40 ms redondean las esquinas: cada cambio de
+;      tono llega como un bend, no como un escalón.
+;   4. Lee el eco con CHO sobre un LFO parado (como cinta.sasm): el retardo
+;      es base + E·(1 + tiempo + desviación).
+;   5. Escribe la entrada más el eco, con paso bajo y saturación suave.
+;
+; pot0 = tiempo          (0 → 0,1 s · 1 → 0,6 s, en el centro de la deriva)
+; pot1 = profundidad     (0 → eco fijo · 1 → ±84 ms de deriva)
+; pot2 = mezcla          (0 → seco · 1 → solo eco)
+; pot3 = velocidad       (0 → un destino cada 4 s · 1 → cada 0,25 s)
+; pot4 = glide           (0 → rápido, una octava · 0,5 → lento, 13 cents ·
+;                         0,5-0,75 → 1 semitono · 0,75-1 → 2 semitonos)
+; pot5 = realimentación  (0 → un eco · 1 → muchas repeticiones)
+; sw   = congela el destino actual
+
+equ  et    16384              ; excursión del LFO del tiempo
+equ  base  1024               ; retardo mínimo (21 ms)
+equ  ktono 0.35               ; paso bajo de la realimentación (~3,4 kHz)
+
+equ  kwet   reg0
+equ  kdry   reg1
+equ  tmp    reg2
+equ  tiempo reg3
+equ  dev    reg4              ; desviación con glide lineal
+equ  devs   reg5              ; desviación suavizada
+equ  dst    reg6              ; destino
+equ  xlog   reg7              ; estado del mapa logístico
+equ  cnt    reg8              ; contador hasta el próximo destino
+equ  sdn    reg9              ; pendiente cuando el retardo crece (tono abajo)
+equ  sup    reg10             ; pendiente cuando el retardo baja (tono arriba)
+equ  lp     reg11
+equ  hp     reg12
+equ  eco    reg13
+equ  ecow   reg14
+equ  dev1   reg15             ; primer paso bajo de la desviación
+
+mem  linea  base + 2*et + 3
+
+lfo  0  sin  et
+
+; ── LFO del tiempo: rate 0 en cada muestra, salvo en la inicialización ──
+        wrax  lfo0_rate, 0
+        skp   run, inicio
+        sof   0, 0.5                    ; un cuarto de vuelta: la forma vale 1
+        wrax  lfo0_rate, 0
+inicio:
+include  comun/mezcla.sasm
+; ── tiempo base: objetivo 1,49·pot0 − 0,75, con deslizamiento ────────
+        rdax  pot0, 1.49
+        sof   1.0, -0.75
+        rdfx  tiempo, 0.0005
+        wrax  tiempo, 0
+; ── 1. contador y destino nuevo ──────────────────────────────────────
+        rdax  pot3, 1.0
+        mulx  pot3                      ; p²
+        sof   0.62890625, 0.0419921875  ; (644·p² + 43) / 1 024
+        sof   1/8192, 0                 ; (644·p² + 43) LSB por muestra
+        sof   -1.0, 0
+        rdax  cnt, 1.0
+        wrax  cnt, 1.0
+        skp   gez, pendiente
+        sof   1.0, 0.999                ; recarga: unos 0,25 a 4 s
+        wrax  cnt, 0
+        rdax  sw, 1.0
+        skp   zro, sortear
+        clr
+        skp   zro, pendiente            ; sw pisado: el destino no cambia
+sortear:
+        rdax  xlog, 1.0                 ; xlog = 0 solo al arrancar
+        skp   zro, semilla
+        mulx  xlog                      ; x = 4·(x − x²)
+        wrax  tmp, 0
+        rdax  xlog, 1.0
+        rdax  tmp, -1.0
+        sof   1.999, 0
+        sof   1.999, 0
+        wrax  xlog, 0
+        skp   zro, destino
+semilla:
+        sof   0, 0.3141
+        wrax  xlog, 0
+destino:
+        clr
+        rdax  xlog, 0.5                 ; (2x − 1) / 4, en [−0,25, 0,25]
+        sof   1.0, -0.25
+        mulx  pot1
+        wrax  dst, 0
+; ── 2. pendiente del glide ───────────────────────────────────────────
+pendiente:
+        clr
+        rdax  pot4, 1.0
+        sof   1.0, -0.5
+        skp   gez, semitonos
+        sof   -1.999, 0                 ; q = 1 − 2·pot4, en (0, 1]
+        wrax  tmp, 1.0
+        mulx  tmp
+        sof   0.984375, 0.015625        ; (252·q² + 4) / 256
+        sof   1/32768, 0                ; de 4 LSB (13 cents) a 256 LSB (una octava)
+        wrax  sdn, 1.0
+        wrax  sup, 0
+        skp   zro, glide
+semitonos:
+        sof   1.0, -0.25
+        skp   gez, dos
+        clr
+        sof   0, 29/256                 ; 1 − 2^(−1/12) = 28,7 LSB · E
+        sof   1/32768, 0
+        wrax  sdn, 0
+        sof   0, 30/256                 ; 2^(1/12) − 1 = 30,4 LSB · E
+        sof   1/32768, 0
+        wrax  sup, 0
+        skp   zro, glide
+dos:
+        clr
+        sof   0, 56/256                 ; 1 − 2^(−2/12) = 55,9 LSB · E
+        sof   1/32768, 0
+        wrax  sdn, 0
+        sof   0, 63/256                 ; 2^(2/12) − 1 = 62,7 LSB · E
+        sof   1/32768, 0
+        wrax  sup, 0
+; ── glide lineal: dev avanza hacia dst como mucho una pendiente ──────
+glide:
+        rdax  dst, 1.0
+        rdax  dev, -1.0
+        skp   neg, bajar
+        rdax  sdn, -1.0
+        skp   gez, subir_paso
+        clr
+        rdax  dst, 1.0                  ; más cerca que un paso: llega
+        wrax  dev, 0
+        skp   zro, suavizar
+subir_paso:
+        clr
+        rdax  dev, 1.0
+        rdax  sdn, 1.0
+        wrax  dev, 0
+        skp   zro, suavizar
+bajar:
+        rdax  sup, 1.0
+        skp   neg, bajar_paso
+        clr
+        rdax  dst, 1.0
+        wrax  dev, 0
+        skp   zro, suavizar
+bajar_paso:
+        clr
+        rdax  dev, 1.0
+        rdax  sup, -1.0
+        wrax  dev, 0
+; ── 3. esquinas suaves y profundidad del LFO ─────────────────────────
+suavizar:
+        rdax  dev, 1.0
+        rdfx  dev1, 0.0005              ; dos pasos bajos de ~40 ms en cascada
+        wrax  dev1, 1.0
+        rdfx  devs, 0.0005
+        wrax  devs, 1.0
+        rdax  tiempo, 1.0
+        wrax  lfo0_depth, 0
+; ── 4. lectura del eco y filtros de la realimentación ────────────────
+        cho   linea + base, 1.0, lfo0
+        wrax  eco, 1.0
+        rdfx  lp, ktono
+        wrax  lp, 1.0
+        rdfx  hp, 0.004
+        wrax  hp, -1.0
+        rdax  lp, 1.0
+; ── 5. escritura con realimentación y saturación ─────────────────────
+        mulx  pot5
+        sof   0.95, 0
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        sof   2/3, 0
+        clip
+        wra   linea, 0
+; ── salida ───────────────────────────────────────────────────────────
+        rdax  eco, 1.0
+        mulx  kwet
+        wrax  ecow, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  ecow, 1.0
+        wrax  dacl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  ecow, 1.0
+        wrax  dacr, 0

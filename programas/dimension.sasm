@@ -1,0 +1,164 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: modulación
+; resumen: Un chorus que abre el estéreo y da cuerpo sin que el tono ondule.
+; resumen.en: A chorus that makes the stereo wide and adds body, but the pitch does not wobble.
+; resumen.zh-CN: 一种合唱效果：拓宽立体声并增加厚度，但音高不会起伏。
+; resumen.ja: ステレオを広げて厚みを加えますが、ピッチは揺れないコーラスです。
+;
+; dimension.sasm — Chorus espacial con cuatro modos. Diseño propio, a partir
+; del principio del chorus espacial de cuatro botones (BOSS DC-2), que el
+; proyecto DIY «Blueshift» de AION FX también estudia.
+;
+; El principio:
+;   1. Un paso bajo suave da el color de un BBD a la señal que entra.
+;   2. Dos líneas cortas (7,75 ms y 8,25 ms) leen la misma memoria.
+;   3. Dos LFO senoidales con la misma fase mueven las líneas en antifase:
+;      A va con +depth y B con −depth.
+;   4. Cada canal mezcla una línea con la otra invertida: L = seco + A − k·B
+;      y R = seco + B − k·A.
+; En la suma L + R, las dos desviaciones de tono son opuestas y se cancelan.
+; Queda solo una variación lenta de nivel. El oído oye espacio, no vibrato.
+; Con k = 1, la suma es solo el seco: el efecto es compatible con mono.
+; Las líneas solo se separan 0,5 ms. Con más separación, la suma tiene nulos
+; que se mueven y el tono vuelve a ondular.
+;
+; Los modos van por zonas de pot0. Del modo 1 al 4, el LFO pasa de 0,25 Hz a
+; 0,8 Hz y la profundidad de ±0,12 ms a ±0,4 ms (con pot1 y pot3 a 0,5).
+; El modo combinado añade un segundo par de líneas con un LFO 1,5 veces más
+; rápido: dos modos a la vez, como al pulsar dos botones.
+;
+; pot0 = modo          (0-0,25 → 1 · 0,25-0,5 → 2 · 0,5-0,75 → 3 · 0,75-1 → 4)
+; pot1 = velocidad     (0 → ×0,5 · 0,5 → ×1 · 1 → ×2 la velocidad del modo)
+; pot2 = mezcla        (0 → seco · 1 → solo las líneas)
+; pot3 = profundidad   (0 → ×0,25 · 0,5 → ×1 · 1 → ×1,75 la del modo)
+; pot4 = cruce         (0 → sin mezcla cruzada · 1 → k = 1, la más ancha)
+; pot5 = tono          (0 → paso bajo de ~2 kHz · 1 → abierto)
+; sw   = modo combinado mientras se pisa
+
+equ  e     98                 ; excursión máxima de los LFO: ±2 ms
+equ  d1    379                ; centro de la línea A: 7,75 ms
+equ  d2    403                ; centro de la línea B: 8,25 ms
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  tmp      reg2
+equ  modo     reg3            ; 0, 1/3, 2/3 o 1
+equ  t        reg4
+equ  k        reg5
+equ  kf       reg6
+equ  lp       reg7
+equ  a        reg8
+equ  b        reg9
+equ  yl       reg10
+
+mem  dim   d2 + e + 3
+
+lfo  0  sin  e                ; línea A
+lfo  1  sin  e                ; línea B: misma fase, depth negativo
+lfo  2  sin  e                ; modo combinado, línea A
+lfo  3  sin  e                ; modo combinado, línea B
+
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 1/512                  ; tmp = 2^-9 para fijar frecuencias finas
+        wrax  tmp, 0
+inicio:
+; ── controles ────────────────────────────────────────────────────────
+include  comun/mezcla.sasm
+; modo = 0, 1/3, 2/3 o 1 según la zona de pot0 (tres umbrales)
+        clr
+        wrax  modo, 0
+        rdax  pot0, 1.0
+        sof   1.0, -0.25
+        skp   neg, m_fin
+        sof   0, 1/3
+        wrax  modo, 0
+        rdax  pot0, 1.0
+        sof   1.0, -0.5
+        skp   neg, m_fin
+        sof   0, 2/3
+        wrax  modo, 0
+        rdax  pot0, 1.0
+        sof   1.0, -0.75
+        skp   neg, m_fin
+        sof   0, 0.999
+        wrax  modo, 0
+m_fin:
+        clr
+; velocidad: (0,25 Hz + modo·0,55 Hz)·(0,5 + 1,5·pot1); el ×2 va en el coeficiente
+        rdax  modo, 512*2*2*0.55/48828.125
+        sof   1.0, 512*2*2*0.25/48828.125
+        wrax  t, 0
+        rdax  pot1, 0.75
+        sof   1.0, 0.25
+        mulx  t
+        mulx  tmp
+        wrax  lfo0_rate, 1.0            ; A y B, a la misma velocidad
+        wrax  lfo1_rate, 1.5
+        wrax  lfo2_rate, 1.0            ; el par del modo combinado, 1,5 veces más rápido
+        wrax  lfo3_rate, 0
+; profundidad: (0,06 + modo·0,14)·(0,25 + 1,5·pot3); el ×2 va en el coeficiente
+        rdax  modo, 2*0.14
+        sof   1.0, 2*0.06
+        wrax  t, 0
+        rdax  pot3, 0.75
+        sof   1.0, 0.125
+        mulx  t
+        wrax  lfo0_depth, 1.0           ; las líneas A van con +depth
+        wrax  lfo2_depth, -1.0
+        wrax  lfo1_depth, 1.0           ; antifase: las líneas B van con −depth
+        wrax  lfo3_depth, 0
+; cruce y tono
+        rdax  pot4, 1.0
+        wrax  k, 0
+        rdax  pot5, 0.75
+        sof   1.0, 0.25
+        wrax  kf, 0
+; ── entrada: mono, con el paso bajo del color BBD ───────────────────
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        rdax  lp, -1.0
+        mulx  kf
+        rdax  lp, 1.0
+        wrax  lp, 1.0
+        wra   dim, 0
+; ── líneas: A y B en antifase (dos LFO con la misma fase y depth ±) ──
+        cho   dim + d1 - e, 1.0, lfo0
+        wrax  a, 0
+        cho   dim + d2 - e, 1.0, lfo1
+        wrax  b, 0
+; modo combinado: a += sw·(A2 − a)/2 y b += sw·(B2 − b)/2
+        cho   dim + d1 - e, 1.0, lfo2
+        rdax  a, -1.0
+        mulx  sw
+        sof   0.5, 0
+        rdax  a, 1.0
+        wrax  a, 0
+        cho   dim + d2 - e, 1.0, lfo3
+        rdax  b, -1.0
+        mulx  sw
+        sof   0.5, 0
+        rdax  b, 1.0
+        wrax  b, 0
+; ── salida: mezcla cruzada, L = A − k·B y R = B − k·A ──────────────
+        rdax  b, 1.0
+        mulx  k
+        sof   -0.7, 0
+        rdax  a, 0.7
+        mulx  kwet
+        wrax  yl, 0
+        rdax  adcl, 1.0
+        mulx  kdry
+        rdax  yl, 1.0
+        wrax  dacl, 0
+        rdax  a, 1.0
+        mulx  k
+        sof   -0.7, 0
+        rdax  b, 0.7
+        mulx  kwet
+        wrax  yl, 0
+        rdax  adcr, 1.0
+        mulx  kdry
+        rdax  yl, 1.0
+        wrax  dacr, 0

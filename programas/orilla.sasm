@@ -1,0 +1,221 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: modulación
+; resumen: Chorus aleatorio y lento con una puerta de paso bajo que se cierra con cada nota.
+; resumen.en: Slow random chorus with a low-pass gate that closes with each note.
+; resumen.zh-CN: 缓慢的随机合唱，配有随每个音符关闭的低通门。
+; resumen.ja: ゆっくりしたランダム・コーラスと、音ごとに閉じるローパスゲート。
+;
+; orilla.sasm — Un chorus que se mueve al azar y una puerta de paso bajo (LPG).
+; La LPG es un filtro y un VCA que se cierran juntos. Cada nota se abre
+; brillante y se oscurece al decaer, como un pizzicato bajo el agua.
+; Diseño propio, a partir del principio del PedalPCB Low Tide (y del Fairfield
+; Shallow Water en el que se inspira): modulación aleatoria con un suavizado
+; propio y una LPG que sigue a la envolvente.
+;
+; Cada muestra:
+;   1. Azar: un contador baja a la velocidad de pot0. Al pasar por cero, dos
+;      mapas logísticos x = 4·x·(1 − x) dan un paso (comun/azar_lento.sasm).
+;      El objetivo es su suma módulo 1: un mapa solo repite la misma subida
+;      desde 0, y la suma rompe esa forma. El ciclo es de 724 pasos (medido).
+;   2. Suavizado: dos pasos bajos en serie con la constante de pot3 unen los
+;      saltos. Un suavizado alto da un movimiento más lento y más pequeño.
+;   3. Chorus: un LFO SIN parado en un cuarto de vuelta tiene forma 1. Su depth
+;      fija el retardo del CHO (comun/tiempo.sasm). El depth es el azar
+;      suavizado, centrado y escalado por pot1². El canal derecho lee con el
+;      LFO desfasado media vuelta: su retardo se mueve al revés.
+;   4. Envolvente: |x| pasa por un paso bajo de 25 ms y se amplifica con pot5.
+;   5. LPG: g = 1 − pot4·(1 − env). El corte del filtro de estado variable
+;      va de 120 Hz a 6 kHz con g², y el VCA multiplica por g.
+;
+; pot0 = velocidad     (0 → 0,3 saltos/s · 1 → 8 saltos/s)
+; pot1 = profundidad   (0 → nada · 1 → retardo de 3 a 15 ms; ley cuadrática)
+; pot2 = mezcla        (0 → seco · 0,5 → chorus · 1 → solo voz modulada)
+; pot3 = suavizado     (0 → 60 ms, movimiento nervioso · 1 → 0,4 s, ondulante)
+; pot4 = puerta        (0 → LPG abierta, solo chorus · 1 → LPG completa)
+; pot5 = sensibilidad  (0 → envolvente ×4 · 1 → ×32)
+; sw   = golpe: profundidad al máximo mientras se pisa
+
+equ  e     293                ; excursión del LFO parado: ±6 ms
+equ  base  146                ; retardo mínimo: 3 ms; el máximo es base + 2·e (15 ms)
+equ  fmin  0.01544            ; 2·sen(π·120/fs)
+equ  fmax  0.753              ; 2·sen(π·6000/fs)
+equ  kq    0.6                ; q = 1/Q del filtro: Q ≈ 1,7, resonancia suave
+equ  kmax  1/(0.06*48828.125) ; suavizado mínimo: τ = 60 ms
+equ  kmin  1/(0.4*48828.125)  ; suavizado máximo: τ = 0,4 s
+
+equ  kwet     reg0
+equ  kdry     reg1
+equ  x        reg2
+equ  env      reg3
+equ  g        reg4
+equ  f        reg5
+equ  q        reg6
+equ  lp       reg7
+equ  bp       reg8
+equ  hp       reg9
+equ  qbp      reg10
+equ  xlog     reg11
+equ  cuenta   reg12
+equ  kdamp    reg13
+equ  az1      reg14
+equ  az2      reg15
+equ  prof     reg16
+equ  tmp      reg17
+equ  xr       reg18
+equ  lpr      reg19
+equ  bpr      reg20
+equ  hpr      reg21
+equ  qbpr     reg22
+equ  sal      reg23
+equ  xlog2    reg24
+equ  obj      reg25
+
+mem  cor   base + 2*e + 3
+
+lfo  0  sin  e
+
+; ── LFO parado: rate 0 en cada muestra, salvo en la inicialización ───
+        wrax  lfo0_rate, 0              ; ACC vale 0 al empezar la muestra
+        skp   run, inicio
+        sof   0, 0.5                    ; un cuarto de vuelta: forma 1
+        wrax  lfo0_rate, 0
+inicio:
+; ── controles ────────────────────────────────────────────────────────
+include  comun/mezcla.sasm
+        sof   0, kq
+        wrax  q, 0
+        rdax  pot3, -1.0                ; kdamp = kmin + (kmax − kmin)·(1 − pot3)²
+        sof   1.0, 0.999
+        wrax  tmp, 1.0
+        mulx  tmp
+        sof   64*(kmax - kmin), 64*kmin
+        sof   1/64, 0
+        wrax  kdamp, 0
+        rdax  pot1, 1.0                 ; profundidad = max(pot1², sw), con 20 ms de paso bajo
+        mulx  pot1
+        maxx  sw, 1.0
+        rdfx  prof, 0.001
+        wrax  prof, 0
+; ── 1. azar: un paso de los dos mapas logísticos cuando el contador cruza 0 ──
+        rdax  pot0, -64*7.7/48828.125   ; −r·64, r = (0,3 + 7,7·pot0)/fs
+        sof   1.0, -64*0.3/48828.125
+        sof   1/64, 0
+        rdax  cuenta, 1.0
+        wrax  cuenta, 1.0
+        skp   gez, suave
+        sof   1.0, 0.99997
+        wrax  cuenta, 0
+        rdax  xlog, 1.0                 ; xlog = 0 al arrancar o si cae en 0
+        skp   zro, semilla
+        mulx  xlog                      ; x = 4·(x − x²)
+        wrax  tmp, 0
+        rdax  xlog, 1.0
+        rdax  tmp, -1.0
+        sof   1.999, 0
+        sof   1.999, 0
+        wrax  xlog, 0
+        rdax  xlog2, 1.0
+        skp   zro, semilla
+        mulx  xlog2
+        wrax  tmp, 0
+        rdax  xlog2, 1.0
+        rdax  tmp, -1.0
+        sof   1.999, 0
+        sof   1.999, 0
+        wrax  xlog2, 0
+; obj = frac(xlog + xlog2) − 0,5: la suma módulo 1 rompe la forma de cada mapa
+        rdax  xlog, 0.5                 ; u = (xlog + xlog2)/2 − 0,5
+        rdax  xlog2, 0.5
+        sof   1.0, -0.5
+        skp   neg, bajo
+        sof   1.999, -0.5               ; u ≥ 0: obj = 2u − 0,5
+        wrax  obj, 0
+        skp   zro, suave
+bajo:
+        sof   1.999, 0.5                ; u < 0: obj = 2u + 0,5
+        wrax  obj, 0
+        skp   zro, suave
+semilla:
+        sof   0, 0.3141
+        wrax  xlog, 0
+        sof   0, 0.7071
+        wrax  xlog2, 0
+; ── 2. suavizado: dos pasos bajos con la constante kdamp ─────────────
+suave:
+        clr
+        rdax  obj, 1.0
+        rdax  az1, -1.0
+        mulx  kdamp
+        rdax  az1, 1.0
+        wrax  az1, 1.0
+        rdax  az2, -1.0
+        mulx  kdamp
+        rdax  az2, 1.0
+        wrax  az2, 1.0
+; ── 3. chorus: depth = 2·az2·prof mueve el retardo ───────────────────
+        mulx  prof
+        sof   1.999, 0
+        wrax  lfo0_depth, 0
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        wrax  x, 1.0
+        wra   cor, 0
+        cho   cor + base, 1.0, lfo0
+        mulx  kwet
+        wrax  sal, 0
+        cho   cor + base, 1.0, lfo0, media
+        mulx  kwet
+        wrax  tmp, 0
+; ── 4. envolvente y control de la LPG ────────────────────────────────
+        rdax  pot5, 28/32               ; ganancia = (4 + 28·pot5)/32, luego ×32
+        sof   1.0, 4/32
+        wrax  g, 0
+        rdax  x, 1.0
+        absa
+        rdfx  env, 0.0008
+        wrax  env, 1.0
+        mulx  g
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   1.999, 0
+        sof   -1.0, 0.999               ; 1 − env, en [0, 1]
+        mulx  pot4
+        sof   -1.0, 0.999               ; g = 1 − pot4·(1 − env)
+        wrax  g, 1.0
+        mulx  g
+        sof   fmax - fmin, fmin         ; f = fmin + (fmax − fmin)·g²
+        wrax  f, 0
+; ── 5. mezcla por canal y filtro de estado variable ──────────────────
+        rdax  x, 1.0                    ; derecha: seco + voz media
+        mulx  kdry
+        rdax  tmp, 1.0
+        wrax  xr, 0
+        rdax  x, 1.0                    ; izquierda: seco + voz
+        mulx  kdry
+        rdax  sal, 1.0
+        wrax  x, 0
+include  comun/svf.sasm
+        rdax  bpr, 1.0                  ; el mismo filtro para la derecha
+        mulx  f
+        rdax  lpr, 1.0
+        wrax  lpr, 0
+        rdax  bpr, 1.0
+        mulx  q
+        wrax  qbpr, 0
+        rdax  xr, 1.0
+        rdax  lpr, -1.0
+        rdax  qbpr, -1.0
+        wrax  hpr, 1.0
+        mulx  f
+        rdax  bpr, 1.0
+        wrax  bpr, 0
+; ── VCA: la salida es el paso bajo por g ─────────────────────────────
+        rdax  lp, 1.0
+        mulx  g
+        wrax  dacl, 0
+        rdax  lpr, 1.0
+        mulx  g
+        wrax  dacr, 0

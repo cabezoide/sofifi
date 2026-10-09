@@ -3,13 +3,14 @@
 
 # Programas del núcleo
 
-69 programas y 552 presets. Cada programa es un fichero de texto en `programas/`; los presets están en `presets/banco.toml`.
+75 programas y 600 presets. Cada programa es un fichero de texto en `programas/`; los presets están en `presets/banco.toml`.
 Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste.py`). La memoria es de 43 008 palabras.
 
 ## Reverb
 
 | Programa | Qué hace | Mandos | Presets | Instrucciones | Ciclos | Memoria |
 |---|---|---|---|---|---|---|
+| `baldosa` | Reverb sucia de dos ecos cruzados, oscura y granulada, como un baño de azulejos. | 0: tiempo<br>1: decay<br>2: mezcla<br>3: modulación<br>4: tono<br>5: muestreo | 8 | 152 | 1 145 | 8 258 |
 | `blackhole` | Sala gigante con un decay de decenas de segundos. | 0: decay<br>1: damping<br>2: mezcla | 8 | 140 | 883 | 40 882 |
 | `bloom` | La reverb crece despacio después de cada nota, como una flor que se abre. | 0: decay<br>1: damping<br>2: mezcla<br>3: apertura | 8 | 84 | 637 | 23 520 |
 | `chorale` | La cola del plate canta una vocal, de «a» a «i». | 0: decay<br>1: damping<br>2: mezcla<br>3: vocal | 8 | 160 | 1 192 | 37 439 |
@@ -45,7 +46,9 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 | `cinta` | Eco de cinta de 0,18 a 0,85 s con wow, flutter y saturación. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: wow y flutter | 8 | 50 | 484 | 41 600 |
 | `dados` | Cuatro ecos con tiempos y octavas al azar; sw tira los dados otra vez. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: probabilidad<br>4: tono<br>5: ancho | 8 | 239 | 1 620 | 38 260 |
 | `delay` | Eco digital limpio de 20 a 690 ms, con tono en la realimentación. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: tono | 8 | 38 | 309 | 33 749 |
+| `deriva` | Eco que pierde el rumbo: el tiempo salta al azar y llega con glide. | 0: tiempo<br>1: profundidad<br>2: mezcla<br>3: velocidad<br>4: glide<br>5: realimentación | 8 | 128 | 969 | 33 796 |
 | `ducking` | Eco que se aparta mientras se toca y aparece en los silencios. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: ducking | 8 | 51 | 394 | 33 749 |
+| `eco_casero` | Eco de chip casero: limpio con tiempos cortos; oscuro, granuloso y con bombeo al alargarlo. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: suciedad<br>4: modulación<br>5: tono | 8 | 124 | 1 002 | 41 492 |
 | `enjambre` | Un enjambre de ocho ecos cortos: se junta en reverb o se abre en ecos sueltos. | 0: dispersión<br>1: realimentación<br>2: mezcla<br>3: difusión<br>4: tono<br>5: deriva | 8 | 199 | 1 377 | 42 820 |
 | `estelar` | Eco con un phaser dentro del lazo: cada repetición barre más y la cola gira. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: profundidad<br>4: velocidad<br>5: resonancia | 8 | 123 | 830 | 33 749 |
 | `lata` | Eco de lata de aceite: corto, turbio y líquido, con un vibrato atado al tiempo. | 0: tiempo<br>1: realimentación<br>2: mezcla<br>3: profundidad<br>4: tono<br>5: aceite | 8 | 90 | 768 | 18 931 |
@@ -63,10 +66,13 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 | `armonico` | Los graves y los agudos laten en contrafase; con pot2, un eco detrás. | 0: velocidad<br>1: profundidad<br>2: eco<br>3: frecuencia<br>4: forma<br>5: ancho | 8 | 125 | 847 | 17 101 |
 | `chorus` | Tres voces con retardos que se mueven. | 0: velocidad<br>1: profundidad<br>2: mezcla | 8 | 42 | 416 | 1 101 |
 | `desplazador` | Eco que desplaza su frecuencia en cada vuelta: la cola sube o baja en espiral. | 0: desplazamiento<br>1: tiempo<br>2: mezcla<br>3: realimentación<br>4: tono<br>5: ancho | 8 | 110 | 864 | 33 767 |
+| `dimension` | Un chorus que abre el estéreo y da cuerpo sin que el tono ondule. | 0: modo<br>1: velocidad<br>2: mezcla<br>3: profundidad<br>4: cruce<br>5: tono | 8 | 94 | 795 | 505 |
 | `flanger` | Retardo muy corto y móvil con realimentación: peines que barren. | 0: velocidad<br>1: profundidad<br>2: mezcla<br>3: realimentación | 8 | 31 | 266 | 247 |
+| `orilla` | Chorus aleatorio y lento con una puerta de paso bajo que se cierra con cada nota. | 0: velocidad<br>1: profundidad<br>2: mezcla<br>3: suavizado<br>4: puerta<br>5: sensibilidad | 8 | 147 | 1 078 | 736 |
 | `phaser` | Cuatro allpass con coeficiente móvil: muescas que barren. | 0: velocidad<br>1: profundidad<br>2: mezcla<br>3: realimentación | 8 | 80 | 521 | 1 |
 | `slicer` | Corta el sonido en pulsos rítmicos, como una puerta que abre y cierra. | 0: velocidad<br>1: profundidad<br>2: ciclo<br>3: suavizado | 8 | 37 | 262 | 1 |
 | `tremolo` | El volumen sube y baja; con pot2, de un lado a otro. | 0: velocidad<br>1: profundidad<br>2: panorama | 8 | 43 | 325 | 1 |
+| `vibe` | Vibe de lámpara: cuatro fases desiguales con un barrido que sube rápido y baja lento. | 0: velocidad<br>1: profundidad<br>2: mezcla<br>3: realimentación<br>4: forma<br>5: tono | 8 | 125 | 830 | 1 |
 | `vibrato` | El tono sube y baja. | 0: velocidad<br>1: profundidad<br>2: mezcla | 8 | 27 | 240 | 125 |
 
 ## Pitch
