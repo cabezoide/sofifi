@@ -28,6 +28,7 @@ from sofifi.adapters.cadenas import (
     programa_o_cadena,
     textos_de_programas,
 )
+from sofifi.adapters.microsd import escribir_imagen, listar_imagen
 from sofifi.adapters.presets import leer_banco
 from sofifi.adapters.wav import FuenteWav, SumideroWav
 from sofifi.domain.aritmetica import CICLOS_POR_MUESTRA, FS_WAV, dato
@@ -38,7 +39,6 @@ from sofifi.domain.ensamblador import ErrorEnsamblado
 from sofifi.domain.isa import NUM_POTS
 from sofifi.domain.senal import Controles
 from sofifi.services.catalogo import catalogos, ficha, ficha_cadena
-from sofifi.services.microsd import escribir_imagen, listar_imagen
 from sofifi.services.render import exportar_microcodigo, renderizar
 from sofifi.services.tablas import (
     PROGRAMAS_EN_ROM,
