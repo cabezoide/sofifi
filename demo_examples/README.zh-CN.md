@@ -1,4 +1,4 @@
-<!-- i18n: fuente=demo_examples/README.md sha=74f2450d718c estado=al_dia -->
+<!-- i18n: fuente=demo_examples/README.md sha=01075f5aa939 estado=al_dia -->
 # demo_examples
 
 一段合成吉他（Em9 琶音，Karplus-Strong 弦模型）经内核的每个程序处理，使用逐位精确模型。可用 `.venv/bin/python scripts/generar_demos.py` 重新生成，每次得到的音频都相同。
@@ -87,6 +87,11 @@
 | `demo_tartamudeo.ogg` | `tartamudeo` | 阈值 0.30 · 时长 0.45 · 干湿比 0.50 · 重复次数 0.60 | — |
 | `demo_dos_ecos.ogg` | `dos_ecos` | 时间 0.85 · 反馈 0.60 · 干湿比 0.50 · 比例 0.90 · 平衡 0.50 · 扩散 0.70 | 4.00 → 6.00 s |
 | `demo_viento.ogg` | `viento` | 速度 0.50 · 谐振 0.60 · 干湿比 0.50 · 灵敏度 0.70 · 频率 0.50 · 电平 0.40 | 2.50 → 3.50 s |
+| `demo_compas.ogg` | `compas` | 时间 0.60 · 反馈 0.45 · 干湿比 0.45 · subdivisión 0.10 · segunda toma 1.00 · 音色 0.70 | 0.50 → 0.55 s, 1.00 → 1.05 s |
+| `demo_espiral.ogg` | `espiral` | 音程 0.92 · 第二声部 0.08 · 干湿比 0.55 · 时间 0.40 · 反馈 0.70 · 衰减 0.60 | 3.00 → 4.50 s |
+| `demo_swell_ritmico.ogg` | `swell_ritmico` | 上升时间 0.40 · 波形 0.20 · 干湿比 0.50 · 衰减 0.70 · 漂移 0.40 · 灵敏度 0.50 | 0.00 → 0.05 s, 0.22 → 0.27 s |
+| `demo_semilla.ogg` | `semilla` | 衰减 0.80 · 阻尼 0.35 · 干湿比 0.50 · semilla 0.60 · densidad 0.80 · 调制 0.45 | 4.00 → 6.50 s |
+| `demo_arpegio.ogg` | `arpegio` | 速度 0.45 · notas 1.00 · 干湿比 0.50 · 模式 0.00 · 回声 0.40 · 衰减 0.60 | 3.00 → 5.00 s |
 | `demo_cadena_eco_y_muelle.ogg` | Eco y muelle: `delay` → `spring` | pot0 0.55 · pot1 0.40 · pot2 0.35 · pot3 0.60 · pot4 0.40 · pot5 0.00 | — |
 | `demo_cadena_flor_al_reves.ogg` | Flor al revés: `reverse` → `bloom` | pot0 0.60 · pot1 0.40 · pot2 0.50 · pot3 0.80 · pot4 0.55 · pot5 0.40 | — |
 | `demo_cadena_organo_infinito.ogg` | Órgano infinito: `octava` → `infinite` | pot0 0.60 · pot1 0.40 · pot2 0.00 · pot3 0.10 · pot4 0.50 · pot5 0.00 | — |

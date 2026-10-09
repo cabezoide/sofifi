@@ -388,3 +388,23 @@ Las pruebas acústicas de los programas nuevos encontraron cuatro fallos antes d
   - **Causa:** la excursión E de un LFO es como mucho 16 384 muestras.
   - **Resolución:** dos tomas con dos LFO de base distinta y un fundido entre ellas.
 - **Lección:** un bloque común se valida con notas graves y con arpegios. Cada cabeza de lectura de un anillo necesita su ventana cerca de la escritura.
+
+## F-31 · Lazos, periodos y detectores en el lote 14
+
+- **Una espiral de pitch no se sostiene** (`espiral`).
+  - **Síntoma:** con el pedal y una realimentación de 1,9, la cola se apagaba en 1-2 s.
+  - **Causa:** el shifter del lazo saca la energía de la banda en cada vuelta. La ganancia sola no la devuelve.
+  - **Resolución:** con el pedal, una parte de la señal salta el shifter dentro del lazo. El CLIP fija el techo.
+- **Una cabeza de escritura con periodo 32 767** (`compas`).
+  - **Síntoma:** una lectura `wp − d` que cruza la vuelta lee un retardo una muestra corto.
+  - **Causa:** RDAA enmascara a 32 768 muestras, y la cabeza vuelve a 0 en 32 767.
+  - **Resolución:** la cabeza recorre [0, 1) con periodo 32 768 exacto. `looper` y `granular` usan la vuelta antigua: queda pendiente comprobarlos.
+- **El detector de ataques dispara varias veces en una nota grave** (`swell_ritmico`).
+  - **Causa:** el pico cae un 8 % entre semiperiodos y la regla «pico > 1,5·lenta + umbral» cruza el 0 varias veces.
+  - **Resolución:** un tiempo muerto de unos 60 ms tras cada ataque.
+- **Una nota sostenida y su eco forman un peine** (`arpegio`).
+  - **Síntoma:** la voz +4 sonaba un 65 % más baja a 330 Hz que a 262 Hz.
+  - **Resolución:** el eco dura un paso, y solo el eco entra en la reverb.
+- **Un coeficiente que cambia con un mando no cabe en RDFX** (`semilla`).
+  - **Resolución:** el paso bajo usa MULX con un registro, como `cloud`.
+- **Lección:** un lazo con transposición necesita un camino sin transponer. Una cabeza que da la vuelta tiene el periodo de la máscara.

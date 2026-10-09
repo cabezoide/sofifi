@@ -278,6 +278,11 @@ HUELLAS = {
     "tartamudeo": "5d290bc204ee6f63",
     "dos_ecos": "6fde26ba14e2b429",
     "viento": "5311dee4ac283e77",
+    "compas": "d16c8d87d95dbbbf",
+    "espiral": "27951ea2625eeffb",
+    "swell_ritmico": "171ac180714fde9b",
+    "semilla": "3cb1c09a83fc5503",
+    "arpegio": "57ba0db724291756",
 }
 
 
@@ -313,11 +318,16 @@ SEGUNDOS_HUELLA = {
     "relevo": 0.8,
     "frenada": 0.5,
     "dos_ecos": 0.6,
+    "compas": 0.5,
+    "espiral": 0.4,
+    "arpegio": 0.6,
 }
 # Con pot3 = 0,5, dinamica no actúa y da los mismos bits que freeze sin pulsar.
 POTS_HUELLA = {"dinamica": ("0.5", "0.3", "0.5", "0.9")}
 # Sin footswitch, el looper solo deja pasar la señal seca: graba los primeros 0,1 s.
 TRAMOS_SW = {
+    "swell_ritmico": ((0, 2000), (int(0.1 * FS), int(0.1 * FS) + 2000)),
+    "compas": ((int(0.02 * FS), int(0.05 * FS)), (int(0.22 * FS), int(0.25 * FS))),
     "frenada": ((int(0.3 * FS), int(0.4 * FS)),),
     "relevo": ((0, int(0.05 * FS)),),
     "dados": ((int(0.15 * FS), int(0.2 * FS)),),
@@ -352,6 +362,8 @@ CON_TONO = {
     "relevo",
     "resbalon",
     "tartamudeo",
+    "swell_ritmico",
+    "arpegio",
 }
 
 

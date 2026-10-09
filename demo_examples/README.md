@@ -86,6 +86,11 @@ Una guitarra sintética (arpegio de Em9, cuerdas Karplus-Strong) procesada por c
 | `demo_tartamudeo.ogg` | `tartamudeo` | umbral 0,30 · duración 0,45 · mezcla 0,50 · repeticiones 0,60 | — |
 | `demo_dos_ecos.ogg` | `dos_ecos` | tiempo 0,85 · realimentación 0,60 · mezcla 0,50 · proporción 0,90 · equilibrio 0,50 · difusión 0,70 | 4,00 → 6,00 s |
 | `demo_viento.ogg` | `viento` | velocidad 0,50 · resonancia 0,60 · mezcla 0,50 · sensibilidad 0,70 · frecuencia 0,50 · nivel 0,40 | 2,50 → 3,50 s |
+| `demo_compas.ogg` | `compas` | tiempo 0,60 · realimentación 0,45 · mezcla 0,45 · subdivisión 0,10 · segunda toma 1,00 · tono 0,70 | 0,50 → 0,55 s, 1,00 → 1,05 s |
+| `demo_espiral.ogg` | `espiral` | intervalo 0,92 · segunda voz 0,08 · mezcla 0,55 · tiempo 0,40 · realimentación 0,70 · decay 0,60 | 3,00 → 4,50 s |
+| `demo_swell_ritmico.ogg` | `swell_ritmico` | subida 0,40 · forma 0,20 · mezcla 0,50 · decay 0,70 · deriva 0,40 · sensibilidad 0,50 | 0,00 → 0,05 s, 0,22 → 0,27 s |
+| `demo_semilla.ogg` | `semilla` | decay 0,80 · damping 0,35 · mezcla 0,50 · semilla 0,60 · densidad 0,80 · modulación 0,45 | 4,00 → 6,50 s |
+| `demo_arpegio.ogg` | `arpegio` | velocidad 0,45 · notas 1,00 · mezcla 0,50 · modo 0,00 · eco 0,40 · decay 0,60 | 3,00 → 5,00 s |
 | `demo_cadena_eco_y_muelle.ogg` | Eco y muelle: `delay` → `spring` | pot0 0,55 · pot1 0,40 · pot2 0,35 · pot3 0,60 · pot4 0,40 · pot5 0,00 | — |
 | `demo_cadena_flor_al_reves.ogg` | Flor al revés: `reverse` → `bloom` | pot0 0,60 · pot1 0,40 · pot2 0,50 · pot3 0,80 · pot4 0,55 · pot5 0,40 | — |
 | `demo_cadena_organo_infinito.ogg` | Órgano infinito: `octava` → `infinite` | pot0 0,60 · pot1 0,40 · pot2 0,00 · pot3 0,10 · pot4 0,50 · pot5 0,00 | — |

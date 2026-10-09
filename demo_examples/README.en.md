@@ -1,4 +1,4 @@
-<!-- i18n: fuente=demo_examples/README.md sha=74f2450d718c estado=al_dia -->
+<!-- i18n: fuente=demo_examples/README.md sha=01075f5aa939 estado=al_dia -->
 # demo_examples
 
 A synthetic guitar (an Em9 arpeggio, Karplus-Strong strings) through each core program, with the bit-exact model. Generate them again with `.venv/bin/python scripts/generar_demos.py`: the audio is the same each time.
@@ -87,6 +87,11 @@ A synthetic guitar (an Em9 arpeggio, Karplus-Strong strings) through each core p
 | `demo_tartamudeo.ogg` | `tartamudeo` | threshold 0.30 · length 0.45 · mix 0.50 · repeats 0.60 | — |
 | `demo_dos_ecos.ogg` | `dos_ecos` | time 0.85 · feedback 0.60 · mix 0.50 · ratio 0.90 · balance 0.50 · diffusion 0.70 | 4.00 → 6.00 s |
 | `demo_viento.ogg` | `viento` | rate 0.50 · resonance 0.60 · mix 0.50 · sensitivity 0.70 · frequency 0.50 · level 0.40 | 2.50 → 3.50 s |
+| `demo_compas.ogg` | `compas` | time 0.60 · feedback 0.45 · mix 0.45 · subdivisión 0.10 · segunda toma 1.00 · tone 0.70 | 0.50 → 0.55 s, 1.00 → 1.05 s |
+| `demo_espiral.ogg` | `espiral` | interval 0.92 · second voice 0.08 · mix 0.55 · time 0.40 · feedback 0.70 · decay 0.60 | 3.00 → 4.50 s |
+| `demo_swell_ritmico.ogg` | `swell_ritmico` | rise time 0.40 · shape 0.20 · mix 0.50 · decay 0.70 · drift 0.40 · sensitivity 0.50 | 0.00 → 0.05 s, 0.22 → 0.27 s |
+| `demo_semilla.ogg` | `semilla` | decay 0.80 · damping 0.35 · mix 0.50 · semilla 0.60 · densidad 0.80 · modulation 0.45 | 4.00 → 6.50 s |
+| `demo_arpegio.ogg` | `arpegio` | rate 0.45 · notas 1.00 · mix 0.50 · mode 0.00 · echo 0.40 · decay 0.60 | 3.00 → 5.00 s |
 | `demo_cadena_eco_y_muelle.ogg` | Eco y muelle: `delay` → `spring` | pot0 0.55 · pot1 0.40 · pot2 0.35 · pot3 0.60 · pot4 0.40 · pot5 0.00 | — |
 | `demo_cadena_flor_al_reves.ogg` | Flor al revés: `reverse` → `bloom` | pot0 0.60 · pot1 0.40 · pot2 0.50 · pot3 0.80 · pot4 0.55 · pot5 0.40 | — |
 | `demo_cadena_organo_infinito.ogg` | Órgano infinito: `octava` → `infinite` | pot0 0.60 · pot1 0.40 · pot2 0.00 · pot3 0.10 · pot4 0.50 · pot5 0.00 | — |

@@ -1,0 +1,245 @@
+; SPDX-License-Identifier: MIT
+;
+; familia: dinámica
+; resumen: Cada nota sube con la curva y el tiempo que eliges, también al pulso del pie, en un plate que ondula.
+; resumen.en: Each note rises with the curve and time you set, also to the beat of your foot, in a plate that sways.
+; resumen.zh-CN: 每个音符按你选定的曲线和时间渐强，也可用脚踩出节拍来定时，混响 plate 随之起伏。
+; resumen.ja: 各ノートは選んだカーブと時間で立ち上がり、足で刻むテンポにも合わせられます。プレートは揺らぎます。
+;
+; swell_ritmico.sasm — Swell rítmico. Cada ataque reinicia una rampa de
+; volumen. La rampa tiene una forma elegible y dura lo que marca pot0 o dos
+; pisadas del pedal. La señal pasa por un plate de Dattorro, y una mezcla de
+; triángulo y azar mueve su modulación.
+; Diseño propio, a partir del principio del parche «Swell verb» para ZOIA
+; (CHMJ): un swell con un ataque de milisegundos a segundos, que también puede
+; salir del tap tempo, con una curva exponencial, lineal o logarítmica, delante
+; de una reverb modulada por un triángulo mezclado con ruido.
+;
+; Cada muestra:
+;   1. Detector de ataque: el pico de |x| (caída de unos 30 ms) pasa de 1,5
+;      veces su media lenta (unos 40 ms) más el umbral. Solo dispara en el
+;      flanco de subida, y no antes de 60 ms desde el ataque anterior: el
+;      rizado del pico no vuelve a disparar. Un ataque pone la rampa `fase` a 0.
+;   2. Tap tempo: `cnt` cuenta las muestras desde la última pisada (2,68 s de
+;      tope). Una pisada a menos de 2,6 s de la anterior copia `cnt` en `per`
+;      y activa el modo tap. Si pot0 se mueve más de 0,05, el modo tap acaba.
+;   3. L es la duración del ataque, en unidades de 2,68 s: `per` en modo tap,
+;      o la de pot0. La rampa sube q/64 por muestra, con q·L = 2^-11. No hay
+;      división: q se corrige en cada muestra con q ← q + (2^-11 − L·q).
+;   4. Forma: g = x + s·x·(1 − x), con x = fase y s = 2·pot1 − 1. Con s = −1,
+;      g = x² (exponencial). Con s = 0, g = x (lineal). Con s = 1,
+;      g = 1 − (1 − x)² (logarítmica). Un paso bajo de 1 ms quita el clic.
+;   5. kwet y kdry se multiplican por g: el seco y la entrada del plate suben
+;      juntos. La cola del plate no se corta en un ataque nuevo.
+;   6. Modulación: los LFO 0 y 1 se paran a un cuarto de vuelta (como en
+;      cinta.sasm). Así lfoN_depth fija el retardo de los allpass modulados.
+;      depth = (1 − pot4)·triángulo + pot4·azar, en antifase en las dos ramas.
+;      Una sierra de 0,9 Hz da el triángulo: 2·|sierra| − 1. En cada vuelta
+;      de la sierra, un mapa logístico (como comun/azar_lento.sasm) da un
+;      paso. Un paso bajo de unos 0,3 s une los saltos: es el azar.
+;
+; pot0 = subida        (sin tap: 0 → 20 ms · 0,5 → 0,68 s · 1 → 2,7 s)
+; pot1 = forma         (0 → exponencial · 0,5 → lineal · 1 → logarítmica)
+; pot2 = mezcla        (0 → seco · 1 → solo reverb)
+; pot3 = decay         (0 → 0,25 · 1 → 0,95)
+; pot4 = deriva        (0 → triángulo regular · 1 → azar)
+; pot5 = sensibilidad  (0 → umbral 0,03, solo ataques claros · 1 → 0,002)
+; sw   = tap tempo     (dos pisadas separadas T fijan una subida de T, hasta 2,6 s)
+
+include  comun/dattorro_decl.sasm
+
+equ  c11      1/2048          ; q·L = 2^-11
+equ  kdmp     0.79            ; damping fijo (el de plate.sasm con pot1 = 0,3)
+
+equ  envr     reg9            ; pico de |x|
+equ  envl     reg10           ; media lenta del pico
+equ  umbr     reg11
+equ  cond     reg12           ; ≥ 0: hay ataque en esta muestra
+equ  ant      reg13           ; cond de la muestra anterior
+equ  fase     reg14           ; rampa del ataque, de 0 a 1
+equ  q        reg15           ; 64 × subida por muestra
+equ  s        reg16           ; forma, de −1 a 1
+equ  gs       reg17           ; ganancia del swell, suavizada
+equ  cnt      reg18           ; muestras desde la última pisada (× 2^-17)
+equ  per      reg19           ; intervalo del tap
+equ  modo     reg20           ; ≈ 1: modo tap
+equ  pref     reg21           ; pot0 en la última pisada válida
+equ  swant    reg22
+equ  k17      reg23           ; 2^-17
+equ  lper     reg24           ; L: duración del ataque
+equ  sierra   reg25           ; de −1 a 1, a 0,9 Hz
+equ  tri      reg26           ; triángulo, de −1 a 1
+equ  vel      reg27           ; subida de la sierra por muestra
+equ  xlog     reg28           ; mapa logístico
+equ  azar     reg29           ; xlog suavizado, de 0 a 1
+equ  bloq     reg30           ; ≥ 0: no se admite otro ataque
+
+; ── LFO 0 y 1 parados: rate 0 en cada muestra, salvo al arrancar ─────
+        wrax  lfo0_rate, 0              ; ACC vale 0 al empezar la muestra
+        wrax  lfo1_rate, 0
+; ── inicialización (solo la primera muestra) ─────────────────────────
+        skp   run, inicio
+        sof   0, 0.5                    ; un cuarto de vuelta en una muestra
+        wrax  lfo0_rate, 1.0
+        wrax  lfo1_rate, 0
+        sof   0, 1/32768
+        wrax  k17, 0.25                 ; ACC = 2^-17
+        wrax  k17, 0
+        sof   0, 1/512                  ; vel = 2·0,9/fs
+        sof   2*512*0.9/48828.125, 0
+        wrax  vel, 0
+        sof   0, 0.3141                 ; semilla del mapa logístico
+        wrax  xlog, 0
+        sof   0, 0.99997
+        wrax  cnt, 0                    ; la primera pisada no cuenta
+        sof   0, kdmp
+        wrax  kdamp, 0
+inicio:
+; ── mandos ───────────────────────────────────────────────────────────
+        rdax  pot3, 0.7
+        sof   1.0, 0.25
+        wrax  kdecay, 0
+include  comun/mezcla.sasm
+        rdax  pot5, -0.028
+        sof   1.0, 0.03
+        wrax  umbr, 0                   ; de 0,03 a 0,002
+        sof   0, -1.0                   ; s = 2·pot1 − 1
+        rdax  pot1, 1.999
+        wrax  s, 0
+; ── 1. detector de ataque ────────────────────────────────────────────
+        rdax  adcl, 0.5
+        rdax  adcr, 0.5
+        absa
+        maxx  envr, 0.9993              ; pico con caída de ~30 ms
+        wrax  envr, 1.0
+        rdfx  envl, 0.0005
+        wrax  envl, 0
+        rdax  envr, 1.0
+        rdax  envl, -1.5
+        rdax  umbr, -1.0
+        wrax  cond, 1.0
+        skp   neg, sin_ataque
+        clr
+        rdax  ant, 1.0
+        skp   gez, sin_ataque           ; ya estaba por encima: no es un flanco
+        clr
+        rdax  bloq, 1.0
+        skp   gez, sin_ataque           ; el ataque anterior está muy cerca
+        clr
+        wrax  fase, 0                   ; ataque: la rampa vuelve a 0
+        sof   0, 0.99997
+        wrax  bloq, 0
+sin_ataque:
+        clr
+        rdax  cond, 1.0
+        wrax  ant, 0
+        rdax  bloq, 1.0
+        sof   1.0, -1/3000              ; bloqueo de ~60 ms tras un ataque
+        wrax  bloq, 0
+; ── 2. tap tempo ─────────────────────────────────────────────────────
+        rdax  sw, 1.0
+        rdax  swant, -1.0
+        sof   1.0, -0.5
+        skp   neg, sin_pisada
+        clr
+        rdax  cnt, 1.0
+        sof   1.0, -0.97                ; 2,6 s
+        skp   gez, reiniciar            ; muy lejos de la anterior: solo reinicia
+        sof   1.0, 0.95                 ; cnt − 0,02: menos de 54 ms es un rebote
+        skp   neg, sin_pisada
+        clr
+        rdax  cnt, 1.0
+        wrax  per, 0
+        sof   0, 0.99997
+        wrax  modo, 0
+        rdax  pot0, 1.0
+        wrax  pref, 0
+reiniciar:
+        clr
+        wrax  cnt, 0
+sin_pisada:
+        clr
+        rdax  sw, 1.0
+        wrax  swant, 0
+        rdax  cnt, 1.0
+        rdax  k17, 1.0
+        wrax  cnt, 0                    ; satura en 1
+        rdax  pot0, 1.0                 ; mover pot0 acaba el modo tap
+        rdax  pref, -1.0
+        absa
+        sof   1.0, -0.05
+        skp   neg, duracion
+        clr
+        wrax  modo, 0
+; ── 3. duración L y subida q ─────────────────────────────────────────
+duracion:
+        clr
+        rdax  pot0, 1.0
+        mulx  pot0
+        sof   0.99, 0.0075              ; Lpot: de 20 ms a 2,7 s
+        wrax  tmp, -1.0
+        rdax  per, 1.0
+        mulx  modo
+        rdax  tmp, 1.0
+        wrax  lper, 0                   ; L = Lpot + modo·(per − Lpot)
+        rdax  q, 1.0
+        mulx  lper
+        sof   -1.0, c11
+        rdax  q, 1.0
+        wrax  q, 0                      ; q ← q + (2^-11 − L·q)
+; ── 4. rampa y forma ─────────────────────────────────────────────────
+        rdax  fase, 1.0
+        rdax  q, 1/64
+        wrax  fase, 1.0                 ; satura en 1
+        sof   -1.0, 0.99997
+        mulx  fase                      ; x·(1 − x)
+        mulx  s
+        rdax  fase, 1.0                 ; g = x + s·x·(1 − x)
+        rdfx  gs, 0.02
+        wrax  gs, 0
+; ── 5. kwet y kdry por g ─────────────────────────────────────────────
+        rdax  kwet, 1.0
+        mulx  gs
+        wrax  kwet, 0
+        rdax  kdry, 1.0
+        mulx  gs
+        wrax  kdry, 0
+; ── 6. modulación: triángulo y azar ──────────────────────────────────
+        rdax  sierra, 1.0
+        rdax  vel, 1.0
+        wrax  sierra, 1.0               ; satura en 1
+        sof   1.0, -0.999
+        skp   neg, sin_vuelta
+        sof   0, -0.999                 ; vuelta: la sierra vuelve a −1
+        wrax  sierra, 0
+        rdax  xlog, 1.0                 ; y el azar da un paso: x = 4·(x − x²)
+        mulx  xlog
+        wrax  tmp, 0
+        rdax  xlog, 1.0
+        rdax  tmp, -1.0
+        sof   1.999, 0
+        sof   1.999, 0
+        wrax  xlog, 0
+sin_vuelta:
+        clr
+        rdax  xlog, 1.0
+        rdfx  azar, 0.00007             ; unos 0,3 s
+        wrax  azar, 0
+        rdax  sierra, 1.0               ; triángulo = 2·|sierra| − 1
+        absa
+        sof   1.999, -0.999
+        wrax  tri, 0
+        sof   0, -1.0                   ; azar bipolar: 2·azar − 1
+        rdax  azar, 1.999
+        rdax  tri, -1.0
+        mulx  pot4
+        rdax  tri, 1.0
+        wrax  lfo0_depth, -1.0
+        wrax  lfo1_depth, 0
+; ── plate ────────────────────────────────────────────────────────────
+include  comun/entrada.sasm
+        rdfx  bw, kbw
+        wrax  bw, 1.0
+include  comun/dattorro_difusion.sasm
+include  comun/dattorro_tanque.sasm
+include  comun/dattorro_salida.sasm
