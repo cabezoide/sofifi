@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=0f404692c52a estado=al_dia -->
+<!-- i18n: fuente=README.md sha=134a0b328cce estado=al_dia -->
 # SOFIFI — Soundscapes On FPGA: Integrated Filters & Impulses
 
 *In Spanish: Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada.*
@@ -20,7 +20,7 @@ custom DSP core executes.
 | Library | **86 programs and 1,032 presets** in 8 families (Phase 07) |
 | Two effects at the same time | **24 chains**: 18 fit today and 6 wait for the SDRAM (`presets/cadenas.toml`, ADR 0013) |
 | Match with the model, in simulation | all 86 programs and the 18 chains that fit give in the RTL the same bits as the model |
-| Match with the model, on the board | 50 of 50: 41 programs and 9 chains, with the Phase 07 core (MED-16, 2026-10-08) |
+| Match with the model, on the board | 77 of 77: 68 programs and 9 chains, with the segmented core (MED-17, 2026-10-10). These are all that fit in the test top |
 | Core | in-order pipeline (ADR 0014, Spanish): it uses 1.6 times fewer cycles; no errors on the board at 125 MHz (3 of 3) and at 133.3 MHz (2 of 2); it runs at 100 MHz |
 | In progress | **Phase 08, microSD:** the bank, the SD controller and the `prueba_sd` top work in simulation. The test with the real card is not done yet (`docs/microsd.md`) |
 | Audio with a guitar | **not yet**: the I2S codec is missing (Phase 11) |

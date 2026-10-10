@@ -19,7 +19,7 @@ texto que ejecuta un núcleo DSP propio.
 | Biblioteca | **86 programas y 1 032 presets** en 8 familias (Fase 07) |
 | Dos efectos a la vez | **24 cadenas**: 18 caben hoy y 6 esperan la SDRAM (`presets/cadenas.toml`, ADR 0013) |
 | Igualdad con el modelo, en simulación | los 86 programas y las 18 cadenas que caben dan en el RTL los mismos bits que el modelo |
-| Igualdad con el modelo, en la placa | 50 de 50: 41 programas y 9 cadenas, con el núcleo de la Fase 07 (MED-16, 2026-10-08) |
+| Igualdad con el modelo, en la placa | 77 de 77: 68 programas y 9 cadenas, con el núcleo segmentado (MED-17, 2026-10-10). Son todos los que caben en el top de prueba |
 | Núcleo | segmentado en orden (ADR 0014): gasta 1,6 veces menos ciclos; sin errores en la placa a 125 MHz (3 de 3) y a 133,3 MHz (2 de 2); trabaja a 100 MHz |
 | En curso | **Fase 08, microSD:** el banco, el controlador SD y el top `prueba_sd` funcionan en simulación. Falta la prueba con la tarjeta real (`docs/microsd.md`) |
 | Audio con guitarra | **todavía no**: falta el códec I2S (Fase 11) |

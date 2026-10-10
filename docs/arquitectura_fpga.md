@@ -176,6 +176,7 @@ Se añaden los envoltorios del PLL (`pll_100`), del DSP (`mult_27x18`) y de la B
 
 - **Looper en la placa** (top `hil_looper`): el estímulo del HIL pulsa el footswitch para grabar y para hacer un overdub. El looper coincide bit a bit con el modelo de 100 a 125 MHz. Es la primera prueba de `RDAA` y `WRAA` en el silicio.
 - **Todo el catálogo en la placa** (top `hil_programa`, `make hil HIL=NOMBRE`): 41 programas y 9 cadenas dan los mismos bits que el modelo (MED-16). Son todos los que caben en los 38 bloques de `hil_nucleo`. El que más gasta es `chorale`, con 1 935 ciclos de 2 048.
+- **Con el núcleo segmentado** (ADR 0014): 68 programas y 9 cadenas dan los mismos bits que el modelo (MED-17, 2026-10-10). Son todos los que caben en `hil_nucleo` contando la región absoluta (F-37). El que más gasta es `dados`, con 1 409 ciclos de 2 048.
 
 ### Después de la Fase 07 · Núcleo segmentado en orden (ADR 0014)
 

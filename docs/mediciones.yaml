@@ -194,3 +194,15 @@ mediciones:
     como: ".venv/bin/python scripts/hil_lote.py --todos (make hil HIL=NOMBRE por cada uno; resultados en build/hil_lote.csv)"
     entorno: "Tang Primer 25K a 100 MHz; hil_programa con la ROM de sofifi rom; núcleo multiciclo de la Fase 07; pots a 0,5; estímulo de hil_nucleo"
     no_dice: "Solo lo que cabe en los 38 bloques de hil_nucleo: 41 programas y 9 cadenas. No caben 10 programas (shimmer, cloud, cinta, bruma, blackhole, pingpong, escalera y las variantes del shimmer) ni 9 cadenas. Una sola posición de los mandos. Máximo medido: chorale, 1 935 ciclos de 2 048."
+  - id: MED-17
+    caracteristica: M-08
+    nombre: Programas y cadenas en la placa idénticos al modelo, con el núcleo segmentado
+    valor: 77
+    unidad: de 77 (68 programas y 9 cadenas), cada uno 4 096 muestras con CRC correcto
+    umbral: 77
+    direccion: mayor_mejor
+    fecha: 2026-10-10
+    caduca_en_dias: 90
+    como: ".venv/bin/python scripts/hil_lote.py --todos (make hil HIL=NOMBRE por cada uno; resultados en build/hil_lote.csv). saturacion se repitió después del PR #62 con su versión nueva: 4 096 de 4 096."
+    entorno: "Tang Primer 25K a 100 MHz; hil_programa con la ROM de sofifi rom; núcleo segmentado en orden (ADR 0014); pots a 0,5; estímulo de hil_nucleo; main en 74e7e36"
+    no_dice: "Solo lo que cabe en los 38 bloques de hil_nucleo, con la región absoluta incluida (F-37): 68 programas y 9 cadenas. No caben 18 programas (arpegio, aureo, blackhole, bruma, cinta, cloud, dos_ecos, eco_casero, enjambre, escalera, espiral, pingpong, semilla y los cinco shimmer) ni 15 cadenas. El lote probó también enjambre y semilla, que no cabían, y dieron distinto (F-37). Una sola posición de los mandos. Máximo medido: dados, 1 409 ciclos de 2 048."

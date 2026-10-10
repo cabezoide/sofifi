@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/arquitectura_fpga.md sha=4c2e37123255 estado=al_dia -->
+<!-- i18n: fuente=docs/arquitectura_fpga.md sha=f51f5ec843d2 estado=al_dia -->
 # FPGA 架构
 
 本文说明 FPGA 内部有什么、各部分如何连接，以及设计在各阶段如何变化。每个阶段结束时更新本文；每个改动 FPGA 模块的 PR 也要更新本文。各组件的简明说明见 `SBOM.zh-CN.md`；塑造了设计的故障见 `fails.zh-CN.md`。
@@ -177,6 +177,7 @@ UART TX 和一个计数器。没有 PLL，运行在 50 MHz。第一次“第二�
 
 - **板上的 looper**（顶层 `hil_looper`）：HIL 激励按下脚踏开关，先录音，再叠录。从 100 到 125 MHz，looper 与模型逐位一致。这是 `RDAA` 和 `WRAA` 在芯片上的第一次测试。
 - **整个目录在板上运行**（顶层 `hil_programa`，`make hil HIL=名称`）：41 个程序和 9 条链与模型逐位一致（MED-16）。这些是能装进 `hil_nucleo` 的 38 个块的全部程序和链。用周期最多的是 `chorale`：2,048 个中的 1,935 个。
+- **使用分段内核**（ADR 0014）：68 个程序和 9 条链与模型逐位一致（MED-17，2026-10-10）。这些是计入绝对区后能装进 `hil_nucleo` 的全部（F-37）。用周期最多的是 `dados`：2,048 个中的 1,409 个。
 
 ### 第 07 阶段之后 · 按序流水线核心（ADR 0014，西班牙语）
 
