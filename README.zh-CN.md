@@ -1,4 +1,4 @@
-<!-- i18n: fuente=README.md sha=0f404692c52a estado=al_dia -->
+<!-- i18n: fuente=README.md sha=134a0b328cce estado=al_dia -->
 # SOFIFI — 集成 FPGA 上的沉浸式波形与滤波合成器
 
 *英文名：Soundscapes On FPGA: Integrated Filters & Impulses；西班牙文名：Sintetizador de Ondas y Filtros Inmersivos en FPGA Integrada。*
@@ -19,7 +19,7 @@ FPGA（高云 GW5A-LV25）上。每个效果都是一个文本程序，由自研
 | 程序库 | 8 个类别中共 **86 个程序与 1,032 个预设**（阶段 07） |
 | 同时运行两个效果 | **24 条链**：18 条现在可以装入，6 条等待 SDRAM（`presets/cadenas.toml`，ADR 0013） |
 | 与模型一致（仿真） | 86 个程序和 18 条可装入的链在 RTL 中的输出与模型逐位一致 |
-| 与模型一致（开发板） | 50 项中 50 项一致：41 个程序和 9 条链，使用阶段 07 的核心（MED-16，2026-10-08） |
+| 与模型一致（开发板） | 77 项中 77 项一致：68 个程序和 9 条链，使用分段内核（MED-17，2026-10-10）。这是测试顶层能装下的全部 |
 | 核心 | 顺序流水线（ADR 0014）：周期数减少到原来的 1/1.6；在开发板上 125 MHz（3 次中 3 次）和 133.3 MHz（2 次中 2 次）无错误；工作频率为 100 MHz |
 | 进行中 | **阶段 08，microSD：**程序库、SD 控制器和顶层 `prueba_sd` 在仿真中工作正常。还缺少用真实存储卡的测试（`docs/microsd.md`，西班牙语） |
 | 接吉他发声 | **尚未实现**：缺少 I2S 编解码器（阶段 11） |
