@@ -481,3 +481,10 @@ Al documentar los scripts (PR #58) aparecieron seis comportamientos inesperados.
 - **Rareza real: `saturacion`.** La etapa 1 multiplica por 1,999 antes de la etapa 2, y la salida llegaba casi al fondo de escala. Con ganancia ×1 y nivel 1, una nota fuerte salía +6 dB más alta. La salida se divide ahora por 2: el timbre no cambia y ese caso queda casi a 0 dB.
 - **Cabeceras corregidas:** `resonador` (pot3 multiplica la frecuencia por 1 − pot3/2: no es lineal en semitonos), `looper` y `granular` (su mando de velocidad o de intervalo tiene tres zonas) y `tambor` (le faltaba la línea `sw`).
 - **Lección:** mide un efecto con una señal de banda ancha. Antes de cambiar un programa por una medida rara, repítela con otra señal.
+
+## F-37 · `enjambre` y `semilla` distintos en la placa: la región absoluta no cabía en el top de prueba
+
+- **Síntoma:** en el lote HIL con el núcleo segmentado, `enjambre` dio 3 817 de 4 096 muestras iguales y `semilla`, 893. Los demás dieron 4 096.
+- **Causa:** en el RTL, la región absoluta (RDAA, WRAA) va detrás de la memoria circular: dirección física = palabras + índice. `enjambre` usa 10 052 + 32 768 = 42 820 palabras. Cabe en el núcleo (43 008), pero no en `hil_nucleo`, que tiene 38 912 para dejar sitio a la captura. `semilla` usa 10 166 + 32 768 = 42 934. `sofifi rom` y `scripts/hil_lote.py` solo contaban las palabras circulares.
+- **Resolución:** `Programa.palabras_fisicas` suma la región absoluta cuando el programa la usa. `sofifi rom`, `hil_lote.py` y el catálogo la usan. `enjambre` y `semilla` ya no entran en el lote HIL; siguen probados en simulación con 42 bloques.
+- **Lección:** el silicio no falló: falló la regla de «cabe». Un límite se calcula en un solo sitio y todos lo usan.

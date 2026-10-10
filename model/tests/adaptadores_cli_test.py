@@ -235,3 +235,10 @@ def test_la_cli_encuentra_la_raiz_desde_una_subcarpeta(tmp_path: Path) -> None:
     hondo.mkdir(parents=True)
     assert buscar_raiz(hondo) == tmp_path
     assert buscar_raiz(tmp_path) == tmp_path
+
+
+def test_rom_cuenta_la_region_absoluta(tmp_path: Path) -> None:
+    # enjambre: 10 052 palabras circulares + 32 768 de la región absoluta no
+    # caben en los 38 912 de hil_nucleo (F-37); mosaico sí.
+    assert main(["rom", "enjambre", str(tmp_path / "e.v")]) == 1
+    assert main(["rom", "mosaico", str(tmp_path / "m.v")]) == 0

@@ -76,8 +76,7 @@ def ficha(nombre: str, texto: str, programa: Programa) -> Ficha:
         tuple(f"{k}: {mandos[k]}" for k in sorted(mandos)),
         len(programa.instrucciones),
         ciclos_rtl(programa),
-        # La región absoluta (RDAA, WRAA) también es memoria del programa.
-        programa.palabras_memoria + (PALABRAS_ABSOLUTAS if programa.usa_absoluta else 0),
+        programa.palabras_fisicas,  # con la región absoluta (RDAA, WRAA)
         tuple((i, campos[f"resumen.{i}"]) for i in IDIOMAS[1:] if f"resumen.{i}" in campos),
     )
 
