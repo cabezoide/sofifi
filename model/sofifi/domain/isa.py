@@ -154,6 +154,12 @@ class Programa:
         return any(i.op in (Op.RDAA, Op.WRAA) for i in self.instrucciones)
 
     @property
+    def palabras_fisicas(self) -> int:
+        """Palabras que ocupa en la memoria de retardo: la circular y, detrás, la
+        región absoluta si la usa (en el RTL, dirección = palabras + índice)."""
+        return self.palabras_memoria + (PALABRAS_ABSOLUTAS if self.usa_absoluta else 0)
+
+    @property
     def ciclos(self) -> int:
         return sum(CICLOS[i.op] for i in self.instrucciones)
 
@@ -164,7 +170,7 @@ class Programa:
             e.append(f"{n} instrucciones > {MAX_INSTRUCCIONES}")
         if self.ciclos > CICLOS_POR_MUESTRA:
             e.append(f"{self.ciclos} ciclos > {CICLOS_POR_MUESTRA} por muestra")
-        if self.usa_absoluta and self.palabras_memoria + PALABRAS_ABSOLUTAS > PALABRAS_MAX:
+        if self.palabras_fisicas > PALABRAS_MAX:
             e.append(
                 f"memoria {self.palabras_memoria} + región absoluta {PALABRAS_ABSOLUTAS}"
                 f" > {PALABRAS_MAX} palabras"

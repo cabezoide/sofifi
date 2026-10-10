@@ -55,7 +55,7 @@ def caben() -> list[str]:
             programa = programa_o_cadena(n, PROGRAMAS, CADENAS)
         except ValueError:  # cadena que no compone: le faltan registros o LFOs
             continue
-        if programa.palabras_memoria <= PALABRAS_HIL:
+        if programa.palabras_fisicas <= PALABRAS_HIL:  # con la región absoluta (F-37)
             lista.append(n)
     return lista
 

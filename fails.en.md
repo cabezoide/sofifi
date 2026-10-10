@@ -1,4 +1,4 @@
-<!-- i18n: fuente=fails.md sha=4df37ddbe88b estado=al_dia -->
+<!-- i18n: fuente=fails.md sha=511fe0948ed5 estado=al_dia -->
 # Failures and their resolution
 
 This is the record of the failures found in the project. Each entry has a symptom, a diagnosis, a root cause, a resolution and a lesson. The record helps us not to repeat them. It also explains why the design is as it is.
@@ -482,3 +482,10 @@ When we documented the scripts (PR #58), we found six unexpected behaviors. None
 - **Real oddity: `saturacion`.** Stage 1 multiplies by 1.999 before stage 2, and the output got almost to full scale. With gain ×1 and level 1, a strong note came out +6 dB louder. The output is now divided by 2: the tone does not change and that case is almost 0 dB.
 - **Headers corrected:** `resonador` (pot3 multiplies the frequency by 1 − pot3/2: it is not linear in semitones), `looper` and `granular` (their speed or interval control has three zones) and `tambor` (it did not have the `sw` line).
 - **Lesson:** measure an effect with a broadband signal. Before you change a program because of an unusual measurement, do the measurement again with a different signal.
+
+## F-37 · `enjambre` and `semilla` different on the board: the absolute region did not fit in the test top
+
+- **Symptom:** in the HIL batch with the segmented core, `enjambre` gave 3,817 of 4,096 equal samples and `semilla` gave 893. The other programs gave 4,096.
+- **Cause:** in the RTL, the absolute region (RDAA, WRAA) is after the circular memory: physical address = words + index. `enjambre` uses 10,052 + 32,768 = 42,820 words. This fits in the core (43,008), but not in `hil_nucleo`, which has 38,912 to keep space for the capture. `semilla` uses 10,166 + 32,768 = 42,934. `sofifi rom` and `scripts/hil_lote.py` counted only the circular words.
+- **Resolution:** `Programa.palabras_fisicas` adds the absolute region when the program uses it. `sofifi rom`, `hil_lote.py` and the catalog use it. `enjambre` and `semilla` are no longer in the HIL batch; they stay tested in simulation with 42 blocks.
+- **Lesson:** the silicon did not fail: the "it fits" rule failed. Calculate a limit in one place and use it everywhere.

@@ -120,16 +120,17 @@ def main(argv: list[str] | None = None) -> int:
                 prog = programa_o_cadena(args.nombre, PROGRAMAS, RUTA_CADENAS)
             except ValueError as exc:
                 raise argparse.ArgumentTypeError(str(exc)) from exc
-            if prog.palabras_memoria > PALABRAS_HIL:
+            # La región absoluta va detrás de la circular: cuenta también (F-37).
+            if prog.palabras_fisicas > PALABRAS_HIL:
                 raise argparse.ArgumentTypeError(
-                    f"{args.nombre}: {prog.palabras_memoria} palabras; "
+                    f"{args.nombre}: {prog.palabras_fisicas} palabras; "
                     f"hil_nucleo tiene {PALABRAS_HIL}"
                 )
             origen = f"«{args.nombre}» ({prog.nombre})"
             args.salida.write_text(verilog_programa(prog, "programa_hil", origen), encoding="utf-8")
             print(
                 f"{args.nombre}: {len(prog.instrucciones)} instrucciones, "
-                f"{ciclos_rtl(prog)} ciclos del RTL, {prog.palabras_memoria} palabras"
+                f"{ciclos_rtl(prog)} ciclos del RTL, {prog.palabras_fisicas} palabras"
                 f" → {args.salida}"
             )
             return 0
