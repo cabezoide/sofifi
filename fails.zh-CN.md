@@ -1,4 +1,4 @@
-<!-- i18n: fuente=fails.md sha=511fe0948ed5 estado=al_dia -->
+<!-- i18n: fuente=fails.md sha=c93168617dc6 estado=al_dia -->
 # 故障及其解决
 
 本文件记录项目中发现的故障。每条记录包含现象、诊断、根本原因、解决方法和教训。它帮助我们避免重复同样的故障，也说明设计为何如此。
@@ -489,3 +489,10 @@
 - **原因：** 在 RTL 中，绝对区（RDAA、WRAA）位于循环内存之后：物理地址 = 字数 + 索引。`enjambre` 使用 10,052 + 32,768 = 42,820 个字。内核（43,008）放得下，但 `hil_nucleo` 只有 38,912 个字，为捕获留出空间。`semilla` 使用 10,166 + 32,768 = 42,934 个字。`sofifi rom` 和 `scripts/hil_lote.py` 只统计了循环字。
 - **解决：** 程序使用绝对区时，`Programa.palabras_fisicas` 会把它加上。`sofifi rom`、`hil_lote.py` 和目录都使用它。`enjambre` 和 `semilla` 不再进入 HIL 批测；它们仍在 42 块的仿真中测试。
 - **教训：** 失败的不是芯片，而是“放得下”的规则。一个限制只在一处计算，各处共用。
+
+## F-38 · 开发板没连接时，`docs` 检查门会变红
+
+- **症状：** `make ci` 让 `docs` 变红，输出 21 行 `rutas: docs/scripts.md cita \`/dev/ttyUSB1\`, que no existe`。pre-push 钩子什么都不让推。插上开发板后就是绿的。
+- **原因：** `scripts/check_docs.py` 的 `comprobar_rutas` 把反引号里的每个路径都当作仓库里的路径。`/dev/ttyUSB0` 和 `/dev/ttyUSB1` 是设备文件：它们存在与否取决于有没有插 USB 线。
+- **解决：** `parece_ruta` 排除以 `/dev/` 开头的内容。对仓库里的路径，检查照旧有效，而那才是改动可能弄坏的。
+- **教训：** 检查门不能取决于插了什么硬件。假红要在检查门里修掉，不能容忍；一容忍，这道门就会被关掉（SPEC_RAIZ，P1）。
