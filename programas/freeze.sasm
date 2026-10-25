@@ -1,22 +1,25 @@
 ; SPDX-License-Identifier: MIT
 ;
 ; familia: reverb
-; resumen: Plate que congela la cola con el pulsador.
-; resumen.en: A plate that freezes the tail with the footswitch.
-; resumen.zh-CN: 用脚踏开关冻结尾音的 plate。
-; resumen.ja: フットスイッチで残響を凍らせる plate。
+; resumen: Plate que congela la cola con el pulsador; la cola sigue moviéndose.
+; resumen.en: A plate that freezes the tail with the footswitch; the tail keeps moving.
+; resumen.zh-CN: 用脚踏开关冻结尾音的 plate；尾音仍在动。
+; resumen.ja: フットスイッチで残響を凍らせる plate。残響は動き続けます。
 ;
 ; freeze.sasm — Plate de Dattorro (ver plate.sasm) con congelación por footswitch.
 ; Con `sw` pulsado: decay ≈ 1, sin damping y la entrada deja de alimentar el
-; tanque (freeze, no infinite). La modulación del tanque baja a 0 en rampa: con
-; fracción de lectura distinta de 0, la interpolación es un paso bajo suave que,
-; dentro de un bucle sin pérdidas, apagaría la cola poco a poco. Un limitador
-; CLIP en cada rama del tanque impide que el bucle crezca sin control
-; (SECURITY.md: el volumen es superficie de daño).
+; tanque (freeze, no infinite). **La cola congelada sigue moviéndose**: el
+; tanque compensa la pérdida de la interpolación del `cho`
+; (comun/dattorro_tanque_compensado.sasm), así que ya no hace falta bajar la
+; modulación a 0. Medido en el modelo: la cola pierde 0,087 dB/s con la
+; modulación puesta, frente a 0,382 dB/s sin compensar. Un limitador CLIP en
+; cada rama del tanque impide que el bucle crezca sin control (SECURITY.md: el
+; volumen es superficie de daño).
 ;
 ; pot0 = decay · pot1 = damping · pot2 = mezcla (cuando sw está suelto)
 
 include  comun/dattorro_decl.sasm
+equ  kcmp  0.05                 ; compensación de la interpolación, medida
 
 ; ── inicialización (solo la primera muestra) ─────────────────────────
         skp   run, inicio
@@ -31,11 +34,10 @@ include  comun/controles.sasm
         sof   0, 1.0
         wrax  kdamp, 0                  ; kdamp = 1: el paso bajo deja pasar todo
         wrax  kwet, 0                   ; ACC = 0: la entrada no alimenta la cola
-        skp   zro, profundidad          ; ACC = 0: objetivo de modulación 0 (bucle sin pérdidas)
 sin_freeze:
-        sof   0, 0.99                   ; objetivo de modulación normal
-profundidad:
-; la profundidad sigue a su objetivo con una rampa de ~40 ms: sin clic al congelar
+; la modulación es la misma congelado o no: el tanque compensa su pérdida.
+; La profundidad sigue a su objetivo con una rampa de ~40 ms: sin clic al congelar
+        sof   0, 0.99
         wrax  tmp, 0
         rdax  tmp, 1.0
         rdfx  lfo0_depth, 0.0005
@@ -48,5 +50,5 @@ include  comun/entrada.sasm
         rdfx  bw, kbw
         wrax  bw, 1.0
 include  comun/dattorro_difusion.sasm
-include  comun/dattorro_tanque_clip.sasm
+include  comun/dattorro_tanque_compensado.sasm
 include  comun/dattorro_salida.sasm

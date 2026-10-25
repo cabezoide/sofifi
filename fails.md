@@ -495,3 +495,10 @@ Al documentar los scripts (PR #58) aparecieron seis comportamientos inesperados.
 - **Causa:** `comprobar_rutas` de `scripts/check_docs.py` trata toda ruta citada entre comillas invertidas como una ruta del repositorio. `/dev/ttyUSB0` y `/dev/ttyUSB1` son ficheros de dispositivo: existen o no según haya un cable USB puesto.
 - **Resolución:** `parece_ruta` descarta lo que empieza por `/dev/`. La comprobación sigue valiendo para las rutas del repositorio, que son las que puede romper un cambio.
 - **Lección:** una compuerta no puede depender del hardware que esté enchufado. Un rojo falso se arregla en la compuerta, no se tolera: si se tolera, se desactiva (SPEC_RAIZ, P1).
+
+## F-39 · Un coeficiente dentro de un bucle realimentado no se comparte
+
+- **Síntoma:** al compensar la pérdida de la interpolación en el tanque con CLIP, que usan cinco programas, el freeze quedaba plano (de 0,382 a 0,087 dB/s) pero `dinamica` **crecía 1,18 dB/s** y llegaba a −0,74 dBFS, y `sostenido` crecía 1,07 dB/s.
+- **Causa:** la compensación es un cero que levanta los agudos dentro del bucle. Su efecto depende de la ganancia del bucle de cada programa (decay, damping, taps). El coeficiente que cancela la pérdida en uno sobra en otro, y entonces el bucle gana energía.
+- **Resolución:** la compensación vive en su propio bloque (`programas/comun/dattorro_tanque_compensado.sasm`) y el coeficiente lo define cada programa, medido. `freeze` usa 0,05. Los otros cuatro siguen con el tanque con CLIP y no cambian ni en un bit.
+- **Lección:** un coeficiente dentro de un bucle realimentado se mide por programa, nunca se comparte. Y conviene quedarse corto: pasarse hace crecer la cola, y eso es volumen, que es superficie de daño (SECURITY.md).
