@@ -51,7 +51,7 @@ DESPLAZAMIENTO_SOF_D = DATO_FRAC + 16 - 15  # D en S2.15 → f39
 class Nucleo:
     def __init__(self, programa: Programa) -> None:
         self.programa = programa
-        self.memoria = MemoriaRetardo(programa.palabras_memoria, programa.usa_absoluta)
+        self.memoria = MemoriaRetardo(*programa.memoria_args)
         self.lfos = [Lfo(c) if c is not None else None for c in programa.lfos]
         self.regs = [0] * NUM_REGISTROS
         self.acc = 0

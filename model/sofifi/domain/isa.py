@@ -18,9 +18,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import IntEnum, IntFlag
 
-from sofifi.domain.aritmetica import CICLOS_POR_MUESTRA
+from sofifi.domain.aritmetica import CICLOS_POR_MUESTRA, MEM_BITS
 from sofifi.domain.lfo import NUM_LFOS, ConfigLfo, TipoLfo
-from sofifi.domain.memoria import PALABRAS_ABSOLUTAS, PALABRAS_MAX
+from sofifi.domain.memoria import PALABRAS_ABSOLUTAS, PALABRAS_MAX, palabras_max
 
 
 class Op(IntEnum):
@@ -142,6 +142,9 @@ class Programa:
     instrucciones: tuple[Instruccion, ...]
     palabras_memoria: int
     lfos: tuple[ConfigLfo | None, ...] = field(default=(None,) * NUM_LFOS)
+    # Tamaño de palabra de la memoria de retardo: 18 bit, o 12 con `palabra 12`
+    # (ADR 0008, actualización del 2026-10-25). Con 12 caben 1,5 veces más.
+    bits_memoria: int = MEM_BITS
 
     def __post_init__(self) -> None:
         errores = self.errores()
@@ -152,6 +155,11 @@ class Programa:
     def usa_absoluta(self) -> bool:
         """True si el programa usa la región absoluta (RDAA, WRAA; ADR 0009)."""
         return any(i.op in (Op.RDAA, Op.WRAA) for i in self.instrucciones)
+
+    @property
+    def memoria_args(self) -> tuple[int, bool, int]:
+        """Lo que necesita ``MemoriaRetardo``: palabras, región absoluta y bit por palabra."""
+        return self.palabras_memoria, self.usa_absoluta, self.bits_memoria
 
     @property
     def palabras_fisicas(self) -> int:
@@ -170,13 +178,19 @@ class Programa:
             e.append(f"{n} instrucciones > {MAX_INSTRUCCIONES}")
         if self.ciclos > CICLOS_POR_MUESTRA:
             e.append(f"{self.ciclos} ciclos > {CICLOS_POR_MUESTRA} por muestra")
-        if self.palabras_fisicas > PALABRAS_MAX:
+        try:
+            tope = palabras_max(self.bits_memoria)
+        except ValueError as exc:
+            e.append(str(exc))
+            tope = PALABRAS_MAX
+        if self.palabras_fisicas > tope:
+            region = f" + región absoluta {PALABRAS_ABSOLUTAS}" if self.usa_absoluta else ""
             e.append(
-                f"memoria {self.palabras_memoria} + región absoluta {PALABRAS_ABSOLUTAS}"
-                f" > {PALABRAS_MAX} palabras"
+                f"memoria {self.palabras_memoria}{region}"
+                f" > {tope} palabras de {self.bits_memoria} bit"
             )
-        if not 1 <= self.palabras_memoria <= PALABRAS_MAX:
-            e.append(f"memoria {self.palabras_memoria} fuera de [1, {PALABRAS_MAX}]")
+        if not 1 <= self.palabras_memoria <= tope:
+            e.append(f"memoria {self.palabras_memoria} fuera de [1, {tope}]")
         if len(self.lfos) != NUM_LFOS:
             e.append(f"se esperaban {NUM_LFOS} ranuras de LFO")
         for pc, ins in enumerate(self.instrucciones):

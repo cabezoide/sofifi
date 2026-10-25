@@ -33,3 +33,9 @@ node_modules/
 .env
 .env.*
 !.env.example
+
+# Material de referencia local (libros de FPGA y DSP). No se versiona: son
+# megabytes y son de terceros (docs/terceros.yaml los cita por su fuente).
+FPGA/
+FPGA.zip
+__MACOSX/
