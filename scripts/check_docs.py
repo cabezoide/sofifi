@@ -104,6 +104,12 @@ def parece_ruta(token: str) -> bool:
     # Los marcadores de posición se escriben con <…> y no son rutas reales.
     if token.startswith(("http", "-", "$", "~")) or any(c in token for c in "*{<"):
         return False
+    # Un fichero de dispositivo (`/dev/ttyUSB1`) no es una ruta del repositorio:
+    # existe o no según haya un cable USB puesto. Comprobarlo daba un rojo falso
+    # cada vez que la placa no estaba conectada, y una compuerta con falsos
+    # rojos se desactiva (SPEC_RAIZ, P1).
+    if token.startswith("/dev/"):
+        return False
     if "/" in token:
         return True
     return token.endswith(EXT_RUTA) and token[0].isalpha()
