@@ -1,0 +1,80 @@
+; SPDX-License-Identifier: MIT
+;
+; comun/dattorro_tanque_compensado.sasm — el tanque con CLIP
+; (comun/dattorro_tanque_clip.sasm) y la pérdida de la interpolación compensada.
+;
+; El `cho` del allpass modulado lee entre muestras. La interpolación de 4 tomas
+; es un paso bajo suave: a 8 kHz quita 0,21 dB, y a 12 kHz, 1 dB. En un bucle
+; sin pérdidas (freeze, decay ≈ 1) eso apaga la cola. Medido en el modelo con
+; `freeze` y la modulación puesta: **0,382 dB por segundo**.
+;
+; La compensación es un cero que levanta los agudos, en cada rama y dentro del
+; bucle:
+;
+;     y' = y + kcmp·(y − y_anterior)
+;
+; El programa define `kcmp` antes de incluir este bloque. Con `kcmp = 0.05`, la
+; pérdida del freeze modulado baja a 0,087 dB/s y la cola se estabiliza (medido
+; en el modelo, `model/tests/programas_ambient_test.py`).
+;
+; **Advertencia.** El coeficiente se mide por programa. No vale uno para todos:
+; con 0,05 en el tanque compartido, `dinamica` crecía 1,18 dB/s y saturaba. Por
+; eso este bloque es una copia y no un cambio en el tanque con CLIP: los otros
+; cuatro programas que usan aquel no cambian ni en un bit.
+;
+; La pérdida va como la cuarta potencia de la frecuencia y el cero sube como el
+; cuadrado, así que la compensación es parcial por construcción. Cancelarla del
+; todo pide un todo-paso, y eso necesita leer sin interpolar: otra fase.
+;
+; Necesita los registros `entrada`, `tmp`, `cl` y `cr`, y la constante `kcmp`.
+; Deja ACC = 0.
+
+equ  cl       reg9                ; y anterior de la rama izquierda
+equ  cr       reg10               ; y anterior de la rama derecha
+
+; ── tanque, rama izquierda ───────────────────────────────────────────
+        rda   dr2#, 1.0
+        mulx  kdecay
+        rdax  entrada, 1.0
+        cho   tl1 + 672*s - ex, -kdd1, lfo0
+        wrap  tl1, kdd1
+        wrax  tmp, 1.0                  ; compensación: y' = y + kcmp·(y − y_ant)
+        rdax  cl, -kcmp
+        rdax  tmp, kcmp
+        wra   dl1, 0
+        rdax  tmp, 1.0
+        wrax  cl, 0               ; guarda y para la muestra siguiente
+        rda   dl1#, 1.0
+        rdax  lpl, -1.0
+        mulx  kdamp
+        rdax  lpl, 1.0
+        wrax  lpl, 1.0
+        mulx  kdecay
+        sof   2/3, 0                    ; curva_suave(2x/3): pendiente 1, techo ±1
+        clip
+        rda   tl2#, kdd2
+        wrap  tl2, -kdd2
+        wra   dl2, 0
+; ── tanque, rama derecha ─────────────────────────────────────────────
+        rda   dl2#, 1.0
+        mulx  kdecay
+        rdax  entrada, 1.0
+        cho   tr1 + 908*s - ex, -kdd1, lfo1
+        wrap  tr1, kdd1
+        wrax  tmp, 1.0                  ; compensación: y' = y + kcmp·(y − y_ant)
+        rdax  cr, -kcmp
+        rdax  tmp, kcmp
+        wra   dr1, 0
+        rdax  tmp, 1.0
+        wrax  cr, 0               ; guarda y para la muestra siguiente
+        rda   dr1#, 1.0
+        rdax  lpr, -1.0
+        mulx  kdamp
+        rdax  lpr, 1.0
+        wrax  lpr, 1.0
+        mulx  kdecay
+        sof   2/3, 0
+        clip
+        rda   tr2#, kdd2
+        wrap  tr2, -kdd2
+        wra   dr2, 0
