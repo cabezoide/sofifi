@@ -1,4 +1,4 @@
-<!-- i18n: fuente=BOM.md sha=bfc6e2d73f57 estado=al_dia -->
+<!-- i18n: fuente=BOM.md sha=6bfce6e6a58a estado=al_dia -->
 # BOM · SOFIFI hardware
 
 This is the shopping list for the pedal. We checked the links on **7 October 2026**: [V] = the page loaded and the item was for sale; [?] = the page did not load. The prices are from that date, without shipping, and they change.
@@ -24,6 +24,7 @@ This is the shopping list for the pedal. We checked the links on **7 October 202
 | 9 | **SPST momentary soft-touch footswitch** ×2 | Bypass and freeze. Until then, use the buttons on the Dock. | 09 | 3 USD each | [V] [Tayda](https://www.taydaelectronics.com/spst-momentary-soft-touch-push-button-stomp-foots-pedal-switch-on-off.html) |
 | 10 | **128×64 SSD1306 OLED** | Shows the preset and the function of each knob, in four languages. | 10 | 20 USD | [V] [Adafruit #938](https://www.adafruit.com/product/938) (sold out on 7 October) |
 | 11 | **Input buffer** (JFET or operational amplifier) | Adapts the guitar (high impedance) to the ADC input. Any pedal with a buffer is satisfactory. | 11 | 0.50 USD (PCB only) | [V] [PedalPCB Simple JFET Buffer](https://www.pedalpcb.com/product/jfetbuffer/) · [?] [PedalPCB MicroBuffer](https://www.pedalpcb.com/product/pcb678/) |
+| 13 | **1-bit output filter**: 2 resistors of 1 kΩ, 2 capacitors of 6.8 nF, 1 capacitor of 1 µF, 1 resistor of 10 kΩ and a divider of 2.2 kΩ and 220 Ω | Turns the 1-bit pin into line audio, to hear the pedal without the codec (Phase 13, ADR 0015). Values and schematic in `docs/audio_1bit.md`. | 13 | less than 1 USD | laboratory material; any resistor and capacitor assortment |
 
 ## For later
 

@@ -15,9 +15,9 @@ from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles, RisingEdge, Timer
 from comun_salida import RTL, construir
 from sofifi.domain.aritmetica import CICLOS_POR_MUESTRA, UNO
-from sofifi.domain.salida_1bit import LIMITE, Salida1Bit
+from sofifi.domain.salida_1bit import LATENCIA_CICLOS, LIMITE, Salida1Bit
 
-LATENCIA = 6  # ciclos de retardo del RTL; está en la cabecera de salida_1bit.v
+LATENCIA = LATENCIA_CICLOS  # el RTL va 6 ciclos por detrás (salida_1bit.v)
 MUESTRAS = (0, UNO - 1, -UNO, LIMITE, -LIMITE // 2, 123456, -1, UNO // 3)
 
 

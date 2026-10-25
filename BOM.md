@@ -23,6 +23,7 @@ Lista de compra del pedal. Los enlaces se comprobaron el **7 de octubre de 2026*
 | 9 | **Footswitch SPST momentáneo**, de pulsación suave ×2 | Bypass y freeze. Hasta entonces sirven los botones de la Dock. | 09 | 3 USD c/u | [V] [Tayda](https://www.taydaelectronics.com/spst-momentary-soft-touch-push-button-stomp-foots-pedal-switch-on-off.html) |
 | 10 | **OLED SSD1306 de 128×64** | Muestra el preset y la función de cada perilla, en cuatro idiomas. | 10 | 20 USD | [V] [Adafruit #938](https://www.adafruit.com/product/938) (agotado el 7 de octubre) |
 | 11 | **Buffer de entrada** (JFET o amplificador operacional) | Adapta la guitarra (alta impedancia) a la entrada del ADC. Sirve cualquier pedal con buffer. | 11 | 0,50 USD (solo PCB) | [V] [PedalPCB Simple JFET Buffer](https://www.pedalpcb.com/product/jfetbuffer/) · [?] [PedalPCB MicroBuffer](https://www.pedalpcb.com/product/pcb678/) |
+| 13 | **Filtro de la salida de 1 bit**: 2 resistencias de 1 kΩ, 2 condensadores de 6,8 nF, 1 condensador de 1 µF, 1 resistencia de 10 kΩ y un divisor de 2,2 kΩ y 220 Ω | Convierte el pin de 1 bit en audio de línea, para oír el pedal sin el códec (Fase 13, ADR 0015). Valores y esquema en `docs/audio_1bit.md`. | 13 | menos de 1 USD | material de laboratorio; cualquier surtido de resistencias y condensadores |
 
 ## Para más adelante
 

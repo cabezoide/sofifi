@@ -1,4 +1,4 @@
-<!-- i18n: fuente=BOM.md sha=bfc6e2d73f57 estado=al_dia -->
+<!-- i18n: fuente=BOM.md sha=6bfce6e6a58a estado=al_dia -->
 # BOM · SOFIFI のハードウェア
 
 ペダルの購入リストです。リンクは **2026 年 10 月 7 日** に確認しました。[V] = ページが表示され、商品が販売中。[?] = ページを表示できなかった。価格はその日のもので、送料を含みません。価格は変わります。
@@ -24,6 +24,7 @@
 | 9 | **SPST モーメンタリー・ソフトタッチのフットスイッチ** ×2 | Bypass と freeze。それまでは Dock のボタンを使えます。 | 09 | 1 個 3 USD | [V] [Tayda](https://www.taydaelectronics.com/spst-momentary-soft-touch-push-button-stomp-foots-pedal-switch-on-off.html) |
 | 10 | **128×64 の SSD1306 OLED** | プリセットと各ノブの機能を 4 言語で表示します。 | 10 | 20 USD | [V] [Adafruit #938](https://www.adafruit.com/product/938)（10 月 7 日に品切れ） |
 | 11 | **入力バッファー**（JFET またはオペアンプ） | ギター（高インピーダンス）を ADC の入力に合わせます。バッファー付きのペダルならどれでも使えます。 | 11 | 0.50 USD（PCB のみ） | [V] [PedalPCB Simple JFET Buffer](https://www.pedalpcb.com/product/jfetbuffer/) · [?] [PedalPCB MicroBuffer](https://www.pedalpcb.com/product/pcb678/) |
+| 13 | **1 ビット出力のフィルター**：1 kΩ の抵抗 2 本、6.8 nF のコンデンサー 2 個、1 µF のコンデンサー 1 個、10 kΩ の抵抗 1 本、2.2 kΩ と 220 Ω の分圧 | 1 ビットのピンをライン出力の音声に変えます。コーデックなしでペダルを聞けます（フェーズ 13、ADR 0015）。値と回路図は `docs/audio_1bit.md` にあります。 | 13 | 1 USD 未満 | 実験用の部品。抵抗とコンデンサーのセットで足ります |
 
 ## 将来必要なもの
 

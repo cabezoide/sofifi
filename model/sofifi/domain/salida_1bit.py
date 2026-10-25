@@ -36,6 +36,11 @@ ALTO_BITS = CIC_BITS - GANANCIA_CIC  # 27: la salida del CIC, a 32·fs
 # zona lineal, y un programa de la microSD puede saturar a ±1 (SECURITY.md).
 LIMITE = 13 * UNO // 16  # 0,8125 de escala plena
 
+# Ciclos que el flujo del RTL va por detrás del flujo del modelo. El RTL deja
+# una sola suma por ciclo (recorte, d1, d2, integra1, integra2 y el registro del
+# pin), así que el retardo es fijo. Lo comprueban los testbenches.
+LATENCIA_CICLOS = 6
+
 MOD_BITS = 28  # integradores del modulador, con saturación
 K1 = 1  # realimentación al primer integrador
 K2 = 4  # realimentación al segundo; con K2 = 2 la SNR cae más (ADR 0015)

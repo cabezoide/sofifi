@@ -48,6 +48,7 @@ La FPGA contiene un **pequeño procesador de audio hecho a medida** (el núcleo)
 | **Controlador SD** (`sd_spi`) | Habla con la tarjeta por SPI: la arranca y lee bloques de 512 bytes. No escribe en ella. | Da acceso a la biblioteca de programas sin un sistema de ficheros, que sería caro y frágil. |
 | **Cargador del banco** (`cargador`, `carga_sd`) | Lee una ranura de la tarjeta dos veces. La primera vez solo comprueba; la segunda escribe el programa en el núcleo. | Un programa dañado no se carga. Si la primera lectura falla, el núcleo sigue con el programa anterior. |
 | **Prueba de la SD** (`prueba_sd`, solo en pruebas) | Carga ranuras a petición del PC y le dice qué leyó. | Comprueba que la tarjeta da los mismos datos que el modelo. Falta probarla con la tarjeta real. |
+| **Lector de pista** (`lector_pista`, Fase 13) | Lee de la tarjeta una grabación de guitarra, bloque a bloque, y la entrega muestra a muestra. Guarda 1 024 muestras por delante, para que un retraso de la tarjeta no corte el sonido. | Da audio de entrada al pedal antes de tener el códec: así se pueden oír los programas en la placa. |
 
 ### Primitivas del chip (piezas físicas del GW5A)
 

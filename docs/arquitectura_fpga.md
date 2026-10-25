@@ -26,6 +26,8 @@ flowchart LR
         acc --> mem
     end
 
+    sd -.->|"Fase 13 · lee_pista"| lpista["Lector de pista<br/>cola de 1 024 muestras<br/>(Fase 13)"]
+    lpista --> entradas
     entradas["Entradas<br/>adc, pots, sw"] --> regs
     regs --> dac["dac_l, dac_r"]
     dac -.->|"Fase 13 · ADR 0015"| s1b["Salida de 1 bit<br/>CIC + Σ∆<br/>(Fase 13)"]
@@ -67,6 +69,7 @@ La línea discontinua del diagrama es la carga desde la microSD. Hoy solo existe
 | Curva suave | `rtl/nucleo/curva_fin.v` | una resta y una saturación | registrada |
 | UART TX / RX | `rtl/comun/uart_tx.v`, `uart_rx.v` | ~50 LUT cada una | 115 200 baudios |
 | Salida de audio de 1 bit | `rtl/salida/salida_1bit.v`, `cic_interp.v`, `sigma_delta.v` | sin medir (Fase 13) | 6 ciclos; el modulador da un bit por ciclo de 100 MHz (ADR 0015) |
+| Lector de pista | `rtl/sd/lector_pista.v`, `lee_pista.v` | 1 BSRAM de cola; sin medir (Fase 13) | una muestra por `tick`, adelantada; la cola aguanta 21 ms |
 | Cargador de programa | `rtl/comun/carga_programa.v` | ~30 LUT | instrucciones + 1 ciclos |
 | Traza del núcleo (solo HIL) | `rtl/top/hil_nucleo.v`, orden `T` | ~150 flip-flops | graba (pc, ACC) en la captura |
 | Programa del HIL | parámetro `PROGRAMA` de `hil_nucleo`; tops `hil_looper` y `hil_programa` | una ROM en lógica | plate por defecto; el looper prueba `RDAA` y `WRAA`; `hil_programa` lleva la ROM que escribe `sofifi rom` (`make hil HIL=NOMBRE`) |
@@ -206,6 +209,16 @@ La tarjeta no lleva sistema de ficheros: guarda un banco de bloques crudos que e
 - **`cargador`:** hace dos pasadas. La primera comprueba la cabecera, los límites, cada código de operación, los saltos y los dos CRC-32, sin tocar el núcleo. La segunda para el núcleo, escribe el microcódigo y vuelve a comprobar el CRC. Si la segunda falla, el núcleo queda parado: mejor silencio que un programa a medias.
 - **`prueba_sd`:** el top de prueba, sin el núcleo. El PMOD TF tiene dos revisiones con CS y SCK en pines distintos; el top prueba la v2 y después la v1.
 - **Estado:** el modelo, el RTL y el top dan los mismos datos en simulación, con un modelo de tarjeta en cocotb (`sim/sd/tarjeta_sd.py`). **Falta la prueba con la tarjeta real.**
+
+### Fase 13 · El pedal suena sin códec (en curso)
+
+El reloj es 2 048 veces fs, así que un solo pin lleva audio (ADR 0015). La fuente es una pista de la microSD, porque no hay entrada analógica hasta la Fase 11.
+
+- **Cadena de salida** (`rtl/salida/`): recorte a ±13/16 → CIC de Hogenauer (S = 2, R = 32) → mantenimiento de 64 ciclos → modulador sigma-delta de 2.º orden → un pin. El modelo manda (`model/sofifi/domain/salida_1bit.py`) y el RTL da el mismo flujo de bits, con 6 ciclos de retardo.
+- **`lector_pista`:** valida la cabecera de la pista (magia, versión, CRC-32 y límites) y entrega una muestra por `tick`, con una cola de 1 024 muestras en un bloque de BSRAM. La pista se repite al acabar.
+- **`audio_sd`:** el top. microSD → núcleo → salida de 1 bit, con el estado por la UART. El núcleo no arranca hasta que la pista tiene su primera muestra, así que el RTL se puede comparar con el modelo de punta a punta.
+- **Recursos:** 12 593 LUT4 (55 %), 1 566 ALU, 7 646 flip-flops, 49 de 56 BSRAM y 2 DSP. nextpnr cierra a 107 MHz; el margen real se mide en la placa (ADR 0011).
+- **Estado:** igual al modelo en simulación, bit a bit. **Falta la prueba en la placa**, con el filtro RC de `docs/audio_1bit.md`.
 
 ### Próximo cambio previsto
 

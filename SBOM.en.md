@@ -1,4 +1,4 @@
-<!-- i18n: fuente=SBOM.md sha=8c6259d70144 estado=al_dia -->
+<!-- i18n: fuente=SBOM.md sha=8665ed6079b6 estado=al_dia -->
 # SBOM · SOFIFI components
 
 This document tells which parts make the pedal inside and which tools build it. Each part has a simple explanation: what it does and what it gives to the system. The technical details (resources, latencies, history by phase) are in `docs/arquitectura_fpga.en.md`.
@@ -49,6 +49,7 @@ The FPGA contains a **small custom audio processor** (the core). Each effect (pl
 | **SD controller** (`sd_spi`) | Talks to the card through SPI: it starts the card and reads blocks of 512 bytes. It does not write to the card. | Gives access to the program library without a file system, which is expensive and fragile. |
 | **Bank loader** (`cargador`, `carga_sd`) | Reads a slot of the card two times. The first time, it only checks. The second time, it writes the program into the core. | A damaged program does not load. If the first read fails, the core keeps the previous program. |
 | **SD test** (`prueba_sd`, tests only) | Loads slots when the PC requests them, and tells the PC what it read. | Checks that the card gives the same data as the model. The test with the real card is not done yet. |
+| **Track reader** (`lector_pista`, Phase 13) | Reads a guitar recording from the card, block by block, and delivers it sample by sample. It keeps 1,024 samples ahead, so a slow card does not cut the sound. | Gives the pedal an audio input before the codec arrives, so you can hear the programs on the board. |
 
 ### Chip primitives (physical parts of the GW5A)
 

@@ -41,19 +41,35 @@ El segundo hallazgo es de seguridad: con la entrada a escala plena, el modulador
 
 | PR | Contenido | Estado |
 |---|---|---|
-| 1 | ADR 0015, modelo bit-exact de la cadena, RTL y testbench que compara el flujo de bits | en curso |
-| 2 | Formato de pista, `sofifi pista`, lector en RTL con búfer y su testbench | pendiente |
-| 3 | Top `audio_sd`, pin, filtro RC, guía de escucha y prueba en la placa | pendiente |
+| 1 | ADR 0015, modelo bit-exact de la cadena, RTL y testbench que compara el flujo de bits | hecho |
+| 2 | Formato de pista, `sofifi pista`, lector en RTL con cola y su testbench | hecho |
+| 3 | Top `audio_sd`, pin, filtro RC y guía de escucha | hecho en simulación; falta la placa |
+
+Los tres van en una rama y un solo PR: los PRs apilados no llegan solos a `main`
+(`AGENTS.md`, «Trampas conocidas»).
 
 ## Criterios de aceptación
 
 | Criterio | Estado |
 |---|---|
-| El RTL da el mismo flujo de bits que el modelo, bit a bit. | pendiente |
+| El RTL da el mismo flujo de bits que el modelo, bit a bit. | cumplido: los tres módulos y el top `audio_sd` de punta a punta (`sim/salida/`, `sim/top/audio_sd_test.py`) |
 | La relación señal/ruido en banda es de 100 dB o más entre −12 y −2 dBFS, medida en el modelo. | cumplido (ADR 0015) |
 | Con la entrada a escala plena, los integradores del modulador no saturan. | cumplido (ADR 0015) |
-| En la placa suena una pista de la microSD a través de un programa, sin cortes. | pendiente |
-| El top cabe y cierra timing a 100 MHz, con su listón de recursos. | pendiente |
+| La pista se valida y se repite, y la cola no se vacía al ritmo real. | cumplido en simulación, con el modelo de tarjeta (`sim/sd/lee_pista_test.py`) |
+| El top cabe y cierra timing a 100 MHz, con su listón de recursos. | cumplido: 12 593 LUT4 (55 %), 49 de 56 BSRAM y 107 MHz en nextpnr (RAT-22, RAT-23) |
+| En la placa suena una pista de la microSD a través de un programa, sin cortes. | **pendiente**: hace falta el filtro RC y comprobar el pin contra el esquema del Dock |
+
+## Estado
+
+Para cerrar la fase falta la escucha en la placa:
+
+1. Montar el filtro RC de `docs/audio_1bit.md`.
+2. Comprobar el pin de audio contra el esquema del Dock. Va en G8 de J6, que el
+   PMOD TF v2 no usa; lo pragmático es moverlo a J4 o J5 cuando haya esquema.
+3. Escribir la pista con `sofifi pista build/pista.img --sintetica` y copiarla a
+   la tarjeta.
+4. `make audio AUDIO=plate` y escuchar. El estado sale por `make uart`.
+5. Medir el margen de reloj en la placa (ADR 0011).
 
 ## Lo que NO entra
 

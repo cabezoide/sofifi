@@ -278,3 +278,23 @@ ratchets:
     aviso_holgura: 0
     motivo: >-
       2026-10-09, Fase 08: listón donde se está (ADR 0010).
+  - id: RAT-22
+    nombre: LUT4 del top audio_sd
+    medida: recursos:audio_sd:LUT4
+    liston: 12593
+    direccion: menor_mejor
+    aviso_holgura: 0
+    motivo: >-
+      2026-10-24, Fase 13: listón donde se está (ADR 0010). Es el núcleo
+      completo (42 bloques de retardo), el lector de pista de la microSD y la
+      salida de 1 bit. Son 264 LUT4 más que hil_nucleo, que no lleva la salida
+      de 1 bit ni el lector pero sí la captura.
+  - id: RAT-23
+    nombre: ALU del top audio_sd
+    medida: recursos:audio_sd:ALU
+    liston: 1566
+    direccion: menor_mejor
+    aviso_holgura: 0
+    motivo: >-
+      2026-10-24, Fase 13: listón donde se está (ADR 0010). El interpolador CIC
+      y el modulador suman sumadores de 30 y 32 bit.

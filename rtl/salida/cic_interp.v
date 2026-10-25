@@ -52,8 +52,9 @@ module cic_interp #(
     reg [CUENTA_BITS-1:0] fase;    // ciclos desde el tick; 1 en el ciclo 1
     reg                   activo;  // hubo un tick desde el reset
 
-    wire [CUENTA_BITS-1:0] desde = fase - {{(CUENTA_BITS-2){1'b0}}, 2'd3};
-    wire paso    = activo && desde[5:0] == 6'd0;  // ciclo 3 + 64·k
+    // Solo importan los 6 bits bajos: un paso cada 64 ciclos.
+    wire [5:0] desde = fase[5:0] - 6'd3;
+    wire paso    = activo && desde == 6'd0;  // ciclo 3 + 64·k
     wire inicial = activo && fase == {{(CUENTA_BITS-2){1'b0}}, 2'd2};
 
     wire [CIC_BITS-1:0] d2_ancho = {{(CIC_BITS-26){d2[25]}}, d2};
