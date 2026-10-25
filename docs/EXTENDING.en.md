@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/EXTENDING.md sha=24e37a7d6593 estado=al_dia -->
+<!-- i18n: fuente=docs/EXTENDING.md sha=09357ff2b9e3 estado=al_dia -->
 # How to extend
 
 This guide gives the steps for each type of part. Sometimes an addition makes
@@ -114,6 +114,20 @@ A top is a full design for the board: the pins, the PLL and the modules.
 5. If the top sends data through the UART, limit the data rate. If you do not,
    the BL616 bridge stops (`rtl/AGENTS.md`).
 6. Measure the clock margin on the board, not in nextpnr (ADR 0011 (Spanish)).
+
+## A CLI command
+
+1. Write the format or the computation in `model/sofifi/domain/`, with no I/O.
+2. Write the adapter in `model/sofifi/adapters/`. Errors come out as
+   `argparse.ArgumentTypeError`.
+3. Add the subparser in `model/sofifi/cli_argumentos.py`, with examples in its
+   `description`.
+4. Add the branch in `model/sofifi/cli.py` and the line in its docstring.
+   `model/sofifi/cli.py` is the composition root: it is the only place that selects adapters.
+5. Test the command in `model/tests/adaptadores_cli_test.py`, always in
+   `tmp_path`. `model/tests/arquitectura_test.py` watches the layers.
+6. Document the command where its task lives (for example `docs/microsd.md` or
+   `docs/audio_1bit.md`), not in `docs/scripts.md`, which is for `scripts/`.
 
 ## A gate
 

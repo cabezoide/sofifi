@@ -38,19 +38,18 @@ import soundfile  # type: ignore[import-untyped]
 from sofifi.adapters.archivos import ensamblar_archivo
 from sofifi.adapters.cadenas import leer_cadenas, textos_de_programas
 from sofifi.adapters.wav import a_pcm16
-from sofifi.domain.aritmetica import DATO_MAX, DATO_MIN, FS_WAV, dato
+from sofifi.domain.aritmetica import FS_WAV, dato
 from sofifi.domain.cadena import Cadena, Modo
 from sofifi.domain.composicion import ensamblar_cadena, nombre_programa
+from sofifi.domain.estimulo import guitarra
 from sofifi.domain.senal import Controles, Senal
 from sofifi.services.catalogo import ficha, mando_traducido
 from sofifi.services.render import procesar
 
 ROOT = Path(__file__).resolve().parent.parent
 DESTINO = ROOT / "demo_examples"
-NOTAS_HZ = (82.41, 123.47, 164.81, 185.00, 246.94, 293.66, 369.99)  # Em9
-SEPARACION_S = 0.22
-DURACION_S = 4.0
-SEMILLA = 7
+# La guitarra sintética vive en el modelo (domain/estimulo.py): la comparten las
+# demos y la pista de la microSD (`sofifi pista --sintetica`).
 
 # (programa, pots, tramos de freeze en segundos, cola en segundos)
 DEMOS: tuple[tuple[str, dict[int, str], tuple[tuple[float, float], ...], float], ...] = (
@@ -197,25 +196,6 @@ DEMOS_CADENAS: tuple[tuple[str, float], ...] = (
 )
 # Calidad de Vorbis: 0 es la mejor. Con 0,3, una demo de 8 s ocupa unos 190 kB.
 COMPRESION = 0.3
-
-
-def guitarra() -> Senal:
-    rng = np.random.default_rng(SEMILLA)
-    y = np.zeros(int(FS_WAV * DURACION_S))
-    for i, f in enumerate(NOTAS_HZ):
-        inicio = int(i * SEPARACION_S * FS_WAV)
-        periodo = int(FS_WAV / f)
-        cuerda = rng.uniform(-1, 1, periodo)
-        salida = np.zeros(len(y) - inicio)
-        for k in range(len(salida)):
-            j = k % periodo
-            salida[k] = cuerda[j]
-            cuerda[j] = 0.996 * 0.5 * (cuerda[j] + cuerda[(k + 1) % periodo])
-        y[inicio:] += 0.12 * salida
-    # Cuantizada a 16 bit (como una grabación típica) y alineada a S.23.
-    pcm16 = np.trunc(np.clip(y, -1, 1) * 32767).astype(np.int64)
-    muestras = np.clip(pcm16 << 8, DATO_MIN, DATO_MAX)
-    return Senal(FS_WAV, (tuple(int(v) for v in muestras),))
 
 
 def escribir_ogg(ruta: Path, senal: Senal) -> bool:
