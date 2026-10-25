@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/programas.md sha=bde06b5a569d estado=al_dia -->
+<!-- i18n: fuente=docs/programas.md sha=a41cb76789d0 estado=al_dia -->
 <!-- GENERADO por `sofifi catalogo` desde programas/*.sasm. No se edita a mano:
      model/tests/catalogo_test.py lo compara con su generador. -->
 
@@ -18,7 +18,7 @@
 | `cloud` | 带随机调制的长扩散器：起音逐渐消散。 | 0: 衰减<br>1: 阻尼<br>2: 干湿比<br>3: 调制 | 12 | 96 | 907 | 42,814 |
 | `dinamica` | 尾音随弹奏力度变化的 plate。 | 0: 衰减<br>1: 阻尼<br>2: 干湿比<br>3: 深度<br>4: 阈值<br>5: 速度 | 12 | 141 | 1,188 | 37,439 |
 | `ensemble` | plate 之前的三声部合唱：尾音听起来像弦乐组。 | 0: 衰减<br>1: 阻尼<br>2: 干湿比<br>3: 合奏 | 12 | 99 | 953 | 38,540 |
-| `freeze` | 用脚踏开关冻结尾音的 plate。 | 0: 衰减<br>1: 阻尼<br>2: 干湿比 | 12 | 103 | 940 | 37,439 |
+| `freeze` | 用脚踏开关冻结尾音的 plate；尾音仍在动。 | 0: 衰减<br>1: 阻尼<br>2: 干湿比 | 12 | 112 | 979 | 37,439 |
 | `freeze_givens` | 不损失能量而流动的冻结：被冻结的尾音在两条支路间旋转。 | 0: 衰减<br>1: 阻尼<br>2: 干湿比<br>3: 旋转 | 12 | 136 | 1,138 | 37,439 |
 | `gated` | 每次起音之后突然截止的混响，如 80 年代。 | 0: 衰减<br>1: 阻尼<br>2: 干湿比<br>3: 时长 | 12 | 133 | 1,098 | 37,439 |
 | `hall` | 带 Householder 矩阵的 8 路延迟网络：大厅。 | 0: 衰减<br>1: 阻尼<br>2: 干湿比 | 12 | 137 | 863 | 34,522 |
@@ -159,7 +159,7 @@
 | Órgano infinito | `octava` → `infinite` | 1,246 | 41,539 | 13 | 4 | 可装入 |
 | Bruma en flor | `bruma` → `bloom` | 1,181 | 65,073 | 19 | 1 | 等待 SDRAM |
 | Cinta en la flor | `cinta` → `bloom` | 1,129 | 65,120 | 20 | 3 | 等待 SDRAM |
-| Eco al revés congelado | `reverse` → `freeze` | 1,271 | 53,827 | 13 | 3 | 等待 SDRAM |
+| Eco al revés congelado | `reverse` → `freeze` | 1,310 | 53,827 | 15 | 3 | 等待 SDRAM |
 | Eco en la nube | `delay` → `plate` | 1,113 | 71,188 | 15 | 3 | 等待 SDRAM |
 | Lluvia sobre la placa | `lluvia` → `plate` | 1,148 | 72,824 | 12 | 2 | 等待 SDRAM |
 | Ping-pong infinito | `pingpong` → `infinite` | 1,223 | 78,313 | 13 | 3 | 等待 SDRAM |

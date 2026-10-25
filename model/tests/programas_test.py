@@ -19,8 +19,10 @@ from itertools import pairwise
 import pytest
 from sofifi.domain.aritmetica import DATO_MAX, dato
 from sofifi.domain.coste import cabe_en_el_rtl, ciclos_rtl
+from sofifi.domain.isa import LFO_BASE
+from sofifi.domain.nucleo import Nucleo
 from sofifi.domain.senal import Controles, Senal
-from sofifi.services.render import procesar
+from sofifi.services.render import SW_PULSADO, procesar
 from tests.acustica import (
     FS,
     PROGRAMAS_TODOS,
@@ -61,6 +63,22 @@ def test_freeze_sostiene_la_cola() -> None:
     temprano, tardio = rms(y, 0.5, 0.8), rms(y, 1.2, 1.5)
     assert tardio > 0.9 * temprano
     assert max(abs(v) for v in y) <= DATO_MAX
+
+
+def test_freeze_se_mueve_mientras_congela() -> None:
+    """La cola congelada sigue modulada: el tanque compensa la interpolación.
+
+    Antes, la profundidad de modulación bajaba a 0 al congelar, porque en un
+    bucle sin pérdidas la interpolación del `cho` apagaba la cola (0,382 dB/s
+    medidos). Con comun/dattorro_tanque_compensado.sasm ya no hace falta, y
+    esta prueba lo vigila: si alguien vuelve a apagar la modulación, falla.
+    """
+    nucleo = Nucleo(programa("freeze"))
+    for k in range(int(0.5 * FS)):
+        entrada = dato("0.3") if k == 0 else 0
+        nucleo.procesar(entrada, entrada, pots("0.5", "0.3", "0.5"), SW_PULSADO)
+    profundidad = nucleo.regs[LFO_BASE + 1]  # lfo0_depth
+    assert profundidad > dato("0.9"), f"la modulación se apagó: {profundidad}"
 
 
 def test_freeze_sin_pulsar_decae_como_plate() -> None:
@@ -201,7 +219,7 @@ HUELLAS = {
     "looper": "f4b95ce672872ac4",
     "plate": "21b518d4c84cd31e",
     "shimmer": "b6d2796ae0ead123",
-    "freeze": "c66030a7dadd4274",
+    "freeze": "7198ea1ff1fa33c1",
     "hall": "f2c084f3172e159b",
     "cloud": "2eb1004634a4f215",
     "cinta": "a470fd5a999940d7",

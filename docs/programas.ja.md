@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/programas.md sha=bde06b5a569d estado=al_dia -->
+<!-- i18n: fuente=docs/programas.md sha=a41cb76789d0 estado=al_dia -->
 <!-- GENERADO por `sofifi catalogo` desde programas/*.sasm. No se edita a mano:
      model/tests/catalogo_test.py lo compara con su generador. -->
 
@@ -18,7 +18,7 @@
 | `cloud` | ランダム変調付きの長いディフューザー：アタックが溶けていきます。 | 0: ディケイ<br>1: ダンピング<br>2: ミックス<br>3: モジュレーション | 12 | 96 | 907 | 42,814 |
 | `dinamica` | 弾く強さで残響が変わる plate。 | 0: ディケイ<br>1: ダンピング<br>2: ミックス<br>3: 深さ<br>4: スレッショルド<br>5: 速さ | 12 | 141 | 1,188 | 37,439 |
 | `ensemble` | plate の前に 3 声のコーラス：残響がストリングス・セクションのように響きます。 | 0: ディケイ<br>1: ダンピング<br>2: ミックス<br>3: アンサンブル | 12 | 99 | 953 | 38,540 |
-| `freeze` | フットスイッチで残響を凍らせる plate。 | 0: ディケイ<br>1: ダンピング<br>2: ミックス | 12 | 103 | 940 | 37,439 |
+| `freeze` | フットスイッチで残響を凍らせる plate。残響は動き続けます。 | 0: ディケイ<br>1: ダンピング<br>2: ミックス | 12 | 112 | 979 | 37,439 |
 | `freeze_givens` | エネルギーを失わずに動くフリーズ：凍った残響が枝の間で回転します。 | 0: ディケイ<br>1: ダンピング<br>2: ミックス<br>3: 回転 | 12 | 136 | 1,138 | 37,439 |
 | `gated` | アタックの後に突然止まるリバーブ。80 年代のサウンド。 | 0: ディケイ<br>1: ダンピング<br>2: ミックス<br>3: 長さ | 12 | 133 | 1,098 | 37,439 |
 | `hall` | Householder 行列を持つ 8 本のディレイ網：大きなホール。 | 0: ディケイ<br>1: ダンピング<br>2: ミックス | 12 | 137 | 863 | 34,522 |
@@ -159,7 +159,7 @@
 | Órgano infinito | `octava` → `infinite` | 1,246 | 41,539 | 13 | 4 | 収まる |
 | Bruma en flor | `bruma` → `bloom` | 1,181 | 65,073 | 19 | 1 | SDRAM 待ち |
 | Cinta en la flor | `cinta` → `bloom` | 1,129 | 65,120 | 20 | 3 | SDRAM 待ち |
-| Eco al revés congelado | `reverse` → `freeze` | 1,271 | 53,827 | 13 | 3 | SDRAM 待ち |
+| Eco al revés congelado | `reverse` → `freeze` | 1,310 | 53,827 | 15 | 3 | SDRAM 待ち |
 | Eco en la nube | `delay` → `plate` | 1,113 | 71,188 | 15 | 3 | SDRAM 待ち |
 | Lluvia sobre la placa | `lluvia` → `plate` | 1,148 | 72,824 | 12 | 2 | SDRAM 待ち |
 | Ping-pong infinito | `pingpong` → `infinite` | 1,223 | 78,313 | 13 | 3 | SDRAM 待ち |

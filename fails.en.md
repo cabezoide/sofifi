@@ -1,4 +1,4 @@
-<!-- i18n: fuente=fails.md sha=511fe0948ed5 estado=al_dia -->
+<!-- i18n: fuente=fails.md sha=f2b864256b63 estado=al_dia -->
 # Failures and their resolution
 
 This is the record of the failures found in the project. Each entry has a symptom, a diagnosis, a root cause, a resolution and a lesson. The record helps us not to repeat them. It also explains why the design is as it is.
@@ -489,3 +489,17 @@ When we documented the scripts (PR #58), we found six unexpected behaviors. None
 - **Cause:** in the RTL, the absolute region (RDAA, WRAA) is after the circular memory: physical address = words + index. `enjambre` uses 10,052 + 32,768 = 42,820 words. This fits in the core (43,008), but not in `hil_nucleo`, which has 38,912 to keep space for the capture. `semilla` uses 10,166 + 32,768 = 42,934. `sofifi rom` and `scripts/hil_lote.py` counted only the circular words.
 - **Resolution:** `Programa.palabras_fisicas` adds the absolute region when the program uses it. `sofifi rom`, `hil_lote.py` and the catalog use it. `enjambre` and `semilla` are no longer in the HIL batch; they stay tested in simulation with 42 blocks.
 - **Lesson:** the silicon did not fail: the "it fits" rule failed. Calculate a limit in one place and use it everywhere.
+
+## F-38 · The `docs` gate went red when the board was not connected
+
+- **Symptom:** `make ci` gave `docs` in red with 21 lines like `rutas: docs/scripts.md cita \`/dev/ttyUSB1\`, que no existe`. The pre-push hook let nothing through. With the board plugged in, green.
+- **Cause:** `comprobar_rutas` of `scripts/check_docs.py` treats every path quoted in backticks as a path of the repository. `/dev/ttyUSB0` and `/dev/ttyUSB1` are device files: they exist or not, depending on a USB cable.
+- **Resolution:** `parece_ruta` discards what starts with `/dev/`. The check still works for the paths of the repository, which are the ones a change can break.
+- **Lesson:** a gate cannot depend on the hardware that is plugged in. You correct a false red in the gate; you do not tolerate it. If you tolerate it, the gate gets switched off (SPEC_RAIZ, P1).
+
+## F-39 · A coefficient inside a feedback loop is not shareable
+
+- **Symptom:** when the interpolation loss was compensated in the tank with CLIP, which five programs use, the freeze became flat (from 0.382 to 0.087 dB/s) but `dinamica` **grew 1.18 dB/s** and reached −0.74 dBFS, and `sostenido` grew 1.07 dB/s.
+- **Cause:** the compensation is a zero that lifts the high frequencies inside the loop. Its effect depends on the loop gain of each program (decay, damping, taps). The coefficient that cancels the loss in one is too much in another, and then the loop gains energy.
+- **Resolution:** the compensation lives in its own block (`programas/comun/dattorro_tanque_compensado.sasm`) and each program defines the coefficient, measured. `freeze` uses 0.05. The other four keep the tank with CLIP and do not change by one bit.
+- **Lesson:** you measure a coefficient inside a feedback loop per program; you never share it. And it is better to stay short: too much makes the tail grow, and that is volume, which is a damage surface (SECURITY.md).

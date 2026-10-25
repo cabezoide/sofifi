@@ -17,7 +17,7 @@ Los ciclos son la cota del RTL, de 2 048 por muestra (`model/sofifi/domain/coste
 | `cloud` | Difusores largos con modulación aleatoria: el ataque se disuelve. | 0: decay<br>1: damping<br>2: mezcla<br>3: modulación | 12 | 96 | 907 | 42 814 |
 | `dinamica` | Plate cuya cola cambia con la fuerza con que se toca. | 0: decay<br>1: damping<br>2: mezcla<br>3: profundidad<br>4: umbral<br>5: velocidad | 12 | 141 | 1 188 | 37 439 |
 | `ensemble` | Un coro de tres voces antes del plate: la cola suena como una sección de cuerdas. | 0: decay<br>1: damping<br>2: mezcla<br>3: ensemble | 12 | 99 | 953 | 38 540 |
-| `freeze` | Plate que congela la cola con el pulsador. | 0: decay<br>1: damping<br>2: mezcla | 12 | 103 | 940 | 37 439 |
+| `freeze` | Plate que congela la cola con el pulsador; la cola sigue moviéndose. | 0: decay<br>1: damping<br>2: mezcla | 12 | 112 | 979 | 37 439 |
 | `freeze_givens` | Freeze que se mueve sin perder energía: la cola congelada gira entre las ramas. | 0: decay<br>1: damping<br>2: mezcla<br>3: giro | 12 | 136 | 1 138 | 37 439 |
 | `gated` | Reverb que se corta de golpe tras cada ataque, como en los años 80. | 0: decay<br>1: damping<br>2: mezcla<br>3: duración | 12 | 133 | 1 098 | 37 439 |
 | `hall` | Red de 8 retardos con matriz de Householder: sala grande. | 0: decay<br>1: damping<br>2: mezcla | 12 | 137 | 863 | 34 522 |
@@ -158,7 +158,7 @@ Una cadena une dos programas en uno, en serie (→) o en paralelo (‖), sin cam
 | Órgano infinito | `octava` → `infinite` | 1 246 | 41 539 | 13 | 4 | cabe |
 | Bruma en flor | `bruma` → `bloom` | 1 181 | 65 073 | 19 | 1 | espera la SDRAM |
 | Cinta en la flor | `cinta` → `bloom` | 1 129 | 65 120 | 20 | 3 | espera la SDRAM |
-| Eco al revés congelado | `reverse` → `freeze` | 1 271 | 53 827 | 13 | 3 | espera la SDRAM |
+| Eco al revés congelado | `reverse` → `freeze` | 1 310 | 53 827 | 15 | 3 | espera la SDRAM |
 | Eco en la nube | `delay` → `plate` | 1 113 | 71 188 | 15 | 3 | espera la SDRAM |
 | Lluvia sobre la placa | `lluvia` → `plate` | 1 148 | 72 824 | 12 | 2 | espera la SDRAM |
 | Ping-pong infinito | `pingpong` → `infinite` | 1 223 | 78 313 | 13 | 3 | espera la SDRAM |

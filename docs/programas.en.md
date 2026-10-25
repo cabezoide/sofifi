@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/programas.md sha=bde06b5a569d estado=al_dia -->
+<!-- i18n: fuente=docs/programas.md sha=a41cb76789d0 estado=al_dia -->
 <!-- GENERADO por `sofifi catalogo` desde programas/*.sasm. No se edita a mano:
      model/tests/catalogo_test.py lo compara con su generador. -->
 
@@ -18,7 +18,7 @@ The cycles are the RTL upper limit, of 2,048 per sample (`model/sofifi/domain/co
 | `cloud` | Long diffusers with random modulation: the attack dissolves. | 0: decay<br>1: damping<br>2: mix<br>3: modulation | 12 | 96 | 907 | 42,814 |
 | `dinamica` | A plate whose tail changes with how hard you play. | 0: decay<br>1: damping<br>2: mix<br>3: depth<br>4: threshold<br>5: rate | 12 | 141 | 1,188 | 37,439 |
 | `ensemble` | A three-voice chorus before the plate: the tail sounds like a string section. | 0: decay<br>1: damping<br>2: mix<br>3: ensemble | 12 | 99 | 953 | 38,540 |
-| `freeze` | A plate that freezes the tail with the footswitch. | 0: decay<br>1: damping<br>2: mix | 12 | 103 | 940 | 37,439 |
+| `freeze` | A plate that freezes the tail with the footswitch; the tail keeps moving. | 0: decay<br>1: damping<br>2: mix | 12 | 112 | 979 | 37,439 |
 | `freeze_givens` | A freeze that moves without losing energy: the frozen tail turns between the branches. | 0: decay<br>1: damping<br>2: mix<br>3: rotation | 12 | 136 | 1,138 | 37,439 |
 | `gated` | A reverb that stops suddenly after each attack, as in the 1980s. | 0: decay<br>1: damping<br>2: mix<br>3: length | 12 | 133 | 1,098 | 37,439 |
 | `hall` | A network of 8 delays with a Householder matrix: a large hall. | 0: decay<br>1: damping<br>2: mix | 12 | 137 | 863 | 34,522 |
@@ -159,7 +159,7 @@ A chain joins two programs into one, in series (→) or in parallel (‖), with 
 | Órgano infinito | `octava` → `infinite` | 1,246 | 41,539 | 13 | 4 | fits |
 | Bruma en flor | `bruma` → `bloom` | 1,181 | 65,073 | 19 | 1 | waits for the SDRAM |
 | Cinta en la flor | `cinta` → `bloom` | 1,129 | 65,120 | 20 | 3 | waits for the SDRAM |
-| Eco al revés congelado | `reverse` → `freeze` | 1,271 | 53,827 | 13 | 3 | waits for the SDRAM |
+| Eco al revés congelado | `reverse` → `freeze` | 1,310 | 53,827 | 15 | 3 | waits for the SDRAM |
 | Eco en la nube | `delay` → `plate` | 1,113 | 71,188 | 15 | 3 | waits for the SDRAM |
 | Lluvia sobre la placa | `lluvia` → `plate` | 1,148 | 72,824 | 12 | 2 | waits for the SDRAM |
 | Ping-pong infinito | `pingpong` → `infinite` | 1,223 | 78,313 | 13 | 3 | waits for the SDRAM |

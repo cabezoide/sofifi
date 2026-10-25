@@ -488,3 +488,17 @@ Al documentar los scripts (PR #58) aparecieron seis comportamientos inesperados.
 - **Causa:** en el RTL, la región absoluta (RDAA, WRAA) va detrás de la memoria circular: dirección física = palabras + índice. `enjambre` usa 10 052 + 32 768 = 42 820 palabras. Cabe en el núcleo (43 008), pero no en `hil_nucleo`, que tiene 38 912 para dejar sitio a la captura. `semilla` usa 10 166 + 32 768 = 42 934. `sofifi rom` y `scripts/hil_lote.py` solo contaban las palabras circulares.
 - **Resolución:** `Programa.palabras_fisicas` suma la región absoluta cuando el programa la usa. `sofifi rom`, `hil_lote.py` y el catálogo la usan. `enjambre` y `semilla` ya no entran en el lote HIL; siguen probados en simulación con 42 bloques.
 - **Lección:** el silicio no falló: falló la regla de «cabe». Un límite se calcula en un solo sitio y todos lo usan.
+
+## F-38 · La compuerta `docs` se ponía roja si la placa no estaba conectada
+
+- **Síntoma:** `make ci` daba `docs` en rojo con 21 líneas del tipo `rutas: docs/scripts.md cita \`/dev/ttyUSB1\`, que no existe`. El pre-push no dejaba subir nada. Con la placa enchufada, verde.
+- **Causa:** `comprobar_rutas` de `scripts/check_docs.py` trata toda ruta citada entre comillas invertidas como una ruta del repositorio. `/dev/ttyUSB0` y `/dev/ttyUSB1` son ficheros de dispositivo: existen o no según haya un cable USB puesto.
+- **Resolución:** `parece_ruta` descarta lo que empieza por `/dev/`. La comprobación sigue valiendo para las rutas del repositorio, que son las que puede romper un cambio.
+- **Lección:** una compuerta no puede depender del hardware que esté enchufado. Un rojo falso se arregla en la compuerta, no se tolera: si se tolera, se desactiva (SPEC_RAIZ, P1).
+
+## F-39 · Un coeficiente dentro de un bucle realimentado no se comparte
+
+- **Síntoma:** al compensar la pérdida de la interpolación en el tanque con CLIP, que usan cinco programas, el freeze quedaba plano (de 0,382 a 0,087 dB/s) pero `dinamica` **crecía 1,18 dB/s** y llegaba a −0,74 dBFS, y `sostenido` crecía 1,07 dB/s.
+- **Causa:** la compensación es un cero que levanta los agudos dentro del bucle. Su efecto depende de la ganancia del bucle de cada programa (decay, damping, taps). El coeficiente que cancela la pérdida en uno sobra en otro, y entonces el bucle gana energía.
+- **Resolución:** la compensación vive en su propio bloque (`programas/comun/dattorro_tanque_compensado.sasm`) y el coeficiente lo define cada programa, medido. `freeze` usa 0,05. Los otros cuatro siguen con el tanque con CLIP y no cambian ni en un bit.
+- **Lección:** un coeficiente dentro de un bucle realimentado se mide por programa, nunca se comparte. Y conviene quedarse corto: pasarse hace crecer la cola, y eso es volumen, que es superficie de daño (SECURITY.md).
