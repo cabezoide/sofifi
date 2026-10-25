@@ -51,3 +51,9 @@ terceros:
     licencia: CERN-OHL-S-2.0
     uso: estudiado
     motivo: Delays y difusores en RAM externa en HDL abierto. Solo lectura (licencia recíproca).
+  - id: T-009
+    nombre: "U. Meyer-Baese, Digital Signal Processing with Field Programmable Gate Arrays (3.ª ed., Springer 2007)"
+    url: https://link.springer.com/book/10.1007/978-3-540-72613-5
+    licencia: LicenseRef-Publicacion
+    uso: estudiado
+    motivo: "§5.3, filtros CIC de Hogenauer: estructura del interpolador de rtl/salida/cic_interp.v y de model/sofifi/domain/salida_1bit.py, reescrita desde el texto (ADR 0015). El código del libro no se copia."

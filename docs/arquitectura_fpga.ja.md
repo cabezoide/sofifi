@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/arquitectura_fpga.md sha=f51f5ec843d2 estado=al_dia -->
+<!-- i18n: fuente=docs/arquitectura_fpga.md sha=fd786e77fe20 estado=al_dia -->
 # FPGA アーキテクチャ
 
 この文書は、FPGA の中に何があるか、各部がどうつながるか、設計がフェーズごとにどう変わったかを示します。各フェーズの終了時と、FPGA のブロックを変える各 PR で更新します。各コンポーネントの簡単な説明は `SBOM.ja.md` にあります。設計を形づくった障害は `fails.ja.md` にあります。
@@ -27,8 +27,11 @@ flowchart LR
         acc --> mem
     end
 
+    sd -.->|"フェーズ 13 · lee_pista"| lpista["トラックの読み出し<br/>1,024 サンプルのキュー<br/>（フェーズ 13）"]
+    lpista --> entradas
     entradas["入力<br/>adc, pots, sw"] --> regs
     regs --> dac["dac_l, dac_r"]
+    dac -.->|"Fase 13 · ADR 0015"| s1b["1 ビット出力<br/>CIC + Σ∆<br/>（フェーズ 13）"]
 
     subgraph pruebas["テスト用トップ (HIL) のみ"]
         direction LR
@@ -66,6 +69,8 @@ flowchart LR
 | Hermite ROM | `rtl/nucleo/tabla_hermite.v`（生成） | ~820 LUT | 組み合わせ回路 + レジスタ |
 | なめらかな曲線 | `rtl/nucleo/curva_fin.v` | 減算 1 回と飽和 1 回 | レジスタ出力 |
 | UART TX / RX | `rtl/comun/uart_tx.v`、`uart_rx.v` | それぞれ ~50 LUT | 115,200 ボー |
+| 1 ビットのオーディオ出力 | `rtl/salida/salida_1bit.v`、`cic_interp.v`、`sigma_delta.v` | 未計測（フェーズ 13） | 6 サイクル。変調器は 100 MHz のサイクルごとに 1 ビットを出す（ADR 0015） |
+| トラックの読み出し | `rtl/sd/lector_pista.v`、`lee_pista.v` | キューに BSRAM 1 ブロック。未計測（フェーズ 13） | `tick` ごとに 1 サンプル、先読みする。キューは 21 ms 分 |
 | プログラムローダー | `rtl/comun/carga_programa.v` | ~30 LUT | 命令数 + 1 サイクル |
 | コアのトレース（HIL のみ） | `rtl/top/hil_nucleo.v`、コマンド `T` | ~150 フリップフロップ | (pc, ACC) をキャプチャに記録 |
 | HIL のプログラム | `hil_nucleo` のパラメーター `PROGRAMA`、トップ `hil_looper` と `hil_programa` | ロジック上の ROM 1 つ | 既定は plate。looper で `RDAA` と `WRAA` を試験。`hil_programa` は `sofifi rom` が書く ROM を使う（`make hil HIL=名前`） |
@@ -205,6 +210,16 @@ ACC を読む命令は、それを書く前の命令の終わりから 7 サイ�
 - **`cargador`：** 2 回読む。1 回目はコアに触れずに、ヘッダー、範囲、各命令コード、ジャンプ、2 つの CRC-32 を確認する。2 回目はコアを止め、マイクロコードを書き、CRC をもう一度確認する。2 回目が失敗すると、コアは止まったままになる：途中までのプログラムより無音のほうがよい。
 - **`prueba_sd`：** コアを含まないテスト用トップ。PMOD TF には、CS と SCK のピンが異なる 2 つのリビジョンがある。トップは v2 を試し、次に v1 を試す。
 - **状況：** モデル、RTL、トップは、cocotb のカードモデル（`sim/sd/tarjeta_sd.py`）を使ったシミュレーションで同じデータを出す。**実際のカードでの試験が残っている。**
+
+### フェーズ 13 · コーデックなしでペダルが鳴る（進行中）
+
+クロックは fs の 2,048 倍なので、1 本のピンで音声を送れます（ADR 0015）。音源は microSD のトラックです。フェーズ 11 まではアナログ入力がありません。
+
+- **出力の経路**（`rtl/salida/`）：±13/16 でクリップ → Hogenauer の CIC（S = 2、R = 32）→ 64 サイクルの保持 → 2 次のシグマデルタ変調器 → 1 本のピン。モデルが基準です（`model/sofifi/domain/salida_1bit.py`）。RTL は同じビット列を 6 サイクル遅れで出します。
+- **`lector_pista`：** トラックのヘッダー（マジック、バージョン、CRC-32、上限）を検査し、`tick` ごとに 1 サンプルを渡します。キューは 1,024 サンプルで、BSRAM 1 ブロックです。トラックは終わると先頭から繰り返します。
+- **`audio_sd`：** トップです。microSD → コア → 1 ビット出力。状態は UART で報告します。トラックの最初のサンプルがそろうまでコアは動き出さないので、RTL をモデルと端から端まで比べられます。
+- **資源：** LUT4 が 12,593（55 %）、ALU が 1,566、フリップフロップが 7,646、BSRAM が 56 のうち 49、DSP が 2。nextpnr は 107 MHz で収束します。実際のマージンはボードで測ります（ADR 0011）。
+- **状態：** シミュレーションではモデルとビット単位で一致します。**ボードでのテストが残っています。** `docs/audio_1bit.md` の RC フィルターが必要です。
 
 ### 次に予定している変更
 

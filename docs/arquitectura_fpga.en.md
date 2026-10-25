@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/arquitectura_fpga.md sha=f51f5ec843d2 estado=al_dia -->
+<!-- i18n: fuente=docs/arquitectura_fpga.md sha=fd786e77fe20 estado=al_dia -->
 # FPGA architecture
 
 This document tells what is inside the FPGA, how the parts connect and how the design changed in each phase. We update it when we close each phase and in each PR that changes FPGA blocks. `SBOM.en.md` gives a simple explanation of each component. `fails.en.md` gives the failures that made the design.
@@ -27,8 +27,11 @@ flowchart LR
         acc --> mem
     end
 
+    sd -.->|"Phase 13 · lee_pista"| lpista["Track reader<br/>queue of 1,024 samples<br/>(Phase 13)"]
+    lpista --> entradas
     entradas["Inputs<br/>adc, pots, sw"] --> regs
     regs --> dac["dac_l, dac_r"]
+    dac -.->|"Fase 13 · ADR 0015"| s1b["1-bit output<br/>CIC + Σ∆<br/>(Phase 13)"]
 
     subgraph pruebas["Only in the test top (HIL)"]
         direction LR
@@ -66,6 +69,8 @@ The dashed line in the diagram is the load from the microSD. Today it exists onl
 | Hermite ROM | `rtl/nucleo/tabla_hermite.v` (generated) | ~820 LUT | combinational + register |
 | Smooth curve | `rtl/nucleo/curva_fin.v` | one subtraction and one saturation | registered |
 | UART TX / RX | `rtl/comun/uart_tx.v`, `uart_rx.v` | ~50 LUT each | 115,200 baud |
+| 1-bit audio output | `rtl/salida/salida_1bit.v`, `cic_interp.v`, `sigma_delta.v` | not measured yet (Phase 13) | 6 cycles; the modulator gives one bit per 100 MHz cycle (ADR 0015) |
+| Track reader | `rtl/sd/lector_pista.v`, `lee_pista.v` | 1 BSRAM for the queue; not measured yet (Phase 13) | one sample per `tick`, read ahead; the queue holds 21 ms |
 | Program loader | `rtl/comun/carga_programa.v` | ~30 LUT | instructions + 1 cycles |
 | Core trace (HIL only) | `rtl/top/hil_nucleo.v`, command `T` | ~150 flip-flops | records (pc, ACC) in the capture |
 | HIL program | `PROGRAMA` parameter of `hil_nucleo`; tops `hil_looper` and `hil_programa` | one ROM in logic | plate by default; the looper tests `RDAA` and `WRAA`; `hil_programa` has the ROM that `sofifi rom` writes (`make hil HIL=NAME`) |
@@ -205,6 +210,16 @@ The card has no file system: it keeps a bank of raw blocks that `sofifi banco` w
 - **`cargador`:** makes two passes. The first pass checks the header, the limits, each operation code, the jumps and the two CRC-32 values, without a change to the core. The second pass stops the core, writes the microcode and checks the CRC again. If the second pass fails, the core stays stopped: silence is better than half a program.
 - **`prueba_sd`:** the test top, without the core. The PMOD TF has two revisions with CS and SCK on different pins; the top tests v2 and then v1.
 - **Status:** the model, the RTL and the top give the same data in simulation, with a card model in cocotb (`sim/sd/tarjeta_sd.py`). **The test with the real card is not done yet.**
+
+### Phase 13 · The pedal makes sound without a codec (in progress)
+
+The clock is 2,048 times fs, so one pin carries audio (ADR 0015). The source is a track on the microSD, because there is no analog input until Phase 11.
+
+- **Output chain** (`rtl/salida/`): clip to ±13/16 → Hogenauer CIC (S = 2, R = 32) → hold of 64 cycles → second-order sigma-delta modulator → one pin. The model rules (`model/sofifi/domain/salida_1bit.py`) and the RTL gives the same bit stream, 6 cycles later.
+- **`lector_pista`:** it validates the track header (magic, version, CRC-32 and limits) and delivers one sample per `tick`, with a queue of 1,024 samples in one BSRAM block. The track repeats when it ends.
+- **`audio_sd`:** the top. microSD → core → 1-bit output, with the status on the UART. The core does not start until the track has its first sample, so the RTL can be compared with the model end to end.
+- **Resources:** 12,593 LUT4 (55 %), 1,566 ALU, 7,646 flip-flops, 49 of 56 BSRAM and 2 DSP. nextpnr closes at 107 MHz; the real margin is measured on the board (ADR 0011).
+- **Status:** equal to the model in simulation, bit by bit. **The test on the board is missing**, with the RC filter of `docs/audio_1bit.md`.
 
 ### Next planned change
 

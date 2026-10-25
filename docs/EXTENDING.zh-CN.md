@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/EXTENDING.md sha=24e37a7d6593 estado=al_dia -->
+<!-- i18n: fuente=docs/EXTENDING.md sha=09357ff2b9e3 estado=al_dia -->
 # 如何扩展
 
 本文按部件类型逐步说明。如果添加某样东西需要改动本清单之外的位置，说明清单不完整。在同一个 PR 中修正它。
@@ -106,6 +106,20 @@
 4. 用 `make prog TOP=<top>` 综合并加载。
 5. 如果顶层通过 UART 发送数据，限制其速率：否则 BL616 的桥接会挂起（`rtl/AGENTS.md`，西班牙语）。
 6. 在开发板上测量时钟余量，而不是在 nextpnr 中（ADR 0011（西班牙语））。
+
+## 一条 CLI 命令
+
+1. 把格式或计算写在 `model/sofifi/domain/`，不做 I/O。
+2. 把适配器写在 `model/sofifi/adapters/`。错误以 `argparse.ArgumentTypeError`
+   抛出。
+3. 在 `model/sofifi/cli_argumentos.py` 里加子解析器，并在它的 `description`
+   中给出示例。
+4. 在 `model/sofifi/cli.py` 里加分支，并在它的文档字符串里加一行。`model/sofifi/cli.py`
+   是组合根：只有它挑选适配器。
+5. 在 `model/tests/adaptadores_cli_test.py` 里测试这条命令，始终写入
+   `tmp_path`。`model/tests/arquitectura_test.py` 看守各层。
+6. 把命令写进它的任务所在的文档（例如 `docs/microsd.md` 或
+   `docs/audio_1bit.md`），而不是 `docs/scripts.md`，后者是给 `scripts/` 的。
 
 ## 一个检查门
 

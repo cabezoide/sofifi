@@ -1,4 +1,4 @@
-<!-- i18n: fuente=schematics/README.md sha=090a5aa34ac3 estado=al_dia -->
+<!-- i18n: fuente=schematics/README.md sha=c26533d0d12a estado=al_dia -->
 <!-- GENERADO por scripts/esquematicos.py. No se edita a mano. -->
 
 # RTL schematics
@@ -52,9 +52,16 @@ The PDF title blocks and the descriptions in this table come from the Verilog co
 | `primitivas/mult_27x36.pdf` | `rtl/primitivas/mult_27x36.v` | `ba029281dcb5` | Multiplicador con signo de 27 × 36 bit, con latencia de 3 ciclos: registra las entradas, el producto (PREG) y la salida. |
 | `primitivas/pll_100.pdf` | `rtl/primitivas/pll_100.v` | `35ddf86070ba` | Reloj de 100 MHz desde el cristal de 50 MHz de la Tang Primer 25K. |
 | `primitivas/registro_copia.pdf` | `rtl/primitivas/registro_copia.v` | `25ea9c5a2455` | Registro de ANCHO bit que Yosys no fusiona con otro igual. |
+| `salida/cic_interp.pdf` | `rtl/salida/cic_interp.v` | `54a32809d6f8` | Interpolador CIC de Hogenauer, S = 2 y R = 32 (ADR 0015). |
+| `salida/salida_1bit.pdf` | `rtl/salida/salida_1bit.v` | `531d8e9394f2` | Salida de audio de 1 bit (ADR 0015). |
+| `salida/sigma_delta.pdf` | `rtl/salida/sigma_delta.v` | `30e34712ca5c` | Modulador sigma-delta de 2.º orden con realimentación distribuida (ADR 0015). |
 | `sd/carga_sd.pdf` | `rtl/sd/carga_sd.v` | `1f37570f1869` | Carga de programas desde la microSD (Fase 08): sd_spi.v + cargador.v. |
 | `sd/cargador.pdf` | `rtl/sd/cargador.v` | `ecbc8170989f` | Cargador de programas desde el banco de la microSD (Fase 08). |
+| `sd/lector_pista.pdf` | `rtl/sd/lector_pista.v` | `ee1e9b44e86d` | Lector de la pista de audio de la microSD (Fase 13, ADR 0015). |
+| `sd/lee_pista.pdf` | `rtl/sd/lee_pista.v` | `ef794be20189` | Lectura de la pista de audio de la microSD (Fase 13): sd_spi.v + lector_pista.v. |
 | `sd/sd_spi.pdf` | `rtl/sd/sd_spi.v` | `8b800e71e7cd` | Controlador de tarjeta SD en modo SPI (Fase 08, ADR 0004): arranque y lectura de bloques de 512 bytes. |
+| `top/audio_programa.pdf` | `rtl/top/audio_programa.v` | `84d4ee226522` | audio_sd con la ROM que escribe `sofifi rom` en build/programa_hil.v: cualquier programa o cadena suena en la placa. |
+| `top/audio_sd.pdf` | `rtl/top/audio_sd.v` | `bcb9afd8f290` | El pedal suena en la placa sin el códec (Fase 13, ADR 0015). |
 | `top/hil_looper.pdf` | `rtl/top/hil_looper.v` | `f9fa8bc14659` | hil_nucleo con el looper (Fase 07): prueba RDAA y WRAA en la placa. |
 | `top/hil_nucleo.pdf` | `rtl/top/hil_nucleo.v` | `c17fa929291d` | Verificación del núcleo en la placa (Fase 05, hardware-in-the-loop). |
 | `top/hil_programa.pdf` | `rtl/top/hil_programa.v` | `4140d4067240` | hil_nucleo con la ROM que escribe `sofifi rom` en build/programa_hil.v: un programa o una cadena cualquiera en la placa. |

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Puntos de entrada del proyecto. La compuerta es scripts/ci_local.sh (ADR 0001).
-.PHONY: help install hooks ci ci-dura test sim docs synth optimizacion prog hil uart release-check esquematicos
+.PHONY: help install hooks ci ci-dura test sim docs synth optimizacion prog hil audio uart release-check esquematicos
 
 VENV := .venv
 PY := $(VENV)/bin/python
@@ -17,6 +17,7 @@ help:
 	@echo "make optimizacion   segunda vuelta: recursos, timing y pistas de cada top"
 	@echo "make prog           carga build/TOP.fs en la SRAM de la placa"
 	@echo "make hil HIL=NOMBRE programa o cadena en la placa y comparación con el modelo"
+	@echo "make audio AUDIO=NOMBRE  ese programa suena en la placa por la salida de 1 bit"
 	@echo "make uart           lee la UART de la placa y exige \"SOFIFI\""
 	@echo "make release-check  compuerta de release: síntesis de los tops"
 	@echo "make esquematicos   regenera schematics/ (PDF de cada módulo RTL, ADR 0012)"
@@ -55,6 +56,17 @@ optimizacion:
 
 prog: synth
 	scripts/fpga.sh prog build/$(TOP).fs
+
+# Un programa o una cadena suena en la placa por la salida de 1 bit (Fase 13,
+# ADR 0015): genera la ROM, sintetiza y carga. El filtro RC está en
+# docs/audio_1bit.md, y la pista de audio se escribe con `sofifi pista`.
+AUDIO ?= plate
+audio:
+	@mkdir -p build
+	$(VENV)/bin/sofifi rom "$(AUDIO)" build/programa_hil.v
+	scripts/fpga.sh synth rtl/top/audio_programa.v build/programa_hil.v \
+	  $(shell awk '$$1 == "audio_sd" { $$1 = ""; sub(/rtl\/top\/programa_plate.v/, ""); print }' rtl/top/tops.txt)
+	scripts/fpga.sh prog build/audio_programa.fs
 
 # Un programa o una cadena en la placa (hil_programa): genera la ROM, sintetiza,
 # carga en SRAM y compara 4 096 muestras con el modelo. Las fuentes son las de

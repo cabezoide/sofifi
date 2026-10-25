@@ -12,6 +12,9 @@ sofifi cadena  NOMBRE  ENTRADA.wav  SALIDA.wav  [--pot N=V] [--freeze A:B] [--co
 sofifi rom     NOMBRE  SALIDA.v   (programa o cadena como ROM programa_hil, para `make hil`)
 sofifi banco   SALIDA.img [NOMBRE...]   (banco de la microSD; sin nombres, todo lo que cabe)
 sofifi banco   --leer IMAGEN.img        (comprueba un banco y lista sus programas)
+sofifi pista   SALIDA.img ENTRADA.wav   (pista de audio de la microSD, Fase 13)
+sofifi pista   SALIDA.img --sintetica     (la guitarra sintética de las demos)
+sofifi pista   --leer IMAGEN.img        (comprueba una pista y dice cuánto dura)
 """
 
 from __future__ import annotations
@@ -29,6 +32,8 @@ from sofifi.adapters.cadenas import (
     textos_de_programas,
 )
 from sofifi.adapters.microsd import escribir_imagen, listar_imagen
+from sofifi.adapters.pista import escribir_imagen as escribir_pista
+from sofifi.adapters.pista import listar_imagen as listar_pista
 from sofifi.adapters.presets import leer_banco
 from sofifi.adapters.wav import FuenteWav, SumideroWav
 from sofifi.cli_argumentos import analizador
@@ -113,6 +118,15 @@ def main(argv: list[str] | None = None) -> int:
                 lineas = listar_imagen(args.imagen)
             else:
                 lineas = escribir_imagen(args.imagen, args.nombres, PROGRAMAS, RUTA_CADENAS)
+            print("\n".join(lineas))
+            return 0
+        if args.orden == "pista":
+            if args.leer:
+                lineas = listar_pista(args.imagen)
+            else:
+                if args.entrada is None and not args.sintetica:
+                    raise argparse.ArgumentTypeError("falta el WAV de entrada (o --sintetica)")
+                lineas = escribir_pista(args.imagen, args.entrada, args.segundos, args.sintetica)
             print("\n".join(lineas))
             return 0
         if args.orden == "rom":

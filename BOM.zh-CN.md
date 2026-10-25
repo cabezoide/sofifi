@@ -1,4 +1,4 @@
-<!-- i18n: fuente=BOM.md sha=bfc6e2d73f57 estado=al_dia -->
+<!-- i18n: fuente=BOM.md sha=6bfce6e6a58a estado=al_dia -->
 # BOM · SOFIFI 硬件
 
 这是效果器的采购清单。链接检查日期为 **2026 年 10 月 7 日**：[V] = 页面已加载，商品在售；[?] = 页面无法加载。价格为该日期的价格，不含运费，价格会变动。
@@ -24,6 +24,7 @@
 | 9 | **SPST 瞬时软触脚踏开关** ×2 | Bypass 和 freeze。在此之前，可以使用 Dock 上的按键。 | 09 | 每个 3 USD | [V] [Tayda](https://www.taydaelectronics.com/spst-momentary-soft-touch-push-button-stomp-foots-pedal-switch-on-off.html) |
 | 10 | **128×64 SSD1306 OLED** | 用四种语言显示预设和每个旋钮的功能。 | 10 | 20 USD | [V] [Adafruit #938](https://www.adafruit.com/product/938)（10 月 7 日缺货） |
 | 11 | **输入缓冲器**（JFET 或运算放大器） | 将吉他（高阻抗）适配到 ADC 输入。任何带缓冲器的效果器都可以。 | 11 | 0.50 USD（仅 PCB） | [V] [PedalPCB Simple JFET Buffer](https://www.pedalpcb.com/product/jfetbuffer/) · [?] [PedalPCB MicroBuffer](https://www.pedalpcb.com/product/pcb678/) |
+| 13 | **1 位输出的滤波器**：2 个 1 kΩ 电阻、2 个 6.8 nF 电容、1 个 1 µF 电容、1 个 10 kΩ 电阻，以及 2.2 kΩ 和 220 Ω 的分压 | 把 1 位引脚变成线路电平音频，于是没有声卡芯片也能听到踏板（第 13 阶段，ADR 0015）。数值和电路图见 `docs/audio_1bit.md`。 | 13 | 不到 1 USD | 实验室材料；任何电阻电容套件都可以 |
 
 ## 以后需要的物品
 

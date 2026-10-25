@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/arquitectura_fpga.md sha=f51f5ec843d2 estado=al_dia -->
+<!-- i18n: fuente=docs/arquitectura_fpga.md sha=fd786e77fe20 estado=al_dia -->
 # FPGA 架构
 
 本文说明 FPGA 内部有什么、各部分如何连接，以及设计在各阶段如何变化。每个阶段结束时更新本文；每个改动 FPGA 模块的 PR 也要更新本文。各组件的简明说明见 `SBOM.zh-CN.md`；塑造了设计的故障见 `fails.zh-CN.md`。
@@ -27,8 +27,11 @@ flowchart LR
         acc --> mem
     end
 
+    sd -.->|"第 13 阶段 · lee_pista"| lpista["音轨读取器<br/>1,024 个样本的队列<br/>（第 13 阶段）"]
+    lpista --> entradas
     entradas["输入<br/>adc, pots, sw"] --> regs
     regs --> dac["dac_l, dac_r"]
+    dac -.->|"Fase 13 · ADR 0015"| s1b["1 位输出<br/>CIC + Σ∆<br/>（第 13 阶段）"]
 
     subgraph pruebas["仅在测试顶层 (HIL) 中"]
         direction LR
@@ -66,6 +69,8 @@ flowchart LR
 | Hermite ROM | `rtl/nucleo/tabla_hermite.v`（生成） | ~820 LUT | 组合逻辑 + 寄存器 |
 | 平滑曲线 | `rtl/nucleo/curva_fin.v` | 一次减法和一次饱和 | 寄存输出 |
 | UART TX / RX | `rtl/comun/uart_tx.v`、`uart_rx.v` | 各 ~50 LUT | 115,200 波特 |
+| 1 位音频输出 | `rtl/salida/salida_1bit.v`、`cic_interp.v`、`sigma_delta.v` | 尚未测量（第 13 阶段） | 6 个周期；调制器每个 100 MHz 周期输出一位（ADR 0015） |
+| 音轨读取器 | `rtl/sd/lector_pista.v`、`lee_pista.v` | 队列占 1 个 BSRAM；尚未测量（第 13 阶段） | 每个 `tick` 一个样本，提前读取；队列可缓冲 21 ms |
 | 程序加载器 | `rtl/comun/carga_programa.v` | ~30 LUT | 指令数 + 1 个周期 |
 | 核心跟踪（仅 HIL） | `rtl/top/hil_nucleo.v`，命令 `T` | ~150 个触发器 | 把 (pc, ACC) 记录到捕获中 |
 | HIL 的程序 | `hil_nucleo` 的参数 `PROGRAMA`；顶层 `hil_looper` 和 `hil_programa` | 一个逻辑实现的 ROM | 默认是 plate；looper 用来测试 `RDAA` 和 `WRAA`；`hil_programa` 使用 `sofifi rom` 写出的 ROM（`make hil HIL=名称`） |
@@ -205,6 +210,16 @@ UART TX 和一个计数器。没有 PLL，运行在 50 MHz。第一次“第二�
 - **`cargador`：** 分两遍。第一遍检查头部、范围、每个操作码、跳转和两个 CRC-32，不改动核心。第二遍停止核心、写入微码并再次检查 CRC。如果第二遍失败，核心保持停止：静音胜过半个程序。
 - **`prueba_sd`：** 测试顶层，不含核心。PMOD TF 有两个版本，CS 和 SCK 在不同的引脚上；顶层先测试 v2，再测试 v1。
 - **状态：** 模型、RTL 和顶层在仿真中给出相同的数据，使用 cocotb 中的存储卡模型（`sim/sd/tarjeta_sd.py`）。**还缺少用真实存储卡的测试。**
+
+### 第 13 阶段 · 踏板在没有声卡芯片时也能出声（进行中）
+
+时钟是 fs 的 2,048 倍，所以一个引脚就能输出音频（ADR 0015）。音源是 microSD 上的一段音轨，因为在第 11 阶段之前没有模拟输入。
+
+- **输出链**（`rtl/salida/`）：限幅到 ±13/16 → Hogenauer CIC（S = 2，R = 32）→ 保持 64 个周期 → 二阶 sigma-delta 调制器 → 一个引脚。模型为准（`model/sofifi/domain/salida_1bit.py`），RTL 给出相同的位流，延后 6 个周期。
+- **`lector_pista`：** 校验音轨头部（魔数、版本、CRC-32 和各项上限），每个 `tick` 送出一个样本，队列为 1,024 个样本，占一个 BSRAM 块。音轨播完会从头重复。
+- **`audio_sd`：** 顶层。microSD → 核心 → 1 位输出，状态通过 UART 报出。核心要等音轨的第一个样本就绪才启动，因此 RTL 可以端到端地与模型比较。
+- **资源：** 12,593 个 LUT4（55 %）、1,566 个 ALU、7,646 个触发器、49 个 BSRAM（共 56 个）和 2 个 DSP。nextpnr 在 107 MHz 收敛；真实余量在开发板上测量（ADR 0011）。
+- **状态：** 在仿真中与模型逐位相同。**还缺开发板上的测试**，需要 `docs/audio_1bit.md` 里的 RC 滤波器。
 
 ### 下一个计划中的改动
 

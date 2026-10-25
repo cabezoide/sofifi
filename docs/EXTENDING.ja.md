@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/EXTENDING.md sha=24e37a7d6593 estado=al_dia -->
+<!-- i18n: fuente=docs/EXTENDING.md sha=09357ff2b9e3 estado=al_dia -->
 # 拡張の方法
 
 部品の種類ごとの手順です。何かを追加するときにこのリストにない箇所を変更する必要があれば、リストが不完全です。同じ PR で修正してください。
@@ -109,6 +109,20 @@
 5. トップが UART で送信する場合は、送信量を制限してください：制限しないと BL616 のブリッジが
    止まります（`rtl/AGENTS.md`（スペイン語））。
 6. クロックのマージンは nextpnr ではなく、ボード上で測ってください（ADR 0011（スペイン語））。
+
+## CLI のコマンド
+
+1. 形式または計算を `model/sofifi/domain/` に書きます。I/O は書きません。
+2. アダプターを `model/sofifi/adapters/` に書きます。エラーは
+   `argparse.ArgumentTypeError` で返します。
+3. `model/sofifi/cli_argumentos.py` にサブパーサーを追加し、その
+   `description` に例を書きます。
+4. `model/sofifi/cli.py` に分岐を追加し、その docstring に 1 行を追加します。
+   `model/sofifi/cli.py` は合成のルートです。アダプターを選ぶのはここだけです。
+5. コマンドを `model/tests/adaptadores_cli_test.py` でテストします。書き込みは
+   必ず `tmp_path` です。`model/tests/arquitectura_test.py` が層を見張ります。
+6. コマンドは、その作業がある文書に書きます（例えば `docs/microsd.md` または
+   `docs/audio_1bit.md`）。`docs/scripts.md` は `scripts/` 用なので書きません。
 
 ## ゲート
 

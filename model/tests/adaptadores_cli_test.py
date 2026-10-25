@@ -242,3 +242,43 @@ def test_rom_cuenta_la_region_absoluta(tmp_path: Path) -> None:
     # caben en los 38 912 de hil_nucleo (F-37); mosaico sí.
     assert main(["rom", "enjambre", str(tmp_path / "e.v")]) == 1
     assert main(["rom", "mosaico", str(tmp_path / "m.v")]) == 0
+
+
+def test_cli_pista(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    """sofifi pista escribe desde un WAV, desde la guitarra sintética, y comprueba."""
+    from sofifi.domain.pista import MIN_MUESTRAS, leer
+
+    entrada = tmp_path / "guitarra.wav"
+    muestras = [(-1) ** k * (k * 7 % 20000) for k in range(2 * MIN_MUESTRAS + 88)]
+    _wav16(entrada, muestras)
+    imagen = tmp_path / "pista.img"
+    assert main(["pista", str(imagen), str(entrada)]) == 0
+    assert leer(imagen.read_bytes()) == muestras
+    assert "muestras" in capsys.readouterr().out
+
+    assert main(["pista", "--leer", str(imagen)]) == 0
+    assert f"{len(muestras)} muestras" in capsys.readouterr().out
+
+    # Dos canales se promedian, porque la salida de 1 bit es mono (ADR 0015).
+    estereo = tmp_path / "estereo.wav"
+    _wav16(estereo, [v for m in muestras for v in (m, -m)], canales=2)
+    assert main(["pista", str(imagen), str(estereo)]) == 0
+    assert leer(imagen.read_bytes()) == [0] * len(muestras)
+
+    # Recorte por segundos y guitarra sintética.
+    assert main(["pista", str(imagen), str(entrada), "--segundos", "0.01"]) == 0
+    assert len(leer(imagen.read_bytes())) == round(0.01 * FS_WAV)
+    assert main(["pista", str(imagen), "--sintetica", "--segundos", "0.1"]) == 0
+    assert len(leer(imagen.read_bytes())) == int(0.1 * FS_WAV)
+    capsys.readouterr()
+
+    # Errores: sin entrada, pista demasiado corta y cabecera inválida.
+    assert main(["pista", str(imagen)]) == 1
+    assert "falta el WAV" in capsys.readouterr().err
+    corta = tmp_path / "corta.wav"
+    _wav16(corta, muestras[:10])
+    assert main(["pista", str(imagen), str(corta)]) == 1
+    assert "muestras" in capsys.readouterr().err
+    imagen.write_bytes(b"\x00" * 1024)
+    assert main(["pista", "--leer", str(imagen)]) == 1
+    assert "magia" in capsys.readouterr().err

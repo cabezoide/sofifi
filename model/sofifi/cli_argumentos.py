@@ -124,4 +124,25 @@ def analizador() -> argparse.ArgumentParser:
     ba.add_argument("imagen", type=Path, help="imagen .img que se escribe o se lee")
     ba.add_argument("nombres", nargs="*", help="programas o cadenas; sin nombres, todo lo que cabe")
     ba.add_argument("--leer", action="store_true", help="comprueba la imagen y lista su contenido")
+    pi = sub.add_parser(
+        "pista",
+        help="pista de audio para la microSD (Fase 13)",
+        description="Escribe o comprueba la pista de audio de la microSD (docs/audio_1bit.md).\n"
+        "La salida de 1 bit es mono: dos canales se promedian.\n"
+        "Ejemplos:\n"
+        "  sofifi pista build/pista.img guitarra.wav              toda la grabación\n"
+        "  sofifi pista build/pista.img guitarra.wav --segundos 20  solo 20 s\n"
+        "  sofifi pista build/pista.img --sintetica               la guitarra de las demos\n"
+        "  sofifi pista --leer build/pista.img                    comprueba la cabecera",
+        formatter_class=crudo,
+    )
+    pi.add_argument("imagen", type=Path, help="imagen .img que se escribe o se lee")
+    pi.add_argument("entrada", type=Path, nargs="?", help="WAV de entrada")
+    pi.add_argument("--leer", action="store_true", help="comprueba la imagen y dice cuánto dura")
+    pi.add_argument("--segundos", type=float, help="recorta la pista a estos segundos")
+    pi.add_argument(
+        "--sintetica",
+        action="store_true",
+        help="usa la guitarra sintética de las demos en lugar de un WAV",
+    )
     return p

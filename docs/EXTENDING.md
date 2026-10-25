@@ -113,6 +113,20 @@ Un top es un diseño completo para la placa: los pines, el PLL y los módulos.
    del BL616 (`rtl/AGENTS.md`).
 6. Medir el margen de reloj en la placa, no en nextpnr (ADR 0011).
 
+## Una orden de la CLI
+
+1. Escribir el formato o el cálculo en `model/sofifi/domain/`, sin I/O.
+2. Escribir el adaptador en `model/sofifi/adapters/`. Los errores salen como
+   `argparse.ArgumentTypeError`.
+3. Añadir el subanalizador en `model/sofifi/cli_argumentos.py`, con ejemplos en
+   su `description`.
+4. Añadir la rama en `model/sofifi/cli.py` y la línea en su docstring.
+   `model/sofifi/cli.py` es la raíz de composición: es el único sitio que elige adaptadores.
+5. Probar la orden en `model/tests/adaptadores_cli_test.py`, siempre en
+   `tmp_path`. `model/tests/arquitectura_test.py` vigila las capas.
+6. Documentar la orden donde vive su tarea (por ejemplo `docs/microsd.md` o
+   `docs/audio_1bit.md`), no en `docs/scripts.md`, que es para `scripts/`.
+
 ## Una compuerta
 
 > **Advertencia.** `scripts/ci_local.sh` es una sentinela: un cambio en él va
