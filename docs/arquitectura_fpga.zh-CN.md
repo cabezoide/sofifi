@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/arquitectura_fpga.md sha=f51f5ec843d2 estado=al_dia -->
+<!-- i18n: fuente=docs/arquitectura_fpga.md sha=246cabf6e27e estado=al_dia -->
 # FPGA 架构
 
 本文说明 FPGA 内部有什么、各部分如何连接，以及设计在各阶段如何变化。每个阶段结束时更新本文；每个改动 FPGA 模块的 PR 也要更新本文。各组件的简明说明见 `SBOM.zh-CN.md`；塑造了设计的故障见 `fails.zh-CN.md`。
@@ -29,6 +29,7 @@ flowchart LR
 
     entradas["输入<br/>adc, pots, sw"] --> regs
     regs --> dac["dac_l, dac_r"]
+    dac -.->|"Fase 13 · ADR 0015"| s1b["1 位输出<br/>CIC + Σ∆<br/>（第 13 阶段）"]
 
     subgraph pruebas["仅在测试顶层 (HIL) 中"]
         direction LR
@@ -66,6 +67,7 @@ flowchart LR
 | Hermite ROM | `rtl/nucleo/tabla_hermite.v`（生成） | ~820 LUT | 组合逻辑 + 寄存器 |
 | 平滑曲线 | `rtl/nucleo/curva_fin.v` | 一次减法和一次饱和 | 寄存输出 |
 | UART TX / RX | `rtl/comun/uart_tx.v`、`uart_rx.v` | 各 ~50 LUT | 115,200 波特 |
+| 1 位音频输出 | `rtl/salida/salida_1bit.v`、`cic_interp.v`、`sigma_delta.v` | 尚未测量（第 13 阶段） | 6 个周期；调制器每个 100 MHz 周期输出一位（ADR 0015） |
 | 程序加载器 | `rtl/comun/carga_programa.v` | ~30 LUT | 指令数 + 1 个周期 |
 | 核心跟踪（仅 HIL） | `rtl/top/hil_nucleo.v`，命令 `T` | ~150 个触发器 | 把 (pc, ACC) 记录到捕获中 |
 | HIL 的程序 | `hil_nucleo` 的参数 `PROGRAMA`；顶层 `hil_looper` 和 `hil_programa` | 一个逻辑实现的 ROM | 默认是 plate；looper 用来测试 `RDAA` 和 `WRAA`；`hil_programa` 使用 `sofifi rom` 写出的 ROM（`make hil HIL=名称`） |

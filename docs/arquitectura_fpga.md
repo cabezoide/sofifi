@@ -28,6 +28,7 @@ flowchart LR
 
     entradas["Entradas<br/>adc, pots, sw"] --> regs
     regs --> dac["dac_l, dac_r"]
+    dac -.->|"Fase 13 · ADR 0015"| s1b["Salida de 1 bit<br/>CIC + Σ∆<br/>(Fase 13)"]
 
     subgraph pruebas["Solo en el top de pruebas (HIL)"]
         direction LR
@@ -65,6 +66,7 @@ La línea discontinua del diagrama es la carga desde la microSD. Hoy solo existe
 | ROM Hermite | `rtl/nucleo/tabla_hermite.v` (generada) | ~820 LUT | combinacional + registro |
 | Curva suave | `rtl/nucleo/curva_fin.v` | una resta y una saturación | registrada |
 | UART TX / RX | `rtl/comun/uart_tx.v`, `uart_rx.v` | ~50 LUT cada una | 115 200 baudios |
+| Salida de audio de 1 bit | `rtl/salida/salida_1bit.v`, `cic_interp.v`, `sigma_delta.v` | sin medir (Fase 13) | 6 ciclos; el modulador da un bit por ciclo de 100 MHz (ADR 0015) |
 | Cargador de programa | `rtl/comun/carga_programa.v` | ~30 LUT | instrucciones + 1 ciclos |
 | Traza del núcleo (solo HIL) | `rtl/top/hil_nucleo.v`, orden `T` | ~150 flip-flops | graba (pc, ACC) en la captura |
 | Programa del HIL | parámetro `PROGRAMA` de `hil_nucleo`; tops `hil_looper` y `hil_programa` | una ROM en lógica | plate por defecto; el looper prueba `RDAA` y `WRAA`; `hil_programa` lleva la ROM que escribe `sofifi rom` (`make hil HIL=NOMBRE`) |

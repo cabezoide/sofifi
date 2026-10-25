@@ -1,4 +1,4 @@
-<!-- i18n: fuente=schematics/README.md sha=090a5aa34ac3 estado=al_dia -->
+<!-- i18n: fuente=schematics/README.md sha=f1982739bd51 estado=al_dia -->
 <!-- GENERADO por scripts/esquematicos.py. No se edita a mano. -->
 
 # RTL の回路図
@@ -52,6 +52,9 @@ PDF の表題欄とこの表の説明は Verilog のコメントから取った�
 | `primitivas/mult_27x36.pdf` | `rtl/primitivas/mult_27x36.v` | `ba029281dcb5` | Multiplicador con signo de 27 × 36 bit, con latencia de 3 ciclos: registra las entradas, el producto (PREG) y la salida. |
 | `primitivas/pll_100.pdf` | `rtl/primitivas/pll_100.v` | `35ddf86070ba` | Reloj de 100 MHz desde el cristal de 50 MHz de la Tang Primer 25K. |
 | `primitivas/registro_copia.pdf` | `rtl/primitivas/registro_copia.v` | `25ea9c5a2455` | Registro de ANCHO bit que Yosys no fusiona con otro igual. |
+| `salida/cic_interp.pdf` | `rtl/salida/cic_interp.v` | `54a32809d6f8` | Interpolador CIC de Hogenauer, S = 2 y R = 32 (ADR 0015). |
+| `salida/salida_1bit.pdf` | `rtl/salida/salida_1bit.v` | `531d8e9394f2` | Salida de audio de 1 bit (ADR 0015). |
+| `salida/sigma_delta.pdf` | `rtl/salida/sigma_delta.v` | `30e34712ca5c` | Modulador sigma-delta de 2.º orden con realimentación distribuida (ADR 0015). |
 | `sd/carga_sd.pdf` | `rtl/sd/carga_sd.v` | `1f37570f1869` | Carga de programas desde la microSD (Fase 08): sd_spi.v + cargador.v. |
 | `sd/cargador.pdf` | `rtl/sd/cargador.v` | `ecbc8170989f` | Cargador de programas desde el banco de la microSD (Fase 08). |
 | `sd/sd_spi.pdf` | `rtl/sd/sd_spi.v` | `8b800e71e7cd` | Controlador de tarjeta SD en modo SPI (Fase 08, ADR 0004): arranque y lectura de bloques de 512 bytes. |

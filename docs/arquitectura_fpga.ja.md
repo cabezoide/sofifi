@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/arquitectura_fpga.md sha=f51f5ec843d2 estado=al_dia -->
+<!-- i18n: fuente=docs/arquitectura_fpga.md sha=246cabf6e27e estado=al_dia -->
 # FPGA アーキテクチャ
 
 この文書は、FPGA の中に何があるか、各部がどうつながるか、設計がフェーズごとにどう変わったかを示します。各フェーズの終了時と、FPGA のブロックを変える各 PR で更新します。各コンポーネントの簡単な説明は `SBOM.ja.md` にあります。設計を形づくった障害は `fails.ja.md` にあります。
@@ -29,6 +29,7 @@ flowchart LR
 
     entradas["入力<br/>adc, pots, sw"] --> regs
     regs --> dac["dac_l, dac_r"]
+    dac -.->|"Fase 13 · ADR 0015"| s1b["1 ビット出力<br/>CIC + Σ∆<br/>（フェーズ 13）"]
 
     subgraph pruebas["テスト用トップ (HIL) のみ"]
         direction LR
@@ -66,6 +67,7 @@ flowchart LR
 | Hermite ROM | `rtl/nucleo/tabla_hermite.v`（生成） | ~820 LUT | 組み合わせ回路 + レジスタ |
 | なめらかな曲線 | `rtl/nucleo/curva_fin.v` | 減算 1 回と飽和 1 回 | レジスタ出力 |
 | UART TX / RX | `rtl/comun/uart_tx.v`、`uart_rx.v` | それぞれ ~50 LUT | 115,200 ボー |
+| 1 ビットのオーディオ出力 | `rtl/salida/salida_1bit.v`、`cic_interp.v`、`sigma_delta.v` | 未計測（フェーズ 13） | 6 サイクル。変調器は 100 MHz のサイクルごとに 1 ビットを出す（ADR 0015） |
 | プログラムローダー | `rtl/comun/carga_programa.v` | ~30 LUT | 命令数 + 1 サイクル |
 | コアのトレース（HIL のみ） | `rtl/top/hil_nucleo.v`、コマンド `T` | ~150 フリップフロップ | (pc, ACC) をキャプチャに記録 |
 | HIL のプログラム | `hil_nucleo` のパラメーター `PROGRAMA`、トップ `hil_looper` と `hil_programa` | ロジック上の ROM 1 つ | 既定は plate。looper で `RDAA` と `WRAA` を試験。`hil_programa` は `sofifi rom` が書く ROM を使う（`make hil HIL=名前`） |

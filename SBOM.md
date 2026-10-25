@@ -39,6 +39,7 @@ La FPGA contiene un **pequeño procesador de audio hecho a medida** (el núcleo)
 | **Captura y CRC-32** (solo en pruebas) | Graba 4 096 muestras a velocidad real y las envía con un código de control. | Demuestra que el hardware suena **exactamente** igual que el modelo del PC. |
 | **Traza** (solo en pruebas) | Graba qué instrucción se ejecuta y qué valor deja en el acumulador. | Si el chip falla, dice en qué instrucción, para saber qué parte arreglar. |
 | **Medidor de frecuencia** (solo en pruebas) | Cuenta ciclos de un reloj durante un segundo de otro. | Comprobó que el PLL y la frecuencia de muestreo son exactos. |
+| **Salida de audio de 1 bit** (`salida_1bit`, Fase 13) | Lleva el audio por un solo pin. Un interpolador sube la muestra a 32 veces fs y un modulador la convierte en un bit por ciclo de reloj. Con dos resistencias y dos condensadores, suena. | Permite oír los 86 programas en la placa antes de comprar el códec (ADR 0015). |
 
 ### La microSD (Fase 08, en curso)
 

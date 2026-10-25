@@ -1,4 +1,4 @@
-<!-- i18n: fuente=docs/arquitectura_fpga.md sha=f51f5ec843d2 estado=al_dia -->
+<!-- i18n: fuente=docs/arquitectura_fpga.md sha=246cabf6e27e estado=al_dia -->
 # FPGA architecture
 
 This document tells what is inside the FPGA, how the parts connect and how the design changed in each phase. We update it when we close each phase and in each PR that changes FPGA blocks. `SBOM.en.md` gives a simple explanation of each component. `fails.en.md` gives the failures that made the design.
@@ -29,6 +29,7 @@ flowchart LR
 
     entradas["Inputs<br/>adc, pots, sw"] --> regs
     regs --> dac["dac_l, dac_r"]
+    dac -.->|"Fase 13 · ADR 0015"| s1b["1-bit output<br/>CIC + Σ∆<br/>(Phase 13)"]
 
     subgraph pruebas["Only in the test top (HIL)"]
         direction LR
@@ -66,6 +67,7 @@ The dashed line in the diagram is the load from the microSD. Today it exists onl
 | Hermite ROM | `rtl/nucleo/tabla_hermite.v` (generated) | ~820 LUT | combinational + register |
 | Smooth curve | `rtl/nucleo/curva_fin.v` | one subtraction and one saturation | registered |
 | UART TX / RX | `rtl/comun/uart_tx.v`, `uart_rx.v` | ~50 LUT each | 115,200 baud |
+| 1-bit audio output | `rtl/salida/salida_1bit.v`, `cic_interp.v`, `sigma_delta.v` | not measured yet (Phase 13) | 6 cycles; the modulator gives one bit per 100 MHz cycle (ADR 0015) |
 | Program loader | `rtl/comun/carga_programa.v` | ~30 LUT | instructions + 1 cycles |
 | Core trace (HIL only) | `rtl/top/hil_nucleo.v`, command `T` | ~150 flip-flops | records (pc, ACC) in the capture |
 | HIL program | `PROGRAMA` parameter of `hil_nucleo`; tops `hil_looper` and `hil_programa` | one ROM in logic | plate by default; the looper tests `RDAA` and `WRAA`; `hil_programa` has the ROM that `sofifi rom` writes (`make hil HIL=NAME`) |

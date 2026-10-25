@@ -1,4 +1,4 @@
-<!-- i18n: fuente=SBOM.md sha=a282b2880c99 estado=al_dia -->
+<!-- i18n: fuente=SBOM.md sha=8c6259d70144 estado=al_dia -->
 # SBOM · SOFIFI components
 
 This document tells which parts make the pedal inside and which tools build it. Each part has a simple explanation: what it does and what it gives to the system. The technical details (resources, latencies, history by phase) are in `docs/arquitectura_fpga.en.md`.
@@ -40,6 +40,7 @@ The FPGA contains a **small custom audio processor** (the core). Each effect (pl
 | **Capture and CRC-32** (tests only) | Records 4,096 samples at real speed and sends them with a check code. | Shows that the hardware sounds **exactly** the same as the PC model. |
 | **Trace** (tests only) | Records which instruction runs and which value it puts in the accumulator. | If the chip fails, it tells you the instruction. Then you know which part to repair. |
 | **Frequency meter** (tests only) | Counts the cycles of one clock during one second of a different clock. | It confirmed that the PLL and the sample rate are exact. |
+| **1-bit audio output** (`salida_1bit`, Phase 13) | Sends the audio through one pin. An interpolator takes the sample to 32 times fs, and a modulator turns it into one bit per clock cycle. With two resistors and two capacitors, it makes sound. | Lets you hear the 86 programs on the board before you buy the codec (ADR 0015). |
 
 ### The microSD (Phase 08, in progress)
 
