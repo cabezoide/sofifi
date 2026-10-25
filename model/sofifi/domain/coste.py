@@ -62,6 +62,12 @@ DURACION: dict[Op, int] = {
 DURACION_CHO = {TipoLfo.SIN: 43, TipoLfo.RND: 32, TipoLfo.RAMP: 27}
 DURACION_CHO_NA = 5  # la ventana del pitch shifter es un producto más
 
+# Con palabras de 12 bit (Fase 14), tres muestras ocupan dos palabras de 18, así
+# que una escritura lee antes la pareja. **Es una cota, no una medida**: el PR 2
+# de la Fase 14 la sustituye por los ciclos que dé la simulación (ADR 0014).
+ESCRITURA_12_BIT = 10  # como una lectura RDA: la memoria tarda LAT_MEM = 9
+ESCRIBEN_MEMORIA = frozenset({Op.WRA, Op.WRAP, Op.WRAA})
+
 LEE_ACC = frozenset(
     {Op.WRA, Op.WRAP, Op.WRAX, Op.RDFX, Op.MULX, Op.SOF, Op.CLIP, Op.SKP, Op.WRAA, Op.MAXX, Op.ABSA}
 )
@@ -69,17 +75,20 @@ LEE_REGISTRO = frozenset({Op.RDAX, Op.MAXX, Op.RDFX, Op.MULX, Op.LDAX, Op.RDAA, 
 SIN_RETIRO = frozenset({Op.NOP, Op.SKP, Op.CLIP})  # CLIP escribe el ACC él mismo
 
 
-def duracion(ins: Instruccion, lfos: Sequence[ConfigLfo | None] = ()) -> int:
+def duracion(ins: Instruccion, lfos: Sequence[ConfigLfo | None] = (), bits: int = 18) -> int:
     """Ciclos de ejecución. Sin la configuración del LFO, el CHO cuenta como SIN (la cota)."""
     if ins.op is not Op.CHO:
-        return DURACION[ins.op]
+        extra = ESCRITURA_12_BIT if bits == 12 and ins.op in ESCRIBEN_MEMORIA else 0
+        return DURACION[ins.op] + extra
     config = lfos[ins.reg] if ins.reg < len(lfos) else None
     base = DURACION_CHO[config.tipo] if config is not None else DURACION_CHO[TipoLfo.SIN]
     return base + (DURACION_CHO_NA if ins.flags & Cho.NA else 0)
 
 
 def ciclos_secuencia(
-    instrucciones: Sequence[Instruccion], lfos: Sequence[ConfigLfo | None] = ()
+    instrucciones: Sequence[Instruccion],
+    lfos: Sequence[ConfigLfo | None] = (),
+    bits: int = 18,
 ) -> int:
     """Ciclos de una muestra, de `tick` a `fin`, con todas las instrucciones."""
     libre = PRIMERA_DECODIFICACION  # primer ciclo en que E_LEER puede decodificar
@@ -92,7 +101,7 @@ def ciclos_secuencia(
             x = max(x, retiro)
         if ins.op in LEE_REGISTRO:
             x = max(x, libre_reg, banco)
-        ultimo = x + duracion(ins, lfos)
+        ultimo = x + duracion(ins, lfos, bits)
         if ins.op not in SIN_RETIRO:
             retiro = ultimo + RETIRO
         if ins.op is Op.WRAX:
@@ -104,7 +113,7 @@ def ciclos_secuencia(
 
 def ciclos_rtl(programa: Programa) -> int:
     """Cota superior de los ciclos por muestra del programa en el núcleo RTL."""
-    return ciclos_secuencia(programa.instrucciones, programa.lfos)
+    return ciclos_secuencia(programa.instrucciones, programa.lfos, programa.bits_memoria)
 
 
 def cabe_en_el_rtl(programa: Programa) -> bool:

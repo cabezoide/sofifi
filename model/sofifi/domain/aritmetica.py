@@ -30,6 +30,7 @@ COEF_FRAC = 16
 ACC_BITS = 48
 ACC_FRAC = DATO_FRAC + COEF_FRAC
 MEM_BITS = 18
+MEM_BITS_CORTO = 12  # palabras cortas: 1,5 veces más tiempo de retardo (Fase 14)
 
 DATO_MAX = (1 << (DATO_BITS - 1)) - 1
 DATO_MIN = -(1 << (DATO_BITS - 1))
@@ -92,10 +93,14 @@ def mac(acc: int, dato: int, coef: int) -> int:
     return saturar_acc(acc + dato * coef)
 
 
-def dato_a_memoria(dato: int) -> int:
-    """Dato de 24 bit → palabra de 18 bit, devuelta alineada a dato (6 LSB a cero)."""
-    perdida = DATO_BITS - MEM_BITS
-    return saturar(redondear(dato, perdida), MEM_BITS) << perdida
+def dato_a_memoria(dato: int, bits: int = MEM_BITS) -> int:
+    """Dato de 24 bit → palabra de memoria, alineada a dato (los LSB a cero).
+
+    ``bits`` es 18 por omisión y 12 si el programa pide `palabra 12` (ADR 0008,
+    actualización del 2026-10-25). El redondeo y la saturación son los mismos.
+    """
+    perdida = DATO_BITS - bits
+    return saturar(redondear(dato, perdida), bits) << perdida
 
 
 def cuantizar(valor: Fraction, frac: int, bits: int, que: str) -> int:

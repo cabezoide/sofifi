@@ -52,3 +52,26 @@ Opción 2, implementada en `model/sofifi/domain/aritmetica.py`.
 ## Actualización 2026-10-07 (intérprete más rápido, Fase 06)
 
 `saturar`, `saturar_acc` y `acc_a_dato` se escriben con comparaciones y constantes ya calculadas, no con `min`/`max` y llamadas encadenadas. El intérprete tarda la mitad: la biblioteca pasa de 30 programas y sus pruebas corren en cada push. **El contrato no cambia:** una prueba de propiedades (`model/tests/aritmetica_test.py`) exige que las versiones rápidas den lo mismo que la definición general, y las huellas de los 30 programas no cambian.
+
+## Actualización 2026-10-25 (palabras de memoria de 12 bit, Fase 14)
+
+Un programa puede pedir palabras de memoria de **12 bit** con la directiva `palabra 12`, y entonces tiene 64 512 palabras de retardo (1,32 s) en lugar de 43 008 (0,88 s). Sin la directiva, 18 bit: los 86 programas de hoy no cambian ni un bit.
+
+El formato es **lineal**, no de coma flotante, y eso cambia el punto 14 de la hoja de ruta. Se midió en el modelo la relación señal/ruido de la salida de programas reales contra la referencia de 18 bit:
+
+| Programa | 12 bit flotante | 12 bit lineal | 9 bit μ-law | 9 bit lineal |
+|---|---|---|---|---|
+| `plate` | 49,3 dB | 45,5 dB | 37,5 dB | 27,2 dB |
+| `cinta` | 59,0 dB | **63,3 dB** | 47,8 dB | 45,2 dB |
+| `hall` | 51,9 dB | 47,8 dB | 40,2 dB | 29,6 dB |
+
+La coma flotante gana unos 4 dB en las reverbs y **pierde** 4 dB en la cinta, que es el caso de uso de una línea larga: su contenido es fuerte, y una mantisa de 8 bit es menos precisa que 12 bit lineales. Lineal, además, no cuesta ni una LUT: es el mismo redondeo y la misma saturación de hoy, con otro tamaño.
+
+Reglas que se añaden al contrato:
+
+- **`dato_a_memoria` acepta el tamaño de palabra** (18 por omisión). Redondea medio LSB hacia arriba y satura, como siempre, y devuelve el valor alineado a dato.
+- **Todo el programa usa el mismo tamaño**, también la región absoluta (ADR 0009). Un solo mapa de memoria en el RTL.
+- **El límite de palabras sale del tamaño:** 42 bloques de BSRAM dan 1 024 palabras de 18 bit o 1 536 de 12.
+- **Tres muestras de 12 bit ocupan dos palabras de 18.** Por eso una escritura obliga a leer, modificar y escribir, y eso cuesta ciclos. El modelo de tiempos declara el coste como una cota hasta que la simulación lo mida (ADR 0014).
+
+Las palabras de 9 bit se midieron y se descartan: 37 dB en un tanque de reverb se oyen.

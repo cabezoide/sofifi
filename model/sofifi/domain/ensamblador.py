@@ -12,6 +12,7 @@ Sintaxis::
     include  comun/bloque.sasm         ; inserta el texto de otro fichero
     equ   nombre  expr | registro      ; constante o alias de registro
     mem   nombre  expr                 ; línea de retardo de expr muestras
+    palabra  18 | 12                   ; bit por palabra de memoria (18 por omisión)
     lfo   N  sin|rnd|ramp  expr        ; LFO N (0..3) con excursión o ventana
     etiqueta:
     rda   dir, C        wra  dir, C        wrap dir, C
@@ -38,10 +39,12 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from fractions import Fraction
 
+from sofifi.domain.aritmetica import MEM_BITS
 from sofifi.domain.expresion import ErrorEnsamblado as ErrorEnsamblado
 from sofifi.domain.expresion import Expresion, entero
 from sofifi.domain.isa import NOMBRES_REGISTRO, Instruccion, Programa
 from sofifi.domain.lfo import NUM_LFOS, ConfigLfo, TipoLfo
+from sofifi.domain.memoria import BITS_PALABRA_VALIDOS
 from sofifi.domain.operandos import MNEMONICOS as MNEMONICOS
 from sofifi.domain.operandos import instruccion
 
@@ -115,6 +118,7 @@ class _Estado:
     etiquetas: dict[str, int] = field(default_factory=dict)
     lfos: list[ConfigLfo | None] = field(default_factory=lambda: [None] * NUM_LFOS)
     memoria_usada: int = 0
+    bits_memoria: int = MEM_BITS
     # (origen, línea, mnemónico, operandos, pc)
     cuerpo: list[tuple[str | None, int, str, str, int]] = field(default_factory=list)
 
@@ -134,12 +138,13 @@ class Piezas:
     instrucciones: tuple[Instruccion, ...]
     memoria_usada: int
     lfos: tuple[ConfigLfo | None, ...]
+    bits_memoria: int = MEM_BITS
 
 
 def ensamblar(texto: str, nombre: str = "programa", incluir: Incluir | None = None) -> Programa:
     p = piezas(texto, incluir)
     try:
-        return Programa(nombre, p.instrucciones, max(1, p.memoria_usada), p.lfos)
+        return Programa(nombre, p.instrucciones, max(1, p.memoria_usada), p.lfos, p.bits_memoria)
     except ValueError as exc:
         raise ErrorEnsamblado(0, str(exc)) from exc
 
@@ -160,7 +165,7 @@ def piezas(texto: str, incluir: Incluir | None = None) -> Piezas:
             instrucciones.append(instruccion(n, mnem, ops, pc, e.simbolos, e.alias, e.etiquetas))
         except ErrorEnsamblado as exc:
             raise exc.en(origen) from None
-    return Piezas(tuple(instrucciones), e.memoria_usada, tuple(e.lfos))
+    return Piezas(tuple(instrucciones), e.memoria_usada, tuple(e.lfos), e.bits_memoria)
 
 
 def _pasada_1(e: _Estado, n: int, linea: str, origen: str | None) -> None:
@@ -195,6 +200,14 @@ def _pasada_1(e: _Estado, n: int, linea: str, origen: str | None) -> None:
         e.simbolos[nom + "#"] = Fraction(m.inicio + longitud)
         e.simbolos[nom + "^"] = Fraction(m.inicio + longitud // 2)
         e.memoria_usada += longitud + 1
+    elif mnem == "palabra":
+        campos = ops.replace(",", " ").split()
+        if len(campos) != 1 or not campos[0].isdigit():
+            raise ErrorEnsamblado(n, "uso: palabra 18|12")
+        bits = int(campos[0])
+        if bits not in BITS_PALABRA_VALIDOS:
+            raise ErrorEnsamblado(n, f"palabra de {bits} bit; solo {BITS_PALABRA_VALIDOS}")
+        e.bits_memoria = bits
     elif mnem == "lfo":
         campos = ops.replace(",", " ").split()
         if len(campos) != 3 or not campos[0].isdigit():
